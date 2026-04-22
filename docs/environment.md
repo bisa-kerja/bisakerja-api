@@ -93,6 +93,7 @@ Rules:
 | `RATE_LIMIT_MAX`        | Yes      | `120`                   | Default request count per window            |
 | `AUTH_RATE_LIMIT_MAX`   | Yes      | `10`                    | Stricter limit for auth-sensitive endpoints |
 | `UPLOAD_RATE_LIMIT_MAX` | Yes      | `10`                    | Stricter limit for CV upload endpoints      |
+| `AI_RATE_LIMIT_MAX`     | Yes      | `20`                    | Stricter limit for AI inference endpoints   |
 
 ## Model API Variables
 

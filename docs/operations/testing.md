@@ -151,7 +151,7 @@ Production deployment must use explicit migration execution, not implicit applic
 
 ## Route Test Requirements
 
-Route tests should call the Express app through a local HTTP test client or compatible Bun test tooling.
+Route tests should exercise the Express app through compatible Bun test tooling. The initial route harness uses in-memory Express request and response objects so middleware order, headers, envelopes, and error handling can be verified without depending on a bound local socket.
 
 Every route group must verify:
 
@@ -165,6 +165,8 @@ Every route group must verify:
 - Sensitive fields are not returned.
 
 Authentication route tests must also verify strict rate limit behavior once rate-limit middleware is implemented.
+
+Bound-port smoke tests should be added for startup and health behavior when the pinned Bun runtime is available in CI.
 
 ## Downstream Contract Tests
 

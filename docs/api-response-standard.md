@@ -256,6 +256,7 @@ Validation detail fields:
 | `FORBIDDEN`             | 403    | Authenticated user cannot perform action               |
 | `NOT_FOUND`             | 404    | Resource does not exist or is not visible to user      |
 | `CONFLICT`              | 409    | Duplicate resource or invalid state transition         |
+| `PAYLOAD_TOO_LARGE`     | 413    | Request body or upload exceeds configured limit        |
 | `RATE_LIMITED`          | 429    | Request rate limit exceeded                            |
 | `DOWNSTREAM_ERROR`      | 502    | Downstream service returned invalid or failed response |
 | `SERVICE_UNAVAILABLE`   | 503    | Required dependency unavailable                        |
@@ -275,6 +276,7 @@ Module-specific errors should extend this catalog using stable uppercase snake c
 | 403    | Authenticated but not authorized                 |
 | 404    | Resource not found or not owned by user          |
 | 409    | Conflict, duplicate, or invalid state transition |
+| 413    | Request body or upload exceeds configured limit  |
 | 422    | Zod validation failure for well-formed request   |
 | 429    | Rate limit exceeded                              |
 | 500    | Unexpected server failure                        |
