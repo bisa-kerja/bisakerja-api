@@ -1,0 +1,265 @@
+---
+title: Backend API Testing Strategy
+description: Unit, route, integration, database, migration, downstream contract, smoke, and release verification strategy for the Bisakerja Backend API.
+owner: backend-owner
+reviewers:
+  - platform-docs-maintainer
+  - engineering-lead
+doc_status: draft
+source_repo: backend-api
+source_path: docs/operations/testing.md
+last_reviewed: 2026-04-22
+---
+
+# Backend API Testing Strategy
+
+This document defines the verification strategy for the Bisakerja Backend API before implementation starts. The goal is to make every MVP module testable through explicit unit, route, repository, integration, contract, and smoke paths.
+
+Exact test command names must be finalized during project setup after the Bun, TypeScript, Prisma, and route-test tooling is installed. The categories and acceptance rules in this document should remain stable even if command names change.
+
+## Testing Principles
+
+- Test public API behavior through response envelopes, status codes, and documented payloads.
+- Test service rules separately from Express request and response objects.
+- Test Prisma repositories against an isolated PostgreSQL database, not against production-like shared data.
+- Test Model API and Scraper API assumptions with contract fixtures before relying on live services.
+- Test security-sensitive flows with both success and failure paths.
+- Keep tests deterministic by using stable fixtures, isolated users, and predictable timestamps where possible.
+- Never mark a release ready when migrations, route contracts, or auth ownership checks are unverified.
+
+## Test Categories
+
+| Category                     | Scope                                                                                   | Primary value                                                  |
+| ---------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Unit tests                   | Pure functions, validators, response formatters, service rules with mocked repositories | Fast feedback and edge case coverage                           |
+| Route tests                  | Express routes through HTTP-style requests                                              | API contract, auth middleware, validation, and error envelopes |
+| Repository integration tests | Prisma queries against a test PostgreSQL database                                       | Schema, constraints, ownership filters, and transactions       |
+| Module integration tests     | Controller, service, repository, and selected integration clients together              | Product workflow confidence                                    |
+| Downstream contract tests    | Model API payload/response and normalized job fixture validation                        | Prevent integration drift                                      |
+| Migration verification       | Prisma schema and migrations applied to an empty database                               | Deployment safety                                              |
+| Smoke tests                  | Startup, env validation, health, readiness, and database connectivity                   | Release and runtime readiness                                  |
+| Documentation checks         | Required docs, metadata, examples, and response standards                               | Keep docs sync-ready                                           |
+
+## Expected Test Layout
+
+The target test layout follows `docs/project-structure.md`.
+
+```text
+tests/
+  unit/
+    core/
+    modules/
+  integration/
+    repositories/
+    routes/
+    workflows/
+    contracts/
+  fixtures/
+    users/
+    jobs/
+    model-api/
+    scraper-api/
+  smoke/
+```
+
+Rules:
+
+- Unit tests should not require PostgreSQL.
+- Repository and workflow integration tests must use a test database.
+- Contract fixtures must be versioned with the backend source code.
+- Fixtures must not contain real user CVs, passwords, tokens, or production job source payloads.
+- Test helpers should create data through repositories or seed utilities instead of relying on brittle global database state.
+
+## Test Environment
+
+Automated tests must run with `APP_ENV=test`.
+
+Required test environment behavior:
+
+| Area         | Rule                                                                                               |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| Database     | Use an isolated test `DATABASE_URL`; never use local development, staging, or production databases |
+| Auth         | Use deterministic secrets only for tests; never reuse staging or production secrets                |
+| Email        | Use a fake or in-memory email provider                                                             |
+| Model API    | Use `MODEL_API_ENABLE_MOCK=true` or a local fake service for most tests                            |
+| Scraper data | Use normalized job fixtures seeded into the test database                                          |
+| Uploads      | Use a disposable test upload path outside tracked source files                                     |
+| Logging      | Keep logs structured but reduce noise unless a test fails                                          |
+| Time         | Prefer injectable clocks for token expiry, stale jobs, and retention tests                         |
+
+The final `.env.test.example` should be created during scaffold work and kept in sync with `docs/environment.md` and `src/config/env.ts`.
+
+## Database Test Setup
+
+Repository and workflow tests should validate the real Prisma schema and constraints.
+
+Minimum database setup:
+
+1. Create a dedicated test database.
+2. Apply Prisma migrations to the test database before integration tests.
+3. Generate Prisma client before test execution.
+4. Seed only the records required by each test suite.
+5. Clean data between tests through transactions, truncation, or isolated schemas.
+6. Fail fast if `DATABASE_URL` does not point to an approved test database pattern.
+
+Recommended fixture groups:
+
+| Fixture               | Purpose                                                           |
+| --------------------- | ----------------------------------------------------------------- |
+| `testUser`            | Authenticated user with verified email                            |
+| `secondUser`          | Ownership and authorization negative cases                        |
+| `profileCompleteUser` | AI job fit and CV analyzer context                                |
+| `sourcePlatforms`     | Glints, Jobstreet, Kalibrr, and Dealls normalized source metadata |
+| `companyAndJobs`      | Search, detail, bookmark, tracker, and AI context                 |
+| `expiredJob`          | Stale and inactive job behavior                                   |
+| `modelResponses`      | Valid, invalid, timeout, and degraded AI responses                |
+
+## Prisma Migration Verification
+
+Migrations must be verified before deployment and before any database-backed test run.
+
+Required checks:
+
+- Prisma schema syntax is valid.
+- Prisma client generation succeeds.
+- Migrations apply cleanly to an empty PostgreSQL database.
+- Migration history is not edited after it is shared.
+- Database constraints match documented uniqueness and ownership rules.
+- Rollback notes exist for risky migrations, even when rollback is manual.
+
+The initial implementation should provide a command equivalent to:
+
+```text
+verify migrations -> generate Prisma client -> apply migrations to test database -> run repository integration tests
+```
+
+Production deployment must use explicit migration execution, not implicit application startup mutation, unless a later approved deployment policy says otherwise.
+
+## Route Test Requirements
+
+Route tests should call the Express app through a local HTTP test client or compatible Bun test tooling.
+
+Every route group must verify:
+
+- Correct `/api/v1` prefix.
+- Required authentication behavior.
+- Zod validation errors use the standard `422` envelope.
+- Known business errors map to documented status codes and error codes.
+- Successful responses match `docs/api-response-standard.md`.
+- List endpoints include pagination, filter, and sort metadata when applicable.
+- Error responses include `error.requestId`.
+- Sensitive fields are not returned.
+
+Authentication route tests must also verify strict rate limit behavior once rate-limit middleware is implemented.
+
+## Downstream Contract Tests
+
+### Model API
+
+AI-related tests should avoid depending on a live Model API for normal CI.
+
+Contract tests must verify:
+
+- Backend sends only the minimum required profile, preference, job, and CV context.
+- Request id is forwarded to the Model API client.
+- Fit score responses are normalized to score range `0` to `100`.
+- Skill gap responses include matched skills, missing skills, and recommendations when available.
+- CV Analyzer responses include overall impression, job fit alignment, ATS score, keyword feedback, quantification feedback, and actionable improvements.
+- Invalid model output maps to `502 DOWNSTREAM_ERROR`.
+- Timeout or unavailable model service maps to `503 SERVICE_UNAVAILABLE` when the dependency is unavailable.
+
+### Scraper And Job Data
+
+Backend tests should use normalized database fixtures instead of raw platform payloads.
+
+Contract tests must verify:
+
+- `sourcePlatformId` plus `externalJobId` uniquely identifies a normalized job.
+- Job records include source platform, company, title, location, work type, source URL, and freshness fields when available.
+- Missing optional source fields do not break frontend-facing job responses.
+- Raw Glints, Jobstreet, Kalibrr, or Dealls payloads do not leak through API responses.
+- Stale job behavior follows the documented `JOB_STALE_AFTER_HOURS` rule once implemented.
+
+## MVP Module Validation Matrix
+
+Each MVP module must have at least one documented validation path before implementation is considered ready.
+
+| Module         | Minimum validation path                                                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | Route test for register/login plus negative tests for invalid credentials, duplicate email, rate limit, and no plaintext password storage                         |
+| Users          | Route and repository tests for current-user profile read/update, onboarding completion state, skill upsert, and user ownership                                    |
+| Preferences    | Route and service tests for full preference save, enum validation, salary range validation, and single active preference set                                      |
+| Jobs           | Route and repository tests for list filters, pagination, sorting, detail lookup, stale/fresh metadata, and no raw source payload leakage                          |
+| Bookmarks      | Route and repository tests for save, duplicate save conflict or idempotency decision, unsave, saved list, and user ownership                                      |
+| Applications   | Route and service tests for create tracker record, update notes, status transition, duplicate active record handling, and user ownership                          |
+| AI Job Fit     | Service and route tests for payload preparation, Model API success, invalid model response, timeout, score normalization, and optional snapshot persistence       |
+| AI CV Analyzer | Route and service tests for upload validation, selected job lookup, Model API success, invalid model response, timeout, retention metadata, and no raw CV logging |
+| Health         | Smoke tests for liveness, readiness, PostgreSQL dependency status, and degraded downstream dependency reporting                                                   |
+
+## Security Test Requirements
+
+Security-sensitive behavior must have automated tests before the corresponding feature is considered done.
+
+Required security test cases:
+
+- Unauthenticated users cannot access profile, preference, bookmark, tracker, AI job fit, or CV analyzer routes.
+- Authenticated users cannot read or mutate another user's records.
+- Password reset and email verification tokens expire.
+- Token or session logout invalidates future use according to the selected auth strategy.
+- CORS rejects disallowed origins in production-like configuration.
+- Upload validation rejects unsupported MIME types, oversized files, and missing files.
+- Error responses do not include stack traces, secrets, tokens, OTP values, raw CV contents, or raw downstream payloads.
+
+## Smoke Tests
+
+Smoke tests should be fast and safe enough to run after deployment.
+
+Minimum smoke checks:
+
+| Check                     | Expected result                                                        |
+| ------------------------- | ---------------------------------------------------------------------- |
+| Startup env validation    | Server refuses invalid required configuration                          |
+| Liveness endpoint         | Returns healthy process status without requiring downstream services   |
+| Readiness endpoint        | Returns PostgreSQL readiness and dependency degradation details        |
+| Database connectivity     | Backend can run a lightweight PostgreSQL check                         |
+| Public jobs endpoint      | Returns a valid response envelope even when no jobs exist              |
+| Auth protected route      | Rejects unauthenticated request with `401 UNAUTHENTICATED`             |
+| Model dependency degraded | AI route returns documented `502` or `503` without breaking job search |
+
+## Release Test Gate
+
+A release candidate cannot be marked ready until these checks pass:
+
+- Unit tests pass.
+- Route tests pass for all implemented endpoint groups.
+- Repository integration tests pass against a migrated test database.
+- Prisma migration verification passes.
+- Downstream contract fixtures pass.
+- Smoke tests pass in the target environment or a production-like staging environment.
+- Security-sensitive tests pass for implemented auth, upload, and ownership flows.
+- API examples in docs remain valid JSON and match response standards.
+
+## Coverage Expectations
+
+Coverage targets should be used as a guardrail, not a substitute for meaningful tests.
+
+Initial expectations:
+
+- High coverage for response formatters, validation schemas, auth rules, and ownership checks.
+- Focused branch coverage for failure mapping and downstream dependency behavior.
+- Route coverage for every public and authenticated API group.
+- Repository tests for all non-trivial Prisma queries, uniqueness constraints, and transactions.
+
+## Related Docs
+
+- `docs/project-structure.md`
+- `docs/tech-stack.md`
+- `docs/environment.md`
+- `docs/api-response-standard.md`
+- `docs/database.md`
+- `docs/modules/auth.md`
+- `docs/modules/ai-job-fit.md`
+- `docs/modules/ai-cv-analyzer.md`
+- `docs/integrations/model-api.md`
+- `docs/integrations/scraper-api.md`
+- `references/docs/operations/failure-scenarios.mdx`
