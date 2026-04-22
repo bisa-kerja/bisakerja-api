@@ -1,0 +1,189 @@
+---
+title: Backend API Environment Configuration
+description: Environment variable groups, local defaults, secret handling, and runtime separation for the Bisakerja Backend API.
+owner: backend-owner
+reviewers:
+  - platform-docs-maintainer
+  - engineering-lead
+doc_status: draft
+source_repo: backend-api
+source_path: docs/environment.md
+last_reviewed: 2026-04-22
+---
+
+# Backend API Environment Configuration
+
+This document defines the initial environment configuration model for the Bisakerja Backend API. The actual `.env.example` file should be created during project setup after package choices and auth/session design are finalized.
+
+Environment variables must be validated at startup with Zod in `src/config/env.ts`. Missing required variables or invalid values should fail fast before the server accepts requests.
+
+## Environment Groups
+
+| Group         | Purpose                                                                  |
+| ------------- | ------------------------------------------------------------------------ |
+| Application   | Runtime mode, port, API prefix, public base URL, and service identity    |
+| Database      | PostgreSQL connection and Prisma behavior                                |
+| Auth          | Token/session secrets, expiry, OTP, password reset, and cookie behavior  |
+| Security      | CORS, rate limit, trusted proxy, and request limits                      |
+| Integrations  | Model API, Scraper API, email provider, and external service credentials |
+| Uploads       | CV upload limits, storage driver, storage path, and file retention       |
+| Observability | Logging level, request id header, health checks, and error reporting     |
+
+## Application Variables
+
+| Variable       | Required | Local default           | Notes                                                                      |
+| -------------- | -------- | ----------------------- | -------------------------------------------------------------------------- |
+| `APP_NAME`     | No       | `bisakerja-api`         | Service name used in logs and health output                                |
+| `APP_ENV`      | Yes      | `local`                 | Allowed values should include `local`, `test`, `staging`, and `production` |
+| `NODE_ENV`     | Yes      | `development`           | Runtime ecosystem mode                                                     |
+| `PORT`         | Yes      | `3000`                  | HTTP server port                                                           |
+| `API_PREFIX`   | Yes      | `/api/v1`               | Default REST route prefix                                                  |
+| `APP_URL`      | Yes      | `http://localhost:3000` | Backend base URL for callbacks or generated links                          |
+| `FRONTEND_URL` | Yes      | `http://localhost:5173` | Primary frontend origin for local development                              |
+
+## Database Variables
+
+| Variable              | Required | Local default | Notes                                                                |
+| --------------------- | -------- | ------------- | -------------------------------------------------------------------- |
+| `DATABASE_URL`        | Yes      | None          | PostgreSQL connection string used by Prisma                          |
+| `DIRECT_DATABASE_URL` | No       | None          | Optional direct database URL for migrations if pooling is introduced |
+| `PRISMA_LOG_LEVEL`    | No       | `warn`        | Prisma logging level for development and debugging                   |
+
+Rules:
+
+- Never commit real database credentials.
+- Use a separate database for tests.
+- Run migrations explicitly in deployment workflows; do not rely on application startup to mutate production schema unless that deployment policy is approved.
+
+## Auth Variables
+
+The final token/session strategy is still an open item. Reserve these variables until the auth design is finalized:
+
+| Variable                     | Required | Local default       | Notes                                                           |
+| ---------------------------- | -------- | ------------------- | --------------------------------------------------------------- |
+| `AUTH_ACCESS_TOKEN_SECRET`   | Yes      | None                | Secret for access token signing if JWT is selected              |
+| `AUTH_REFRESH_TOKEN_SECRET`  | Yes      | None                | Secret for refresh token signing if refresh tokens are selected |
+| `AUTH_ACCESS_TOKEN_TTL`      | Yes      | `15m`               | Short-lived access token lifetime                               |
+| `AUTH_REFRESH_TOKEN_TTL`     | Yes      | `7d`                | Refresh token lifetime                                          |
+| `PASSWORD_RESET_TOKEN_TTL`   | Yes      | `30m`               | Password reset token lifetime                                   |
+| `EMAIL_VERIFICATION_OTP_TTL` | Yes      | `10m`               | Email verification OTP lifetime                                 |
+| `AUTH_COOKIE_NAME`           | No       | `bisakerja_session` | Required only if cookie-based session is selected               |
+| `AUTH_COOKIE_SECURE`         | Yes      | `false` locally     | Must be `true` in production when cookies are used              |
+
+Rules:
+
+- Secrets must be long, random, and environment-specific.
+- Password reset and OTP flows need stricter rate limits than ordinary authenticated routes.
+- The selected auth strategy must be documented before implementation starts.
+
+## Security Variables
+
+| Variable                | Required | Local default           | Notes                                       |
+| ----------------------- | -------- | ----------------------- | ------------------------------------------- |
+| `CORS_ORIGINS`          | Yes      | `http://localhost:5173` | Comma-separated allowed frontend origins    |
+| `TRUST_PROXY`           | No       | `false`                 | Enable only behind a trusted proxy          |
+| `REQUEST_BODY_LIMIT`    | Yes      | `1mb`                   | JSON body limit                             |
+| `RATE_LIMIT_WINDOW_MS`  | Yes      | `60000`                 | Default rate limit window                   |
+| `RATE_LIMIT_MAX`        | Yes      | `120`                   | Default request count per window            |
+| `AUTH_RATE_LIMIT_MAX`   | Yes      | `10`                    | Stricter limit for auth-sensitive endpoints |
+| `UPLOAD_RATE_LIMIT_MAX` | Yes      | `10`                    | Stricter limit for CV upload endpoints      |
+
+## Model API Variables
+
+| Variable                  | Required                    | Local default | Notes                                                             |
+| ------------------------- | --------------------------- | ------------- | ----------------------------------------------------------------- |
+| `MODEL_API_BASE_URL`      | Yes for AI workflows        | None          | FastAPI inference service base URL                                |
+| `MODEL_API_TIMEOUT_MS`    | Yes                         | `10000`       | Request timeout for inference calls                               |
+| `MODEL_API_SERVICE_TOKEN` | Yes outside local mock mode | None          | Internal service credential if required                           |
+| `MODEL_API_ENABLE_MOCK`   | No                          | `false`       | Local-only fallback for development before Model API is available |
+
+Rules:
+
+- The frontend must never call Model API directly.
+- Backend should send only the minimum profile, preference, job, and CV context needed for inference.
+- Model API failures must map to documented 502 or 503 API responses.
+
+## Scraper And Job Source Variables
+
+| Variable                    | Required | Local default      | Notes                                                               |
+| --------------------------- | -------- | ------------------ | ------------------------------------------------------------------- |
+| `SCRAPER_API_BASE_URL`      | No       | None               | Required only if backend calls scraper status or internal endpoints |
+| `SCRAPER_API_SERVICE_TOKEN` | No       | None               | Internal credential if backend-scraper HTTP calls are introduced    |
+| `JOB_SOURCE_PRIORITY`       | No       | `glints,jobstreet` | Early implementation priority while domain supports four sources    |
+| `JOB_STALE_AFTER_HOURS`     | Yes      | `72`               | Threshold used by docs and future operations to flag stale listings |
+
+Rules:
+
+- Supported source platforms are Glints, Jobstreet, Kalibrr, and Dealls.
+- Backend API should consume normalized job records, not raw source payloads.
+- Scraper-owned freshness and normalization behavior must be documented in integration docs before implementation.
+
+## Upload Variables
+
+| Variable                | Required             | Local default       | Notes                                                                     |
+| ----------------------- | -------------------- | ------------------- | ------------------------------------------------------------------------- |
+| `FILE_STORAGE_DRIVER`   | Yes                  | `local`             | Expected values can start with `local`; object storage can be added later |
+| `UPLOAD_STORAGE_PATH`   | Yes for local driver | `./storage/uploads` | Local upload directory                                                    |
+| `CV_UPLOAD_MAX_BYTES`   | Yes                  | `5242880`           | Default 5 MB CV limit                                                     |
+| `CV_ALLOWED_MIME_TYPES` | Yes                  | `application/pdf`   | Start strict; expand only with documented parser support                  |
+| `CV_RETENTION_DAYS`     | Yes                  | `30`                | Retention period for uploaded CV files or metadata                        |
+
+Rules:
+
+- CV uploads are sensitive user data.
+- Store only what is needed for analysis and user value.
+- Retention and deletion behavior must be documented before AI CV Analyzer implementation.
+
+## Email Variables
+
+| Variable         | Required                 | Local default | Notes                                                    |
+| ---------------- | ------------------------ | ------------- | -------------------------------------------------------- |
+| `EMAIL_PROVIDER` | Yes for auth email flows | `smtp`        | Provider abstraction for verification and password reset |
+| `EMAIL_FROM`     | Yes                      | None          | Sender address                                           |
+| `SMTP_HOST`      | Yes for SMTP             | None          | SMTP host                                                |
+| `SMTP_PORT`      | Yes for SMTP             | `587`         | SMTP port                                                |
+| `SMTP_USER`      | Yes for SMTP             | None          | SMTP username                                            |
+| `SMTP_PASSWORD`  | Yes for SMTP             | None          | SMTP password                                            |
+
+## Observability Variables
+
+| Variable                  | Required | Local default  | Notes                                |
+| ------------------------- | -------- | -------------- | ------------------------------------ |
+| `LOG_LEVEL`               | Yes      | `info`         | Structured logger level              |
+| `REQUEST_ID_HEADER`       | No       | `x-request-id` | Header used to propagate request id  |
+| `ENABLE_REQUEST_LOGGING`  | No       | `true`         | Log HTTP request summary             |
+| `HEALTH_CHECK_TIMEOUT_MS` | Yes      | `2000`         | Timeout for dependency health checks |
+| `ERROR_REPORTING_DSN`     | No       | None           | Optional error reporting integration |
+
+Rules:
+
+- Logs must not include passwords, tokens, OTP values, raw CV content, or full sensitive payloads.
+- Every error response should include or correlate with a request id.
+- Dependency health should distinguish database, model service, and scraper-related issues.
+
+## Environment Separation
+
+| Environment  | Purpose                   | Data rule                                                                    |
+| ------------ | ------------------------- | ---------------------------------------------------------------------------- |
+| `local`      | Developer machine         | Local or disposable data only                                                |
+| `test`       | Automated tests           | Isolated database and deterministic fixtures                                 |
+| `staging`    | Pre-production validation | Production-like config with non-production secrets                           |
+| `production` | User-facing runtime       | Managed secrets, strict CORS, secure cookies if used, and real observability |
+
+## `.env.example` Requirements
+
+When the project scaffold is created, `.env.example` must:
+
+- Include every required variable with safe placeholder values.
+- Exclude real secrets.
+- Group variables using the sections in this document.
+- Mark variables that are only required when a feature is enabled.
+- Stay in sync with `src/config/env.ts`.
+
+## Related Docs
+
+- `docs/overview.md`
+- `docs/tech-stack.md`
+- `docs/TODOS.md`
+- `references/docs/overview/authentication-and-trust-boundaries.mdx`
+- `references/docs/operations/environments.mdx`
