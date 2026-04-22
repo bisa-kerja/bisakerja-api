@@ -13,7 +13,7 @@ last_reviewed: 2026-04-22
 
 # Backend API Environment Configuration
 
-This document defines the initial environment configuration model for the Bisakerja Backend API. The actual `.env.example` file should be created during project setup after package choices and auth/session design are finalized.
+This document defines the initial environment configuration model for the Bisakerja Backend API. The actual `.env.example` file should be created during project setup after package choices are pinned and the auth/session design is wired into code.
 
 Environment variables must be validated at startup with Zod in `src/config/env.ts`. Missing required variables or invalid values should fail fast before the server accepts requests.
 
@@ -57,24 +57,30 @@ Rules:
 
 ## Auth Variables
 
-The final token/session strategy is still an open item. Reserve these variables until the auth design is finalized:
+The backend uses short-lived access JWTs plus opaque refresh tokens stored in `HttpOnly` cookies and persisted server-side as hashes.
 
-| Variable                     | Required | Local default       | Notes                                                           |
-| ---------------------------- | -------- | ------------------- | --------------------------------------------------------------- |
-| `AUTH_ACCESS_TOKEN_SECRET`   | Yes      | None                | Secret for access token signing if JWT is selected              |
-| `AUTH_REFRESH_TOKEN_SECRET`  | Yes      | None                | Secret for refresh token signing if refresh tokens are selected |
-| `AUTH_ACCESS_TOKEN_TTL`      | Yes      | `15m`               | Short-lived access token lifetime                               |
-| `AUTH_REFRESH_TOKEN_TTL`     | Yes      | `7d`                | Refresh token lifetime                                          |
-| `PASSWORD_RESET_TOKEN_TTL`   | Yes      | `30m`               | Password reset token lifetime                                   |
-| `EMAIL_VERIFICATION_OTP_TTL` | Yes      | `10m`               | Email verification OTP lifetime                                 |
-| `AUTH_COOKIE_NAME`           | No       | `bisakerja_session` | Required only if cookie-based session is selected               |
-| `AUTH_COOKIE_SECURE`         | Yes      | `false` locally     | Must be `true` in production when cookies are used              |
+| Variable                     | Required | Local default        | Notes                                                     |
+| ---------------------------- | -------- | -------------------- | --------------------------------------------------------- |
+| `AUTH_ACCESS_TOKEN_SECRET`   | Yes      | None                 | Secret for access token signing if JWT is selected        |
+| `AUTH_REFRESH_TOKEN_SECRET`  | Yes      | None                 | Secret used when deriving or signing refresh-token hashes |
+| `AUTH_ACCESS_TOKEN_TTL`      | Yes      | `15m`                | Short-lived access token lifetime                         |
+| `AUTH_REFRESH_TOKEN_TTL`     | Yes      | `7d`                 | Refresh token lifetime                                    |
+| `PASSWORD_RESET_TOKEN_TTL`   | Yes      | `30m`                | Password reset token lifetime                             |
+| `EMAIL_VERIFICATION_OTP_TTL` | Yes      | `10m`                | Email verification OTP lifetime                           |
+| `AUTH_REFRESH_COOKIE_NAME`   | Yes      | `bisakerja_refresh`  | `HttpOnly` cookie name for refresh credential             |
+| `AUTH_COOKIE_SECURE`         | Yes      | `false` locally      | Must be `true` in production                              |
+| `AUTH_COOKIE_SAME_SITE`      | Yes      | `lax`                | Use `none` only with `Secure` and CSRF protection         |
+| `AUTH_ISSUER`                | Yes      | `bisakerja-api`      | JWT issuer                                                |
+| `AUTH_AUDIENCE`              | Yes      | `bisakerja-frontend` | JWT audience                                              |
 
 Rules:
 
 - Secrets must be long, random, and environment-specific.
+- Refresh token rotation is mandatory.
+- Access tokens are short-lived and should be stored by the frontend in memory only.
+- Refresh tokens must not be returned in JSON responses or stored in browser `localStorage`.
 - Password reset and OTP flows need stricter rate limits than ordinary authenticated routes.
-- The selected auth strategy must be documented before implementation starts.
+- Email verification uses OTP for MVP; password reset uses a token link. Persist only hashed OTP/token values.
 
 ## Security Variables
 
@@ -126,13 +132,15 @@ Rules:
 | `UPLOAD_STORAGE_PATH`   | Yes for local driver | `./storage/uploads` | Local upload directory                                                    |
 | `CV_UPLOAD_MAX_BYTES`   | Yes                  | `5242880`           | Default 5 MB CV limit                                                     |
 | `CV_ALLOWED_MIME_TYPES` | Yes                  | `application/pdf`   | Start strict; expand only with documented parser support                  |
-| `CV_RETENTION_DAYS`     | Yes                  | `30`                | Retention period for uploaded CV files or metadata                        |
+| `CV_RETENTION_DAYS`     | Yes                  | `1`                 | Temporary retention for uploaded CV files or metadata                     |
 
 Rules:
 
 - CV uploads are sensitive user data.
-- Store only what is needed for analysis and user value.
-- Retention and deletion behavior must be documented before AI CV Analyzer implementation.
+- MVP supports `UPLOAD` mode only. `REFERENCE` mode returns `422` until reusable CV storage is designed.
+- Store only what is needed for analysis, ownership, retention, and audit.
+- Delete uploaded files after analysis when practical and clean expired files according to `CV_RETENTION_DAYS`.
+- Do not persist raw extracted CV text or raw Model API payloads by default.
 
 ## Email Variables
 
@@ -184,6 +192,5 @@ When the project scaffold is created, `.env.example` must:
 
 - `docs/overview.md`
 - `docs/tech-stack.md`
-- `docs/TODOS.md`
 - `references/docs/overview/authentication-and-trust-boundaries.mdx`
 - `references/docs/operations/environments.mdx`

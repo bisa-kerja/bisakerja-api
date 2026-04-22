@@ -15,7 +15,7 @@ last_reviewed: 2026-04-22
 
 The Applications module owns the user-specific application tracker. It lets authenticated users track jobs they applied to, update status, search tracked jobs, and preserve the feedback loop needed for Application Intelligence.
 
-Application tracker records are user-owned state. They reference normalized `JobListing` records and must stay useful even if a job becomes stale, expired, or unavailable on the original source platform.
+Application tracker records are user-owned state. They reference normalized `JobListing` records and must stay useful even if a job becomes stale, expired, or unavailable on the original source platform. `ApplicationStatusHistory` is part of the MVP tracker audit trail.
 
 ## Responsibility
 
@@ -242,14 +242,14 @@ Validation:
 3. Confirm referenced `JobListing` exists.
 4. Check existing active `(userId, jobListingId)` tracker record.
 5. Create `ApplicationRecord`.
-6. Create `ApplicationStatusHistory` if history is enabled.
+6. Create the initial `ApplicationStatusHistory` row.
 7. Emit `applications.created`.
 8. Return created tracker record.
 
 Duplicate behavior:
 
-- Recommended MVP behavior: return `409 APPLICATION_ALREADY_TRACKED`.
-- If external apply click should be idempotent, document and test that route separately.
+- MVP behavior: return `409 APPLICATION_ALREADY_TRACKED`.
+- If external apply click becomes idempotent later, document and test that route behavior separately before implementation.
 
 ### Update Tracker
 
@@ -266,7 +266,7 @@ Duplicate behavior:
 3. Load tracker by `applicationId` and current `userId`.
 4. Validate transition.
 5. Update `status`.
-6. Append `ApplicationStatusHistory` if enabled.
+6. Append `ApplicationStatusHistory`.
 7. Emit `applications.status_updated`.
 8. Return updated tracker record.
 
@@ -286,7 +286,7 @@ MVP rule:
 Primary models:
 
 - `ApplicationRecord`
-- `ApplicationStatusHistory` if status history is enabled
+- `ApplicationStatusHistory`
 - `JobListing`
 - `Company`
 
@@ -296,7 +296,7 @@ Repository responsibilities:
 - Create tracker record.
 - Update tracker fields.
 - Update status.
-- Append status history when `ApplicationStatusHistory` is enabled.
+- Append status history on tracker creation and status update.
 - Enforce unique active `(userId, jobListingId)`.
 
 Database rules:
@@ -358,7 +358,7 @@ Integration tests:
 - User can list only their own applications.
 - Status filter returns matching tracker records.
 - User can update notes.
-- User can update status and history is appended when enabled.
+- User can update status and history is appended.
 - Non-owned tracker update returns `404`.
 
 Route tests:
@@ -368,13 +368,11 @@ Route tests:
 - Request body cannot set `userId`.
 - Application list does not expose raw source payloads.
 
-## Open Decisions
+## Deferred Decisions
 
 - Whether external apply click always auto-creates tracker record.
-- Whether `ApplicationStatusHistory` is required in MVP implementation.
 - Whether duplicate external apply click is idempotent.
 - Maximum note length.
-- Whether accepted/rejected statuses are final or correction-friendly.
 
 ## Related Docs
 

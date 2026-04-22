@@ -46,16 +46,16 @@ Technical consumers:
 
 ## MVP Scope
 
-| Module         | MVP responsibility                                                                                                                                     |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Auth           | Register, login, logout or session invalidation, token/session refresh, password reset, email verification, and Google SSO placeholder                 |
-| Users          | Account profile, onboarding state, profile photo metadata, career background, skills, experience, and education                                        |
-| Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                    |
-| Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                    |
-| Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate handling                                                                                    |
-| Applications   | Track user-specific job application state and optional status history                                                                                  |
-| AI Job Fit     | Prepare backend-owned inference payloads and return fit score, explanation, skill gap, and recommended next steps                                      |
-| AI CV Analyzer | Accept CV analysis input, compare against a selected job, and return CV quality, job alignment, ATS, keyword, quantification, and improvement feedback |
+| Module         | MVP responsibility                                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | Register, login, logout, short-lived access JWT, hashed refresh token cookie with rotation, password reset, OTP email verification, and Google SSO placeholder  |
+| Users          | Account profile, onboarding state, profile photo metadata, career background, skills, experience, and education                                                 |
+| Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                             |
+| Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                             |
+| Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate conflict handling                                                                                    |
+| Applications   | Track user-specific job application state and MVP status history                                                                                                |
+| AI Job Fit     | Prepare backend-owned inference payloads and return fit score, explanation, skill gap, and recommended next steps                                               |
+| AI CV Analyzer | Accept temporary PDF upload input, compare against a selected job, and return CV quality, job alignment, ATS, keyword, quantification, and improvement feedback |
 
 ## Future Scope
 
@@ -63,7 +63,7 @@ The following capabilities are documented as future scope and must not block MVP
 
 - Mentoring onboarding, mentor profiles, availability, and mentor search.
 - Notification delivery expansion beyond the MVP email preference toggle and auth email flows.
-- Product analytics and application intelligence dashboards.
+- Product analytics, application intelligence dashboards, and general analytics event pipelines.
 - Payment, subscription, or premium capability.
 - Direct ATS integration or auto-apply to external platforms.
 - Native mobile applications.
@@ -177,7 +177,6 @@ Rules:
 
 ## Related Docs
 
-- `docs/TODOS.md`
 - `docs/tech-stack.md`
 - `docs/environment.md`
 - `references/docs/services/backend-api/index.mdx`

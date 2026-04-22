@@ -337,5 +337,4 @@ Before implementing a new module:
 - `docs/overview.md`
 - `docs/tech-stack.md`
 - `docs/environment.md`
-- `docs/TODOS.md`
 - `folder-structur-reference.md`

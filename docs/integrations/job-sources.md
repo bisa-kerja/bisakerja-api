@@ -1,6 +1,6 @@
 ---
 title: Job Sources Integration
-description: Glints, Jobstreet, Kalibrr, and Dealls source strategy, phased priority, normalization expectations, risks, and frontend contract boundaries.
+description: Glints, Jobstreet, Kalibrr, and Dealls source strategy, source priority, normalization expectations, risks, and frontend contract boundaries.
 owner: backend-owner
 reviewers:
   - platform-docs-maintainer
@@ -28,9 +28,9 @@ The domain model must support all four sources from the start through `SourcePla
 
 Implementation may prioritize the first 1 to 2 sources while keeping the normalized contract source-agnostic.
 
-Recommended phased priority:
+Recommended source priority:
 
-| Phase                       | Source    | Reason                                                         |
+| Priority                    | Source    | Reason                                                         |
 | --------------------------- | --------- | -------------------------------------------------------------- |
 | Initial ingestion           | Glints    | Strong fit for Indonesian digital/tech job discovery           |
 | Initial or second ingestion | Jobstreet | Broad job inventory and common user awareness                  |

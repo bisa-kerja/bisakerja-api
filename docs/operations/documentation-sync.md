@@ -124,7 +124,7 @@ The service repo should validate docs before publishing a sync bundle.
 
 Minimum service-side checks:
 
-- All required files exist for the current phase.
+- All required files exist for the current implementation scope.
 - Required frontmatter fields are present.
 - `source_repo` is `backend-api`.
 - `source_path` matches the actual source path.
@@ -220,7 +220,7 @@ Service-owned docs should be reviewed:
 
 ## Reference Consistency Task
 
-Phase 7 includes a reference consistency review rather than broad central docs rewrites.
+Reference consistency review should be scoped to documents affected by the implementation rather than broad central docs rewrites.
 
 Current review result:
 
@@ -251,7 +251,6 @@ The Backend API documentation set is sync-ready when:
 
 ## Related Docs
 
-- `docs/TODOS.md`
 - `docs/overview.md`
 - `docs/api-reference.md`
 - `docs/operations/deployment.md`

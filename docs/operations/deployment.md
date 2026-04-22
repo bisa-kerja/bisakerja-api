@@ -20,6 +20,7 @@ Exact hosting details remain open. This document defines the requirements that a
 ## Deployment Principles
 
 - Build and deploy a reproducible artifact from committed source and lockfile.
+- Pin the first Bun runtime target to `1.3.13` until an upgrade is explicitly tested.
 - Validate environment variables before the server accepts traffic.
 - Run Prisma migrations explicitly as a deployment step.
 - Keep application startup separate from destructive or schema-mutating database work.
@@ -44,7 +45,7 @@ The first implementation should define a deterministic build and start workflow.
 
 Artifact requirements:
 
-- Bun version is pinned or documented.
+- Bun version is pinned to `1.3.13` or an explicitly approved replacement.
 - Dependency lockfile is committed.
 - TypeScript compiles or is run through a documented Bun-compatible runtime path.
 - Prisma client is generated during build or deploy.
@@ -255,7 +256,6 @@ Every production deployment should record the artifact version, migration versio
 
 - Hosting provider for backend runtime.
 - Whether Docker is required for all environments.
-- Bun version pinning method.
 - CI command names for build, tests, migration verification, and smoke checks.
 - Database pooler strategy and connection limits.
 - Object storage provider for CV uploads if local storage is insufficient.

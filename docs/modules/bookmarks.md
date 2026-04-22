@@ -197,7 +197,7 @@ Validation:
 }
 ```
 
-Delete can return `204` with no body or a `200` success envelope. Use one behavior consistently in implementation and tests.
+Delete returns `204` with no response body for MVP.
 
 ## Service Logic
 
@@ -222,9 +222,8 @@ Delete can return `204` with no body or a `200` success envelope. Use one behavi
 
 Duplicate behavior:
 
-- Recommended MVP behavior: return `409 BOOKMARK_ALREADY_EXISTS`.
-- Alternative idempotent behavior: return existing bookmark with `200`.
-- Implementation must choose one and document it before route tests are written.
+- MVP behavior: return `409 BOOKMARK_ALREADY_EXISTS`.
+- The database must enforce unique `(userId, jobListingId)`.
 
 ### Unsave Job
 
@@ -295,13 +294,13 @@ Unit tests:
 
 - Save schema requires `jobId`.
 - Query schema validates pagination and sort.
-- Duplicate handling follows chosen behavior.
+- Duplicate handling returns `409 BOOKMARK_ALREADY_EXISTS`.
 
 Integration tests:
 
 - Authenticated user can save an existing job.
 - Saving a missing job returns `404`.
-- Duplicate save returns documented duplicate behavior.
+- Duplicate save returns `409 BOOKMARK_ALREADY_EXISTS`.
 - User can list only their own bookmarks.
 - Keyword search filters saved jobs.
 - User can remove their own bookmark.
@@ -314,10 +313,8 @@ Route tests:
 - Request body cannot set `userId`.
 - Raw scraper fields are absent from bookmark list responses.
 
-## Open Decisions
+## Deferred Decisions
 
-- Duplicate save behavior: `409` vs idempotent `200`.
-- Delete behavior: `204` vs `200` envelope.
 - Whether stale jobs remain in bookmark lists by default.
 - Whether bookmark list includes `externalApplyUrl` or leaves it to job detail.
 

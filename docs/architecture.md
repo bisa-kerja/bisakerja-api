@@ -225,7 +225,7 @@ The backend should define application error types that map to response envelopes
 | `ServiceUnavailableError` | 503            | Database or Model API unavailable                |
 | `InternalServerError`     | 500            | Unexpected server failure                        |
 
-Every error response must follow `docs/TODOS.md` API response standard and include a request id.
+Every error response must follow `docs/api-response-standard.md` and include a request id.
 
 ### Request ID
 
@@ -264,14 +264,16 @@ Use a security header middleware such as Helmet or equivalent. The exact package
 
 ### Token Or Session Strategy
 
-The exact JWT or session strategy remains an open implementation decision from Phase 0. Before auth implementation starts, document:
+The backend uses a hybrid auth design:
 
-- Token/session storage model.
-- Access and refresh behavior.
-- Expiry and rotation policy.
-- Logout invalidation behavior.
-- Cookie security policy if cookies are used.
-- Service-to-service credential handling.
+- Short-lived signed access JWTs for ordinary authenticated API calls.
+- Opaque refresh tokens stored in `HttpOnly` cookies and persisted server-side as hashes.
+- Mandatory refresh token rotation on refresh.
+- Logout and password reset invalidate refresh credentials server-side.
+- Access tokens are not stored in `localStorage`; frontend storage should be memory-only.
+- Refresh/logout cookie endpoints must enforce configured CORS origins and origin checks, with CSRF protection added before any cross-site cookie production deployment.
+
+Service-to-service credentials for Model API and Scraper API remain separate from end-user credentials.
 
 ### Audit Logging
 
@@ -331,7 +333,6 @@ Readiness should distinguish:
 - `docs/project-structure.md`
 - `docs/tech-stack.md`
 - `docs/environment.md`
-- `docs/TODOS.md`
 - `references/docs/overview/system-architecture.mdx`
 - `references/docs/overview/service-interactions.mdx`
 - `references/docs/overview/request-response-flows.mdx`

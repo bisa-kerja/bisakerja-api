@@ -13,13 +13,13 @@ last_reviewed: 2026-04-22
 
 # Backend API Tech Stack
 
-This document defines the initial technology direction for the Bisakerja Backend API. It does not pin package versions yet. Exact versions must be selected during project setup after compatibility checks for Bun, TypeScript, Prisma, Express.js, Zod, and the test runner.
+This document defines the initial technology direction for the Bisakerja Backend API. The runtime target and command naming are pinned here; exact npm package versions are still selected during scaffold after compatibility checks for Bun, TypeScript, Prisma, Express.js, Zod, and the test runner.
 
 ## Core Stack
 
 | Area           | Default choice | Purpose                                                                                              |
 | -------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
-| Runtime        | Bun            | Run TypeScript backend code and manage packages with a fast modern JavaScript runtime                |
+| Runtime        | Bun `1.3.13`   | Run TypeScript backend code and manage packages with a fast modern JavaScript runtime                |
 | Language       | TypeScript     | Provide static typing for service contracts, module boundaries, and data transformations             |
 | HTTP framework | Express.js     | Expose REST API routes for frontend and internal service workflows                                   |
 | Database       | PostgreSQL     | Store application state, normalized jobs, user preferences, tracker data, and AI result snapshots    |
@@ -31,26 +31,27 @@ This document defines the initial technology direction for the Bisakerja Backend
 
 The exact packages must be pinned during setup. The categories below describe what the project needs and the preferred direction.
 
-| Category               | Candidate package family                                        | Documentation requirement                                                          |
-| ---------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| HTTP server            | `express`                                                       | Route structure, middleware order, error handler, and request lifecycle            |
-| TypeScript tooling     | `typescript`, Bun runtime tooling                               | Strict compiler settings and path alias policy                                     |
-| Environment validation | `zod`                                                           | `src/config/env.ts` schema with documented defaults and required secrets           |
-| Database               | `prisma`, `@prisma/client`                                      | Migration workflow, generated client usage, seed strategy, and connection handling |
-| Logging                | `pino` or equivalent structured logger                          | Request id, log level, redaction, and dependency failure logging                   |
-| Security headers       | `helmet` or equivalent                                          | Default HTTP hardening behavior                                                    |
-| CORS                   | `cors` or equivalent                                            | Allowed origins by environment                                                     |
-| Rate limiting          | Express-compatible rate limiter                                 | Auth, password reset, OTP, upload, and AI endpoint protection                      |
-| Password hashing       | `argon2` or another reviewed password hashing package           | Hashing parameters, upgrade policy, and test strategy                              |
-| Token handling         | `jose`, JWT library, or session package selected by auth design | Token/session strategy must be documented before implementation                    |
-| Upload handling        | Multipart parser compatible with Express and Bun                | CV upload limits, content-type validation, storage path, and retention             |
-| Testing                | Bun test runner, `supertest`, or compatible test tooling        | Unit, integration, route, and contract test strategy                               |
-| Linting and formatting | ESLint and Prettier compatible with TypeScript                  | CI checks and no-write validation commands                                         |
-| API docs generation    | Zod/OpenAPI compatible tooling                                  | Generated references must preserve source metadata before sync                     |
+| Category               | Candidate package family                                 | Documentation requirement                                                          |
+| ---------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| HTTP server            | `express`                                                | Route structure, middleware order, error handler, and request lifecycle            |
+| TypeScript tooling     | `typescript`, Bun runtime tooling                        | Strict compiler settings and path alias policy                                     |
+| Environment validation | `zod`                                                    | `src/config/env.ts` schema with documented defaults and required secrets           |
+| Database               | `prisma`, `@prisma/client`                               | Migration workflow, generated client usage, seed strategy, and connection handling |
+| Logging                | `pino` or equivalent structured logger                   | Request id, log level, redaction, and dependency failure logging                   |
+| Security headers       | `helmet` or equivalent                                   | Default HTTP hardening behavior                                                    |
+| CORS                   | `cors` or equivalent                                     | Allowed origins by environment                                                     |
+| Rate limiting          | Express-compatible rate limiter                          | Auth, password reset, OTP, upload, and AI endpoint protection                      |
+| Password hashing       | `argon2` or another reviewed password hashing package    | Hashing parameters, upgrade policy, and test strategy                              |
+| Token handling         | `jose` plus secure cookie handling                       | Sign and verify access JWTs; persist only hashed opaque refresh tokens             |
+| Upload handling        | Multipart parser compatible with Express and Bun         | CV upload limits, content-type validation, storage path, and retention             |
+| Testing                | Bun test runner, `supertest`, or compatible test tooling | Unit, integration, route, and contract test strategy                               |
+| Linting and formatting | ESLint and Prettier compatible with TypeScript           | CI checks and no-write validation commands                                         |
+| API docs generation    | Zod/OpenAPI compatible tooling                           | Generated references must preserve source metadata before sync                     |
 
 ## Versioning Policy
 
 - Pin exact package versions in `package.json`; do not rely on floating `latest` ranges.
+- Pin Bun to `1.3.13` for the first scaffold and document any upgrade with compatibility checks.
 - Prefer actively maintained stable releases over release candidates.
 - Record important package choices in this file after setup.
 - Re-check compatibility when upgrading Bun, Prisma, Express.js, TypeScript, or Zod.
@@ -59,6 +60,7 @@ The exact packages must be pinned during setup. The categories below describe wh
 ## Runtime Principles
 
 - Use Bun as the default local runtime and package manager.
+- Commit `bun.lock` and use `bun install --frozen-lockfile` in reproducible verification.
 - Keep TypeScript strict enough to catch API contract drift early.
 - Do not hide runtime configuration behind undocumented defaults.
 - Keep startup validation explicit: missing required environment variables should fail fast.
@@ -109,16 +111,32 @@ The testing stack must cover:
 - Contract tests for Model API and Scraper API assumptions.
 - Smoke tests for health, startup env validation, and database connectivity.
 
-The final test command names must be documented after project setup.
+The project uses these script names for scaffold and CI wiring:
+
+| Script                             | Purpose                                                                 |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| `bun run typecheck`                | TypeScript contract validation                                          |
+| `bun run lint`                     | ESLint validation                                                       |
+| `bun run format:check`             | Formatter no-write validation                                           |
+| `bun test`                         | Default unit test command                                               |
+| `bun run test:unit`                | Unit tests                                                              |
+| `bun run test:routes`              | Express route/API contract tests                                        |
+| `bun run test:integration`         | Prisma-backed integration tests                                         |
+| `bun run test:contracts`           | Model API and scraper fixture contract tests                            |
+| `bun run test:smoke`               | Startup, env, health, and basic route smoke tests                       |
+| `bun run prisma:generate`          | Generate Prisma client                                                  |
+| `bun run prisma:migrate:dev`       | Create/apply local migrations only                                      |
+| `bun run prisma:migrate:deploy`    | Apply existing migrations in test/staging/production style environments |
+| `bun run prisma:verify:migrations` | Verify migrations against an empty test database                        |
 
 ## Documentation Requirements For Stack Setup
 
 Before implementation begins, update this document with:
 
 - Exact package versions selected.
-- Final auth/session package decision.
+- Auth/session package versions for `jose`, cookie parsing, and refresh-token hashing helpers.
 - Final upload handling package decision.
-- Final test runner and command names.
+- Confirmation that the reserved test command names are wired in `package.json`.
 - Final OpenAPI generation approach.
 - Known Bun compatibility constraints.
 
@@ -126,6 +144,5 @@ Before implementation begins, update this document with:
 
 - `docs/overview.md`
 - `docs/environment.md`
-- `docs/TODOS.md`
 - `folder-structur-reference.md`
 - `references/docs/references/integrations.mdx`

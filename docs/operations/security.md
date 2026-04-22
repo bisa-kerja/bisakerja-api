@@ -56,12 +56,12 @@ Required behavior:
 
 ## Password Hashing
 
-Use `argon2` or another reviewed password hashing package selected during project setup.
+Use Argon2id through the `argon2` package unless compatibility testing during scaffold blocks it.
 
 Implementation requirements:
 
 - Store only password hashes and hashing metadata needed for future upgrades.
-- Keep hashing parameters explicit in code and docs after package selection.
+- Start with memory cost `19456` KiB, time cost `2`, and parallelism `1`; tune upward only after measuring login latency and resource use.
 - Reject weak passwords through documented validation rules.
 - Add tests that confirm plaintext passwords are never returned, logged, or persisted.
 - Define a rehash policy when hashing parameters change.
@@ -77,18 +77,20 @@ Minimum password validation direction:
 
 ## Token Or Session Handling
 
-The final strategy remains an implementation decision, but it must satisfy these requirements.
+The backend uses a hybrid web auth strategy: short-lived signed access JWTs plus opaque refresh tokens stored in `HttpOnly` cookies and persisted server-side as hashes.
 
-| Area                                | Required behavior                                                                               |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Access token or session             | Short-lived enough to reduce replay risk                                                        |
-| Refresh token or persistent session | Stored server-side as a hash when persistence is used                                           |
-| Rotation                            | Refresh token rotation should invalidate the previous token when supported                      |
-| Logout                              | Logout must invalidate the active refresh token or session record                               |
-| Expiry                              | Expired tokens must fail with `401 UNAUTHENTICATED`                                             |
-| Storage                             | Browser storage policy must be documented with frontend before release                          |
-| Cookies                             | If cookies are used, configure `HttpOnly`, `Secure` in production, `SameSite`, path, and expiry |
-| JWT                                 | If JWT is used, validate issuer, audience when configured, expiry, signature, and token type    |
+| Area          | Required behavior                                                                             |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| Access token  | Signed JWT with default `15m` TTL and minimal identity claims                                 |
+| Refresh token | Opaque random credential in `HttpOnly` cookie; store only hash server-side                    |
+| Rotation      | Refresh token rotation invalidates the previous token on every successful refresh             |
+| Logout        | Logout invalidates the active refresh token or credential family                              |
+| Expiry        | Expired tokens must fail with `401 UNAUTHENTICATED`                                           |
+| Storage       | Frontend may keep access token in memory only; do not use `localStorage` for auth credentials |
+| Cookies       | Configure `HttpOnly`, `Secure` in production, explicit `SameSite`, path, and `Max-Age`        |
+| JWT           | Validate issuer, audience, expiry, signature, subject, and token type                         |
+
+Cookie-backed refresh/logout endpoints must enforce configured origins. If deployment requires cross-site cookies, add CSRF token protection before production release.
 
 Service-to-service credentials for Model API or Scraper API must be separate from end-user credentials and must never be accepted from the browser as proof of user identity.
 
@@ -138,7 +140,7 @@ Required controls:
 - Generate server-side file names; never trust user-provided file names as storage paths.
 - Strip or ignore path separators from original file names.
 - Persist only metadata required for analysis, retention, or user value.
-- Delete or expire uploaded CV files according to `CV_RETENTION_DAYS`.
+- Delete or expire uploaded CV files according to `CV_RETENTION_DAYS`, default `1` day for MVP temporary uploads.
 - Never log raw CV content, extracted CV text, or full model input payloads.
 - Consider malware scanning before production if uploads are retained beyond immediate analysis.
 
@@ -277,12 +279,9 @@ Before release, confirm:
 - Dependency audit process has run.
 - Auth and ownership route tests pass.
 
-## Open Security Decisions
+## Deferred Security Decisions
 
-- Final JWT, cookie session, or hybrid auth strategy.
-- Final password hashing package and parameters.
-- Whether refresh token rotation is mandatory for MVP.
-- Whether CV files are stored only temporarily or user-visible as reusable documents.
+- Whether CV files become user-visible reusable documents after MVP.
 - Whether malware scanning is required before first production release.
 - Whether admin/internal operations exist in MVP.
 

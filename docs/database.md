@@ -70,13 +70,13 @@ Backend API repositories must not write scraper-owned normalized job records unl
 
 ### Identity And Auth
 
-| Entity                          | Purpose                                                       | Owner       |
-| ------------------------------- | ------------------------------------------------------------- | ----------- |
-| `User`                          | Account identity and basic state                              | Backend API |
-| `AuthCredential`                | Local auth credential and password hash metadata              | Backend API |
-| `UserSession` or `RefreshToken` | Session or token persistence after auth strategy is finalized | Backend API |
-| `EmailVerificationToken`        | Email verification OTP or token state                         | Backend API |
-| `PasswordResetToken`            | Password reset token state                                    | Backend API |
+| Entity                   | Purpose                                                    | Owner       |
+| ------------------------ | ---------------------------------------------------------- | ----------- |
+| `User`                   | Account identity and basic state                           | Backend API |
+| `AuthCredential`         | Local auth credential and password hash metadata           | Backend API |
+| `RefreshToken`           | Hashed opaque refresh credential and token-family metadata | Backend API |
+| `EmailVerificationToken` | Email verification OTP or token state                      | Backend API |
+| `PasswordResetToken`     | Password reset token state                                 | Backend API |
 
 ### Profile And Preferences
 
@@ -104,11 +104,11 @@ Backend API repositories must not write scraper-owned normalized job records unl
 
 ### User Actions
 
-| Entity                     | Purpose                                         | Owner       |
-| -------------------------- | ----------------------------------------------- | ----------- |
-| `Bookmark`                 | User-saved job listing                          | Backend API |
-| `ApplicationRecord`        | User-specific application tracker record        | Backend API |
-| `ApplicationStatusHistory` | Optional audit trail for tracker status changes | Backend API |
+| Entity                     | Purpose                                    | Owner       |
+| -------------------------- | ------------------------------------------ | ----------- |
+| `Bookmark`                 | User-saved job listing                     | Backend API |
+| `ApplicationRecord`        | User-specific application tracker record   | Backend API |
+| `ApplicationStatusHistory` | MVP audit trail for tracker status changes | Backend API |
 
 ### AI Outputs
 
@@ -188,7 +188,7 @@ Relationship rules:
 | `IngestionRun`             | `ingestion_runs`               | Scraper API                       | Freshness and debugging             |
 | `Bookmark`                 | `bookmarks`                    | Backend API                       | Saved jobs                          |
 | `ApplicationRecord`        | `application_records`          | Backend API                       | Tracker                             |
-| `ApplicationStatusHistory` | `application_status_histories` | Backend API                       | Optional tracker audit trail        |
+| `ApplicationStatusHistory` | `application_status_histories` | Backend API                       | MVP tracker audit trail             |
 | `FitScoreResult`           | `fit_score_results`            | Backend API stores derived output | Job fit history if persisted        |
 | `SkillGapResult`           | `skill_gap_results`            | Backend API stores derived output | Skill gap history if persisted      |
 | `CvAnalysisResult`         | `cv_analysis_results`          | Backend API stores derived output | AI CV Analyzer history if persisted |
@@ -196,17 +196,17 @@ Relationship rules:
 
 ## MVP Module Persistence Map
 
-| Module         | Persistence model                                                                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth           | `User`, `AuthCredential`, `EmailVerificationToken`, `PasswordResetToken`, plus `UserSession` or `RefreshToken` after auth strategy is finalized |
-| Users          | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                                                  |
-| Preferences    | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                                               |
-| Jobs           | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows                      |
-| Bookmarks      | `Bookmark`, with read joins to `JobListing` and `Company`                                                                                       |
-| Applications   | `ApplicationRecord`, optionally `ApplicationStatusHistory`                                                                                      |
-| AI Job Fit     | Read user/profile/preference/job context; optionally store `FitScoreResult` and `SkillGapResult` snapshots                                      |
-| AI CV Analyzer | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot                                                |
-| Health         | No business persistence; may check PostgreSQL connectivity                                                                                      |
+| Module         | Persistence model                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                               |
+| Users          | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                             |
+| Preferences    | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                          |
+| Jobs           | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows |
+| Bookmarks      | `Bookmark`, with read joins to `JobListing` and `Company`                                                                  |
+| Applications   | `ApplicationRecord` and `ApplicationStatusHistory`                                                                         |
+| AI Job Fit     | Read user/profile/preference/job context; optionally store `FitScoreResult` and `SkillGapResult` snapshots                 |
+| AI CV Analyzer | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot                           |
+| Health         | No business persistence; may check PostgreSQL connectivity                                                                 |
 
 ## ID Strategy
 
@@ -414,7 +414,7 @@ Snapshot rules:
 Sensitive data categories:
 
 - Password hashes.
-- Refresh tokens or session secrets.
+- Refresh tokens.
 - Email verification OTPs.
 - Password reset tokens.
 - Uploaded CV files.
@@ -430,7 +430,7 @@ Rules:
 - Do not log passwords, tokens, OTP values, service credentials, raw CV content, or full AI payloads.
 - Keep CV upload metadata separate from raw file content.
 - Apply `CV_RETENTION_DAYS` from environment documentation.
-- Document file storage driver before implementing AI CV Analyzer upload handling.
+- Use local temporary storage for MVP CV uploads and document any object storage migration before implementation.
 
 Suggested CV metadata fields:
 
@@ -549,27 +549,25 @@ Seed rules:
 
 Initial retention direction:
 
-| Data                      | Retention direction                                             |
-| ------------------------- | --------------------------------------------------------------- |
-| User account              | Keep until account deletion policy is defined                   |
-| Profile and preferences   | Keep while account is active                                    |
-| Bookmarks                 | Keep while account is active or until user removes them         |
-| Application tracker       | Keep while account is active unless user deletes record         |
-| Password reset tokens     | Delete or expire quickly after use                              |
-| Email verification tokens | Delete or expire quickly after use                              |
-| CV uploaded files         | Follow `CV_RETENTION_DAYS`; default 30 days in environment docs |
-| CV analysis result        | Keep only if user value justifies it; redact raw content        |
-| AI request logs           | Keep short-lived and sanitized                                  |
-| Job listings              | Keep stale/expired records when linked to user history          |
+| Data                      | Retention direction                                           |
+| ------------------------- | ------------------------------------------------------------- |
+| User account              | Keep until account deletion policy is defined                 |
+| Profile and preferences   | Keep while account is active                                  |
+| Bookmarks                 | Keep while account is active or until user removes them       |
+| Application tracker       | Keep while account is active unless user deletes record       |
+| Password reset tokens     | Delete or expire quickly after use                            |
+| Email verification tokens | Delete or expire quickly after use                            |
+| CV uploaded files         | Follow `CV_RETENTION_DAYS`; default 1 day in environment docs |
+| CV analysis result        | Persist only when `persistResult=true`; redact raw content    |
+| AI request logs           | Keep short-lived and sanitized                                |
+| Job listings              | Keep stale/expired records when linked to user history        |
 
-## Open Decisions Before Schema Implementation
+## Deferred Decisions Before Schema Implementation
 
-- Final auth persistence model: JWT refresh tokens, cookie sessions, or another session strategy.
 - Whether `Location` and `TargetRole` become normalized tables in MVP or remain preference fields.
 - Whether skill taxonomy is locally owned or imported from shared ID-TechSkill taxonomy.
-- Whether `ApplicationStatusHistory` is required in MVP or can be added after basic tracker.
 - Whether `IngestionRun` is represented in this repo's Prisma schema or owned entirely by Scraper API docs.
-- Final CV file storage driver and deletion workflow.
+- Final cleanup command or worker shape for expired temporary CV files.
 - Generated OpenAPI schema source and relation to Zod schemas.
 
 ## Related Docs
@@ -578,7 +576,6 @@ Initial retention direction:
 - `docs/architecture.md`
 - `docs/project-structure.md`
 - `docs/environment.md`
-- `docs/TODOS.md`
 - `references/docs/overview/database-overview.mdx`
 - `references/docs/references/domain-entities.mdx`
 - `references/docs/overview/data-flow.mdx`

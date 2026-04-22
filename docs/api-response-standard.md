@@ -388,6 +388,5 @@ Expose normalized and product-safe fields only.
 - `docs/architecture.md`
 - `docs/database.md`
 - `docs/environment.md`
-- `docs/TODOS.md`
 - `references/docs/overview/request-response-flows.mdx`
 - `references/docs/overview/authentication-and-trust-boundaries.mdx`

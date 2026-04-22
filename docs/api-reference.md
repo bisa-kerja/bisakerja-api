@@ -15,7 +15,7 @@ last_reviewed: 2026-04-22
 
 This document is the route group index for the Bisakerja Backend API. It defines API versioning, route prefix, auth behavior, common query patterns, and the contract checklist that module-specific API docs must follow.
 
-Detailed endpoint request and response schemas will be documented in module pages during Phase 4.
+Detailed endpoint request and response schemas are documented in module pages as implementation matures.
 
 ## Base URL And Versioning
 
@@ -187,12 +187,14 @@ Unsupported sort values return `422`.
 
 ## Common Headers
 
-| Header          | Direction             | Required             | Notes                                                     |
-| --------------- | --------------------- | -------------------- | --------------------------------------------------------- |
-| `Authorization` | Request               | Authenticated routes | Exact token/session scheme depends on final auth strategy |
-| `Content-Type`  | Request               | Body routes          | Use `application/json` except upload routes               |
-| `Accept`        | Request               | Recommended          | Use `application/json`                                    |
-| `x-request-id`  | Request/response logs | Optional             | Backend accepts or generates request id                   |
+| Header          | Direction             | Required             | Notes                                                  |
+| --------------- | --------------------- | -------------------- | ------------------------------------------------------ |
+| `Authorization` | Request               | Authenticated routes | Use `Bearer <accessToken>` for authenticated API calls |
+| `Content-Type`  | Request               | Body routes          | Use `application/json` except upload routes            |
+| `Accept`        | Request               | Recommended          | Use `application/json`                                 |
+| `x-request-id`  | Request/response logs | Optional             | Backend accepts or generates request id                |
+| `Cookie`        | Request               | Refresh/logout flows | Refresh credential is sent as an `HttpOnly` cookie     |
+| `Set-Cookie`    | Response              | Login/refresh/logout | Backend sets or clears the refresh cookie              |
 
 Upload routes for AI CV Analyzer will require multipart handling details in the module doc.
 
@@ -235,15 +237,15 @@ The endpoint list below is a planning index, not final endpoint documentation.
 
 ### Auth
 
-| Method | Path                           | Auth                                          | Purpose                         |
-| ------ | ------------------------------ | --------------------------------------------- | ------------------------------- |
-| `POST` | `/api/v1/auth/register`        | Public                                        | Create account                  |
-| `POST` | `/api/v1/auth/login`           | Public                                        | Start session or issue token    |
-| `POST` | `/api/v1/auth/logout`          | Authenticated                                 | End session or invalidate token |
-| `POST` | `/api/v1/auth/refresh`         | Public or authenticated by refresh credential | Refresh session or token        |
-| `POST` | `/api/v1/auth/forgot-password` | Public                                        | Request password reset          |
-| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP                      | Complete password reset         |
-| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP                      | Verify email                    |
+| Method | Path                           | Auth                     | Purpose                                         |
+| ------ | ------------------------------ | ------------------------ | ----------------------------------------------- |
+| `POST` | `/api/v1/auth/register`        | Public                   | Create account                                  |
+| `POST` | `/api/v1/auth/login`           | Public                   | Issue access token and refresh cookie           |
+| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate refresh token and clear cookie       |
+| `POST` | `/api/v1/auth/refresh`         | Refresh cookie           | Rotate refresh token and issue new access token |
+| `POST` | `/api/v1/auth/forgot-password` | Public                   | Request password reset                          |
+| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Complete password reset                         |
+| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email                                    |
 
 ### Users And Preferences
 
@@ -280,10 +282,10 @@ The endpoint list below is a planning index, not final endpoint documentation.
 
 ### AI
 
-| Method | Path                     | Auth          | Purpose                                                  |
-| ------ | ------------------------ | ------------- | -------------------------------------------------------- |
-| `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job                      |
-| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded or referenced CV against a selected job |
+| Method | Path                     | Auth          | Purpose                                        |
+| ------ | ------------------------ | ------------- | ---------------------------------------------- |
+| `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job            |
+| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded PDF CV against a selected job |
 
 ## Contract Stability Rules
 
@@ -301,6 +303,5 @@ The endpoint list below is a planning index, not final endpoint documentation.
 - `docs/architecture.md`
 - `docs/database.md`
 - `docs/project-structure.md`
-- `docs/TODOS.md`
 - `references/docs/overview/request-response-flows.mdx`
 - `references/docs/overview/authentication-and-trust-boundaries.mdx`

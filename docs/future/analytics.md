@@ -91,7 +91,7 @@ Future analytics should derive from existing product data before adding new trac
 | Source                     | Owner                                   | Analytics use                                   |
 | -------------------------- | --------------------------------------- | ----------------------------------------------- |
 | `ApplicationRecord`        | Backend API                             | Status progression and outcomes                 |
-| `ApplicationStatusHistory` | Backend API if implemented              | Timeline and transition metrics                 |
+| `ApplicationStatusHistory` | Backend API                             | Timeline and transition metrics                 |
 | `Bookmark`                 | Backend API                             | Saved-to-applied conversion                     |
 | `UserProfile`              | Backend API                             | Profile completeness and segment context        |
 | `UserPreference`           | Backend API                             | Preference fit and recommendation context       |

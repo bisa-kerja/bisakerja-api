@@ -15,7 +15,7 @@ last_reviewed: 2026-04-22
 
 The Auth module owns account entry flows for Bisakerja. It validates identity input, creates user accounts, verifies email ownership, starts and ends authenticated sessions, and supports password reset flows.
 
-The final access token, refresh token, or cookie session strategy remains an implementation decision from earlier phases. This module defines the product contract and security requirements that the chosen strategy must satisfy.
+The Auth module uses short-lived access JWTs plus opaque refresh tokens stored in `HttpOnly` cookies and persisted server-side as hashes.
 
 ## Responsibility
 
@@ -63,7 +63,7 @@ Google SSO must stay a placeholder until OAuth client id, callback URL, token ve
 
 - Public routes still require validation, rate limiting, and safe error responses.
 - Authenticated routes require a valid access credential.
-- Refresh routes require a valid refresh credential or session credential, depending on final auth design.
+- Refresh routes require a valid refresh cookie.
 - Auth state must identify one `User`.
 - Auth middleware must attach only safe identity context to request handling.
 - Business resource ownership checks happen in the module that owns the resource.
@@ -110,18 +110,7 @@ Validation:
 
 ### Refresh
 
-The request shape depends on final auth strategy:
-
-- Cookie session strategy: credential comes from secure cookie.
-- Refresh token strategy: credential comes from refresh token body or secure cookie.
-
-If request body is used:
-
-```json
-{
-  "refreshToken": "refresh_token_value"
-}
-```
+The refresh credential comes from the `HttpOnly` refresh cookie. The request body should be empty for MVP.
 
 ### Forgot Password
 
@@ -152,7 +141,7 @@ Security rule: response must be identical whether the email exists or not.
 }
 ```
 
-If token-link verification is used instead of OTP, replace `otp` with `token` and document the final choice before implementation.
+Email verification uses OTP for MVP.
 
 ## Response Schemas
 
@@ -174,13 +163,12 @@ If token-link verification is used instead of OTP, replace `otp` with `token` an
 ```json
 {
   "accessToken": "access_token_value",
-  "refreshToken": "refresh_token_value",
   "expiresIn": 900,
   "tokenType": "Bearer"
 }
 ```
 
-If cookie-based auth is selected, do not return raw tokens in the body unless that is explicitly part of the auth design.
+The raw refresh token is set only as an `HttpOnly` cookie and must not be returned in the JSON body.
 
 ### Register Response
 
@@ -219,7 +207,6 @@ If cookie-based auth is selected, do not return raw tokens in the body unless th
     },
     "session": {
       "accessToken": "access_token_value",
-      "refreshToken": "refresh_token_value",
       "expiresIn": 900,
       "tokenType": "Bearer"
     }
@@ -242,32 +229,37 @@ If cookie-based auth is selected, do not return raw tokens in the body unless th
 8. Return user-safe account summary.
 9. Emit audit event `auth.registered`.
 
+MVP registration does not issue a full authenticated session before email verification.
+
 ### Login Flow
 
 1. Validate credentials.
 2. Find user by email or username.
 3. Compare password hash.
 4. Reject disabled or deleted accounts.
-5. Issue access credential and refresh/session credential.
-6. Store refresh/session state if the final auth design requires persistence.
-7. Emit audit event `auth.login_succeeded` or `auth.login_failed`.
-8. Return user summary and session data.
+5. Reject unverified email with `403 EMAIL_NOT_VERIFIED` until product policy allows limited access.
+6. Issue short-lived access JWT and opaque refresh token.
+7. Store only the refresh token hash and metadata server-side.
+8. Set the raw refresh token in an `HttpOnly` cookie.
+9. Emit audit event `auth.login_succeeded` or `auth.login_failed`.
+10. Return user summary and access token session data.
 
 ### Logout Flow
 
 1. Require authenticated identity.
-2. Invalidate current refresh token, session, or credential family based on auth design.
-3. Clear auth cookie if cookie-based auth is selected.
+2. Invalidate current refresh token or credential family.
+3. Clear refresh cookie.
 4. Emit audit event `auth.logout`.
 5. Return `204` or success envelope.
 
 ### Refresh Flow
 
-1. Validate refresh credential.
-2. Check token/session persistence and expiration.
-3. Rotate refresh credential if refresh token rotation is selected.
+1. Validate refresh cookie.
+2. Check persisted refresh token hash, token family, and expiration.
+3. Rotate refresh credential and invalidate the previous token.
 4. Issue new access credential.
-5. Emit audit event `auth.refreshed`.
+5. Set the new raw refresh token in an `HttpOnly` cookie.
+6. Emit audit event `auth.refreshed`.
 
 ### Forgot Password Flow
 
@@ -284,7 +276,7 @@ If cookie-based auth is selected, do not return raw tokens in the body unless th
 2. Validate and hash new password.
 3. Update credential hash.
 4. Invalidate used reset token or OTP.
-5. Invalidate active refresh/session credentials if required by auth policy.
+5. Invalidate all active refresh credentials for the user.
 6. Emit audit event `auth.password_reset_completed`.
 
 ### Verify Email Flow
@@ -303,7 +295,7 @@ Primary models:
 - `AuthCredential`
 - `EmailVerificationToken`
 - `PasswordResetToken`
-- `UserSession` or `RefreshToken` after auth strategy is finalized
+- `RefreshToken`
 
 Repository responsibilities:
 
@@ -311,8 +303,9 @@ Repository responsibilities:
 - Check duplicate email and username.
 - Create account and credentials transactionally.
 - Store hashed tokens, not raw token values.
+- Store hashed refresh tokens and token-family metadata.
 - Mark verification and reset tokens used or expired.
-- Invalidate session or refresh credentials.
+- Invalidate refresh credentials.
 
 Do not store plaintext passwords, raw OTP values, or raw reset tokens.
 
@@ -336,13 +329,13 @@ Use generic messages for login and password reset discovery paths to avoid accou
 
 ## Security Requirements
 
-- Hash passwords with approved password hashing package.
+- Hash passwords with Argon2id through `argon2` unless scaffold compatibility testing blocks it.
 - Hash persisted reset tokens, verification tokens, refresh tokens, or session secrets.
 - Apply stricter rate limits to login, forgot password, reset password, and email verification.
 - Do not log passwords, tokens, OTP values, or credential comparison results.
-- Use secure cookies if cookie auth is selected.
-- Rotate refresh tokens if token rotation is selected.
-- Invalidate sessions after password reset unless explicitly documented otherwise.
+- Use secure refresh cookies.
+- Rotate refresh tokens on every refresh.
+- Invalidate refresh tokens after password reset.
 
 ## Observability
 
@@ -381,12 +374,12 @@ Integration tests:
 
 - Register creates `User`, `AuthCredential`, and verification token transactionally.
 - Duplicate email returns `409`.
-- Login with valid credential returns session payload or cookie according to auth design.
+- Login with valid credential returns access token payload and sets refresh cookie.
 - Login with invalid credential returns generic `401`.
 - Forgot password response is identical for known and unknown email.
 - Reset password updates credential and invalidates token.
 - Email verification marks user verified and invalidates OTP/token.
-- Logout invalidates current session or refresh credential.
+- Logout invalidates current refresh credential and clears refresh cookie.
 
 Route tests:
 
@@ -395,11 +388,8 @@ Route tests:
 - Public routes do not require auth.
 - Authenticated logout requires auth.
 
-## Open Decisions
+## Deferred Decisions
 
-- Final token/session strategy.
-- Whether verification uses numeric OTP, token link, or both.
-- Whether register immediately issues a session before email verification.
 - Whether username is required long term or only MVP display identity.
 - Exact Google SSO route behavior and account linking policy.
 

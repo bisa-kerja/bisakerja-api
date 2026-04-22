@@ -13,9 +13,9 @@ last_reviewed: 2026-04-22
 
 # AI CV Analyzer Module
 
-The AI CV Analyzer module analyzes a user's CV against a selected job listing. It validates CV input, loads normalized job context, calls Model API, returns product-safe analysis output, and optionally stores privacy-sensitive analysis snapshots.
+The AI CV Analyzer module analyzes a user's CV against a selected job listing. It validates CV input, loads normalized job context, calls Model API, returns product-safe analysis output, and optionally stores sanitized analysis snapshots.
 
-This module is in MVP scope. Generated improved CV output is future scope unless explicitly approved.
+This module is in MVP scope with temporary PDF `UPLOAD` mode only. `REFERENCE` mode and generated improved CV output are future scope unless explicitly approved.
 
 ## Responsibility
 
@@ -69,12 +69,12 @@ Future endpoints for analysis history or generated CV download require separate 
 
 MVP supports one of these modes:
 
-| Mode        | Description                                                         |
-| ----------- | ------------------------------------------------------------------- |
-| `UPLOAD`    | User uploads a CV file in the request                               |
-| `REFERENCE` | User references a previously uploaded CV file owned by current user |
+| Mode        | Description                                             |
+| ----------- | ------------------------------------------------------- |
+| `UPLOAD`    | MVP. User uploads a PDF CV file in the request          |
+| `REFERENCE` | Deferred. User references a previously uploaded CV file |
 
-The implementation may start with `UPLOAD` only, but the API contract must make unsupported modes return `422` until implemented.
+`REFERENCE` returns `422 VALIDATION_ERROR` until reusable CV storage is designed and implemented.
 
 ## Request Schema
 
@@ -100,15 +100,15 @@ Validation:
 | `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL` |
 | `persistResult` | Optional boolean, default based on product policy            |
 | `cvFile`        | Required for `UPLOAD` mode                                   |
-| `cvFileId`      | Required for `REFERENCE` mode                                |
+| `cvFileId`      | Deferred; rejected for MVP `REFERENCE` mode                  |
 
 CV file validation:
 
-| Rule              | Default                              |
-| ----------------- | ------------------------------------ |
-| Maximum file size | `CV_UPLOAD_MAX_BYTES`, default 5 MB  |
-| Allowed mime type | `application/pdf` for MVP            |
-| Retention         | `CV_RETENTION_DAYS`, default 30 days |
+| Rule              | Default                                                      |
+| ----------------- | ------------------------------------------------------------ |
+| Maximum file size | `CV_UPLOAD_MAX_BYTES`, default 5 MB                          |
+| Allowed mime type | `application/pdf` for MVP                                    |
+| Retention         | `CV_RETENTION_DAYS`, default 1 day for MVP temporary uploads |
 
 ## Backend-Prepared Model Payload
 
@@ -141,7 +141,7 @@ CV file validation:
 
 Payload rules:
 
-- Include only the file reference or extracted text needed by Model API according to final integration design.
+- Include only the temporary file reference or extracted text needed by Model API according to final integration design.
 - Do not include passwords, tokens, OTP values, or unrelated profile data.
 - Do not persist raw extracted CV text unless retention and privacy rules are documented.
 - Propagate request id to Model API.
@@ -243,7 +243,7 @@ Optional write models:
 
 Persistence rules:
 
-- Persist analysis snapshots only when product policy requires history.
+- Persist sanitized analysis snapshots only when `persistResult=true`.
 - Store CV file metadata separately from raw analysis result.
 - Store `expiresAt` for uploaded CV files.
 - Store `deletedAt` after deletion.
@@ -258,7 +258,8 @@ Rules:
 
 - Enforce file size and mime type before Model API call.
 - Store only what is needed for analysis.
-- Follow `CV_RETENTION_DAYS`, default 30 days.
+- Follow `CV_RETENTION_DAYS`, default 1 day.
+- Delete temporary files after analysis when practical, while keeping cleanup for expired files as a required operational path.
 - Delete expired files through a documented cleanup workflow.
 - Redact raw CV content from logs.
 - Never include raw CV text in error responses.
@@ -359,14 +360,11 @@ Route tests:
 - Raw CV content is not present in response.
 - Raw model internals are not present in response.
 
-## Open Decisions
+## Deferred Decisions
 
-- Whether MVP accepts only PDF or also DOCX.
-- Whether CV file upload is temporary-only or persisted for history.
 - Exact storage driver and cleanup worker.
-- Whether extracted CV text is ever stored.
 - Exact Model API endpoint and payload format.
-- Whether generated CV becomes Phase 4 scope later or stays future scope.
+- Whether generated CV remains future scope.
 
 ## Related Docs
 

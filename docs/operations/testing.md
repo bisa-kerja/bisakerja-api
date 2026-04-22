@@ -15,7 +15,7 @@ last_reviewed: 2026-04-22
 
 This document defines the verification strategy for the Bisakerja Backend API before implementation starts. The goal is to make every MVP module testable through explicit unit, route, repository, integration, contract, and smoke paths.
 
-Exact test command names must be finalized during project setup after the Bun, TypeScript, Prisma, and route-test tooling is installed. The categories and acceptance rules in this document should remain stable even if command names change.
+The project reserves stable test command names for scaffold and CI wiring. The categories and acceptance rules in this document should remain stable even if implementation details change.
 
 ## Testing Principles
 
@@ -89,6 +89,18 @@ Required test environment behavior:
 
 The final `.env.test.example` should be created during scaffold work and kept in sync with `docs/environment.md` and `src/config/env.ts`.
 
+Reserved commands:
+
+| Command                            | Purpose                                               |
+| ---------------------------------- | ----------------------------------------------------- |
+| `bun test`                         | Default unit test run                                 |
+| `bun run test:unit`                | Unit tests                                            |
+| `bun run test:routes`              | HTTP route contract tests                             |
+| `bun run test:integration`         | Prisma-backed integration tests                       |
+| `bun run test:contracts`           | Model API and scraper fixture contracts               |
+| `bun run test:smoke`               | Startup, env, health, and basic route smoke checks    |
+| `bun run prisma:verify:migrations` | Migration verification against an empty test database |
+
 ## Database Test Setup
 
 Repository and workflow tests should validate the real Prisma schema and constraints.
@@ -132,6 +144,8 @@ The initial implementation should provide a command equivalent to:
 ```text
 verify migrations -> generate Prisma client -> apply migrations to test database -> run repository integration tests
 ```
+
+The reserved command name for this flow is `bun run prisma:verify:migrations`.
 
 Production deployment must use explicit migration execution, not implicit application startup mutation, unless a later approved deployment policy says otherwise.
 

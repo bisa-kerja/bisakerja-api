@@ -191,7 +191,6 @@ Future tests should cover:
 
 ## Related Docs
 
-- `docs/TODOS.md`
 - `docs/future/notifications.md`
 - `docs/future/analytics.md`
 - `docs/modules/users.md`
