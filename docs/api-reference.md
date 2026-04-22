@@ -1,0 +1,306 @@
+---
+title: Backend API Reference
+description: Route group index, API versioning, auth classification, common query patterns, and module contract checklist for the Bisakerja Backend API.
+owner: backend-owner
+reviewers:
+  - platform-docs-maintainer
+  - engineering-lead
+doc_status: draft
+source_repo: backend-api
+source_path: docs/api-reference.md
+last_reviewed: 2026-04-22
+---
+
+# Backend API Reference
+
+This document is the route group index for the Bisakerja Backend API. It defines API versioning, route prefix, auth behavior, common query patterns, and the contract checklist that module-specific API docs must follow.
+
+Detailed endpoint request and response schemas will be documented in module pages during Phase 4.
+
+## Base URL And Versioning
+
+Default local base URL:
+
+```text
+http://localhost:3000/api/v1
+```
+
+Rules:
+
+- All product API routes are mounted under `API_PREFIX`, defaulting to `/api/v1`.
+- Version `v1` is the first MVP contract.
+- Breaking changes require a new version or an explicit migration plan.
+- Non-breaking additions may be added to `v1` when they do not change existing field meaning or error behavior.
+- Health endpoints may live outside `/api/v1` if operational tooling requires it.
+
+## API Consumers
+
+| Consumer                 | Access                                                                                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| Frontend UI              | Public and authenticated `/api/v1` routes                                                       |
+| Backend internal clients | Internal routes only when explicitly documented                                                 |
+| Model API                | Does not call user-facing Backend API routes in MVP                                             |
+| Scraper API              | Does not call user-facing Backend API routes in MVP unless future sync/status workflow is added |
+
+The frontend must not call Scraper API or Model API directly.
+
+## Auth Classification
+
+| Class               | Meaning                                         | Example                                                    |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| Public              | No authentication required                      | Job search, job detail, register, login                    |
+| Authenticated       | Valid user identity required                    | Profile, preferences, bookmarks, applications, AI features |
+| Ownership-protected | Authenticated and resource must belong to user  | User application record, saved jobs, AI result history     |
+| Internal            | Service credential or internal network required | Future scraper status or admin service hooks               |
+
+Rules:
+
+- Authenticated and ownership-protected routes must enforce authorization in Backend API.
+- Model API must not decide whether the user can perform a product action.
+- Internal service credentials must not be derived from frontend-originated identity.
+- Use `401` for missing or invalid authentication.
+- Use `403` for authenticated users who are not allowed to act.
+- Use `404` when hiding private resource existence is safer.
+
+## Route Group Index
+
+| Route group    | Prefix                                              | Auth class                                                           | MVP scope                                                                                            | Future module doc                  |
+| -------------- | --------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Health         | `/health`, `/ready`                                 | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed |
+| Auth           | `/api/v1/auth`                                      | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, Google SSO placeholder | `docs/modules/auth.md`             |
+| Users          | `/api/v1/users` and `/api/v1/me`                    | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`            |
+| Preferences    | `/api/v1/preferences` or `/api/v1/me/preferences`   | Authenticated                                                        | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
+| Jobs           | `/api/v1/jobs`                                      | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
+| Bookmarks      | `/api/v1/bookmarks` or `/api/v1/me/bookmarks`       | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
+| Applications   | `/api/v1/applications` or `/api/v1/me/applications` | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
+| AI Job Fit     | `/api/v1/ai/job-fit`                                | Authenticated                                                        | Fit score, explanation, skill gap, and recommendation                                                | `docs/modules/ai-job-fit.md`       |
+| AI CV Analyzer | `/api/v1/ai/cv-analyzer`                            | Authenticated                                                        | CV analysis against selected job                                                                     | `docs/modules/ai-cv-analyzer.md`   |
+
+Route naming defaults:
+
+- Use `/api/v1/me/*` for current-user scoped resources when it improves clarity.
+- Use plural resource nouns for collections.
+- Use action names only when the endpoint performs a non-CRUD workflow, such as AI analysis.
+- Keep route params camelCase in docs, such as `:jobId` and `:applicationId`.
+
+## Public Workflows
+
+Public workflows:
+
+- Register.
+- Login.
+- Forgot password request.
+- Reset password submission when token or OTP is valid.
+- Email verification submission when token or OTP is valid.
+- Job search.
+- Job detail.
+- Health liveness check.
+
+Public routes still require validation, rate limiting, and safe error responses.
+
+## Authenticated Workflows
+
+Authenticated workflows:
+
+- Current user profile read and update.
+- Onboarding data update.
+- Career preferences read and update.
+- Bookmark create, delete, and list.
+- Application tracker create, update, status change, and list.
+- Job fit analysis.
+- Skill gap analysis.
+- AI CV Analyzer.
+- Viewing user-specific AI history if persisted.
+
+Authenticated routes must not rely on frontend-only ownership checks.
+
+## Internal Workflows
+
+Internal workflows are not part of the public MVP API unless explicitly documented later.
+
+Potential future internal workflows:
+
+- Scraper freshness status.
+- Ingestion sync callbacks.
+- Admin-only data correction.
+- Model health or model version reconciliation.
+
+Internal routes must define service credential requirements before implementation.
+
+## Common Query Parameters
+
+### Pagination
+
+| Query   | Type   | Default | Applies to     |
+| ------- | ------ | ------- | -------------- |
+| `page`  | number | `1`     | List endpoints |
+| `limit` | number | `20`    | List endpoints |
+
+Constraints:
+
+- `page` minimum is `1`.
+- `limit` minimum is `1`.
+- `limit` maximum is `100`.
+- Invalid values return `422` with `VALIDATION_ERROR`.
+
+### Job Search And Filters
+
+| Query             | Type   | Description                                                               |
+| ----------------- | ------ | ------------------------------------------------------------------------- |
+| `keyword`         | string | Search by job title, role, company, or relevant normalized text           |
+| `location`        | string | General location search when province/city are not split                  |
+| `province`        | string | Province filter when normalized                                           |
+| `city`            | string | City filter when normalized                                               |
+| `workType`        | enum   | `REMOTE`, `HYBRID`, or `ONSITE`                                           |
+| `employmentType`  | enum   | Full-time, part-time, internship, contract, or documented enum equivalent |
+| `experienceLevel` | enum   | Entry, junior, mid, or documented enum equivalent                         |
+| `salaryMin`       | number | Minimum expected salary                                                   |
+| `salaryMax`       | number | Maximum expected salary                                                   |
+| `sourcePlatform`  | string | Glints, Jobstreet, Kalibrr, Dealls, or normalized source slug             |
+
+Rules:
+
+- Job search works for guests and authenticated users.
+- The backend returns normalized job records only.
+- Source-specific raw payloads must not appear in responses.
+- Unsupported filters return `422`.
+
+### Sorting
+
+| Query  | Default     | Applies to                                   |
+| ------ | ----------- | -------------------------------------------- |
+| `sort` | `relevance` | Jobs and other list endpoints when supported |
+
+Supported job sort values:
+
+- `relevance`
+- `newest`
+- `salary_highest`
+- `salary_lowest`
+
+Other list sort values:
+
+- `updated_desc`
+- `created_desc`
+
+Unsupported sort values return `422`.
+
+## Common Headers
+
+| Header          | Direction             | Required             | Notes                                                     |
+| --------------- | --------------------- | -------------------- | --------------------------------------------------------- |
+| `Authorization` | Request               | Authenticated routes | Exact token/session scheme depends on final auth strategy |
+| `Content-Type`  | Request               | Body routes          | Use `application/json` except upload routes               |
+| `Accept`        | Request               | Recommended          | Use `application/json`                                    |
+| `x-request-id`  | Request/response logs | Optional             | Backend accepts or generates request id                   |
+
+Upload routes for AI CV Analyzer will require multipart handling details in the module doc.
+
+## Standard Response Usage
+
+All route groups must follow `docs/api-response-standard.md`.
+
+Module docs must include:
+
+- Success response example.
+- List response example when the endpoint returns a collection.
+- Validation error example.
+- Auth error example for authenticated routes.
+- Not found example for owned resources.
+- Conflict example for duplicate or invalid state transition.
+- Downstream failure example for AI routes.
+
+## Module Contract Checklist
+
+Every module API doc must include:
+
+- Route prefix.
+- Endpoint table with method and path.
+- Auth class per endpoint.
+- Request params schema.
+- Request query schema.
+- Request body schema.
+- Response schema.
+- Error cases.
+- Pagination, filtering, and sorting behavior when applicable.
+- Ownership rules.
+- Database models read or written.
+- Downstream dependencies.
+- Observability notes.
+- Test scenarios.
+
+## Endpoint Planning Matrix
+
+The endpoint list below is a planning index, not final endpoint documentation.
+
+### Auth
+
+| Method | Path                           | Auth                                          | Purpose                         |
+| ------ | ------------------------------ | --------------------------------------------- | ------------------------------- |
+| `POST` | `/api/v1/auth/register`        | Public                                        | Create account                  |
+| `POST` | `/api/v1/auth/login`           | Public                                        | Start session or issue token    |
+| `POST` | `/api/v1/auth/logout`          | Authenticated                                 | End session or invalidate token |
+| `POST` | `/api/v1/auth/refresh`         | Public or authenticated by refresh credential | Refresh session or token        |
+| `POST` | `/api/v1/auth/forgot-password` | Public                                        | Request password reset          |
+| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP                      | Complete password reset         |
+| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP                      | Verify email                    |
+
+### Users And Preferences
+
+| Method  | Path                     | Auth          | Purpose                              |
+| ------- | ------------------------ | ------------- | ------------------------------------ |
+| `GET`   | `/api/v1/me`             | Authenticated | Get current user profile             |
+| `PATCH` | `/api/v1/me`             | Authenticated | Update current user profile          |
+| `GET`   | `/api/v1/me/preferences` | Authenticated | Get career preferences               |
+| `PUT`   | `/api/v1/me/preferences` | Authenticated | Replace or upsert career preferences |
+
+### Jobs
+
+| Method | Path                  | Auth   | Purpose                           |
+| ------ | --------------------- | ------ | --------------------------------- |
+| `GET`  | `/api/v1/jobs`        | Public | Search and filter normalized jobs |
+| `GET`  | `/api/v1/jobs/:jobId` | Public | Get normalized job detail         |
+
+### Bookmarks
+
+| Method   | Path                          | Auth          | Purpose          |
+| -------- | ----------------------------- | ------------- | ---------------- |
+| `GET`    | `/api/v1/me/bookmarks`        | Authenticated | List saved jobs  |
+| `POST`   | `/api/v1/me/bookmarks`        | Authenticated | Save a job       |
+| `DELETE` | `/api/v1/me/bookmarks/:jobId` | Authenticated | Remove saved job |
+
+### Applications
+
+| Method  | Path                                            | Auth                                  | Purpose                   |
+| ------- | ----------------------------------------------- | ------------------------------------- | ------------------------- |
+| `GET`   | `/api/v1/me/applications`                       | Authenticated                         | List tracked applications |
+| `POST`  | `/api/v1/me/applications`                       | Authenticated                         | Create tracker record     |
+| `PATCH` | `/api/v1/me/applications/:applicationId`        | Authenticated and ownership-protected | Update tracker record     |
+| `PATCH` | `/api/v1/me/applications/:applicationId/status` | Authenticated and ownership-protected | Update application status |
+
+### AI
+
+| Method | Path                     | Auth          | Purpose                                                  |
+| ------ | ------------------------ | ------------- | -------------------------------------------------------- |
+| `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job                      |
+| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded or referenced CV against a selected job |
+
+## Contract Stability Rules
+
+- Do not remove response fields without a versioning plan.
+- Do not change field meaning without a versioning plan.
+- Additive fields are allowed when they are optional for existing consumers.
+- Error `code` values must be stable.
+- Query enum changes must be reflected in module docs and validation schemas.
+- API examples must stay valid JSON.
+
+## Related Docs
+
+- `docs/api-response-standard.md`
+- `docs/overview.md`
+- `docs/architecture.md`
+- `docs/database.md`
+- `docs/project-structure.md`
+- `docs/TODOS.md`
+- `references/docs/overview/request-response-flows.mdx`
+- `references/docs/overview/authentication-and-trust-boundaries.mdx`
