@@ -46,7 +46,7 @@ Preferred current-user route:
 /api/v1/me/preferences
 ```
 
-Alternative `/api/v1/preferences` may exist as an alias only if the API reference is updated consistently.
+Alternative `/api/v1/preferences` is not part of the MVP contract. Add it only if the API reference and route tests are updated consistently.
 
 ## Endpoint Summary
 
@@ -64,7 +64,7 @@ Use `PUT` for onboarding save flows where the frontend submits the full preferen
 - Preferences always belong to the authenticated current user.
 - The request body must not accept `userId`.
 - The backend uses persisted preferences when preparing Model API payloads.
-- Missing preferences should return `404` or an empty onboarding state depending on the endpoint contract. For MVP, `GET` may return `404 PREFERENCES_NOT_FOUND` until preferences are created.
+- For MVP, `GET /api/v1/me/preferences` returns `404 PREFERENCES_NOT_FOUND` until preferences are created. Any onboarding-specific empty-state endpoint must be documented separately before implementation.
 
 ## Domain Enums
 
@@ -291,7 +291,7 @@ Route tests:
 
 - Whether target roles and locations are relational tables or JSON fields in MVP.
 - Whether `careerStatus` belongs only here or is also denormalized in `UserProfile`.
-- Whether `GET` missing preferences returns `404` or a default empty preference object.
+- Whether a separate onboarding read endpoint should return a default empty preference object later.
 - Whether salary values use integer IDR values or structured minor units.
 
 ## Related Docs

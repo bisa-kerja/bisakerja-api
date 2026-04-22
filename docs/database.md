@@ -188,7 +188,7 @@ Relationship rules:
 | `IngestionRun`             | `ingestion_runs`               | Scraper API                       | Freshness and debugging             |
 | `Bookmark`                 | `bookmarks`                    | Backend API                       | Saved jobs                          |
 | `ApplicationRecord`        | `application_records`          | Backend API                       | Tracker                             |
-| `ApplicationStatusHistory` | `application_status_histories` | Backend API                       | Tracker audit trail                 |
+| `ApplicationStatusHistory` | `application_status_histories` | Backend API                       | Optional tracker audit trail        |
 | `FitScoreResult`           | `fit_score_results`            | Backend API stores derived output | Job fit history if persisted        |
 | `SkillGapResult`           | `skill_gap_results`            | Backend API stores derived output | Skill gap history if persisted      |
 | `CvAnalysisResult`         | `cv_analysis_results`          | Backend API stores derived output | AI CV Analyzer history if persisted |

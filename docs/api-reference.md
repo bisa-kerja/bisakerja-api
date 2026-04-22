@@ -64,21 +64,21 @@ Rules:
 
 ## Route Group Index
 
-| Route group    | Prefix                                              | Auth class                                                           | MVP scope                                                                                            | Future module doc                  |
-| -------------- | --------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Health         | `/health`, `/ready`                                 | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed |
-| Auth           | `/api/v1/auth`                                      | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, Google SSO placeholder | `docs/modules/auth.md`             |
-| Users          | `/api/v1/users` and `/api/v1/me`                    | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`            |
-| Preferences    | `/api/v1/preferences` or `/api/v1/me/preferences`   | Authenticated                                                        | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
-| Jobs           | `/api/v1/jobs`                                      | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
-| Bookmarks      | `/api/v1/bookmarks` or `/api/v1/me/bookmarks`       | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
-| Applications   | `/api/v1/applications` or `/api/v1/me/applications` | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
-| AI Job Fit     | `/api/v1/ai/job-fit`                                | Authenticated                                                        | Fit score, explanation, skill gap, and recommendation                                                | `docs/modules/ai-job-fit.md`       |
-| AI CV Analyzer | `/api/v1/ai/cv-analyzer`                            | Authenticated                                                        | CV analysis against selected job                                                                     | `docs/modules/ai-cv-analyzer.md`   |
+| Route group    | Prefix                          | Auth class                                                           | MVP scope                                                                                            | Future module doc                  |
+| -------------- | ------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed |
+| Auth           | `/api/v1/auth`                  | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, Google SSO placeholder | `docs/modules/auth.md`             |
+| Users          | `/api/v1/me`                    | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`            |
+| Preferences    | `/api/v1/me/preferences`        | Authenticated                                                        | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
+| Jobs           | `/api/v1/jobs`                  | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
+| Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
+| Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
+| AI Job Fit     | `/api/v1/ai/job-fit`            | Authenticated                                                        | Fit score, explanation, skill gap, and recommendation                                                | `docs/modules/ai-job-fit.md`       |
+| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against selected job                                                                     | `docs/modules/ai-cv-analyzer.md`   |
 
 Route naming defaults:
 
-- Use `/api/v1/me/*` for current-user scoped resources when it improves clarity.
+- Use `/api/v1/me/*` for current-user scoped resources.
 - Use plural resource nouns for collections.
 - Use action names only when the endpoint performs a non-CRUD workflow, such as AI analysis.
 - Keep route params camelCase in docs, such as `:jobId` and `:applicationId`.

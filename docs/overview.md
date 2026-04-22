@@ -53,7 +53,7 @@ Technical consumers:
 | Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                    |
 | Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                    |
 | Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate handling                                                                                    |
-| Applications   | Track user-specific job application state and status history                                                                                           |
+| Applications   | Track user-specific job application state and optional status history                                                                                  |
 | AI Job Fit     | Prepare backend-owned inference payloads and return fit score, explanation, skill gap, and recommended next steps                                      |
 | AI CV Analyzer | Accept CV analysis input, compare against a selected job, and return CV quality, job alignment, ATS, keyword, quantification, and improvement feedback |
 
@@ -62,7 +62,7 @@ Technical consumers:
 The following capabilities are documented as future scope and must not block MVP implementation:
 
 - Mentoring onboarding, mentor profiles, availability, and mentor search.
-- Notification expansion beyond initial email preference and basic workflow notifications.
+- Notification delivery expansion beyond the MVP email preference toggle and auth email flows.
 - Product analytics and application intelligence dashboards.
 - Payment, subscription, or premium capability.
 - Direct ATS integration or auto-apply to external platforms.

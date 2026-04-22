@@ -27,7 +27,7 @@ The Applications module owns:
 - Update application status.
 - Validate status transitions.
 - Track relationship between external apply click and tracker state when implemented.
-- Preserve user ownership and status history.
+- Preserve user ownership and status transition history when history is enabled.
 
 The Applications module does not own:
 
@@ -286,7 +286,7 @@ MVP rule:
 Primary models:
 
 - `ApplicationRecord`
-- `ApplicationStatusHistory`
+- `ApplicationStatusHistory` if status history is enabled
 - `JobListing`
 - `Company`
 
@@ -296,7 +296,7 @@ Repository responsibilities:
 - Create tracker record.
 - Update tracker fields.
 - Update status.
-- Append status history.
+- Append status history when `ApplicationStatusHistory` is enabled.
 - Enforce unique active `(userId, jobListingId)`.
 
 Database rules:

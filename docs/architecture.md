@@ -313,10 +313,10 @@ Audit logs should capture actor id, action, resource type, resource id, request 
 
 The backend should expose health endpoints after implementation:
 
-| Endpoint      | Purpose                                                |
-| ------------- | ------------------------------------------------------ |
-| `GET /health` | Basic process liveness                                 |
-| `GET /ready`  | Readiness check for database and critical dependencies |
+| Endpoint            | Purpose                                                |
+| ------------------- | ------------------------------------------------------ |
+| `GET /health/live`  | Basic process liveness                                 |
+| `GET /health/ready` | Readiness check for database and critical dependencies |
 
 Readiness should distinguish:
 
