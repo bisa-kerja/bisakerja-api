@@ -129,9 +129,11 @@ The project uses these script names for scaffold and CI wiring:
 | `bun run test:integration`         | Prisma-backed integration tests                                         |
 | `bun run test:contracts`           | Model API and scraper fixture contract tests                            |
 | `bun run test:smoke`               | Startup, env, health, and basic route smoke tests                       |
-| `bun run prisma:generate`          | Generate Prisma client                                                  |
+| `bun run prisma:generate`          | Generate Prisma client into `src/generated/prisma`                      |
 | `bun run prisma:migrate:dev`       | Create/apply local migrations only                                      |
 | `bun run prisma:migrate:deploy`    | Apply existing migrations in test/staging/production style environments |
+| `bun run prisma:seed`              | Seed deterministic normalized local data                                |
+| `bun run prisma:validate`          | Validate Prisma schema syntax and configuration                         |
 | `bun run prisma:verify:migrations` | Verify migrations against an empty test database                        |
 
 ## Formatting And Linting Policy
@@ -152,7 +154,6 @@ Route tests currently use an in-memory Express request/response harness. This ke
 
 - Auth/session package versions for `jose`, cookie parsing, and refresh-token hashing helpers.
 - Final upload handling package decision.
-- Prisma and `@prisma/client` versions.
 - Final OpenAPI generation approach.
 - Dependency audit command and CI integration.
 

@@ -1,0 +1,636 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  DELETED
+}
+
+enum OnboardingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+enum SkillLevel {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CareerStatus {
+  FRESH_GRADUATE
+  EARLY_CAREER
+  CAREER_SWITCHER
+}
+
+enum JobSeekingStatus {
+  IMMEDIATE
+  ONE_MONTH
+  THREE_MONTHS
+}
+
+enum WorkType {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+  FREELANCE
+}
+
+enum ExperienceLevel {
+  ENTRY_LEVEL
+  JUNIOR
+  MID_LEVEL
+  SENIOR
+  LEAD
+}
+
+enum SalaryPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum JobListingStatus {
+  ACTIVE
+  STALE
+  EXPIRED
+  CLOSED
+  HIDDEN
+}
+
+enum RequirementType {
+  SKILL
+  EXPERIENCE
+  EDUCATION
+  RESPONSIBILITY
+  OTHER
+}
+
+enum RequirementPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ApplicationStatus {
+  APPLIED
+  INTERVIEW
+  REJECTED
+  ACCEPTED
+}
+
+enum ApplicationSource {
+  MANUAL
+  EXTERNAL_APPLY_CLICK
+}
+
+enum AnalysisLanguage {
+  ID
+  EN
+}
+
+enum CvInputMode {
+  UPLOAD
+  REFERENCE
+}
+
+enum CvCompareSource {
+  BOOKMARK
+  JOB_SEARCH
+  DIRECT_JOB_DETAIL
+}
+
+enum StorageDriver {
+  LOCAL
+}
+
+enum AiRequestKind {
+  JOB_FIT
+  CV_ANALYSIS
+}
+
+enum AiRequestStatus {
+  SUCCEEDED
+  FAILED
+}
+
+model User {
+  id                  String                     @id @default(uuid())
+  email               String                     @unique(map: "users_email_unique")
+  username            String                     @unique(map: "users_username_unique")
+  phoneNumber         String?                    @map("phone_number")
+  displayName         String?                    @map("display_name")
+  status              UserStatus                 @default(ACTIVE)
+  emailVerifiedAt     DateTime?                  @map("email_verified_at")
+  onboardingStatus    OnboardingStatus           @default(PENDING) @map("onboarding_status")
+  createdAt           DateTime                   @default(now()) @map("created_at")
+  updatedAt           DateTime                   @updatedAt @map("updated_at")
+  deletedAt           DateTime?                  @map("deleted_at")
+  authCredential      AuthCredential?
+  refreshTokens       RefreshToken[]
+  verificationTokens  EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  profile             UserProfile?
+  experiences         UserExperience[]
+  educations          UserEducation[]
+  userSkills          UserSkill[]
+  preference          UserPreference?
+  bookmarks           Bookmark[]
+  applications        ApplicationRecord[]
+  applicationHistory  ApplicationStatusHistory[]
+  fitScoreResults     FitScoreResult[]
+  skillGapResults     SkillGapResult[]
+  cvFiles             CvFileMetadata[]
+  cvAnalysisResults   CvAnalysisResult[]
+  aiRequestLogs       AiRequestLog[]
+
+  @@index([status], map: "users_status_idx")
+  @@index([createdAt], map: "users_created_at_idx")
+  @@map("users")
+}
+
+model AuthCredential {
+  id                    String       @id @default(uuid())
+  userId                String       @unique(map: "auth_credentials_user_id_unique") @map("user_id")
+  provider              AuthProvider @default(LOCAL)
+  providerAccountId     String?      @map("provider_account_id")
+  passwordHash          String       @map("password_hash")
+  passwordHashAlgorithm String       @map("password_hash_algorithm")
+  passwordUpdatedAt     DateTime     @default(now()) @map("password_updated_at")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+  user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId], map: "auth_credentials_provider_account_unique")
+  @@map("auth_credentials")
+}
+
+model RefreshToken {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  tokenHash         String    @unique(map: "refresh_tokens_token_hash_unique") @map("token_hash")
+  tokenFamilyId     String    @map("token_family_id")
+  replacedByTokenId String?   @map("replaced_by_token_id")
+  userAgent         String?   @map("user_agent")
+  ipAddress         String?   @map("ip_address")
+  expiresAt         DateTime  @map("expires_at")
+  revokedAt         DateTime? @map("revoked_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "refresh_tokens_user_id_idx")
+  @@index([tokenFamilyId], map: "refresh_tokens_token_family_id_idx")
+  @@index([expiresAt], map: "refresh_tokens_expires_at_idx")
+  @@map("refresh_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  otpHash   String    @map("otp_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "email_verification_tokens_user_id_idx")
+  @@index([otpHash], map: "email_verification_tokens_otp_hash_idx")
+  @@index([expiresAt], map: "email_verification_tokens_expires_at_idx")
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "password_reset_tokens_user_id_idx")
+  @@index([tokenHash], map: "password_reset_tokens_token_hash_idx")
+  @@index([expiresAt], map: "password_reset_tokens_expires_at_idx")
+  @@map("password_reset_tokens")
+}
+
+model UserProfile {
+  id                     String        @id @default(uuid())
+  userId                 String        @unique(map: "user_profiles_user_id_unique") @map("user_id")
+  careerStatus           CareerStatus? @map("career_status")
+  latestRole             String?       @map("latest_role")
+  summary                String?
+  profilePhotoStorageKey String?       @map("profile_photo_storage_key")
+  profilePhotoUrl        String?       @map("profile_photo_url")
+  profilePhotoMimeType   String?       @map("profile_photo_mime_type")
+  profilePhotoSizeBytes  Int?          @map("profile_photo_size_bytes")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserExperience {
+  id             String          @id @default(uuid())
+  userId         String          @map("user_id")
+  title          String
+  company        String?
+  employmentType EmploymentType? @map("employment_type")
+  startDate      DateTime?       @map("start_date")
+  endDate        DateTime?       @map("end_date")
+  isCurrent      Boolean         @default(false) @map("is_current")
+  description    String?
+  sortOrder      Int             @default(0) @map("sort_order")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "user_experiences_user_id_idx")
+  @@map("user_experiences")
+}
+
+model UserEducation {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  institution  String
+  degree       String?
+  fieldOfStudy String?  @map("field_of_study")
+  startYear    Int?     @map("start_year")
+  endYear      Int?     @map("end_year")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "user_educations_user_id_idx")
+  @@map("user_educations")
+}
+
+model Skill {
+  id         String      @id @default(uuid())
+  name       String
+  slug       String      @unique(map: "skills_slug_unique")
+  category   String?
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  userSkills UserSkill[]
+  jobSkills  JobSkill[]
+
+  @@index([name], map: "skills_name_idx")
+  @@map("skills")
+}
+
+model UserSkill {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  skillId   String      @map("skill_id")
+  level     SkillLevel?
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill     Skill       @relation(fields: [skillId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, skillId], map: "user_skills_user_skill_unique")
+  @@index([skillId], map: "user_skills_skill_id_idx")
+  @@map("user_skills")
+}
+
+model UserPreference {
+  id                        String           @id @default(uuid())
+  userId                    String           @unique(map: "user_preferences_user_id_unique") @map("user_id")
+  careerStatus              CareerStatus     @map("career_status")
+  jobSeekingStatus          JobSeekingStatus @map("job_seeking_status")
+  targetRoles               Json             @map("target_roles")
+  locations                 Json
+  workTypes                 WorkType[]       @map("work_types")
+  salaryMin                 Int?             @map("salary_min")
+  salaryMax                 Int?             @map("salary_max")
+  salaryCurrency            String           @default("IDR") @map("salary_currency")
+  salaryPeriod              SalaryPeriod     @default(MONTHLY) @map("salary_period")
+  emailNotificationsEnabled Boolean          @default(true) @map("email_notifications_enabled")
+  createdAt                 DateTime         @default(now()) @map("created_at")
+  updatedAt                 DateTime         @updatedAt @map("updated_at")
+  user                      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([careerStatus], map: "user_preferences_career_status_idx")
+  @@index([jobSeekingStatus], map: "user_preferences_job_seeking_status_idx")
+  @@map("user_preferences")
+}
+
+model SourcePlatform {
+  id            String         @id @default(uuid())
+  name          String
+  slug          String         @unique(map: "source_platforms_slug_unique")
+  baseUrl       String?        @map("base_url")
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  jobListings   JobListing[]
+  ingestionRuns IngestionRun[]
+
+  @@map("source_platforms")
+}
+
+model Company {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String?
+  logoUrl     String?      @map("logo_url")
+  websiteUrl  String?      @map("website_url")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  jobListings JobListing[]
+
+  @@index([name], map: "companies_name_idx")
+  @@index([slug], map: "companies_slug_idx")
+  @@map("companies")
+}
+
+model IngestionRun {
+  id               String         @id @default(uuid())
+  sourcePlatformId String         @map("source_platform_id")
+  startedAt        DateTime       @map("started_at")
+  finishedAt       DateTime?      @map("finished_at")
+  status           String
+  observedCount    Int            @default(0) @map("observed_count")
+  upsertedCount    Int            @default(0) @map("upserted_count")
+  errorCount       Int            @default(0) @map("error_count")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  sourcePlatform   SourcePlatform @relation(fields: [sourcePlatformId], references: [id], onDelete: Restrict)
+  jobListings      JobListing[]
+
+  @@index([sourcePlatformId], map: "ingestion_runs_source_platform_id_idx")
+  @@index([startedAt], map: "ingestion_runs_started_at_idx")
+  @@map("ingestion_runs")
+}
+
+model JobListing {
+  id                 String              @id @default(uuid())
+  sourcePlatformId   String              @map("source_platform_id")
+  companyId          String              @map("company_id")
+  ingestionRunId     String?             @map("ingestion_run_id")
+  externalJobId      String              @map("external_job_id")
+  title              String
+  normalizedTitle    String?             @map("normalized_title")
+  category           String?
+  description        String?
+  requirementSummary String?             @map("requirement_summary")
+  workType           WorkType?           @map("work_type")
+  employmentType     EmploymentType?     @map("employment_type")
+  experienceLevel    ExperienceLevel?    @map("experience_level")
+  locationDisplay    String?             @map("location_display")
+  province           String?
+  city               String?
+  salaryMin          Int?                @map("salary_min")
+  salaryMax          Int?                @map("salary_max")
+  salaryCurrency     String              @default("IDR") @map("salary_currency")
+  salaryPeriod       SalaryPeriod?       @map("salary_period")
+  salaryDisplay      String?             @map("salary_display")
+  sourceUrl          String              @map("source_url")
+  externalApplyUrl   String              @map("external_apply_url")
+  sourcePostedAt     DateTime?           @map("source_posted_at")
+  sourceUpdatedAt    DateTime?           @map("source_updated_at")
+  lastSeenAt         DateTime            @map("last_seen_at")
+  expiredAt          DateTime?           @map("expired_at")
+  status             JobListingStatus    @default(ACTIVE)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  sourcePlatform     SourcePlatform      @relation(fields: [sourcePlatformId], references: [id], onDelete: Restrict)
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  ingestionRun       IngestionRun?       @relation(fields: [ingestionRunId], references: [id], onDelete: SetNull)
+  requirements       JobRequirement[]
+  jobSkills          JobSkill[]
+  bookmarks          Bookmark[]
+  applications       ApplicationRecord[]
+  fitScoreResults    FitScoreResult[]
+  skillGapResults    SkillGapResult[]
+  cvAnalysisResults  CvAnalysisResult[]
+
+  @@unique([sourcePlatformId, externalJobId], map: "job_listings_source_external_id_unique")
+  @@index([sourcePlatformId], map: "job_listings_source_platform_id_idx")
+  @@index([companyId], map: "job_listings_company_id_idx")
+  @@index([normalizedTitle], map: "job_listings_normalized_title_idx")
+  @@index([province], map: "job_listings_province_idx")
+  @@index([city], map: "job_listings_city_idx")
+  @@index([workType], map: "job_listings_work_type_idx")
+  @@index([employmentType], map: "job_listings_employment_type_idx")
+  @@index([experienceLevel], map: "job_listings_experience_level_idx")
+  @@index([salaryMin], map: "job_listings_salary_min_idx")
+  @@index([salaryMax], map: "job_listings_salary_max_idx")
+  @@index([lastSeenAt], map: "job_listings_last_seen_at_idx")
+  @@index([sourcePostedAt], map: "job_listings_source_posted_at_idx")
+  @@index([status], map: "job_listings_status_idx")
+  @@map("job_listings")
+}
+
+model JobRequirement {
+  id           String               @id @default(uuid())
+  jobListingId String               @map("job_listing_id")
+  type         RequirementType
+  value        String
+  priority     RequirementPriority?
+  sortOrder    Int                  @default(0) @map("sort_order")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  jobListing   JobListing           @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
+
+  @@index([jobListingId], map: "job_requirements_job_listing_id_idx")
+  @@index([type], map: "job_requirements_type_idx")
+  @@map("job_requirements")
+}
+
+model JobSkill {
+  id           String     @id @default(uuid())
+  jobListingId String     @map("job_listing_id")
+  skillId      String     @map("skill_id")
+  confidence   Decimal?   @db.Decimal(5, 4)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  jobListing   JobListing @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
+  skill        Skill      @relation(fields: [skillId], references: [id], onDelete: Restrict)
+
+  @@unique([jobListingId, skillId], map: "job_skills_job_skill_unique")
+  @@index([skillId], map: "job_skills_skill_id_idx")
+  @@map("job_skills")
+}
+
+model Bookmark {
+  id           String     @id @default(uuid())
+  userId       String     @map("user_id")
+  jobListingId String     @map("job_listing_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListing   JobListing @relation(fields: [jobListingId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, jobListingId], map: "bookmarks_user_job_listing_unique")
+  @@index([userId], map: "bookmarks_user_id_idx")
+  @@index([createdAt], map: "bookmarks_created_at_idx")
+  @@map("bookmarks")
+}
+
+model ApplicationRecord {
+  id           String                     @id @default(uuid())
+  userId       String                     @map("user_id")
+  jobListingId String                     @map("job_listing_id")
+  status       ApplicationStatus          @default(APPLIED)
+  source       ApplicationSource          @default(MANUAL)
+  notes        String?
+  appliedAt    DateTime                   @default(now()) @map("applied_at")
+  createdAt    DateTime                   @default(now()) @map("created_at")
+  updatedAt    DateTime                   @updatedAt @map("updated_at")
+  user         User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListing   JobListing                 @relation(fields: [jobListingId], references: [id], onDelete: Restrict)
+  history      ApplicationStatusHistory[]
+
+  @@unique([userId, jobListingId], map: "application_records_user_job_listing_unique")
+  @@index([userId], map: "application_records_user_id_idx")
+  @@index([status], map: "application_records_status_idx")
+  @@index([updatedAt], map: "application_records_updated_at_idx")
+  @@map("application_records")
+}
+
+model ApplicationStatusHistory {
+  id                  String             @id @default(uuid())
+  applicationRecordId String             @map("application_record_id")
+  userId              String             @map("user_id")
+  fromStatus          ApplicationStatus? @map("from_status")
+  toStatus            ApplicationStatus  @map("to_status")
+  notes               String?
+  createdAt           DateTime           @default(now()) @map("created_at")
+  applicationRecord   ApplicationRecord  @relation(fields: [applicationRecordId], references: [id], onDelete: Cascade)
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([applicationRecordId], map: "application_status_histories_application_record_id_idx")
+  @@index([userId], map: "application_status_histories_user_id_idx")
+  @@map("application_status_histories")
+}
+
+model FitScoreResult {
+  id                     String     @id @default(uuid())
+  userId                 String     @map("user_id")
+  jobListingId           String     @map("job_listing_id")
+  fitScore               Int        @map("fit_score")
+  readinessLevel         String     @map("readiness_level")
+  recommendationDecision String     @map("recommendation_decision")
+  recommendationSummary  String     @map("recommendation_summary")
+  breakdown              Json
+  modelName              String?    @map("model_name")
+  modelVersion           String?    @map("model_version")
+  inputSummary           Json?      @map("input_summary")
+  analyzedAt             DateTime   @default(now()) @map("analyzed_at")
+  createdAt              DateTime   @default(now()) @map("created_at")
+  user                   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListing             JobListing @relation(fields: [jobListingId], references: [id], onDelete: Restrict)
+
+  @@index([userId, jobListingId], map: "fit_score_results_user_job_listing_idx")
+  @@index([analyzedAt], map: "fit_score_results_analyzed_at_idx")
+  @@map("fit_score_results")
+}
+
+model SkillGapResult {
+  id           String     @id @default(uuid())
+  userId       String     @map("user_id")
+  jobListingId String     @map("job_listing_id")
+  gaps         Json
+  modelName    String?    @map("model_name")
+  modelVersion String?    @map("model_version")
+  inputSummary Json?      @map("input_summary")
+  analyzedAt   DateTime   @default(now()) @map("analyzed_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListing   JobListing @relation(fields: [jobListingId], references: [id], onDelete: Restrict)
+
+  @@index([userId, jobListingId], map: "skill_gap_results_user_job_listing_idx")
+  @@index([analyzedAt], map: "skill_gap_results_analyzed_at_idx")
+  @@map("skill_gap_results")
+}
+
+model CvFileMetadata {
+  id                String             @id @default(uuid())
+  userId            String             @map("user_id")
+  originalFileName  String             @map("original_file_name")
+  mimeType          String             @map("mime_type")
+  sizeBytes         Int                @map("size_bytes")
+  storageDriver     StorageDriver      @default(LOCAL) @map("storage_driver")
+  storageKey        String             @map("storage_key")
+  uploadedAt        DateTime           @default(now()) @map("uploaded_at")
+  expiresAt         DateTime           @map("expires_at")
+  deletedAt         DateTime?          @map("deleted_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cvAnalysisResults CvAnalysisResult[]
+
+  @@index([userId], map: "cv_file_metadata_user_id_idx")
+  @@index([expiresAt], map: "cv_file_metadata_expires_at_idx")
+  @@map("cv_file_metadata")
+}
+
+model CvAnalysisResult {
+  id                       String           @id @default(uuid())
+  userId                   String           @map("user_id")
+  jobListingId             String           @map("job_listing_id")
+  cvFileMetadataId         String?          @map("cv_file_metadata_id")
+  language                 AnalysisLanguage
+  inputMode                CvInputMode      @map("input_mode")
+  compareSource            CvCompareSource  @default(JOB_SEARCH) @map("compare_source")
+  overallImpression        Json             @map("overall_impression")
+  jobFitAlignment          Json             @map("job_fit_alignment")
+  atsFriendliness          Json             @map("ats_friendliness")
+  keywordOptimization      Json             @map("keyword_optimization")
+  experienceQuantification Json             @map("experience_quantification")
+  actionableImprovements   Json             @map("actionable_improvements")
+  modelName                String?          @map("model_name")
+  modelVersion             String?          @map("model_version")
+  inputSummary             Json?            @map("input_summary")
+  analyzedAt               DateTime         @default(now()) @map("analyzed_at")
+  createdAt                DateTime         @default(now()) @map("created_at")
+  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListing               JobListing       @relation(fields: [jobListingId], references: [id], onDelete: Restrict)
+  cvFileMetadata           CvFileMetadata?  @relation(fields: [cvFileMetadataId], references: [id], onDelete: SetNull)
+
+  @@index([userId, jobListingId], map: "cv_analysis_results_user_job_listing_idx")
+  @@index([analyzedAt], map: "cv_analysis_results_analyzed_at_idx")
+  @@map("cv_analysis_results")
+}
+
+model AiRequestLog {
+  id            String          @id @default(uuid())
+  userId        String?         @map("user_id")
+  kind          AiRequestKind
+  status        AiRequestStatus
+  requestId     String          @map("request_id")
+  modelName     String?         @map("model_name")
+  modelVersion  String?         @map("model_version")
+  latencyMs     Int?            @map("latency_ms")
+  errorCode     String?         @map("error_code")
+  inputSummary  Json?           @map("input_summary")
+  outputSummary Json?           @map("output_summary")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId], map: "ai_request_logs_user_id_idx")
+  @@index([requestId], map: "ai_request_logs_request_id_idx")
+  @@index([kind, status], map: "ai_request_logs_kind_status_idx")
+  @@index([createdAt], map: "ai_request_logs_created_at_idx")
+  @@map("ai_request_logs")
+}

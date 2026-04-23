@@ -48,11 +48,13 @@ Environment variables must be validated at startup with Zod in `src/config/env.t
 | `DATABASE_URL`        | Yes      | None          | PostgreSQL connection string used by Prisma                          |
 | `DIRECT_DATABASE_URL` | No       | None          | Optional direct database URL for migrations if pooling is introduced |
 | `PRISMA_LOG_LEVEL`    | No       | `warn`        | Prisma logging level for development and debugging                   |
+| `RUN_DATABASE_TESTS`  | No       | `false`       | Test-only flag that enables repository tests against PostgreSQL      |
 
 Rules:
 
 - Never commit real database credentials.
 - Use a separate database for tests.
+- Keep `RUN_DATABASE_TESTS=false` for ordinary local test runs unless the isolated test database is running and migrations are applied.
 - Run migrations explicitly in deployment workflows; do not rely on application startup to mutate production schema unless that deployment policy is approved.
 
 ## Auth Variables
@@ -194,6 +196,8 @@ When the project scaffold is created, `.env.example` must:
 The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
 
 Test defaults should use fake providers or local mocks for email, Model API, Scraper API, and uploads. Test logs should default to `silent` unless a failing test needs diagnostic output.
+
+Repository integration tests should keep `RUN_DATABASE_TESTS=false` for ordinary full-suite runs. Set `RUN_DATABASE_TESTS=true` only when running against an isolated PostgreSQL test database with committed migrations applied. Migration verification commands may set this flag automatically after applying migrations.
 
 ## Related Docs
 

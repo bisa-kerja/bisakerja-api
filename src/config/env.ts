@@ -54,6 +54,13 @@ const envSchema = z
     API_PREFIX: z.string().startsWith("/").default("/api/v1"),
     APP_URL: z.url().default("http://localhost:3000"),
     FRONTEND_URL: z.url().default("http://localhost:5173"),
+    DATABASE_URL: z
+      .url()
+      .default("postgresql://postgres:postgres@localhost:5432/bisakerja_api"),
+    DIRECT_DATABASE_URL: z.string().optional().default(""),
+    PRISMA_LOG_LEVEL: z
+      .enum(["query", "info", "warn", "error"])
+      .default("warn"),
     CORS_ORIGINS: z.string().default("http://localhost:5173"),
     TRUST_PROXY: booleanSchema.default(false),
     REQUEST_BODY_LIMIT: z.string().min(1).default("1mb"),
@@ -117,6 +124,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env) {
       authRateLimitMax: parsed.AUTH_RATE_LIMIT_MAX,
       uploadRateLimitMax: parsed.UPLOAD_RATE_LIMIT_MAX,
       aiRateLimitMax: parsed.AI_RATE_LIMIT_MAX
+    },
+    database: {
+      url: parsed.DIRECT_DATABASE_URL || parsed.DATABASE_URL,
+      runtimeUrl: parsed.DATABASE_URL,
+      directUrl: parsed.DIRECT_DATABASE_URL || null,
+      prismaLogLevel: parsed.PRISMA_LOG_LEVEL
     },
     observability: {
       logLevel: parsed.LOG_LEVEL,

@@ -27,6 +27,7 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+src/generated/prisma/
 
 # Runtime cache and temporary files
 .cache/

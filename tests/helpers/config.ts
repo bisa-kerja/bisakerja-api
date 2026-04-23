@@ -12,6 +12,10 @@ export function testConfig(
     API_PREFIX: "/api/v1",
     APP_URL: "http://localhost:3000",
     FRONTEND_URL: "http://localhost:5173",
+    DATABASE_URL:
+      "postgresql://postgres:postgres@localhost:5432/bisakerja_api_test",
+    DIRECT_DATABASE_URL: "",
+    PRISMA_LOG_LEVEL: "warn",
     CORS_ORIGINS: "http://localhost:5173",
     TRUST_PROXY: "false",
     REQUEST_BODY_LIMIT: "1mb",

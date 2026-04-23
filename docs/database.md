@@ -500,10 +500,20 @@ Avoid JSON for fields that need filters, sorting, joins, or integrity constraint
 
 ### Generated Client Usage
 
-- Use a single Prisma client instance exported from `src/shared/libs/prisma.ts` or configured via `src/config/database.ts`.
+- Use the generated Prisma client at `src/generated/prisma`.
+- Use a single Prisma client instance exported from `src/shared/libs/prisma.ts`.
 - Repositories should receive or import the Prisma client consistently.
 - Controllers should never import Prisma directly.
 - Services should use repositories instead of direct Prisma access except for carefully documented transactions.
+
+The project uses Prisma ORM 7 configuration:
+
+- `prisma.config.ts` defines the schema path, migrations path, seed command, and datasource URL.
+- `prisma/schema.prisma` uses the `prisma-client` generator with an explicit output path.
+- Runtime code imports `PrismaClient` from `src/generated/prisma/client`.
+- The PostgreSQL adapter is configured in the shared Prisma wrapper.
+
+Generated client files are build artifacts and must be regenerated after schema changes.
 
 ## Migration Policy
 
@@ -544,6 +554,16 @@ Seed rules:
 - Do not include real secrets.
 - Use separate test fixtures for integration tests when possible.
 - Document seed commands after project setup defines package scripts.
+
+The seed script lives at `prisma/seed.ts` and creates deterministic normalized data for local development:
+
+- Source platforms: Glints, Jobstreet, Kalibrr, and Dealls.
+- Synthetic companies.
+- Synthetic normalized job listings.
+- Normalized requirements.
+- Shared skills and job-skill links.
+
+Seed data must stay product-shaped but synthetic. It must not include raw external provider payloads, real user records, raw CV content, raw model payloads, passwords, tokens, OTP values, or service credentials.
 
 ## Data Retention
 

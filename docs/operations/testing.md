@@ -79,16 +79,17 @@ Automated tests must run with `APP_ENV=test`.
 
 Required test environment behavior:
 
-| Area         | Rule                                                                                               |
-| ------------ | -------------------------------------------------------------------------------------------------- |
-| Database     | Use an isolated test `DATABASE_URL`; never use local development, staging, or production databases |
-| Auth         | Use deterministic secrets only for tests; never reuse staging or production secrets                |
-| Email        | Use a fake or in-memory email provider                                                             |
-| Model API    | Use `MODEL_API_ENABLE_MOCK=true` or a local fake service for most tests                            |
-| Scraper data | Use normalized job fixtures seeded into the test database                                          |
-| Uploads      | Use a disposable test upload path outside tracked source files                                     |
-| Logging      | Keep logs structured but reduce noise unless a test fails                                          |
-| Time         | Prefer injectable clocks for token expiry, stale jobs, and retention tests                         |
+| Area          | Rule                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| Database      | Use an isolated test `DATABASE_URL`; never use local development, staging, or production databases |
+| Auth          | Use deterministic secrets only for tests; never reuse staging or production secrets                |
+| Email         | Use a fake or in-memory email provider                                                             |
+| Model API     | Use `MODEL_API_ENABLE_MOCK=true` or a local fake service for most tests                            |
+| Scraper data  | Use normalized job fixtures seeded into the test database                                          |
+| Uploads       | Use a disposable test upload path outside tracked source files                                     |
+| Logging       | Keep logs structured but reduce noise unless a test fails                                          |
+| Time          | Prefer injectable clocks for token expiry, stale jobs, and retention tests                         |
+| DB assertions | Require `RUN_DATABASE_TESTS=true`; ordinary full-suite runs skip database-backed repository checks |
 
 The final `.env.test.example` should be created during scaffold work and kept in sync with `docs/environment.md` and `src/config/env.ts`.
 
@@ -151,6 +152,8 @@ verify migrations -> generate Prisma client -> apply migrations to test database
 ```
 
 The reserved command name for this flow is `bun run prisma:verify:migrations`.
+
+The current migration verification command validates the Prisma schema, generates the client, applies committed migrations through Prisma Migrate deploy, and runs repository integration tests. It requires `APP_ENV=test` and an isolated PostgreSQL `DATABASE_URL`. Repository tests run database-backed assertions only when `RUN_DATABASE_TESTS=true`; ordinary full test runs skip them with an explicit reason. Release verification should run against a real empty test database.
 
 Production deployment must use explicit migration execution, not implicit application startup mutation, unless a later approved deployment policy says otherwise.
 
