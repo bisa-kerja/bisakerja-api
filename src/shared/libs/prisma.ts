@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "@/config/env";
 import { logger } from "@/config/logger";
 import { PrismaClient } from "@/generated/prisma/client";
+export type { PrismaTransaction } from "@/shared/libs/prisma.types";
 
 const prismaLogLevels =
   env.database.prismaLogLevel === "query"
@@ -44,7 +45,3 @@ prisma.$on("error", (event) => {
     "Prisma error"
   );
 });
-
-export type PrismaTransaction = Parameters<
-  Parameters<typeof prisma.$transaction>[0]
->[0];

@@ -6,11 +6,7 @@ import {
   defaultHealthDependencyChecks,
   getReadinessPayload
 } from "@/modules/health/health.service";
-import type { HealthDependencyChecks } from "@/modules/health/health.service";
-
-export type HealthRouterOptions = {
-  checks?: HealthDependencyChecks;
-};
+import type { HealthRouterOptions } from "@/modules/health/health.types";
 
 export function createHealthRouter(
   config: AppConfig,

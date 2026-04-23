@@ -1,10 +1,5 @@
-export type AppErrorOptions = {
-  statusCode: number;
-  code: string;
-  message: string;
-  details?: unknown;
-  isOperational?: boolean;
-};
+import type { AppErrorOptions } from "@/core/errors/app-error.types";
+export type { AppErrorOptions } from "@/core/errors/app-error.types";
 
 export class AppError extends Error {
   readonly statusCode: number;

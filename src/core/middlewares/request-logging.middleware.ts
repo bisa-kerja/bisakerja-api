@@ -1,8 +1,7 @@
 import type { RequestHandler } from "express";
 
 import { logger } from "@/config/logger";
-
-type RequestLogger = Pick<typeof logger, "info">;
+import type { RequestLogger } from "@/core/middlewares/request-logging.types";
 
 export function requestLoggingMiddleware(
   requestLogger: RequestLogger = logger

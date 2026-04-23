@@ -2,18 +2,11 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { ZodType } from "zod";
 
 import { ValidationError } from "@/core/errors/app.error";
-
-type ValidationSchemas = {
-  body?: ZodType;
-  query?: ZodType;
-  params?: ZodType;
-};
-
-type ValidationIssue = {
-  path: string;
-  message: string;
-  code: string;
-};
+import type {
+  ValidationIssue,
+  ValidationSchemas
+} from "@/core/middlewares/validate.types";
+export type { ValidationSchemas } from "@/core/middlewares/validate.types";
 
 function toValidationIssues(error: {
   issues: { path: PropertyKey[]; message: string; code: string }[];

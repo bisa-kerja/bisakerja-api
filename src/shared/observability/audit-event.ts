@@ -1,16 +1,9 @@
 import { logger } from "@/config/logger";
-
-type AuditLogger = Pick<typeof logger, "info">;
-
-export type AuditEventInput = {
-  action: string;
-  requestId: string;
-  result: "success" | "failure";
-  actorId?: string | null;
-  resourceType?: string | null;
-  resourceId?: string | null;
-  metadata?: Record<string, unknown>;
-};
+import type {
+  AuditEventInput,
+  AuditLogger
+} from "@/shared/observability/audit-event.types";
+export type { AuditEventInput } from "@/shared/observability/audit-event.types";
 
 const sensitiveKeyPattern =
   /password|token|otp|secret|authorization|cookie|credential|cvContent|rawPayload|rawModel|rawScraper|databaseUrl|DATABASE_URL/i;

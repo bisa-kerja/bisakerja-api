@@ -2,29 +2,12 @@ import { logger } from "@/config/logger";
 import type { AppConfig } from "@/config/env";
 import { ServiceUnavailableError } from "@/core/errors/app.error";
 import { prisma } from "@/shared/libs/prisma";
-
-export type DependencyCheck = () => Promise<void>;
-
-export type HealthDependencyChecks = {
-  postgresql: DependencyCheck;
-};
-
-type DependencyState = "healthy" | "unhealthy";
-
-type DependencyResult = {
-  status: DependencyState;
-  durationMs: number;
-  errorMessage: string | null;
-};
-
-export type ReadinessPayload = {
-  service: string;
-  status: "ready";
-  env: AppConfig["app"]["env"];
-  dependencies: {
-    postgresql: "healthy";
-  };
-};
+import type {
+  DependencyCheck,
+  DependencyResult,
+  HealthDependencyChecks,
+  ReadinessPayload
+} from "@/modules/health/health.types";
 
 export const defaultHealthDependencyChecks: HealthDependencyChecks = {
   postgresql: async () => {
@@ -125,7 +108,7 @@ async function runWithTimeout(
   check: DependencyCheck,
   timeoutMs: number,
   dependency: string
-) {
+): Promise<void> {
   let timeout: ReturnType<typeof setTimeout> | undefined;
 
   try {

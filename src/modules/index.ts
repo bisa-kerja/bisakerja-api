@@ -2,11 +2,8 @@ import type { Express } from "express";
 
 import type { AppConfig } from "@/config/env";
 import { createHealthRouter } from "@/modules/health";
-import type { HealthRouterOptions } from "@/modules/health/health.route";
-
-export type RouteOptions = {
-  health?: HealthRouterOptions;
-};
+import type { RouteOptions } from "@/modules/route.types";
+export type { RouteOptions } from "@/modules/route.types";
 
 export function registerRoutes(
   app: Express,

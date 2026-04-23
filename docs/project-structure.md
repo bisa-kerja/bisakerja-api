@@ -24,14 +24,18 @@ This structure refines `folder-structur-reference.md` by making module file name
 |-- prisma/
 |   |-- migrations/
 |   |-- schema.prisma
+|   |-- seed-data.ts
 |   `-- seed.ts
 |
 |-- src/
 |   |-- app.ts
+|   |-- app.types.ts
 |   |-- server.ts
 |   |
 |   |-- config/
 |   |   |-- env.ts
+|   |   |-- env.schema.ts
+|   |   |-- env.types.ts
 |   |   |-- database.ts
 |   |   `-- logger.ts
 |   |
@@ -39,15 +43,20 @@ This structure refines `folder-structur-reference.md` by making module file name
 |   |   |-- constants/
 |   |   |   `-- index.ts
 |   |   |-- errors/
+|   |   |   |-- app-error.types.ts
 |   |   |   |-- app.error.ts
 |   |   |   `-- error.handler.ts
 |   |   |-- middlewares/
 |   |   |   |-- auth.middleware.ts
 |   |   |   |-- rate-limit.middleware.ts
+|   |   |   |-- rate-limit.types.ts
 |   |   |   |-- request-id.middleware.ts
-|   |   |   `-- validate.middleware.ts
+|   |   |   |-- request-logging.types.ts
+|   |   |   |-- validate.middleware.ts
+|   |   |   `-- validate.types.ts
 |   |   `-- responses/
-|   |       `-- response.formatter.ts
+|   |       |-- response.formatter.ts
+|   |       `-- response.types.ts
 |   |
 |   |-- modules/
 |   |   |-- auth/
@@ -77,6 +86,7 @@ This structure refines `folder-structur-reference.md` by making module file name
 |   |-- unit/
 |   |-- integration/
 |   `-- fixtures/
+|       `-- schemas.ts
 |
 |-- docs/
 |-- .env.example
@@ -86,19 +96,20 @@ This structure refines `folder-structur-reference.md` by making module file name
 
 ## Directory Responsibilities
 
-| Path              | Responsibility                                                                                 |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| `prisma/`         | Prisma schema, migrations, and seed data                                                       |
-| `src/app.ts`      | Express app creation, global middleware, route registration, and error handler registration    |
-| `src/server.ts`   | Runtime bootstrap, port binding, startup logging, and graceful shutdown                        |
-| `src/config/`     | Environment validation, logger configuration, and database client setup                        |
-| `src/core/`       | Global framework-level concerns that are not domain-specific                                   |
-| `src/modules/`    | Feature modules and their routes, controllers, services, repositories, schemas, and types      |
-| `src/shared/`     | Reusable utilities, integration clients, shared types, and wrappers used by multiple modules   |
-| `tests/`          | Unit, integration, route, contract, and fixture test support                                   |
-| `tests/helpers/`  | Shared test utilities such as route injection and environment guards                           |
-| `tests/fixtures/` | Synthetic users, jobs, model responses, and normalized scraper records for deterministic tests |
-| `docs/`           | Service-owned technical documentation synced later to Bisakerja Docs                           |
+| Path               | Responsibility                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| `prisma/`          | Prisma schema, migrations, seed orchestration, and reusable seed data                          |
+| `src/app.ts`       | Express app creation, global middleware, route registration, and error handler registration    |
+| `src/app.types.ts` | App factory option types that would otherwise make `app.ts` denser                             |
+| `src/server.ts`    | Runtime bootstrap, port binding, startup logging, and graceful shutdown                        |
+| `src/config/`      | Environment validation schema, typed runtime config mapping, logger configuration, and setup   |
+| `src/core/`        | Global framework-level concerns that are not domain-specific                                   |
+| `src/modules/`     | Feature modules and their routes, controllers, services, repositories, schemas, and types      |
+| `src/shared/`      | Reusable utilities, integration clients, shared types, and wrappers used by multiple modules   |
+| `tests/`           | Unit, integration, route, contract, and fixture test support                                   |
+| `tests/helpers/`   | Shared test utilities such as route injection and environment guards                           |
+| `tests/fixtures/`  | Synthetic users, jobs, model responses, normalized scraper records, and shared fixture schemas |
+| `docs/`            | Service-owned technical documentation synced later to Bisakerja Docs                           |
 
 ## Module Anatomy
 
@@ -129,7 +140,7 @@ File responsibilities:
 | `<module>.constants.ts`  | Module-specific constants, enums, and code lists when needed                                          |
 | `index.ts`               | Module exports for route registration and tests                                                       |
 
-Small modules may omit `repository`, `constants`, or `types` only when there is no database access, no constants, or no local types. Do not omit route, controller, service, or schema files for MVP modules unless the module is intentionally documentation-only.
+Small modules may omit `repository`, `constants`, or `types` only when there is no database access, no constants, or no local types. Keep non-trivial request or payload schemas in `<module>.schema.ts` and non-trivial exported or cross-file types in `<module>.types.ts`. Very small implementation-local helper types may remain inline when moving them would make navigation worse. Do not omit route, controller, service, or schema files for MVP modules unless the module is intentionally documentation-only.
 
 ## MVP Modules
 
@@ -246,10 +257,17 @@ Route prefixes should be documented in module docs and mounted under the configu
 
 ## Configuration Layer
 
-`src/config/env.ts`:
+`src/config/env.schema.ts`:
 
 - Defines Zod environment schema.
+
+`src/config/env.types.ts`:
+
 - Exports typed config.
+
+`src/config/env.ts`:
+
+- Parses environment variables and maps them to runtime config.
 - Fails fast during startup when required values are missing.
 
 `src/config/database.ts`:
@@ -276,6 +294,8 @@ Route prefixes should be documented in module docs and mounted under the configu
 - Response formatter.
 - Global constants.
 
+When core helpers expose reusable contracts, keep those contracts in adjacent `*.types.ts` files, such as `response.types.ts`, `validate.types.ts`, or `rate-limit.types.ts`.
+
 Do not put domain-specific rules in `src/core/`. If a rule references jobs, applications, CV analysis, or user preferences, it belongs in the relevant module.
 
 ## Shared Layer
@@ -290,6 +310,8 @@ Do not put domain-specific rules in `src/core/`. If a rule references jobs, appl
 - Shared TypeScript declarations.
 
 Shared code must remain boring and generic. Do not move code into `shared` just to avoid one import. Use it when the same behavior is genuinely used by more than one module.
+
+Shared helpers that expose reusable input contracts should keep those contracts in an adjacent `*.types.ts` file. For example, observability audit event input types live next to the audit helper rather than in a global catch-all type file.
 
 ## Tests Structure
 

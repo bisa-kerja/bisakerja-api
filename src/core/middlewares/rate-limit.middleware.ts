@@ -2,14 +2,9 @@ import { rateLimit } from "express-rate-limit";
 import type { RateLimitRequestHandler } from "express-rate-limit";
 
 import type { AppConfig } from "@/config/env";
+import type { RateLimiterSet } from "@/core/middlewares/rate-limit.types";
 import { errorResponse } from "@/core/responses/response.formatter";
-
-type RateLimiterSet = {
-  defaultLimiter: RateLimitRequestHandler;
-  authLimiter: RateLimitRequestHandler;
-  uploadLimiter: RateLimitRequestHandler;
-  aiLimiter: RateLimitRequestHandler;
-};
+export type { RateLimiterSet } from "@/core/middlewares/rate-limit.types";
 
 function createLimiter(
   config: AppConfig,

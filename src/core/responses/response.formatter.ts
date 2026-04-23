@@ -1,29 +1,9 @@
-export type PaginationMeta = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-};
-
-export type ListMeta = {
-  pagination: PaginationMeta;
-  filters?: Record<string, unknown>;
-  sort?: string;
-  [key: string]: unknown;
-};
-
-export type ErrorEnvelope = {
-  success: false;
-  message: string;
-  data: null;
-  error: {
-    code: string;
-    details: unknown;
-    requestId: string;
-  };
-};
+import type { ErrorEnvelope, ListMeta } from "@/core/responses/response.types";
+export type {
+  ErrorEnvelope,
+  ListMeta,
+  PaginationMeta
+} from "@/core/responses/response.types";
 
 export function successResponse<T>(
   data: T,

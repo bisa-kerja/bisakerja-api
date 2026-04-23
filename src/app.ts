@@ -2,6 +2,7 @@ import express from "express";
 
 import { env } from "@/config/env";
 import type { AppConfig } from "@/config/env";
+import type { AppOptions } from "@/app.types";
 import { NotFoundError } from "@/core/errors/app.error";
 import { errorHandler } from "@/core/errors/error.handler";
 import { requestIdMiddleware } from "@/core/middlewares/request-id.middleware";
@@ -12,10 +13,7 @@ import {
   securityHeadersMiddleware
 } from "@/core/middlewares/security.middleware";
 import { registerRoutes } from "@/modules";
-
-export type AppOptions = {
-  routes?: Parameters<typeof registerRoutes>[2];
-};
+export type { AppOptions } from "@/app.types";
 
 export function createApp(config: AppConfig = env, options: AppOptions = {}) {
   const app = express();
