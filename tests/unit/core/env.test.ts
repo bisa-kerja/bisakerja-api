@@ -10,7 +10,9 @@ describe("environment validation", () => {
       PORT: "3100",
       CORS_ORIGINS: "http://localhost:5173,http://localhost:3001",
       TRUST_PROXY: "true",
-      ENABLE_REQUEST_LOGGING: "true"
+      ENABLE_REQUEST_LOGGING: "true",
+      MODEL_API_ENABLE_MOCK: "false",
+      MODEL_API_SERVICE_TOKEN: "live-model-token"
     });
 
     expect(config.app.port).toBe(3100);
@@ -22,6 +24,10 @@ describe("environment validation", () => {
     expect(config.database.prismaLogLevel).toBe("warn");
     expect(config.security.trustProxy).toBe(true);
     expect(config.observability.enableRequestLogging).toBe(true);
+    expect(config.integrations.modelApi.baseUrl).toBe("http://localhost:8000");
+    expect(config.integrations.modelApi.timeoutMs).toBe(10000);
+    expect(config.integrations.modelApi.serviceToken).toBe("live-model-token");
+    expect(config.integrations.modelApi.enableMock).toBe(false);
   });
 
   test("rejects invalid port values", () => {
@@ -37,7 +43,17 @@ describe("environment validation", () => {
         API_PREFIX: "/api/v1",
         APP_URL: "https://api.bisakerja.example",
         FRONTEND_URL: "https://bisakerja.example",
-        CORS_ORIGINS: "*"
+        CORS_ORIGINS: "*",
+        MODEL_API_SERVICE_TOKEN: "prod-model-token"
+      })
+    ).toThrow(ZodError);
+  });
+
+  test("rejects missing model api token outside mock mode", () => {
+    expect(() =>
+      testConfig({
+        MODEL_API_ENABLE_MOCK: "false",
+        MODEL_API_SERVICE_TOKEN: ""
       })
     ).toThrow(ZodError);
   });

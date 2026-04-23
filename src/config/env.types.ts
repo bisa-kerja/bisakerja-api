@@ -47,6 +47,14 @@ export type AppConfig = {
       password: string;
     };
   };
+  integrations: {
+    modelApi: {
+      baseUrl: string;
+      timeoutMs: number;
+      serviceToken: string;
+      enableMock: boolean;
+    };
+  };
   jobs: {
     staleAfterHours: number;
   };

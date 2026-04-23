@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
+import {
+  cvAnalyzerModelResponseSchema,
+  jobFitModelResponseSchema
+} from "@/shared/integrations/model-api.schema";
 import { jobFixtures, sourcePlatformFixtures } from "../../fixtures/jobs";
+import { modelApiFixtures } from "../../fixtures/model-api";
 import { normalizedScraperJobFixtures } from "../../fixtures/scraper-api";
 
 describe("fixture contracts", () => {
@@ -22,6 +27,23 @@ describe("fixture contracts", () => {
       normalizedScraperJobFixtures.every((job) =>
         supportedSlugs.has(job.sourcePlatform.slug)
       )
+    ).toBe(true);
+  });
+
+  test("model api fixtures satisfy downstream response contracts", () => {
+    expect(
+      jobFitModelResponseSchema.safeParse(modelApiFixtures.validJobFitResponse)
+        .success
+    ).toBe(true);
+    expect(
+      jobFitModelResponseSchema.safeParse(
+        modelApiFixtures.degradedJobFitResponse
+      ).success
+    ).toBe(true);
+    expect(
+      cvAnalyzerModelResponseSchema.safeParse(
+        modelApiFixtures.validCvAnalyzerResponse
+      ).success
     ).toBe(true);
   });
 });

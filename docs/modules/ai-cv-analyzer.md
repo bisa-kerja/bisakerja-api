@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-cv-analyzer.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # AI CV Analyzer Module
@@ -115,7 +115,10 @@ CV file validation:
 ```json
 {
   "requestId": "req_123",
-  "language": "id",
+  "inputVersion": "cv-analyzer-v1",
+  "language": "ID",
+  "inputMode": "UPLOAD",
+  "compareSource": "JOB_SEARCH",
   "cv": {
     "fileId": "cv_file_123",
     "mimeType": "application/pdf",
@@ -145,6 +148,7 @@ Payload rules:
 - Do not include passwords, tokens, OTP values, or unrelated profile data.
 - Do not persist raw extracted CV text unless retention and privacy rules are documented.
 - Propagate request id to Model API.
+- Normalize frontend-facing language selection to the internal downstream enum expected by Model API.
 
 ## Response Schema
 

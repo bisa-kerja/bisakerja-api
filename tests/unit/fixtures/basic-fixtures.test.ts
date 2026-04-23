@@ -4,8 +4,9 @@ import { jobFixtures, sourcePlatformFixtures } from "../../fixtures/jobs";
 import { modelApiFixtures } from "../../fixtures/model-api";
 import { normalizedScraperJobFixtures } from "../../fixtures/scraper-api";
 import {
+  cvAnalyzerModelResponseSchema,
   jobFixtureSchema,
-  modelResponseSchema,
+  jobFitModelResponseSchema,
   sourcePlatformFixtureSchema,
   userFixtureSchema
 } from "../../fixtures/schemas";
@@ -48,8 +49,14 @@ describe("basic fixtures", () => {
 
   test("defines model responses within supported score range", () => {
     expect(() =>
-      Object.values(modelApiFixtures).map((response) =>
-        modelResponseSchema.parse(response)
+      jobFitModelResponseSchema.parse(modelApiFixtures.validJobFitResponse)
+    ).not.toThrow();
+    expect(() =>
+      jobFitModelResponseSchema.parse(modelApiFixtures.degradedJobFitResponse)
+    ).not.toThrow();
+    expect(() =>
+      cvAnalyzerModelResponseSchema.parse(
+        modelApiFixtures.validCvAnalyzerResponse
       )
     ).not.toThrow();
   });

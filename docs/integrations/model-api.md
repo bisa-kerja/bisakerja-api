@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/integrations/model-api.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Model API Integration
@@ -45,6 +45,13 @@ Expected environment variables:
 - `MODEL_API_TIMEOUT_MS`
 - `MODEL_API_SERVICE_TOKEN`
 - `MODEL_API_ENABLE_MOCK` for local-only development before the real service is available
+
+Current backend default endpoint assumptions:
+
+- `POST /job-fit`
+- `POST /cv-analyzer`
+
+These paths are treated as the current internal contract until the Model API publishes a final route inventory.
 
 ## Supported Workflows
 
@@ -152,7 +159,9 @@ Backend-prepared payload shape:
 {
   "requestId": "req_456",
   "inputVersion": "cv-analyzer-v1",
-  "language": "id",
+  "language": "ID",
+  "inputMode": "UPLOAD",
+  "compareSource": "JOB_SEARCH",
   "cv": {
     "fileId": "cv_file_123",
     "mimeType": "application/pdf",
@@ -180,6 +189,7 @@ Rules:
 - Backend may send file reference, extracted text, or both depending on final Model API agreement.
 - If extracted text is sent, backend must not store it unless privacy and retention policy allow it.
 - Model API response must be validated before frontend mapping.
+- Backend should send normalized internal enum values to Model API, such as `ID` and `EN` for analysis language.
 
 ## CV Analyzer Response Expectations
 

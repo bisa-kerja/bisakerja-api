@@ -96,6 +96,12 @@ export const envSchema = z
     SMTP_PORT: numberFromString(587).pipe(z.number().int().positive()),
     SMTP_USER: z.string().optional().default(""),
     SMTP_PASSWORD: z.string().optional().default(""),
+    MODEL_API_BASE_URL: z.url().default("http://localhost:8000"),
+    MODEL_API_TIMEOUT_MS: numberFromString(10000).pipe(
+      z.number().int().positive()
+    ),
+    MODEL_API_SERVICE_TOKEN: z.string().default(""),
+    MODEL_API_ENABLE_MOCK: booleanSchema.default(false),
     JOB_STALE_AFTER_HOURS: numberFromString(72).pipe(
       z.number().int().positive()
     ),
@@ -155,5 +161,14 @@ export const envSchema = z
           });
         }
       }
+    }
+
+    if (!value.MODEL_API_ENABLE_MOCK && !value.MODEL_API_SERVICE_TOKEN) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["MODEL_API_SERVICE_TOKEN"],
+        message:
+          "MODEL_API_SERVICE_TOKEN is required when MODEL_API_ENABLE_MOCK=false"
+      });
     }
   });

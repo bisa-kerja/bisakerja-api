@@ -51,6 +51,14 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         password: parsed.SMTP_PASSWORD
       }
     },
+    integrations: {
+      modelApi: {
+        baseUrl: parsed.MODEL_API_BASE_URL,
+        timeoutMs: parsed.MODEL_API_TIMEOUT_MS,
+        serviceToken: parsed.MODEL_API_SERVICE_TOKEN,
+        enableMock: parsed.MODEL_API_ENABLE_MOCK
+      }
+    },
     jobs: {
       staleAfterHours: parsed.JOB_STALE_AFTER_HOURS
     },

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/environment.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Backend API Environment Configuration
@@ -99,17 +99,19 @@ Rules:
 
 ## Model API Variables
 
-| Variable                  | Required                    | Local default | Notes                                                             |
-| ------------------------- | --------------------------- | ------------- | ----------------------------------------------------------------- |
-| `MODEL_API_BASE_URL`      | Yes for AI workflows        | None          | FastAPI inference service base URL                                |
-| `MODEL_API_TIMEOUT_MS`    | Yes                         | `10000`       | Request timeout for inference calls                               |
-| `MODEL_API_SERVICE_TOKEN` | Yes outside local mock mode | None          | Internal service credential if required                           |
-| `MODEL_API_ENABLE_MOCK`   | No                          | `false`       | Local-only fallback for development before Model API is available |
+| Variable                  | Required                    | Local default           | Notes                                                             |
+| ------------------------- | --------------------------- | ----------------------- | ----------------------------------------------------------------- |
+| `MODEL_API_BASE_URL`      | Yes for AI workflows        | `http://localhost:8000` | FastAPI inference service base URL                                |
+| `MODEL_API_TIMEOUT_MS`    | Yes                         | `10000`                 | Request timeout for inference calls                               |
+| `MODEL_API_SERVICE_TOKEN` | Yes outside local mock mode | None                    | Internal service credential if required                           |
+| `MODEL_API_ENABLE_MOCK`   | No                          | `false`                 | Local-only fallback for development before Model API is available |
 
 Rules:
 
 - The frontend must never call Model API directly.
 - Backend should send only the minimum profile, preference, job, and CV context needed for inference.
+- Keep `MODEL_API_ENABLE_MOCK=true` only for local development and automated tests.
+- When `MODEL_API_ENABLE_MOCK=false`, `MODEL_API_SERVICE_TOKEN` must be present at startup.
 - Model API failures must map to documented 502 or 503 API responses.
 
 ## Scraper And Job Source Variables

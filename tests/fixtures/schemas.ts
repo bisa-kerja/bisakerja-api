@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  cvAnalyzerModelResponseSchema,
+  jobFitModelResponseSchema
+} from "@/shared/integrations/model-api.schema";
+
 export const userFixtureSchema = z.strictObject({
   id: z.string().min(1),
   email: z.email(),
@@ -29,14 +34,4 @@ export const jobFixtureSchema = z.strictObject({
   skills: z.array(z.string().min(1)).min(1)
 });
 
-export const modelResponseSchema = z.strictObject({
-  fitScore: z.number().min(0).max(100),
-  readiness: z.enum(["READY", "NEEDS_PREPARATION", "NOT_READY"]),
-  matchedSkills: z.array(z.string()),
-  missingSkills: z.array(z.string()),
-  recommendations: z.array(z.string()),
-  model: z.strictObject({
-    name: z.string().min(1),
-    version: z.string().min(1)
-  })
-});
+export { cvAnalyzerModelResponseSchema, jobFitModelResponseSchema };
