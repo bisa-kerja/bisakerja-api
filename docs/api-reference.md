@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-reference.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Backend API Reference
@@ -16,6 +16,10 @@ last_reviewed: 2026-04-22
 This document is the route group index for the Bisakerja Backend API. It defines API versioning, route prefix, auth behavior, common query patterns, and the contract checklist that module-specific API docs must follow.
 
 Detailed endpoint request and response schemas are documented in module pages as implementation matures.
+
+Generated route inventory lives in `docs/generated/routes.md`. It is derived from the runtime route registry and should be used as the fastest drift check against this reference page when new endpoints are added or removed.
+
+Machine-readable OpenAPI output is not published yet because the canonical generation source is still being finalized. Once that source is chosen, the same artifact can also back an interactive API portal, including a Scalar-based presentation if adopted later.
 
 ## Base URL And Versioning
 

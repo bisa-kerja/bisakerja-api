@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import type { Router } from "express";
 
 import type { AppConfig } from "@/config/env";
 import { createAiCvAnalyzerRouter } from "@/modules/ai-cv-analyzer";
@@ -13,42 +14,71 @@ import { createUsersRouter } from "@/modules/users";
 import type { RouteOptions } from "@/modules/route.types";
 export type { RouteOptions } from "@/modules/route.types";
 
+export type MountedRouter = {
+  id: string;
+  mountPath: string;
+  router: Router;
+};
+
+export function getMountedRouters(
+  config: AppConfig,
+  options: RouteOptions = {}
+): MountedRouter[] {
+  return [
+    {
+      id: "health",
+      mountPath: "/health",
+      router: createHealthRouter(config, options.health)
+    },
+    {
+      id: "auth",
+      mountPath: `${config.app.apiPrefix}/auth`,
+      router: createAuthRouter(config, options.auth)
+    },
+    {
+      id: "jobs",
+      mountPath: `${config.app.apiPrefix}/jobs`,
+      router: createJobsRouter(config, options.jobs)
+    },
+    {
+      id: "preferences",
+      mountPath: `${config.app.apiPrefix}/me/preferences`,
+      router: createPreferencesRouter(config, options.preferences)
+    },
+    {
+      id: "bookmarks",
+      mountPath: `${config.app.apiPrefix}/me/bookmarks`,
+      router: createBookmarksRouter(config, options.bookmarks)
+    },
+    {
+      id: "applications",
+      mountPath: `${config.app.apiPrefix}/me/applications`,
+      router: createApplicationsRouter(config, options.applications)
+    },
+    {
+      id: "ai-job-fit",
+      mountPath: `${config.app.apiPrefix}/ai/job-fit`,
+      router: createAiJobFitRouter(config, options.aiJobFit)
+    },
+    {
+      id: "ai-cv-analyzer",
+      mountPath: `${config.app.apiPrefix}/ai/cv-analyzer`,
+      router: createAiCvAnalyzerRouter(config, options.aiCvAnalyzer)
+    },
+    {
+      id: "users",
+      mountPath: `${config.app.apiPrefix}/me`,
+      router: createUsersRouter(config, options.users)
+    }
+  ];
+}
+
 export function registerRoutes(
   app: Express,
   config: AppConfig,
   options: RouteOptions = {}
 ) {
-  app.use("/health", createHealthRouter(config, options.health));
-  app.use(
-    `${config.app.apiPrefix}/auth`,
-    createAuthRouter(config, options.auth)
-  );
-  app.use(
-    `${config.app.apiPrefix}/jobs`,
-    createJobsRouter(config, options.jobs)
-  );
-  app.use(
-    `${config.app.apiPrefix}/me/preferences`,
-    createPreferencesRouter(config, options.preferences)
-  );
-  app.use(
-    `${config.app.apiPrefix}/me/bookmarks`,
-    createBookmarksRouter(config, options.bookmarks)
-  );
-  app.use(
-    `${config.app.apiPrefix}/me/applications`,
-    createApplicationsRouter(config, options.applications)
-  );
-  app.use(
-    `${config.app.apiPrefix}/ai/job-fit`,
-    createAiJobFitRouter(config, options.aiJobFit)
-  );
-  app.use(
-    `${config.app.apiPrefix}/ai/cv-analyzer`,
-    createAiCvAnalyzerRouter(config, options.aiCvAnalyzer)
-  );
-  app.use(
-    `${config.app.apiPrefix}/me`,
-    createUsersRouter(config, options.users)
-  );
+  for (const mountedRouter of getMountedRouters(config, options)) {
+    app.use(mountedRouter.mountPath, mountedRouter.router);
+  }
 }

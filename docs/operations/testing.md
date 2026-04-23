@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/testing.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Backend API Testing Strategy
@@ -106,6 +106,7 @@ Reserved commands:
 | `bun run test:contracts`           | Model API and scraper fixture contracts               |
 | `bun run test:smoke`               | Startup, env, health, and basic route smoke checks    |
 | `bun run prisma:verify:migrations` | Migration verification against an empty test database |
+| `bun run docs:check`               | Frontmatter and JSON example validation for `docs/**` |
 
 ## Database Test Setup
 
@@ -279,6 +280,7 @@ A release candidate cannot be marked ready until these checks pass:
 - Smoke tests pass in the target environment or a production-like staging environment.
 - Security-sensitive tests pass for implemented auth, upload, and ownership flows.
 - API examples in docs remain valid JSON and match response standards.
+- Documentation metadata checks pass and generated route inventory is refreshed when route registration changes.
 
 ## Coverage Expectations
 

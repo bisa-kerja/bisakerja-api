@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/documentation-sync.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Backend API Documentation Sync
@@ -134,6 +134,12 @@ Minimum service-side checks:
 - No sensitive secrets, tokens, raw CV content, or production credentials are present.
 - Generated docs are identified clearly.
 
+Current repository commands:
+
+- `bun run docs:generate:routes` writes `docs/generated/routes.md` from the runtime route registry.
+- `bun run docs:generate:sync-readiness` writes `docs/generated/sync-readiness.md` from the current `docs/**` tree and sync target rules.
+- `bun run docs:check` validates frontmatter and parses all fenced `json` examples under `docs/**`.
+
 The central repository should validate:
 
 - Service alias is recognized.
@@ -150,12 +156,13 @@ Generated API references should be treated as service-owned docs but clearly mar
 
 Recommended generated docs placement:
 
-| Generated content      | Source placement                  | Central placement                                             |
-| ---------------------- | --------------------------------- | ------------------------------------------------------------- |
-| OpenAPI JSON           | `docs/generated/openapi.json`     | `docs/services/backend-api/synced/generated/openapi.json`     |
-| OpenAPI Markdown       | `docs/generated/openapi.md`       | `docs/services/backend-api/synced/generated/openapi.md`       |
-| Prisma model reference | `docs/generated/prisma-models.md` | `docs/services/backend-api/synced/generated/prisma-models.md` |
-| Route inventory        | `docs/generated/routes.md`        | `docs/services/backend-api/synced/generated/routes.md`        |
+| Generated content      | Source placement                   | Central placement                                              |
+| ---------------------- | ---------------------------------- | -------------------------------------------------------------- |
+| OpenAPI JSON           | `docs/generated/openapi.json`      | `docs/services/backend-api/synced/generated/openapi.json`      |
+| OpenAPI Markdown       | `docs/generated/openapi.md`        | `docs/services/backend-api/synced/generated/openapi.md`        |
+| Prisma model reference | `docs/generated/prisma-models.md`  | `docs/services/backend-api/synced/generated/prisma-models.md`  |
+| Route inventory        | `docs/generated/routes.md`         | `docs/services/backend-api/synced/generated/routes.md`         |
+| Sync readiness report  | `docs/generated/sync-readiness.md` | `docs/services/backend-api/synced/generated/sync-readiness.md` |
 
 Generated docs rules:
 
@@ -164,6 +171,7 @@ Generated docs rules:
 - Generated docs should include generation timestamp, source commit, and generator name in metadata or manifest.
 - Generated docs must follow the same no-secret and no-sensitive-payload rules as hand-authored docs.
 - If generated docs disagree with hand-authored API contracts, the mismatch must block release until resolved.
+- Interactive API documentation should be generated from the same canonical OpenAPI source once that source is finalized, rather than maintained as a separate manual artifact.
 
 ## Asset Handling
 
