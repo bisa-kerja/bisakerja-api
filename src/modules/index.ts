@@ -1,6 +1,7 @@
 import type { Express } from "express";
 
 import type { AppConfig } from "@/config/env";
+import { createAiCvAnalyzerRouter } from "@/modules/ai-cv-analyzer";
 import { createAiJobFitRouter } from "@/modules/ai-job-fit";
 import { createAuthRouter } from "@/modules/auth";
 import { createApplicationsRouter } from "@/modules/applications";
@@ -41,6 +42,10 @@ export function registerRoutes(
   app.use(
     `${config.app.apiPrefix}/ai/job-fit`,
     createAiJobFitRouter(config, options.aiJobFit)
+  );
+  app.use(
+    `${config.app.apiPrefix}/ai/cv-analyzer`,
+    createAiCvAnalyzerRouter(config, options.aiCvAnalyzer)
   );
   app.use(
     `${config.app.apiPrefix}/me`,

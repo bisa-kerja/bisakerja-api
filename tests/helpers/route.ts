@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { Readable } from "node:stream";
 
 import type { Express } from "express";
 import { createRequest, createResponse } from "node-mocks-http";
@@ -8,6 +9,7 @@ export type InjectOptions = {
   url: string;
   headers?: Record<string, string>;
   body?: Record<string, unknown>;
+  formData?: FormData;
 };
 
 export type InjectResponse = {
@@ -20,6 +22,10 @@ export async function injectRoute(
   app: Express,
   options: InjectOptions
 ): Promise<InjectResponse> {
+  if (options.formData) {
+    return injectMultipartRoute(app, options);
+  }
+
   const req = createRequest({
     method: options.method ?? "GET",
     url: options.url,
@@ -60,6 +66,71 @@ export async function injectRoute(
     status: res.statusCode,
     headers,
     body: rawBody ? (JSON.parse(rawBody) as unknown) : null
+  };
+}
+
+async function injectMultipartRoute(
+  app: Express,
+  options: InjectOptions
+): Promise<InjectResponse> {
+  const request = new Request("http://localhost", {
+    method: options.method ?? "POST",
+    headers: options.headers,
+    body: options.formData
+  });
+  const rawBody = Buffer.from(await request.arrayBuffer());
+  const contentType = request.headers.get("content-type");
+  const normalizedHeaders = Object.fromEntries(
+    Object.entries(options.headers ?? {}).map(([name, value]) => [
+      name.toLowerCase(),
+      value
+    ])
+  );
+  const req = Readable.from([rawBody]);
+
+  Object.assign(req, {
+    method: options.method ?? "POST",
+    url: options.url,
+    ip: "127.0.0.1",
+    headers: {
+      ...normalizedHeaders,
+      ...(contentType ? { "content-type": contentType } : {}),
+      "content-length": String(rawBody.byteLength)
+    },
+    httpVersion: "1.1",
+    socket: {
+      destroy: () => undefined,
+      readable: true,
+      remoteAddress: "127.0.0.1"
+    },
+    connection: {
+      destroy: () => undefined,
+      remoteAddress: "127.0.0.1"
+    }
+  });
+
+  const res = createResponse({
+    eventEmitter: EventEmitter
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    res.on("end", resolve);
+    res.on("error", reject);
+
+    const expressApp = app as unknown as {
+      handle: (request: typeof req, response: typeof res) => void;
+    };
+
+    expressApp.handle(req, res);
+  });
+
+  const responseBody = res._getData() as string;
+  const headers = res._getHeaders();
+
+  return {
+    status: res.statusCode,
+    headers,
+    body: responseBody ? (JSON.parse(responseBody) as unknown) : null
   };
 }
 

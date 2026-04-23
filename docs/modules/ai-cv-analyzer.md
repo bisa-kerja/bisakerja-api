@@ -50,9 +50,9 @@ The AI CV Analyzer module does not own:
 
 ## Endpoint Summary
 
-| Method | Path                     | Auth          | Purpose                                                  |
-| ------ | ------------------------ | ------------- | -------------------------------------------------------- |
-| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded or referenced CV against a selected job |
+| Method | Path                     | Auth          | Purpose                                        |
+| ------ | ------------------------ | ------------- | ---------------------------------------------- |
+| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded PDF CV against a selected job |
 
 Future endpoints for analysis history or generated CV download require separate documentation.
 
@@ -92,15 +92,15 @@ For multipart upload, metadata fields are sent alongside file part.
 
 Validation:
 
-| Field           | Rule                                                         |
-| --------------- | ------------------------------------------------------------ |
-| `jobId`         | Required internal job listing id                             |
-| `language`      | Required enum: `id` or `en`                                  |
-| `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                       |
-| `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL` |
-| `persistResult` | Optional boolean, default based on product policy            |
-| `cvFile`        | Required for `UPLOAD` mode                                   |
-| `cvFileId`      | Deferred; rejected for MVP `REFERENCE` mode                  |
+| Field           | Rule                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------ |
+| `jobId`         | Required internal job listing id                                                     |
+| `language`      | Required enum: `id` or `en`                                                          |
+| `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                               |
+| `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`                         |
+| `persistResult` | Optional boolean, default based on product policy                                    |
+| `cvFile`        | Required for `UPLOAD` mode                                                           |
+| `cvFileId`      | Optional request field for future `REFERENCE` support; ignored for MVP `UPLOAD` mode |
 
 CV file validation:
 
@@ -263,8 +263,8 @@ Rules:
 - Enforce file size and mime type before Model API call.
 - Store only what is needed for analysis.
 - Follow `CV_RETENTION_DAYS`, default 1 day.
-- Delete temporary files after analysis when practical, while keeping cleanup for expired files as a required operational path.
-- Delete expired files through a documented cleanup workflow.
+- Store temporary files in a private local upload path, not a public static directory.
+- Delete expired files through the manual cleanup command `bun run cleanup:cv-uploads` or an equivalent scheduled workflow.
 - Redact raw CV content from logs.
 - Never include raw CV text in error responses.
 - Do not expose storage keys directly if they reveal internal infrastructure.
@@ -283,38 +283,37 @@ Suggested metadata:
 
 ## Downstream Failure Behavior
 
-| Failure                    | Status | Error code            | Behavior                            |
-| -------------------------- | ------ | --------------------- | ----------------------------------- |
-| Invalid file type          | 422    | `CV_FILE_INVALID`     | Reject before storage or model call |
-| File too large             | 422    | `CV_FILE_TOO_LARGE`   | Reject before storage or model call |
-| Job not found              | 404    | `JOB_NOT_FOUND`       | No model call                       |
-| Bookmark not owned         | 404    | `BOOKMARK_NOT_FOUND`  | Hide ownership details              |
-| Model API timeout          | 503    | `SERVICE_UNAVAILABLE` | Return safe AI unavailable error    |
-| Model API invalid response | 502    | `DOWNSTREAM_ERROR`    | Reject untrusted output             |
-| Storage unavailable        | 503    | `SERVICE_UNAVAILABLE` | Do not call model                   |
+| Failure                    | Status     | Error code                                       | Behavior                            |
+| -------------------------- | ---------- | ------------------------------------------------ | ----------------------------------- |
+| Invalid file type          | 422        | `VALIDATION_ERROR`                               | Reject before storage or model call |
+| File too large             | 413        | `PAYLOAD_TOO_LARGE`                              | Reject before storage or model call |
+| Job not found              | 404        | `JOB_NOT_FOUND`                                  | No model call                       |
+| Bookmark not owned         | 404        | `BOOKMARK_NOT_FOUND`                             | Hide ownership details              |
+| Model API timeout          | 503        | `SERVICE_UNAVAILABLE`                            | Return safe AI unavailable error    |
+| Model API invalid response | 502        | `DOWNSTREAM_ERROR`                               | Reject untrusted output             |
+| Storage unavailable        | 500 or 503 | `INTERNAL_SERVER_ERROR` or `SERVICE_UNAVAILABLE` | Do not call model                   |
 
 ## Error Cases
 
-| Case                                | Status | Error code            |
-| ----------------------------------- | ------ | --------------------- |
-| Missing auth                        | 401    | `UNAUTHENTICATED`     |
-| Invalid request body                | 422    | `VALIDATION_ERROR`    |
-| Invalid language                    | 422    | `VALIDATION_ERROR`    |
-| Invalid CV file                     | 422    | `CV_FILE_INVALID`     |
-| CV file too large                   | 422    | `CV_FILE_TOO_LARGE`   |
-| Job not found                       | 404    | `JOB_NOT_FOUND`       |
-| Referenced CV not found             | 404    | `CV_FILE_NOT_FOUND`   |
-| Bookmark not found for current user | 404    | `BOOKMARK_NOT_FOUND`  |
-| Storage unavailable                 | 503    | `SERVICE_UNAVAILABLE` |
-| Model unavailable                   | 503    | `SERVICE_UNAVAILABLE` |
-| Model invalid response              | 502    | `DOWNSTREAM_ERROR`    |
+| Case                                | Status     | Error code                                       |
+| ----------------------------------- | ---------- | ------------------------------------------------ |
+| Missing auth                        | 401        | `UNAUTHENTICATED`                                |
+| Invalid request body                | 422        | `VALIDATION_ERROR`                               |
+| Invalid language                    | 422        | `VALIDATION_ERROR`                               |
+| Invalid CV file                     | 422        | `VALIDATION_ERROR`                               |
+| CV file too large                   | 413        | `PAYLOAD_TOO_LARGE`                              |
+| Job not found                       | 404        | `JOB_NOT_FOUND`                                  |
+| Unsupported `REFERENCE` mode        | 422        | `VALIDATION_ERROR`                               |
+| Bookmark not found for current user | 404        | `BOOKMARK_NOT_FOUND`                             |
+| Storage unavailable                 | 500 or 503 | `INTERNAL_SERVER_ERROR` or `SERVICE_UNAVAILABLE` |
+| Model unavailable                   | 503        | `SERVICE_UNAVAILABLE`                            |
+| Model invalid response              | 502        | `DOWNSTREAM_ERROR`                               |
 
 ## Observability
 
 Log safe structured events:
 
 - `ai_cv_analyzer.requested`
-- `ai_cv_analyzer.file_validated`
 - `ai_cv_analyzer.completed`
 - `ai_cv_analyzer.failed`
 - `ai_cv_analyzer.persisted`
@@ -340,11 +339,12 @@ Unit tests:
 
 - Metadata schema rejects unsupported language.
 - Upload mode requires file.
-- Reference mode requires `cvFileId`.
+- Reference mode returns `422` until reusable storage is enabled.
 - File validator rejects unsupported mime type.
 - File validator rejects files larger than `CV_UPLOAD_MAX_BYTES`.
 - Response schema enforces score range `0` to `100`.
 - Mapper marks generated CV as unavailable in MVP.
+- Cleanup helper deletes expired files and marks metadata with `deletedAt`.
 
 Integration tests:
 
@@ -366,7 +366,7 @@ Route tests:
 
 ## Deferred Decisions
 
-- Exact storage driver and cleanup worker.
+- Scheduled cleanup automation beyond the manual command.
 - Exact Model API endpoint and payload format.
 - Whether generated CV remains future scope.
 

@@ -55,6 +55,13 @@ export type AppConfig = {
       enableMock: boolean;
     };
   };
+  uploads: {
+    fileStorageDriver: "local";
+    storagePath: string;
+    cvUploadMaxBytes: number;
+    cvAllowedMimeTypes: string[];
+    cvRetentionDays: number;
+  };
   jobs: {
     staleAfterHours: number;
   };

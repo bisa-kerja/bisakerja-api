@@ -351,6 +351,8 @@ Application tracker endpoints use the standard response envelope. List responses
 
 AI analysis endpoints use the standard response envelope. `POST /api/v1/ai/job-fit` accepts only `jobId` plus optional `persistResult`, returns `409 PROFILE_INCOMPLETE` or `409 PREFERENCES_INCOMPLETE` when required persisted context is missing, and stores sanitized snapshots only when `persistResult=true`.
 
+`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` with metadata fields plus a single `cvFile` upload for `UPLOAD` mode. The endpoint accepts only PDF uploads, rejects oversized files with `413 PAYLOAD_TOO_LARGE`, returns `404 BOOKMARK_NOT_FOUND` when `compareSource=BOOKMARK` points to another user's bookmark, and returns `422 VALIDATION_ERROR` for unsupported `REFERENCE` mode until reusable CV references are enabled.
+
 ## Contract Stability Rules
 
 - Do not remove response fields without a versioning plan.

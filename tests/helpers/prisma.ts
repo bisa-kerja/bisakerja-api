@@ -101,6 +101,9 @@ export async function createRepositoryTestContext() {
         prisma.cvAnalysisResult.deleteMany({
           where: { user: { email: { endsWith: `-${runId}@example.test` } } }
         }),
+        prisma.cvFileMetadata.deleteMany({
+          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+        }),
         prisma.applicationStatusHistory.deleteMany({
           where: { user: { email: { endsWith: `-${runId}@example.test` } } }
         }),

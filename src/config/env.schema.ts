@@ -102,6 +102,21 @@ export const envSchema = z
     ),
     MODEL_API_SERVICE_TOKEN: z.string().default(""),
     MODEL_API_ENABLE_MOCK: booleanSchema.default(false),
+    FILE_STORAGE_DRIVER: z.enum(["local"]).default("local"),
+    UPLOAD_STORAGE_PATH: z.string().min(1).default("./storage/uploads"),
+    CV_UPLOAD_MAX_BYTES: numberFromString(5_242_880).pipe(
+      z.number().int().positive()
+    ),
+    CV_ALLOWED_MIME_TYPES: z
+      .string()
+      .default("application/pdf")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((entry) => entry.trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    CV_RETENTION_DAYS: numberFromString(1).pipe(z.number().int().positive()),
     JOB_STALE_AFTER_HOURS: numberFromString(72).pipe(
       z.number().int().positive()
     ),
@@ -169,6 +184,14 @@ export const envSchema = z
         path: ["MODEL_API_SERVICE_TOKEN"],
         message:
           "MODEL_API_SERVICE_TOKEN is required when MODEL_API_ENABLE_MOCK=false"
+      });
+    }
+
+    if (value.CV_ALLOWED_MIME_TYPES.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["CV_ALLOWED_MIME_TYPES"],
+        message: "At least one allowed CV MIME type is required"
       });
     }
   });

@@ -59,6 +59,13 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         enableMock: parsed.MODEL_API_ENABLE_MOCK
       }
     },
+    uploads: {
+      fileStorageDriver: parsed.FILE_STORAGE_DRIVER,
+      storagePath: parsed.UPLOAD_STORAGE_PATH,
+      cvUploadMaxBytes: parsed.CV_UPLOAD_MAX_BYTES,
+      cvAllowedMimeTypes: parsed.CV_ALLOWED_MIME_TYPES,
+      cvRetentionDays: parsed.CV_RETENTION_DAYS
+    },
     jobs: {
       staleAfterHours: parsed.JOB_STALE_AFTER_HOURS
     },

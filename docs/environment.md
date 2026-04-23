@@ -143,8 +143,10 @@ Rules:
 
 - CV uploads are sensitive user data.
 - MVP supports `UPLOAD` mode only. `REFERENCE` mode returns `422` until reusable CV storage is designed.
+- Runtime config maps these variables into the validated `uploads` config group in `src/config/env.ts`.
 - Store only what is needed for analysis, ownership, retention, and audit.
-- Delete uploaded files after analysis when practical and clean expired files according to `CV_RETENTION_DAYS`.
+- Local uploads should live in a private directory outside static assets. The default local root is `./storage/uploads`.
+- Clean expired files and metadata according to `CV_RETENTION_DAYS` with the manual command `bun run cleanup:cv-uploads` or an equivalent scheduled workflow.
 - Do not persist raw extracted CV text or raw Model API payloads by default.
 
 ## Email Variables

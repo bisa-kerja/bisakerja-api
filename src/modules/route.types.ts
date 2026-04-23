@@ -1,3 +1,4 @@
+import type { AiCvAnalyzerRouterOptions } from "@/modules/ai-cv-analyzer";
 import type { AiJobFitRouterOptions } from "@/modules/ai-job-fit";
 import type { AuthRouterOptions } from "@/modules/auth";
 import type { ApplicationsRouterOptions } from "@/modules/applications";
@@ -8,6 +9,7 @@ import type { PreferencesRouterOptions } from "@/modules/preferences";
 import type { UsersRouterOptions } from "@/modules/users";
 
 export type RouteOptions = {
+  aiCvAnalyzer?: AiCvAnalyzerRouterOptions;
   aiJobFit?: AiJobFitRouterOptions;
   applications?: ApplicationsRouterOptions;
   auth?: AuthRouterOptions;
