@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/bookmarks.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Bookmarks Module
@@ -73,7 +73,7 @@ The Bookmarks module does not own:
 Supported sort values:
 
 - `created_desc`
-- `updated_desc`
+- `updated_desc` sorts by the linked job listing's latest normalized update time
 - `newest`
 - `salary_highest`
 - `salary_lowest`
@@ -109,7 +109,14 @@ Validation:
       "name": "Example Tech",
       "logoUrl": "https://cdn.example.com/company-logo.png"
     },
+    "sourcePlatform": {
+      "id": "source_123",
+      "name": "Glints",
+      "slug": "glints"
+    },
     "workType": "REMOTE",
+    "employmentType": "FULL_TIME",
+    "experienceLevel": "ENTRY_LEVEL",
     "location": {
       "display": "Jakarta Selatan, DKI Jakarta",
       "province": "DKI Jakarta",
@@ -123,6 +130,7 @@ Validation:
       "display": "Rp5.000.000 - Rp10.000.000 / bulan"
     },
     "postedAt": "2026-04-20T00:00:00.000Z",
+    "lastSeenAt": "2026-04-22T00:00:00.000Z",
     "isStale": false
   },
   "createdAt": "2026-04-22T00:00:00.000Z"
@@ -146,7 +154,14 @@ Validation:
           "name": "Example Tech",
           "logoUrl": "https://cdn.example.com/company-logo.png"
         },
+        "sourcePlatform": {
+          "id": "source_123",
+          "name": "Glints",
+          "slug": "glints"
+        },
         "workType": "REMOTE",
+        "employmentType": "FULL_TIME",
+        "experienceLevel": "ENTRY_LEVEL",
         "location": {
           "display": "Jakarta Selatan, DKI Jakarta",
           "province": "DKI Jakarta",
@@ -160,6 +175,7 @@ Validation:
           "display": "Rp5.000.000 - Rp10.000.000 / bulan"
         },
         "postedAt": "2026-04-20T00:00:00.000Z",
+        "lastSeenAt": "2026-04-22T00:00:00.000Z",
         "isStale": false
       },
       "createdAt": "2026-04-22T00:00:00.000Z"
@@ -183,6 +199,8 @@ Validation:
 ```
 
 ### Save Bookmark
+
+Successful creation returns HTTP `201`.
 
 ```json
 {
@@ -208,7 +226,8 @@ Delete returns `204` with no response body for MVP.
 3. Query `Bookmark` by current `userId`.
 4. Join normalized `JobListing`, `Company`, and job display fields.
 5. Apply keyword search against saved job data.
-6. Return list response envelope.
+6. Serialize linked jobs with the same job card shape used by job search.
+7. Return list response envelope.
 
 ### Save Job
 

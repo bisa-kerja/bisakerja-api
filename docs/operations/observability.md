@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/observability.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Backend API Observability
@@ -213,7 +213,10 @@ Initial events:
 | `preferences.updated`                     | Preferences changed        | Changed field names only                             |
 | `preferences.notification_toggle_updated` | Email preference changed   | Changed field names only                             |
 | `jobs.search_performed`                   | Job search endpoint called | Query summary only; no raw source payload            |
+| `bookmarks.list_requested`                | User views saved jobs      | User id, filter summary, pagination, and count only  |
 | `bookmarks.created`                       | User saves a job           | User id and job id only                              |
+| `bookmarks.deleted`                       | User removes a saved job   | User id and job id only                              |
+| `bookmarks.duplicate_rejected`            | Duplicate save rejected    | User id and job id only                              |
 | `applications.status_changed`             | Tracker status changes     | Old and new status, no private notes                 |
 | `ai.job_fit_requested`                    | Fit analysis starts        | No full model payload                                |
 | `ai.cv_analysis_requested`                | CV analysis starts         | File metadata id only, no CV text                    |

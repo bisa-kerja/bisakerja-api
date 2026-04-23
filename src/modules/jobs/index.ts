@@ -2,6 +2,10 @@ export { createJobsRouter } from "@/modules/jobs/jobs.route";
 export { PrismaJobsRepository } from "@/modules/jobs/jobs.repository";
 export { JobsService } from "@/modules/jobs/jobs.service";
 export {
+  hiddenDetailStatus,
+  visibleListStatuses
+} from "@/modules/jobs/jobs.constants";
+export {
   listJobsQuerySchema,
   jobParamsSchema
 } from "@/modules/jobs/jobs.schema";

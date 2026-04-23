@@ -2,6 +2,7 @@ import type { Express } from "express";
 
 import type { AppConfig } from "@/config/env";
 import { createAuthRouter } from "@/modules/auth";
+import { createBookmarksRouter } from "@/modules/bookmarks";
 import { createHealthRouter } from "@/modules/health";
 import { createJobsRouter } from "@/modules/jobs";
 import { createPreferencesRouter } from "@/modules/preferences";
@@ -26,6 +27,10 @@ export function registerRoutes(
   app.use(
     `${config.app.apiPrefix}/me/preferences`,
     createPreferencesRouter(config, options.preferences)
+  );
+  app.use(
+    `${config.app.apiPrefix}/me/bookmarks`,
+    createBookmarksRouter(config, options.bookmarks)
   );
   app.use(
     `${config.app.apiPrefix}/me`,
