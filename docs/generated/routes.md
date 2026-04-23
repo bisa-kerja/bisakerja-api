@@ -10,7 +10,7 @@ source_repo: backend-api
 source_path: docs/generated/routes.md
 last_reviewed: 2026-04-23
 generated_by: route-inventory-script
-generated_at: 2026-04-23T10:48:33.877Z
+generated_at: 2026-04-23T11:02:31.973Z
 source_commit: unknown
 ---
 
@@ -23,7 +23,7 @@ This page is generated from the route registry used by the application runtime. 
 | Metric        | Value                      |
 | ------------- | -------------------------- |
 | Total routes  | 30                         |
-| Generated at  | `2026-04-23T10:48:33.877Z` |
+| Generated at  | `2026-04-23T11:02:31.973Z` |
 | Source commit | `unknown`                  |
 
 ## Registered Routes
