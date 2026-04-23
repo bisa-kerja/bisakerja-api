@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/preferences.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # Preferences Module
@@ -217,9 +217,9 @@ Repository responsibilities:
 Database rules:
 
 - One active `UserPreference` per `User` in MVP.
-- If arrays are stored as JSON, do not query them for advanced filtering until indexes or relational tables are introduced.
-- If target roles and locations are normalized, enforce unique normalized names.
-- Salary values must use integer minor units or a documented numeric strategy to avoid floating precision issues.
+- Target roles and locations are stored as JSON arrays for the current MVP implementation.
+- Do not query JSON target role or location arrays for advanced filtering until indexes or relational tables are introduced.
+- Salary values use integer IDR values for current preference storage.
 
 ## Preference Usage By Other Modules
 
@@ -289,10 +289,9 @@ Route tests:
 
 ## Open Decisions
 
-- Whether target roles and locations are relational tables or JSON fields in MVP.
 - Whether `careerStatus` belongs only here or is also denormalized in `UserProfile`.
 - Whether a separate onboarding read endpoint should return a default empty preference object later.
-- Whether salary values use integer IDR values or structured minor units.
+- Whether salary values should later move from integer IDR values to structured minor units for multi-currency support.
 
 ## Related Docs
 

@@ -202,19 +202,22 @@ Business events help debug product workflows and later support analytics. They m
 
 Initial events:
 
-| Event                         | Trigger                    | Sensitive data rule                                  |
-| ----------------------------- | -------------------------- | ---------------------------------------------------- |
-| `auth.registered`             | Successful registration    | No plaintext email unless policy allows; no password |
-| `auth.login_succeeded`        | Successful login           | No token values                                      |
-| `auth.login_failed`           | Failed login               | Use failure category, not password details           |
-| `profile.updated`             | User profile updated       | No full profile dump                                 |
-| `preferences.updated`         | Preferences saved          | Safe normalized summary only                         |
-| `jobs.search_performed`       | Job search endpoint called | Query summary only; no raw source payload            |
-| `bookmarks.created`           | User saves a job           | User id and job id only                              |
-| `applications.status_changed` | Tracker status changes     | Old and new status, no private notes                 |
-| `ai.job_fit_requested`        | Fit analysis starts        | No full model payload                                |
-| `ai.cv_analysis_requested`    | CV analysis starts         | File metadata id only, no CV text                    |
-| `ai.model_failed`             | Model dependency fails     | Error category and dependency latency                |
+| Event                                     | Trigger                    | Sensitive data rule                                  |
+| ----------------------------------------- | -------------------------- | ---------------------------------------------------- |
+| `auth.registered`                         | Successful registration    | No plaintext email unless policy allows; no password |
+| `auth.login_succeeded`                    | Successful login           | No token values                                      |
+| `auth.login_failed`                       | Failed login               | Use failure category, not password details           |
+| `profile.updated`                         | User profile updated       | No full profile dump                                 |
+| `preferences.viewed`                      | Preferences read           | User id and preference id only                       |
+| `preferences.created`                     | Preferences first saved    | Changed field names only                             |
+| `preferences.updated`                     | Preferences changed        | Changed field names only                             |
+| `preferences.notification_toggle_updated` | Email preference changed   | Changed field names only                             |
+| `jobs.search_performed`                   | Job search endpoint called | Query summary only; no raw source payload            |
+| `bookmarks.created`                       | User saves a job           | User id and job id only                              |
+| `applications.status_changed`             | Tracker status changes     | Old and new status, no private notes                 |
+| `ai.job_fit_requested`                    | Fit analysis starts        | No full model payload                                |
+| `ai.cv_analysis_requested`                | CV analysis starts         | File metadata id only, no CV text                    |
+| `ai.model_failed`                         | Model dependency fails     | Error category and dependency latency                |
 
 Business events can start as structured logs. A dedicated event table or analytics pipeline should be documented before being added.
 

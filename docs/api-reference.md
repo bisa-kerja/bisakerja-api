@@ -310,6 +310,7 @@ The endpoint list below is a planning index, not final endpoint documentation.
 | `PUT`   | `/api/v1/me/education`     | Authenticated | Replace user education list          |
 | `GET`   | `/api/v1/me/preferences`   | Authenticated | Get career preferences               |
 | `PUT`   | `/api/v1/me/preferences`   | Authenticated | Replace or upsert career preferences |
+| `PATCH` | `/api/v1/me/preferences`   | Authenticated | Partially update career preferences  |
 
 ### Jobs
 
