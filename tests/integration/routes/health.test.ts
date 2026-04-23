@@ -1,0 +1,78 @@
+import { describe, expect, test } from "bun:test";
+
+import { createApp } from "@/app";
+import { testConfig } from "../../helpers/config";
+import { injectRoute } from "../../helpers/route";
+
+describe("health routes", () => {
+  test("returns readiness envelope when PostgreSQL is healthy", async () => {
+    const response = await injectRoute(
+      createApp(testConfig(), {
+        routes: {
+          health: {
+            checks: {
+              postgresql: () => Promise.resolve()
+            }
+          }
+        }
+      }),
+      {
+        url: "/health/ready",
+        headers: {
+          "x-request-id": "req_ready_healthy"
+        }
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+      message: "Service is ready",
+      data: {
+        service: "bisakerja-api",
+        status: "ready",
+        env: "test",
+        dependencies: {
+          postgresql: "healthy"
+        }
+      },
+      meta: null
+    });
+  });
+
+  test("maps PostgreSQL readiness failure to a 503 envelope", async () => {
+    const response = await injectRoute(
+      createApp(testConfig(), {
+        routes: {
+          health: {
+            checks: {
+              postgresql: () => Promise.reject(new Error("connection refused"))
+            }
+          }
+        }
+      }),
+      {
+        url: "/health/ready",
+        headers: {
+          "x-request-id": "req_ready_unhealthy"
+        }
+      }
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Service is not ready",
+      data: null,
+      error: {
+        code: "SERVICE_UNAVAILABLE",
+        details: {
+          dependencies: {
+            postgresql: "unhealthy"
+          }
+        },
+        requestId: "req_ready_unhealthy"
+      }
+    });
+  });
+});

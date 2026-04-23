@@ -24,6 +24,7 @@ function createLimiter(
     legacyHeaders: false,
     handler: (req, res) => {
       const requestId = req.requestId;
+      res.locals.errorCode = "RATE_LIMITED";
 
       res.status(429).json(
         errorResponse("Too many requests", "RATE_LIMITED", requestId, {

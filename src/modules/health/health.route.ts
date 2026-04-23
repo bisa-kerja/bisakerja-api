@@ -1,10 +1,23 @@
 import { Router } from "express";
 
-import { successResponse } from "@/core/responses/response.formatter";
 import type { AppConfig } from "@/config/env";
+import { successResponse } from "@/core/responses/response.formatter";
+import {
+  defaultHealthDependencyChecks,
+  getReadinessPayload
+} from "@/modules/health/health.service";
+import type { HealthDependencyChecks } from "@/modules/health/health.service";
 
-export function createHealthRouter(config: AppConfig): Router {
+export type HealthRouterOptions = {
+  checks?: HealthDependencyChecks;
+};
+
+export function createHealthRouter(
+  config: AppConfig,
+  options: HealthRouterOptions = {}
+): Router {
   const router = Router();
+  const checks = options.checks ?? defaultHealthDependencyChecks;
 
   router.get("/live", (_req, res) => {
     res.json(
@@ -17,6 +30,12 @@ export function createHealthRouter(config: AppConfig): Router {
         "Service is live"
       )
     );
+  });
+
+  router.get("/ready", async (req, res) => {
+    const payload = await getReadinessPayload(config, req.requestId, checks);
+
+    res.json(successResponse(payload, "Service is ready"));
   });
 
   return router;

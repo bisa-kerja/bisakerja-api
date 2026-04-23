@@ -13,7 +13,11 @@ import {
 } from "@/core/middlewares/security.middleware";
 import { registerRoutes } from "@/modules";
 
-export function createApp(config: AppConfig = env) {
+export type AppOptions = {
+  routes?: Parameters<typeof registerRoutes>[2];
+};
+
+export function createApp(config: AppConfig = env, options: AppOptions = {}) {
   const app = express();
 
   app.disable("x-powered-by");
@@ -37,7 +41,7 @@ export function createApp(config: AppConfig = env) {
     app.use(requestLoggingMiddleware());
   }
 
-  registerRoutes(app, config);
+  registerRoutes(app, config, options.routes);
 
   app.use((_req, _res, next) => {
     next(new NotFoundError("Route not found"));

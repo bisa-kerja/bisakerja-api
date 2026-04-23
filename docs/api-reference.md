@@ -95,8 +95,59 @@ Public workflows:
 - Job search.
 - Job detail.
 - Health liveness check.
+- Health readiness check for infrastructure and deployment tooling.
 
 Public routes still require validation, rate limiting, and safe error responses.
+
+## Health Endpoints
+
+Health endpoints are mounted outside `API_PREFIX` so infrastructure tooling can check runtime status without depending on versioned product routes.
+
+| Method | Path            | Auth | Purpose                                        |
+| ------ | --------------- | ---- | ---------------------------------------------- |
+| `GET`  | `/health/live`  | None | Confirms the process can respond to HTTP       |
+| `GET`  | `/health/ready` | None | Confirms the runtime is ready to serve traffic |
+
+`GET /health/live` does not check PostgreSQL or downstream services.
+
+`GET /health/ready` checks PostgreSQL and returns `503 SERVICE_UNAVAILABLE` when the database is unavailable or the check times out. Dependency details in public responses are limited to sanitized health state.
+
+Successful readiness response:
+
+```json
+{
+  "success": true,
+  "message": "Service is ready",
+  "data": {
+    "service": "bisakerja-api",
+    "status": "ready",
+    "env": "staging",
+    "dependencies": {
+      "postgresql": "healthy"
+    }
+  },
+  "meta": null
+}
+```
+
+Readiness failure response:
+
+```json
+{
+  "success": false,
+  "message": "Service is not ready",
+  "data": null,
+  "error": {
+    "code": "SERVICE_UNAVAILABLE",
+    "details": {
+      "dependencies": {
+        "postgresql": "unhealthy"
+      }
+    },
+    "requestId": "req_123"
+  }
+}
+```
 
 ## Authenticated Workflows
 

@@ -235,6 +235,8 @@ Each MVP module must have at least one documented validation path before impleme
 | AI CV Analyzer | Route and service tests for upload validation, selected job lookup, Model API success, invalid model response, timeout, retention metadata, and no raw CV logging |
 | Health         | Smoke tests for liveness, readiness, PostgreSQL dependency status, and degraded downstream dependency reporting                                                   |
 
+Health route tests should cover liveness without dependency checks, readiness success with PostgreSQL healthy, and readiness failure mapping to `503 SERVICE_UNAVAILABLE` when PostgreSQL is unavailable. Smoke checks may inject a healthy database check in constrained environments that do not provide PostgreSQL, while repository and migration verification still require a real isolated test database.
+
 ## Security Test Requirements
 
 Security-sensitive behavior must have automated tests before the corresponding feature is considered done.

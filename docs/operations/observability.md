@@ -76,6 +76,8 @@ Example:
 
 Never log passwords, token values, OTP values, reset tokens, raw CV content, extracted CV text, full Model API payloads, service credentials, or full database connection strings.
 
+The current request summary logger records only request metadata: request id, HTTP method, route path without query string, status code, duration, optional authenticated user id, and mapped API error code. It does not log request bodies, raw query strings, cookies, authorization headers, or response payloads.
+
 ## Request ID Propagation
 
 Request id rules:
@@ -148,6 +150,8 @@ Example readiness response:
 
 Readiness should fail when PostgreSQL is unavailable. Model API degradation should be visible but should not necessarily make the whole backend unready if non-AI flows can still operate.
 
+The implemented readiness contract checks PostgreSQL with a lightweight query and the configured `HEALTH_CHECK_TIMEOUT_MS`. A healthy database returns `200` with `postgresql: "healthy"`. An unavailable or timed-out database returns the standard `503 SERVICE_UNAVAILABLE` error envelope with sanitized dependency status and logs a dependency failure summary containing request id, dependency name, operation, latency, and result category.
+
 ## Latency And Throughput
 
 Track latency for high-value user workflows and dependency calls.
@@ -213,6 +217,8 @@ Initial events:
 | `ai.model_failed`             | Model dependency fails     | Error category and dependency latency                |
 
 Business events can start as structured logs. A dedicated event table or analytics pipeline should be documented before being added.
+
+The initial audit helper emits structured audit logs with `audit: true`, event name, request id, actor id, resource type, resource id, result, and sanitized metadata. Metadata keys that look like passwords, tokens, OTP values, secrets, credentials, cookies, authorization headers, raw CV content, raw model payloads, raw scraper payloads, or database URLs are redacted before logging.
 
 ## Alerting Direction
 

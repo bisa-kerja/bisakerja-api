@@ -39,6 +39,7 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
 
   const appError = normalizeError(error);
   const requestId = req.requestId;
+  res.locals.errorCode = appError.code;
 
   const logMethod = appError.statusCode >= 500 ? "error" : "warn";
   logger[logMethod](
