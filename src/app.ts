@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 
 import { env } from "@/config/env";
 import type { AppConfig } from "@/config/env";
@@ -24,6 +25,7 @@ export function createApp(config: AppConfig = env, options: AppOptions = {}) {
   app.use(requestIdMiddleware(config));
   app.use(securityHeadersMiddleware());
   app.use(corsMiddleware(config));
+  app.use(cookieParser());
   app.use(express.json({ limit: config.security.requestBodyLimit }));
   app.use(
     express.urlencoded({

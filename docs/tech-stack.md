@@ -40,18 +40,18 @@ All package versions are pinned exactly in `package.json`.
 | Security headers       | `helmet@8.1.0`                                                | Default HTTP hardening headers                                          |
 | CORS                   | `cors@2.8.5`                                                  | Allowed-origin enforcement and request id header exposure               |
 | Rate limiting          | `express-rate-limit@8.2.1`                                    | Default, auth, upload, and AI limiter skeletons                         |
+| Cookie parsing         | `cookie-parser@1.4.7`                                         | Parse refresh-token cookies on Express routes                           |
+| Password hashing       | `argon2@0.44.0`                                               | Argon2id password hashing with documented cost parameters               |
+| Token handling         | `jsonwebtoken@9.0.2`                                          | Sign and verify short-lived access JWTs                                 |
 | Route test harness     | `node-mocks-http@1.17.2`                                      | Express route and middleware contract tests without a bound socket      |
 | Linting and formatting | `eslint@10.2.1`, `typescript-eslint@8.59.0`, `prettier@3.8.3` | TypeScript linting and no-write format checks                           |
 | API docs generation    | Not selected                                                  | OpenAPI generation source remains a later implementation decision       |
 
 Planned but not yet installed packages:
 
-| Category         | Candidate package family                              | Documentation requirement                                              |
-| ---------------- | ----------------------------------------------------- | ---------------------------------------------------------------------- |
-| Database         | `prisma`, `@prisma/client`                            | Migration workflow, generated client usage, seed strategy              |
-| Password hashing | `argon2` or another reviewed password hashing package | Hashing parameters, upgrade policy, and test strategy                  |
-| Token handling   | `jose` plus secure cookie handling                    | Sign and verify access JWTs; persist only hashed opaque refresh tokens |
-| Upload handling  | Multipart parser compatible with Express and Bun      | CV upload limits, content-type validation, storage path, and retention |
+| Category        | Candidate package family                         | Documentation requirement                                              |
+| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------- |
+| Upload handling | Multipart parser compatible with Express and Bun | CV upload limits, content-type validation, storage path, and retention |
 
 ## Versioning Policy
 
@@ -152,7 +152,6 @@ Route tests currently use an in-memory Express request/response harness. This ke
 
 ## Remaining Stack Decisions
 
-- Auth/session package versions for `jose`, cookie parsing, and refresh-token hashing helpers.
 - Final upload handling package decision.
 - Final OpenAPI generation approach.
 - Dependency audit command and CI integration.

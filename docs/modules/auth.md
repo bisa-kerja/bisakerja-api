@@ -58,6 +58,7 @@ The Auth module does not own:
 | `POST` | `/api/v1/auth/google`          | Placeholder              | Reserved for Google SSO after OAuth config is approved |
 
 Google SSO must stay a placeholder until OAuth client id, callback URL, token verification, account-linking rules, and redirect behavior are documented.
+The placeholder route returns `501 GOOGLE_SSO_NOT_CONFIGURED` and must not start an OAuth flow, create accounts, or accept provider tokens until the OAuth contract is complete.
 
 ## Auth Rules
 
@@ -84,13 +85,13 @@ Google SSO must stay a placeholder until OAuth client id, callback URL, token ve
 
 Validation:
 
-| Field             | Rule                                                                            |
-| ----------------- | ------------------------------------------------------------------------------- |
-| `username`        | Required, 3-30 chars, lowercase-safe display slug or documented username format |
-| `email`           | Required, valid email, normalized lowercase                                     |
-| `phoneNumber`     | Required for current onboarding flow, Indonesian phone number format preferred  |
-| `password`        | Required, minimum length and complexity defined by security doc                 |
-| `confirmPassword` | Required, must match `password`                                                 |
+| Field             | Rule                                                                         |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `username`        | Required, 3-30 chars, lowercase letters, numbers, and underscores            |
+| `email`           | Required, valid email, normalized lowercase                                  |
+| `phoneNumber`     | Required for current onboarding flow, Indonesian `+62` or `62` number format |
+| `password`        | Required, 12-128 chars with lowercase, uppercase, number, and symbol         |
+| `confirmPassword` | Required, must match `password`                                              |
 
 ### Login
 
@@ -169,6 +170,7 @@ Email verification uses OTP for MVP.
 ```
 
 The raw refresh token is set only as an `HttpOnly` cookie and must not be returned in the JSON body.
+Refresh cookies use the configured `AUTH_REFRESH_COOKIE_NAME`, `HttpOnly`, explicit `SameSite`, path `/`, and `Max-Age` derived from `AUTH_REFRESH_TOKEN_TTL`. Production environments must enable secure cookies.
 
 ### Register Response
 
@@ -230,6 +232,7 @@ The raw refresh token is set only as an `HttpOnly` cookie and must not be return
 9. Emit audit event `auth.registered`.
 
 MVP registration does not issue a full authenticated session before email verification.
+Local and test environments use a fake email provider. The provider records or logs only safe delivery metadata; raw OTP and reset token values are used for delivery and must not appear in API responses or ordinary logs.
 
 ### Login Flow
 
@@ -324,6 +327,7 @@ Do not store plaintext passwords, raw OTP values, or raw reset tokens.
 | Invalid email verification OTP                 | 400    | `EMAIL_VERIFICATION_INVALID`   |
 | Rate limit exceeded                            | 429    | `RATE_LIMITED`                 |
 | Email provider unavailable                     | 503    | `SERVICE_UNAVAILABLE`          |
+| Google SSO not configured                      | 501    | `GOOGLE_SSO_NOT_CONFIGURED`    |
 
 Use generic messages for login and password reset discovery paths to avoid account enumeration.
 
@@ -391,7 +395,7 @@ Route tests:
 ## Deferred Decisions
 
 - Whether username is required long term or only MVP display identity.
-- Exact Google SSO route behavior and account linking policy.
+- Google account linking policy and callback behavior for a future OAuth implementation.
 
 ## Related Docs
 

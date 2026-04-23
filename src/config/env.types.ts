@@ -24,6 +24,29 @@ export type AppConfig = {
     uploadRateLimitMax: number;
     aiRateLimitMax: number;
   };
+  auth: {
+    accessTokenSecret: string;
+    refreshTokenSecret: string;
+    accessTokenTtl: string;
+    refreshTokenTtl: string;
+    passwordResetTokenTtl: string;
+    emailVerificationOtpTtl: string;
+    refreshCookieName: string;
+    cookieSecure: boolean;
+    cookieSameSite: "lax" | "strict" | "none";
+    issuer: string;
+    audience: string;
+  };
+  email: {
+    provider: "fake" | "smtp";
+    from: string;
+    smtp: {
+      host: string;
+      port: number;
+      user: string;
+      password: string;
+    };
+  };
   database: {
     url: string;
     runtimeUrl: string;

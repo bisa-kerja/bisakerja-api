@@ -1,4 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
+import { createConnection } from "node:net";
 
 import { PrismaClient } from "@/generated/prisma/client";
 import { assertIntegrationTestEnvironment } from "./test-environment";
@@ -27,6 +28,13 @@ export async function createRepositoryTestContext() {
     return {
       skipped: true as const,
       reason: error instanceof Error ? error.message : "Invalid test database."
+    };
+  }
+
+  if (!(await canReachDatabase(databaseUrl))) {
+    return {
+      skipped: true as const,
+      reason: "Database TCP port is unavailable."
     };
   }
 
@@ -134,4 +142,29 @@ export async function createRepositoryTestContext() {
 
 export function logRepositorySkip(reason: string) {
   console.warn(`Skipping database-backed repository assertion: ${reason}`);
+}
+
+async function canReachDatabase(databaseUrl: string): Promise<boolean> {
+  const url = new URL(databaseUrl);
+  const port = Number(url.port || "5432");
+
+  return new Promise((resolve) => {
+    const host = url.hostname === "localhost" ? "127.0.0.1" : url.hostname;
+    const socket = createConnection({ host, port });
+    let settled = false;
+    const finish = (reachable: boolean) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      socket.destroy();
+      resolve(reachable);
+    };
+
+    socket.setTimeout(300);
+    socket.once("connect", () => finish(true));
+    socket.once("error", () => finish(false));
+    socket.once("timeout", () => finish(false));
+  });
 }

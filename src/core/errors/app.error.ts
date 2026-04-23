@@ -112,3 +112,13 @@ export class ServiceUnavailableError extends AppError {
     super({ statusCode: 503, code, message, details });
   }
 }
+
+export class NotImplementedError extends AppError {
+  constructor(
+    message = "Feature is not available",
+    code = "NOT_IMPLEMENTED",
+    details: unknown = null
+  ) {
+    super({ statusCode: 501, code, message, details });
+  }
+}

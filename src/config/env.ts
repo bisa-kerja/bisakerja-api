@@ -28,6 +28,29 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
       uploadRateLimitMax: parsed.UPLOAD_RATE_LIMIT_MAX,
       aiRateLimitMax: parsed.AI_RATE_LIMIT_MAX
     },
+    auth: {
+      accessTokenSecret: parsed.AUTH_ACCESS_TOKEN_SECRET,
+      refreshTokenSecret: parsed.AUTH_REFRESH_TOKEN_SECRET,
+      accessTokenTtl: parsed.AUTH_ACCESS_TOKEN_TTL,
+      refreshTokenTtl: parsed.AUTH_REFRESH_TOKEN_TTL,
+      passwordResetTokenTtl: parsed.PASSWORD_RESET_TOKEN_TTL,
+      emailVerificationOtpTtl: parsed.EMAIL_VERIFICATION_OTP_TTL,
+      refreshCookieName: parsed.AUTH_REFRESH_COOKIE_NAME,
+      cookieSecure: parsed.AUTH_COOKIE_SECURE,
+      cookieSameSite: parsed.AUTH_COOKIE_SAME_SITE,
+      issuer: parsed.AUTH_ISSUER,
+      audience: parsed.AUTH_AUDIENCE
+    },
+    email: {
+      provider: parsed.EMAIL_PROVIDER,
+      from: parsed.EMAIL_FROM,
+      smtp: {
+        host: parsed.SMTP_HOST,
+        port: parsed.SMTP_PORT,
+        user: parsed.SMTP_USER,
+        password: parsed.SMTP_PASSWORD
+      }
+    },
     database: {
       url: parsed.DIRECT_DATABASE_URL || parsed.DATABASE_URL,
       runtimeUrl: parsed.DATABASE_URL,

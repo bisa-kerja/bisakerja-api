@@ -1,0 +1,25 @@
+import * as argon2 from "argon2";
+
+export const passwordHashAlgorithm = "argon2id";
+
+const argon2Options = {
+  type: argon2.argon2id,
+  memoryCost: 19456,
+  timeCost: 2,
+  parallelism: 1
+} as const;
+
+export async function hashPassword(password: string): Promise<string> {
+  return argon2.hash(password, argon2Options);
+}
+
+export async function verifyPassword(
+  passwordHash: string,
+  password: string
+): Promise<boolean> {
+  try {
+    return await argon2.verify(passwordHash, password);
+  } catch {
+    return false;
+  }
+}

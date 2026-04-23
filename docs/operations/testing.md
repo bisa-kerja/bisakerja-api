@@ -93,7 +93,7 @@ Required test environment behavior:
 
 The final `.env.test.example` should be created during scaffold work and kept in sync with `docs/environment.md` and `src/config/env.ts`.
 
-Test helpers must fail fast when integration tests are configured outside the test runtime. Database-backed tests should call the environment guard before connecting to PostgreSQL and should reject database URLs that do not clearly point to an isolated local or test database.
+Test helpers must fail fast when integration tests are configured outside the test runtime. Database-backed tests should call the environment guard before connecting to PostgreSQL, reject database URLs that do not clearly point to an isolated local or test database, and skip with an explicit reason when the configured PostgreSQL port is unavailable.
 
 Reserved commands:
 
@@ -153,7 +153,7 @@ verify migrations -> generate Prisma client -> apply migrations to test database
 
 The reserved command name for this flow is `bun run prisma:verify:migrations`.
 
-The current migration verification command validates the Prisma schema, generates the client, applies committed migrations through Prisma Migrate deploy, and runs repository integration tests. It requires `APP_ENV=test` and an isolated PostgreSQL `DATABASE_URL`. Repository tests run database-backed assertions only when `RUN_DATABASE_TESTS=true`; ordinary full test runs skip them with an explicit reason. Release verification should run against a real empty test database.
+The current migration verification command validates the Prisma schema, generates the client, applies committed migrations through Prisma Migrate deploy, and runs repository integration tests. It requires `APP_ENV=test` and an isolated PostgreSQL `DATABASE_URL`. Repository tests run database-backed assertions only when `RUN_DATABASE_TESTS=true`; ordinary full test runs keep this flag disabled and skip them with an explicit reason. Release verification should run against a real empty test database.
 
 Production deployment must use explicit migration execution, not implicit application startup mutation, unless a later approved deployment policy says otherwise.
 
@@ -174,7 +174,7 @@ Every route group must verify:
 - Error responses include `error.requestId`.
 - Sensitive fields are not returned.
 
-Authentication route tests must also verify strict rate limit behavior once rate-limit middleware is implemented.
+Authentication route tests must verify registration, duplicate handling, weak password validation, email verification, login failures, access-token auth middleware behavior, refresh-token rotation, logout invalidation, password reset, Google SSO placeholder behavior, sensitive response safety, and strict auth route rate limits.
 
 Bound-port smoke tests should be added for startup and health behavior when the pinned Bun runtime is available in CI.
 

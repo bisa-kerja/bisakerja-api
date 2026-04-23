@@ -56,7 +56,7 @@ Required behavior:
 
 ## Password Hashing
 
-Use Argon2id through the `argon2` package unless compatibility testing during scaffold blocks it.
+Use Argon2id through the `argon2` package.
 
 Implementation requirements:
 
