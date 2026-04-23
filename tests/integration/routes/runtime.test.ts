@@ -1,9 +1,5 @@
-import { EventEmitter } from "node:events";
-
 import { describe, expect, test } from "bun:test";
 import express from "express";
-import type { Express } from "express";
-import { createRequest, createResponse } from "node-mocks-http";
 import { z } from "zod";
 
 import { createApp } from "@/app";
@@ -12,52 +8,11 @@ import { requestIdMiddleware } from "@/core/middlewares/request-id.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { successResponse } from "@/core/responses/response.formatter";
 import { testConfig } from "../../helpers/config";
-
-type InjectOptions = {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS";
-  url: string;
-  headers?: Record<string, string>;
-  body?: Record<string, unknown>;
-};
-
-type InjectResponse = {
-  status: number;
-  headers: Record<string, string | string[] | undefined>;
-  body: unknown;
-};
-
-async function inject(app: Express, options: InjectOptions) {
-  const req = createRequest({
-    method: options.method ?? "GET",
-    url: options.url,
-    headers: options.headers,
-    body: options.body
-  });
-  const res = createResponse({
-    eventEmitter: EventEmitter
-  });
-
-  await new Promise<void>((resolve, reject) => {
-    res.on("end", resolve);
-    res.on("error", reject);
-    const expressApp = app as unknown as {
-      handle: (request: typeof req, response: typeof res) => void;
-    };
-    expressApp.handle(req, res);
-  });
-
-  const rawBody = res._getData() as string;
-
-  return {
-    status: res.statusCode,
-    headers: res._getHeaders(),
-    body: rawBody ? (JSON.parse(rawBody) as unknown) : null
-  } satisfies InjectResponse;
-}
+import { injectRoute } from "../../helpers/route";
 
 describe("runtime routes and middleware", () => {
   test("returns liveness envelope and generates request id", async () => {
-    const response = await inject(createApp(testConfig()), {
+    const response = await injectRoute(createApp(testConfig()), {
       url: "/health/live"
     });
 
@@ -76,7 +31,7 @@ describe("runtime routes and middleware", () => {
   });
 
   test("propagates a valid incoming request id", async () => {
-    const response = await inject(createApp(testConfig()), {
+    const response = await injectRoute(createApp(testConfig()), {
       url: "/health/live",
       headers: {
         "x-request-id": "req_client_123"
@@ -88,7 +43,7 @@ describe("runtime routes and middleware", () => {
   });
 
   test("returns standard not found error with request id", async () => {
-    const response = await inject(createApp(testConfig()), {
+    const response = await injectRoute(createApp(testConfig()), {
       url: "/missing",
       headers: {
         "x-request-id": "req_missing_123"
@@ -109,7 +64,7 @@ describe("runtime routes and middleware", () => {
   });
 
   test("rejects disallowed CORS origins", async () => {
-    const response = await inject(createApp(testConfig()), {
+    const response = await injectRoute(createApp(testConfig()), {
       url: "/health/live",
       headers: {
         Origin: "https://evil.example",
@@ -128,7 +83,7 @@ describe("runtime routes and middleware", () => {
   });
 
   test("sets security headers", async () => {
-    const response = await inject(createApp(testConfig()), {
+    const response = await injectRoute(createApp(testConfig()), {
       url: "/health/live"
     });
 
@@ -147,7 +102,7 @@ describe("runtime routes and middleware", () => {
     });
     app.use(errorHandler);
 
-    const response = await inject(app, {
+    const response = await injectRoute(app, {
       method: "POST",
       url: "/too-large",
       headers: {
@@ -173,13 +128,13 @@ describe("runtime routes and middleware", () => {
       })
     );
 
-    const first = await inject(app, {
+    const first = await injectRoute(app, {
       url: "/health/live",
       headers: {
         "x-request-id": "req_limit_1"
       }
     });
-    const second = await inject(app, {
+    const second = await injectRoute(app, {
       url: "/health/live",
       headers: {
         "x-request-id": "req_limit_2"
@@ -220,7 +175,7 @@ describe("runtime routes and middleware", () => {
     );
     app.use(errorHandler);
 
-    const response = await inject(app, {
+    const response = await injectRoute(app, {
       method: "POST",
       url: "/echo",
       headers: {

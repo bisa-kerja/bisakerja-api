@@ -86,17 +86,19 @@ This structure refines `folder-structur-reference.md` by making module file name
 
 ## Directory Responsibilities
 
-| Path            | Responsibility                                                                               |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| `prisma/`       | Prisma schema, migrations, and seed data                                                     |
-| `src/app.ts`    | Express app creation, global middleware, route registration, and error handler registration  |
-| `src/server.ts` | Runtime bootstrap, port binding, startup logging, and graceful shutdown                      |
-| `src/config/`   | Environment validation, logger configuration, and database client setup                      |
-| `src/core/`     | Global framework-level concerns that are not domain-specific                                 |
-| `src/modules/`  | Feature modules and their routes, controllers, services, repositories, schemas, and types    |
-| `src/shared/`   | Reusable utilities, integration clients, shared types, and wrappers used by multiple modules |
-| `tests/`        | Unit, integration, route, contract, and fixture test support                                 |
-| `docs/`         | Service-owned technical documentation synced later to Bisakerja Docs                         |
+| Path              | Responsibility                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| `prisma/`         | Prisma schema, migrations, and seed data                                                       |
+| `src/app.ts`      | Express app creation, global middleware, route registration, and error handler registration    |
+| `src/server.ts`   | Runtime bootstrap, port binding, startup logging, and graceful shutdown                        |
+| `src/config/`     | Environment validation, logger configuration, and database client setup                        |
+| `src/core/`       | Global framework-level concerns that are not domain-specific                                   |
+| `src/modules/`    | Feature modules and their routes, controllers, services, repositories, schemas, and types      |
+| `src/shared/`     | Reusable utilities, integration clients, shared types, and wrappers used by multiple modules   |
+| `tests/`          | Unit, integration, route, contract, and fixture test support                                   |
+| `tests/helpers/`  | Shared test utilities such as route injection and environment guards                           |
+| `tests/fixtures/` | Synthetic users, jobs, model responses, and normalized scraper records for deterministic tests |
+| `docs/`           | Service-owned technical documentation synced later to Bisakerja Docs                           |
 
 ## Module Anatomy
 

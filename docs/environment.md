@@ -189,6 +189,12 @@ When the project scaffold is created, `.env.example` must:
 - Mark variables that are only required when a feature is enabled.
 - Stay in sync with `src/config/env.ts`.
 
+## `.env.test.example` Requirements
+
+The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
+
+Test defaults should use fake providers or local mocks for email, Model API, Scraper API, and uploads. Test logs should default to `silent` unless a failing test needs diagnostic output.
+
 ## Related Docs
 
 - `docs/overview.md`

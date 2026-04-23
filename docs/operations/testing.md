@@ -46,9 +46,11 @@ The target test layout follows `docs/project-structure.md`.
 
 ```text
 tests/
+  helpers/
   unit/
     core/
     modules/
+    fixtures/
   integration/
     repositories/
     routes/
@@ -65,6 +67,7 @@ tests/
 Rules:
 
 - Unit tests should not require PostgreSQL.
+- Route tests should use the shared route injection helper so requests pass through the Express middleware stack without binding a local port.
 - Repository and workflow integration tests must use a test database.
 - Contract fixtures must be versioned with the backend source code.
 - Fixtures must not contain real user CVs, passwords, tokens, or production job source payloads.
@@ -88,6 +91,8 @@ Required test environment behavior:
 | Time         | Prefer injectable clocks for token expiry, stale jobs, and retention tests                         |
 
 The final `.env.test.example` should be created during scaffold work and kept in sync with `docs/environment.md` and `src/config/env.ts`.
+
+Test helpers must fail fast when integration tests are configured outside the test runtime. Database-backed tests should call the environment guard before connecting to PostgreSQL and should reject database URLs that do not clearly point to an isolated local or test database.
 
 Reserved commands:
 
@@ -153,6 +158,8 @@ Production deployment must use explicit migration execution, not implicit applic
 
 Route tests should exercise the Express app through compatible Bun test tooling. The initial route harness uses in-memory Express request and response objects so middleware order, headers, envelopes, and error handling can be verified without depending on a bound local socket.
 
+The shared route harness should live under `tests/helpers/route.ts` and return the response status, headers, and parsed JSON body. Individual route suites should avoid duplicating Express injection code unless a test requires lower-level middleware control.
+
 Every route group must verify:
 
 - Correct `/api/v1` prefix.
@@ -195,6 +202,19 @@ Contract tests must verify:
 - Missing optional source fields do not break frontend-facing job responses.
 - Raw Glints, Jobstreet, Kalibrr, or Dealls payloads do not leak through API responses.
 - Stale job behavior follows the documented `JOB_STALE_AFTER_HOURS` rule once implemented.
+
+## Fixture Safety
+
+Shared fixtures should be small, synthetic, and product-shaped. User fixtures may contain stable test emails under non-routable domains but must not contain passwords, password hashes, OTP values, refresh tokens, or access tokens. CV analyzer fixtures must not include raw CV content. Scraper fixtures must represent normalized job data only and must not include raw provider payloads.
+
+The fixture baseline should include:
+
+| Fixture path                 | Expected content                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------ |
+| `tests/fixtures/users`       | Synthetic users for authenticated, second-user, and profile-complete scenarios |
+| `tests/fixtures/jobs`        | Source platform metadata and normalized job records                            |
+| `tests/fixtures/model-api`   | Valid and degraded model responses for contract validation                     |
+| `tests/fixtures/scraper-api` | Normalized scraper job records derived from job fixtures                       |
 
 ## MVP Module Validation Matrix
 
