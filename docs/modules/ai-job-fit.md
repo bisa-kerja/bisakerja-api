@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-job-fit.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-23
 ---
 
 # AI Job Fit Module
@@ -75,17 +75,18 @@ Future history endpoints may be added only after result persistence is implement
 
 Validation:
 
-| Field           | Rule                                              |
-| --------------- | ------------------------------------------------- |
-| `jobId`         | Required internal job listing id                  |
-| `persistResult` | Optional boolean, default based on product policy |
+| Field           | Rule                              |
+| --------------- | --------------------------------- |
+| `jobId`         | Required internal job listing id  |
+| `persistResult` | Optional boolean, default `false` |
 
 Rules:
 
 - Do not accept user skills, experience, or preferences in this request body.
 - Use persisted backend data so scoring is consistent and auditable.
 - Return `404 JOB_NOT_FOUND` if job does not exist.
-- Return `409 PROFILE_INCOMPLETE` if required profile or preference data is missing.
+- Return `409 PROFILE_INCOMPLETE` if required profile context is missing.
+- Return `409 PREFERENCES_INCOMPLETE` if persisted target role, location, or work type preferences are missing.
 
 ## Backend-Prepared Model Payload
 
@@ -95,7 +96,6 @@ The backend prepares a minimal internal payload for Model API.
 {
   "requestId": "req_123",
   "user": {
-    "id": "user_123",
     "careerStatus": "FRESH_GRADUATE",
     "skills": [
       {
@@ -282,7 +282,7 @@ Optional write models:
 
 Persistence rules:
 
-- Persist derived outputs only when `persistResult` or product policy requires it.
+- Persist derived outputs only when `persistResult=true`.
 - Store model version when available.
 - Store sanitized input summary, not full raw model payload.
 - Do not let Model API write directly to PostgreSQL.
@@ -351,20 +351,13 @@ Integration tests:
 - Model API success returns product-safe response.
 - Model API timeout returns `503`.
 - Persist enabled stores result snapshots.
+- Model API failures do not break public job search routes.
 
 Route tests:
 
 - Response follows `docs/api-response-standard.md`.
 - Request body cannot override user profile or preference data.
 - Raw model internals are not present in response.
-
-## Open Decisions
-
-- Whether `persistResult` is user-controlled or always follows product policy.
-- Exact Model API endpoint path and version.
-- Exact scoring formula ownership between backend and Model API.
-- Whether success probability is included in MVP.
-- Whether historical result retrieval is part of MVP or later.
 
 ## Related Docs
 

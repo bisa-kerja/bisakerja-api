@@ -222,7 +222,10 @@ Initial events:
 | `applications.updated`                    | Tracker metadata changes    | Changed field summary, no private notes              |
 | `applications.status_updated`             | Tracker status changes      | Old and new status, no private notes                 |
 | `applications.duplicate_rejected`         | Duplicate tracker rejected  | User id and job id only                              |
-| `ai.job_fit_requested`                    | Fit analysis starts         | No full model payload                                |
+| `ai_job_fit.requested`                    | Fit analysis starts         | No full model payload                                |
+| `ai_job_fit.completed`                    | Fit analysis succeeds       | Fit score and model version only                     |
+| `ai_job_fit.failed`                       | Fit analysis fails          | Error code and dependency latency only               |
+| `ai_job_fit.persisted`                    | Fit snapshot is stored      | Fit score and model version only                     |
 | `ai.cv_analysis_requested`                | CV analysis starts          | File metadata id only, no CV text                    |
 | `ai.model_failed`                         | Model dependency fails      | Error category and dependency latency                |
 
@@ -285,7 +288,7 @@ Before first deployment:
 - PostgreSQL readiness is checked.
 - Model API failure is observable without breaking unrelated flows.
 - Job freshness is observable through metadata or ingestion records.
-- Auth and CV Analyzer audit events are defined.
+- Auth, AI Job Fit, and CV Analyzer audit events are defined.
 - Production log level and error reporting configuration are documented.
 
 ## Related Docs

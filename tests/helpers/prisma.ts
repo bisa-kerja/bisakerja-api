@@ -92,6 +92,15 @@ export async function createRepositoryTestContext() {
     runId,
     cleanup: async () => {
       await prisma.$transaction([
+        prisma.fitScoreResult.deleteMany({
+          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+        }),
+        prisma.skillGapResult.deleteMany({
+          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+        }),
+        prisma.cvAnalysisResult.deleteMany({
+          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+        }),
         prisma.applicationStatusHistory.deleteMany({
           where: { user: { email: { endsWith: `-${runId}@example.test` } } }
         }),

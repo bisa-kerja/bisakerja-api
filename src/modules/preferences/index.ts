@@ -5,6 +5,7 @@ export type {
   PreferenceContext,
   PreferenceLocation,
   PreferenceRecord,
+  PreferenceWorkType,
   PreferencesRepository,
   PreferencesRouterOptions,
   PreferenceSalaryExpectation

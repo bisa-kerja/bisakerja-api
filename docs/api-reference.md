@@ -349,6 +349,8 @@ Application tracker endpoints use the standard response envelope. List responses
 | `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job            |
 | `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded PDF CV against a selected job |
 
+AI analysis endpoints use the standard response envelope. `POST /api/v1/ai/job-fit` accepts only `jobId` plus optional `persistResult`, returns `409 PROFILE_INCOMPLETE` or `409 PREFERENCES_INCOMPLETE` when required persisted context is missing, and stores sanitized snapshots only when `persistResult=true`.
+
 ## Contract Stability Rules
 
 - Do not remove response fields without a versioning plan.
