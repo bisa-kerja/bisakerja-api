@@ -340,6 +340,8 @@ The endpoint list below is a planning index, not final endpoint documentation.
 | `PATCH` | `/api/v1/me/applications/:applicationId`        | Authenticated and ownership-protected | Update tracker record     |
 | `PATCH` | `/api/v1/me/applications/:applicationId/status` | Authenticated and ownership-protected | Update application status |
 
+Application tracker endpoints use the standard response envelope. List responses include pagination, supplied `keyword` and `status` filters, and the selected sort value. Tracker resources include current status, source, optional notes, timestamps, and the normalized job card shape used by saved jobs and job search.
+
 ### AI
 
 | Method | Path                     | Auth          | Purpose                                        |

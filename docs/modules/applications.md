@@ -120,12 +120,12 @@ The MVP allows correction transitions because users may fix tracker mistakes. If
 
 Validation:
 
-| Field    | Rule                                                  |
-| -------- | ----------------------------------------------------- |
-| `jobId`  | Required internal job listing id                      |
-| `status` | Optional, defaults to `APPLIED`                       |
-| `notes`  | Optional, max length documented during implementation |
-| `source` | Optional enum: `MANUAL`, `EXTERNAL_APPLY_CLICK`       |
+| Field    | Rule                                                                             |
+| -------- | -------------------------------------------------------------------------------- |
+| `jobId`  | Required internal job listing id                                                 |
+| `status` | Optional, defaults to `APPLIED`; initial tracker records must start as `APPLIED` |
+| `notes`  | Optional, max `2000` characters                                                  |
+| `source` | Optional enum: `MANUAL`, `EXTERNAL_APPLY_CLICK`                                  |
 
 ### Update Tracker
 
@@ -165,12 +165,28 @@ Validation:
       "name": "Example Tech",
       "logoUrl": "https://cdn.example.com/company-logo.png"
     },
+    "sourcePlatform": {
+      "id": "source_123",
+      "name": "Glints",
+      "slug": "glints"
+    },
     "workType": "REMOTE",
+    "employmentType": "FULL_TIME",
+    "experienceLevel": "ENTRY_LEVEL",
     "location": {
       "display": "Jakarta Selatan, DKI Jakarta",
       "province": "DKI Jakarta",
       "city": "Jakarta Selatan"
     },
+    "salary": {
+      "min": 5000000,
+      "max": 10000000,
+      "currency": "IDR",
+      "period": "MONTHLY",
+      "display": "Rp5.000.000 - Rp10.000.000 / bulan"
+    },
+    "postedAt": "2026-04-20T00:00:00.000Z",
+    "lastSeenAt": "2026-04-22T00:00:00.000Z",
     "isStale": false
   }
 }
@@ -198,12 +214,28 @@ Validation:
           "name": "Example Tech",
           "logoUrl": "https://cdn.example.com/company-logo.png"
         },
+        "sourcePlatform": {
+          "id": "source_123",
+          "name": "Glints",
+          "slug": "glints"
+        },
         "workType": "REMOTE",
+        "employmentType": "FULL_TIME",
+        "experienceLevel": "ENTRY_LEVEL",
         "location": {
           "display": "Jakarta Selatan, DKI Jakarta",
           "province": "DKI Jakarta",
           "city": "Jakarta Selatan"
         },
+        "salary": {
+          "min": 5000000,
+          "max": 10000000,
+          "currency": "IDR",
+          "period": "MONTHLY",
+          "display": "Rp5.000.000 - Rp10.000.000 / bulan"
+        },
+        "postedAt": "2026-04-20T00:00:00.000Z",
+        "lastSeenAt": "2026-04-22T00:00:00.000Z",
         "isStale": false
       }
     }
@@ -241,7 +273,7 @@ Validation:
 2. Validate request body.
 3. Confirm referenced `JobListing` exists.
 4. Check existing active `(userId, jobListingId)` tracker record.
-5. Create `ApplicationRecord`.
+5. Create `ApplicationRecord` with initial status `APPLIED`.
 6. Create the initial `ApplicationStatusHistory` row.
 7. Emit `applications.created`.
 8. Return created tracker record.
