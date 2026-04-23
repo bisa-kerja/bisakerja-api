@@ -300,12 +300,16 @@ The endpoint list below is a planning index, not final endpoint documentation.
 
 ### Users And Preferences
 
-| Method  | Path                     | Auth          | Purpose                              |
-| ------- | ------------------------ | ------------- | ------------------------------------ |
-| `GET`   | `/api/v1/me`             | Authenticated | Get current user profile             |
-| `PATCH` | `/api/v1/me`             | Authenticated | Update current user profile          |
-| `GET`   | `/api/v1/me/preferences` | Authenticated | Get career preferences               |
-| `PUT`   | `/api/v1/me/preferences` | Authenticated | Replace or upsert career preferences |
+| Method  | Path                       | Auth          | Purpose                              |
+| ------- | -------------------------- | ------------- | ------------------------------------ |
+| `GET`   | `/api/v1/me`               | Authenticated | Get current user profile             |
+| `PATCH` | `/api/v1/me`               | Authenticated | Update current user profile          |
+| `PUT`   | `/api/v1/me/profile-photo` | Authenticated | Upsert profile photo metadata        |
+| `PUT`   | `/api/v1/me/skills`        | Authenticated | Replace user skill list              |
+| `PUT`   | `/api/v1/me/experience`    | Authenticated | Replace user experience list         |
+| `PUT`   | `/api/v1/me/education`     | Authenticated | Replace user education list          |
+| `GET`   | `/api/v1/me/preferences`   | Authenticated | Get career preferences               |
+| `PUT`   | `/api/v1/me/preferences`   | Authenticated | Replace or upsert career preferences |
 
 ### Jobs
 
