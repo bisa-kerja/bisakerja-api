@@ -9,9 +9,11 @@ import { genericForgotPasswordMessage } from "@/modules/auth/auth.constants";
 import type {
   AuthCookieOptions,
   AuthControllerDependencies,
+  AuthSession,
   AuthUser
 } from "@/modules/auth/auth.types";
 import { AuthService } from "@/modules/auth/auth.service";
+import type { IssueContext } from "@/modules/auth/auth.service";
 import type {
   ForgotPasswordInput,
   LoginInput,
@@ -58,10 +60,10 @@ export class AuthController {
 
   login = async (req: Request, res: Response) => {
     try {
-      const result = await this.service.login(req.body as LoginInput, {
-        userAgent: req.get("user-agent"),
-        ipAddress: req.ip
-      });
+      const result = await this.service.login(
+        req.body as LoginInput,
+        this.getIssueContext(req)
+      );
 
       setRefreshCookie(res, this.dependencies.config, result.refreshToken);
       emitAuditEvent({
@@ -73,15 +75,7 @@ export class AuthController {
         result: "success"
       });
 
-      res.json(
-        successResponse(
-          {
-            user: serializeAuthUser(result.user),
-            session: result.session
-          },
-          "Login successful"
-        )
-      );
+      res.json(this.authSessionResponse(result, "Login successful"));
     } catch (error) {
       emitAuditEvent({
         action: "auth.login_failed",
@@ -94,12 +88,13 @@ export class AuthController {
   };
 
   refresh = async (req: Request, res: Response) => {
+    const refreshToken = getRequestCookie(
+      req,
+      this.dependencies.config.auth.refreshCookieName
+    );
     const result = await this.service.refresh(
-      getRequestCookie(req, this.dependencies.config.auth.refreshCookieName),
-      {
-        userAgent: req.get("user-agent"),
-        ipAddress: req.ip
-      }
+      refreshToken,
+      this.getIssueContext(req)
     );
 
     setRefreshCookie(res, this.dependencies.config, result.refreshToken);
@@ -112,15 +107,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(
-      successResponse(
-        {
-          user: serializeAuthUser(result.user),
-          session: result.session
-        },
-        "Session refreshed"
-      )
-    );
+    res.json(this.authSessionResponse(result, "Session refreshed"));
   };
 
   logout = async (req: Request, res: Response) => {
@@ -189,6 +176,29 @@ export class AuthController {
   google = (_req: Request, _res: Response) => {
     this.service.googleSsoPlaceholder();
   };
+
+  private authSessionResponse(
+    result: {
+      user: AuthUser;
+      session: AuthSession;
+    },
+    message: string
+  ) {
+    return successResponse(
+      {
+        user: serializeAuthUser(result.user),
+        session: result.session
+      },
+      message
+    );
+  }
+
+  private getIssueContext(req: Request): IssueContext {
+    return {
+      userAgent: req.get("user-agent"),
+      ipAddress: req.ip
+    };
+  }
 }
 
 export function serializeAuthUser(user: AuthUser) {

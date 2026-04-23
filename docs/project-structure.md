@@ -127,6 +127,8 @@ src/modules/<module>/
   index.ts
 ```
 
+For detailed implementation guidance for each module file type, including function-vs-class decisions and practical examples, use `src/modules/README.md` as the primary engineering reference.
+
 File responsibilities:
 
 | File                     | Responsibility                                                                                        |
@@ -140,7 +142,16 @@ File responsibilities:
 | `<module>.constants.ts`  | Module-specific constants, enums, and code lists when needed                                          |
 | `index.ts`               | Module exports for route registration and tests                                                       |
 
-Small modules may omit `repository`, `constants`, or `types` only when there is no database access, no constants, or no local types. Keep non-trivial request or payload schemas in `<module>.schema.ts` and non-trivial exported or cross-file types in `<module>.types.ts`. Very small implementation-local helper types may remain inline when moving them would make navigation worse. Do not omit route, controller, service, or schema files for MVP modules unless the module is intentionally documentation-only.
+Small modules may omit `repository`, `constants`, or `types` only when there is no database access, no constants, or no local types. Keep non-trivial request or payload schemas in `<module>.schema.ts` and non-trivial exported or cross-file types in `<module>.types.ts`. Very small implementation-local helper types may remain inline when moving them would make navigation worse. Route, controller, and service remain the default minimum. `schema` can be omitted for endpoints that do not accept meaningful request input (for example, liveness and readiness checks).
+
+### Function vs Class Rule
+
+Use function as the default for stateless helpers, mappers, and lightweight factories. Use class when behavior requires shared instance dependencies and a constructor-based dependency boundary, such as larger module services.
+
+This rule keeps codebase ergonomics predictable:
+
+- function for small, composable, low-state behavior
+- class for stateful behavior bundles with explicit dependencies
 
 ## MVP Modules
 
@@ -361,4 +372,5 @@ Before implementing a new module:
 - `docs/overview.md`
 - `docs/tech-stack.md`
 - `docs/environment.md`
+- `src/modules/README.md`
 - `folder-structur-reference.md`

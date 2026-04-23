@@ -404,3 +404,4 @@ Route tests:
 - `docs/architecture.md`
 - `docs/database.md`
 - `docs/environment.md`
+- `src/modules/README.md`

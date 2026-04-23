@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import type { AppConfig } from "@/config/env";
 import {
   AuthenticationError,
@@ -35,12 +37,18 @@ import {
   createOpaqueToken,
   hashToken
 } from "@/shared/utils/token";
-import { parseDurationMs } from "@/shared/utils/ttl";
 import { issueAccessToken } from "@/shared/utils/jwt";
+import { parseDurationMs } from "@/shared/utils/ttl";
 
 export type IssueContext = {
   userAgent?: string;
   ipAddress?: string;
+};
+
+type AuthSessionResult = {
+  user: AuthUser;
+  session: AuthSession;
+  refreshToken: string;
 };
 
 export class AuthService {
@@ -99,7 +107,7 @@ export class AuthService {
   async login(
     input: LoginInput,
     context: IssueContext = {}
-  ): Promise<{ user: AuthUser; session: AuthSession; refreshToken: string }> {
+  ): Promise<AuthSessionResult> {
     const user = await this.repository.findUserByIdentifier(input.identifier);
 
     if (!user?.credential) {
@@ -123,7 +131,7 @@ export class AuthService {
   async refresh(
     rawRefreshToken: string | undefined,
     context: IssueContext = {}
-  ): Promise<{ user: AuthUser; session: AuthSession; refreshToken: string }> {
+  ): Promise<AuthSessionResult> {
     if (!rawRefreshToken) {
       throw new AuthenticationError();
     }
@@ -132,18 +140,12 @@ export class AuthService {
     const current = await this.repository.findActiveRefreshToken(tokenHash);
 
     if (!current) {
-      throw new AuthenticationError(
-        "Authentication required",
-        "UNAUTHENTICATED"
-      );
+      throw unauthenticated();
     }
 
     if (current.expiresAt <= this.now()) {
       await this.repository.revokeRefreshToken(current.id);
-      throw new AuthenticationError(
-        "Authentication required",
-        "UNAUTHENTICATED"
-      );
+      throw unauthenticated();
     }
 
     this.assertLoginAllowed(current.user);
@@ -157,11 +159,7 @@ export class AuthService {
       })
     );
 
-    return {
-      user: safeUser(current.user),
-      session: issueAccessToken(this.config, toAccessTokenInput(current.user)),
-      refreshToken: rawNextRefreshToken
-    };
+    return this.buildSessionResult(current.user, rawNextRefreshToken);
   }
 
   async logout(userId: string, rawRefreshToken?: string): Promise<void> {
@@ -267,17 +265,13 @@ export class AuthService {
   private async issueSession(
     user: AuthUserWithCredential,
     context: IssueContext
-  ): Promise<{ user: AuthUser; session: AuthSession; refreshToken: string }> {
+  ): Promise<AuthSessionResult> {
     const rawRefreshToken = createOpaqueToken();
     await this.repository.createRefreshToken(
       this.buildRefreshTokenInput(user.id, rawRefreshToken, context)
     );
 
-    return {
-      user: safeUser(user),
-      session: issueAccessToken(this.config, toAccessTokenInput(user)),
-      refreshToken: rawRefreshToken
-    };
+    return this.buildSessionResult(user, rawRefreshToken);
   }
 
   private buildRefreshTokenInput(
@@ -315,6 +309,17 @@ export class AuthService {
       );
     }
   }
+
+  private buildSessionResult(
+    user: AuthUserWithCredential,
+    refreshToken: string
+  ): AuthSessionResult {
+    return {
+      user: safeUser(user),
+      session: issueAccessToken(this.config, toAccessTokenInput(user)),
+      refreshToken
+    };
+  }
 }
 
 function invalidCredentials() {
@@ -322,6 +327,10 @@ function invalidCredentials() {
     "Invalid email, username, or password",
     authErrorCodes.invalidCredentials
   );
+}
+
+function unauthenticated() {
+  return new AuthenticationError("Authentication required", "UNAUTHENTICATED");
 }
 
 function safeUser(user: AuthUserWithCredential): AuthUser {
@@ -342,4 +351,3 @@ function toAccessTokenInput(user: AuthUserWithCredential) {
     username: user.username
   };
 }
-import { randomUUID } from "node:crypto";

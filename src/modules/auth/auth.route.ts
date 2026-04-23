@@ -22,8 +22,7 @@ export function createAuthRouter(
   options: AuthRouterOptions = {}
 ): Router {
   const router = Router();
-  const repository = options.repository ?? new PrismaAuthRepository();
-  const emailProvider = options.emailProvider ?? new FakeEmailProvider();
+  const { repository, emailProvider } = resolveAuthDependencies(options);
   const authMiddleware =
     options.authMiddleware ?? createAuthMiddleware(config, repository);
   const controller = new AuthController({
@@ -80,4 +79,11 @@ export function createAuthRouter(
   router.post("/google", authLimiter, controller.google);
 
   return router;
+}
+
+function resolveAuthDependencies(options: AuthRouterOptions) {
+  return {
+    repository: options.repository ?? new PrismaAuthRepository(),
+    emailProvider: options.emailProvider ?? new FakeEmailProvider()
+  };
 }
