@@ -204,7 +204,7 @@ Contract tests must verify:
 - Job records include source platform, company, title, location, work type, source URL, and freshness fields when available.
 - Missing optional source fields do not break frontend-facing job responses.
 - Raw Glints, Jobstreet, Kalibrr, or Dealls payloads do not leak through API responses.
-- Stale job behavior follows the documented `JOB_STALE_AFTER_HOURS` rule once implemented.
+- Stale job behavior follows the documented `JOB_STALE_AFTER_HOURS` rule.
 
 ## Fixture Safety
 

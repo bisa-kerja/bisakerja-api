@@ -70,5 +70,33 @@ export const jobFixtures = [
     sourceUrl: "https://example.test/jobs/jobstreet-data-001",
     discoveredAt: "2026-01-02T00:00:00.000Z",
     skills: ["SQL", "Dashboarding", "Analytics"]
+  },
+  {
+    id: "job_platform_001",
+    sourcePlatformId: "source_kalibrr",
+    externalJobId: "kalibrr-platform-001",
+    companyName: "Platform Nusantara",
+    title: "Platform Engineer",
+    city: "Sleman",
+    province: "DI Yogyakarta",
+    workType: "ONSITE",
+    employmentType: "CONTRACT",
+    sourceUrl: "https://example.test/jobs/kalibrr-platform-001",
+    discoveredAt: "2026-01-03T00:00:00.000Z",
+    skills: ["Docker", "PostgreSQL", "Reliability"]
+  },
+  {
+    id: "job_intern_001",
+    sourcePlatformId: "source_dealls",
+    externalJobId: "dealls-intern-001",
+    companyName: "Talenta Muda",
+    title: "Software Engineer Intern",
+    city: "Remote",
+    province: "Indonesia",
+    workType: "REMOTE",
+    employmentType: "INTERNSHIP",
+    sourceUrl: "https://example.test/jobs/dealls-intern-001",
+    discoveredAt: "2026-01-04T00:00:00.000Z",
+    skills: ["TypeScript", "REST API"]
   }
 ] satisfies JobFixture[];

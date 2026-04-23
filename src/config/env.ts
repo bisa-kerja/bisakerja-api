@@ -51,6 +51,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         password: parsed.SMTP_PASSWORD
       }
     },
+    jobs: {
+      staleAfterHours: parsed.JOB_STALE_AFTER_HOURS
+    },
     database: {
       url: parsed.DIRECT_DATABASE_URL || parsed.DATABASE_URL,
       runtimeUrl: parsed.DATABASE_URL,

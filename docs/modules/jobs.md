@@ -97,7 +97,7 @@ Future authenticated variants may add personalized recommendation metadata, but 
 | `salary_highest` | Highest normalized salary first                         |
 | `salary_lowest`  | Lowest normalized salary first                          |
 
-If `relevance` cannot be computed, the service may fall back to `newest` and should preserve the requested sort in `meta.sort` only if the actual behavior matches.
+If `relevance` is requested without a keyword, the API falls back to newest-first ordering and returns `meta.sort` as `newest`. When a keyword is provided, `meta.sort` remains `relevance` while the implementation applies the documented keyword filters and stable newest-first tie-breakers.
 
 ## List Response Schema
 
@@ -265,6 +265,7 @@ Repository responsibilities:
 
 - Query normalized jobs only.
 - Apply filters using indexed fields where possible.
+- Limit public list results to searchable active or stale normalized records.
 - Join company and source platform data.
 - Return stable database rows to service mapping layer.
 - Never return raw source payload fields to controller.
@@ -290,7 +291,7 @@ Supported source slugs:
 - `kalibrr`
 - `dealls`
 
-The API should accept source filters by slug. Display names should be returned in response for frontend presentation.
+The API accepts source filters by slug through `sourcePlatform`. Display names are returned in response for frontend presentation.
 
 ## Company Fields
 
@@ -348,6 +349,7 @@ Rules:
 | Unsupported sort      | 422    | `VALIDATION_ERROR`    |
 | Invalid job id format | 422    | `VALIDATION_ERROR`    |
 | Job not found         | 404    | `JOB_NOT_FOUND`       |
+| Hidden job detail     | 404    | `JOB_NOT_FOUND`       |
 | Database unavailable  | 503    | `SERVICE_UNAVAILABLE` |
 
 ## Observability
@@ -397,13 +399,14 @@ Route tests:
 - Public routes do not require auth.
 - Raw source payload fields are not present in response JSON.
 
-## Open Decisions
+## Current Behavior Notes
 
-- Exact full-text search implementation.
-- Whether `sourcePlatform` filter accepts slug only or id and slug.
-- Whether category/division is a normalized field in MVP.
-- Whether job card includes `isBookmarked` for authenticated users in MVP.
-- Whether stale jobs are visible by default or hidden from search but visible in user history.
+- Public list results include active and stale normalized records. Hidden records are excluded from public responses.
+- Public detail returns `JOB_NOT_FOUND` for missing or hidden records.
+- Source platform filtering accepts normalized slug values only.
+- Category uses the normalized `JobListing.category` field when available.
+- Job cards do not include personalized bookmark state.
+- Stale records remain visible in search with `isStale` computed from `lastSeenAt` and `JOB_STALE_AFTER_HOURS`.
 
 ## Related Docs
 

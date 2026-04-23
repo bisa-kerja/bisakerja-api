@@ -47,6 +47,9 @@ export type AppConfig = {
       password: string;
     };
   };
+  jobs: {
+    staleAfterHours: number;
+  };
   database: {
     url: string;
     runtimeUrl: string;

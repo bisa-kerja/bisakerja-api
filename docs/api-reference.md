@@ -208,6 +208,8 @@ Constraints:
 | `salaryMin`       | number | Minimum expected salary                                                   |
 | `salaryMax`       | number | Maximum expected salary                                                   |
 | `sourcePlatform`  | string | Glints, Jobstreet, Kalibrr, Dealls, or normalized source slug             |
+| `skill`           | string | Normalized skill or requirement keyword                                   |
+| `category`        | string | Normalized job category when available                                    |
 
 Rules:
 
@@ -235,6 +237,8 @@ Other list sort values:
 - `created_desc`
 
 Unsupported sort values return `422`.
+
+Job search falls back to newest-first ordering when `sort=relevance` is requested without a keyword, and the response metadata reports the actual sort as `newest`.
 
 ## Common Headers
 

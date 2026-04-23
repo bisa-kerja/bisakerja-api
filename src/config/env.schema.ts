@@ -96,6 +96,9 @@ export const envSchema = z
     SMTP_PORT: numberFromString(587).pipe(z.number().int().positive()),
     SMTP_USER: z.string().optional().default(""),
     SMTP_PASSWORD: z.string().optional().default(""),
+    JOB_STALE_AFTER_HOURS: numberFromString(72).pipe(
+      z.number().int().positive()
+    ),
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
       .default("info"),
