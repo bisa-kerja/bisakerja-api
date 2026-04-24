@@ -19,9 +19,7 @@ import { emitAuditEvent } from "@/shared/observability/audit-event";
 export class ApplicationsController {
   private readonly service: ApplicationsService;
 
-  constructor(
-    private readonly dependencies: ApplicationsControllerDependencies
-  ) {
+  constructor(dependencies: ApplicationsControllerDependencies) {
     this.service = new ApplicationsService(dependencies.repository, {
       staleAfterHours: dependencies.config.jobs.staleAfterHours,
       now: dependencies.now
@@ -140,11 +138,7 @@ export class ApplicationsController {
     const params = req.params as { applicationId: string };
     const input = req.body as UpdateApplicationStatusInput;
     const userId = req.auth?.userId ?? "";
-    const existing = await this.dependencies.repository.findByIdForUser(
-      userId,
-      params.applicationId
-    );
-    const application = await this.service.updateApplicationStatus(
+    const result = await this.service.updateApplicationStatus(
       userId,
       params.applicationId,
       input
@@ -155,17 +149,17 @@ export class ApplicationsController {
       requestId: req.requestId,
       actorId: req.auth?.userId,
       resourceType: "application",
-      resourceId: application.id,
+      resourceId: result.application.id,
       result: "success",
       metadata: {
-        fromStatus: existing?.status,
-        toStatus: application.status
+        fromStatus: result.previousStatus,
+        toStatus: result.application.status
       }
     });
 
     res.json(
       successResponse(
-        application,
+        result.application,
         "Application status updated successfully",
         null
       )

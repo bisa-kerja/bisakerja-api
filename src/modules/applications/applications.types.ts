@@ -35,6 +35,11 @@ export type ApplicationResource = {
   job: JobCard;
 };
 
+export type UpdateApplicationStatusResult = {
+  application: ApplicationResource;
+  previousStatus: ApplicationStatus;
+};
+
 export type ApplicationListResult = {
   items: ApplicationRecord[];
   total: number;

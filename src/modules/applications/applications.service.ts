@@ -13,7 +13,8 @@ import type {
   ApplicationRecord,
   ApplicationsRepository,
   ApplicationsServiceOptions,
-  ApplicationStatus
+  ApplicationStatus,
+  UpdateApplicationStatusResult
 } from "@/modules/applications/applications.types";
 import {
   serializeJobCard,
@@ -126,7 +127,7 @@ export class ApplicationsService {
     userId: string,
     applicationId: string,
     input: UpdateApplicationStatusInput
-  ) {
+  ): Promise<UpdateApplicationStatusResult> {
     const application = await this.repository.findByIdForUser(
       userId,
       applicationId
@@ -164,11 +165,14 @@ export class ApplicationsService {
       );
     }
 
-    return serializeApplicationResource(
-      updated,
-      this.options.staleAfterHours,
-      this.now()
-    );
+    return {
+      application: serializeApplicationResource(
+        updated,
+        this.options.staleAfterHours,
+        this.now()
+      ),
+      previousStatus: application.status
+    };
   }
 }
 

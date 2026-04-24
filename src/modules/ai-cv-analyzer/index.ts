@@ -1,11 +1,5 @@
 export { createAiCvAnalyzerRouter } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.route";
 export {
-  requireMultipartFormData,
-  createCvUploadMiddleware,
-  validateUploadPresence
-} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.route";
-export { AiCvAnalyzerController } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.controller";
-export {
   AiCvAnalyzerService,
   cleanupExpiredCvFiles
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";

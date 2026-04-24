@@ -1,5 +1,4 @@
 export { createAiJobFitRouter } from "@/modules/ai-job-fit/ai-job-fit.route";
-export { AiJobFitController } from "@/modules/ai-job-fit/ai-job-fit.controller";
 export { AiJobFitService } from "@/modules/ai-job-fit/ai-job-fit.service";
 export {
   buildJobFitPayload,

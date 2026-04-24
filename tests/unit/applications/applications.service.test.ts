@@ -141,7 +141,10 @@ describe("ApplicationsService", () => {
       notes: null,
       source: "EXTERNAL_APPLY_CLICK"
     });
-    expect(status).toMatchObject({ status: "INTERVIEW" });
+    expect(status).toMatchObject({
+      previousStatus: "APPLIED",
+      application: { status: "INTERVIEW" }
+    });
     expect(repository.history.at(-1)).toMatchObject({
       fromStatus: "APPLIED",
       toStatus: "INTERVIEW"

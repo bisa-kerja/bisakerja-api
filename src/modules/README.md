@@ -31,6 +31,25 @@ Catatan:
 - Untuk modul sederhana (seperti `health`), `schema` dapat dihilangkan jika tidak ada payload request.
 - `route`, `controller`, dan `service` tetap dipertahankan agar alur layer seragam.
 
+## File Tambahan Yang Diperbolehkan
+
+Beberapa modul membutuhkan file tambahan di luar struktur minimum. Ini boleh dipakai selama naming dan tanggung jawabnya jelas:
+
+- `<module>.mapper.ts`
+  - Untuk serializer/resource mapper atau transformasi data murni yang dipakai lebih dari satu layer dalam module yang sama.
+- `<module>.utils.ts`
+  - Untuk helper murni yang masih spesifik ke module.
+- `<module>.<adapter>.ts`
+  - Untuk adapter capability yang masih domain-specific, misalnya `auth.email.ts` atau `ai-cv-analyzer.storage.ts`.
+
+Aturan:
+
+1. Jika helper mulai dipakai lintas module, pindahkan ke `src/shared/**` agar tidak membentuk ketergantungan antar module pada file internal module lain.
+2. Jangan menambah file “misc”, “helpers”, atau “common” yang menjadi dumping ground. Nama file harus menjelaskan responsibility tunggalnya.
+3. `index.ts` hanya mengekspor public API yang memang dibutuhkan dari luar module. Jangan mengekspor controller/helper internal tanpa alasan jelas.
+4. Controller class, route-only middleware helper, dan validator wiring internal tidak diekspor dari `index.ts`.
+5. Pure helper dari service boleh diekspor hanya jika memang dipakai oleh test, script, atau consumer lintas module yang sah.
+
 ## Peran Setiap Jenis File
 
 | File                     | Peran utama                                                           | Boleh bergantung pada                              | Tidak boleh dilakukan                                            |
@@ -58,14 +77,18 @@ Aturan:
 2. Service tidak menerima `Request`/`Response` Express.
 3. Repository tidak tahu format response API.
 4. Route hanya merakit middleware + handler.
+5. Controller tidak mengakses repository langsung, termasuk hanya untuk kebutuhan audit/logging. Jika controller butuh metadata domain tambahan, service harus mengembalikannya.
 
 ## Konvensi Naming
 
 - Nama file modul: `<module>.<role>.ts`
+- Nama file tambahan: `<module>.<capability>.ts` untuk adapter/helper khusus domain
 - Nama method controller: `verbObject` (`register`, `resetPassword`, `listJobs`)
 - Nama method service: nama use-case/domain (`issueSession`, `verifyEmail`)
 - Nama method repository: aksi persistence (`findById`, `createRefreshToken`)
 - Error code: `UPPER_SNAKE_CASE`
+- Nama class repository implementasi: `Prisma<Module>Repository`
+- Nama helper serializer: gunakan awalan `serialize*` hanya untuk mapping resource/output yang murni
 
 ## Kapan Menggunakan Function vs Class
 
@@ -143,6 +166,20 @@ export class AuthService {
 6. Daftarkan route pada `src/modules/index.ts`.
 7. Export API publik modul via `index.ts`.
 8. Tambahkan/ubah dokumentasi modul pada `docs/modules/`.
+
+## Guideline Audit Lintas Module
+
+Gunakan checklist ini saat review atau menambah module baru:
+
+1. Route hanya melakukan wiring dependency, middleware, validasi, dan binding handler.
+2. Controller hanya mengubah HTTP request menjadi input service, memanggil `response.formatter`, dan mengirim audit event.
+3. Service menjadi satu-satunya tempat orkestrasi domain, validasi domain, keputusan status code domain, dan metadata tambahan yang dibutuhkan controller.
+4. Repository hanya membaca/menulis persistence dan tidak memanggil integration client atau membentuk response API.
+5. Serializer atau mapper yang dipakai lebih dari satu module harus dipromosikan ke `src/shared/**`, bukan diimpor dari module lain lewat file internal.
+6. Konstanta domain yang mewakili vocabulary bersama lintas module harus dipusatkan bila reuse mulai muncul; jangan menggandakan literal/enum yang sama di banyak module.
+7. Helper normalisasi string, slug, atau filter yang bersifat generik tidak boleh diduplikasi antar module.
+8. `index.ts` harus sempit: ekspor route factory, kontrak type utama, dan dependency public yang memang dipakai oleh app/test. Hindari kebocoran implementation detail.
+9. Controller dan helper yang hanya dipakai oleh `route.ts` tetap dianggap internal module.
 
 ## Pola Implementasi yang Sudah Diterapkan (April 2026)
 

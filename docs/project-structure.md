@@ -129,6 +129,16 @@ src/modules/<module>/
 
 For detailed implementation guidance for each module file type, including function-vs-class decisions and practical examples, use `src/modules/README.md` as the primary engineering reference.
 
+Modules may add narrowly scoped extra files when the responsibility is still module-local, for example:
+
+- `<module>.mapper.ts` for pure resource/data transformation
+- `<module>.utils.ts` for module-specific helper functions
+- `<module>.<adapter>.ts` for domain-specific adapters such as storage or email bridges
+
+If an extra helper starts being reused by multiple modules, move it to `src/shared/**` instead of importing the internal file of another module.
+
+`index.ts` should stay intentionally narrow. Export route factories, stable service/repository contracts, and selected pure helpers only when they are genuinely used by tests, scripts, or other approved consumers. Controllers and route-only helper middleware remain internal by default.
+
 File responsibilities:
 
 | File                     | Responsibility                                                                                        |
@@ -200,6 +210,7 @@ Forbidden dependency direction:
 - Repository importing controller or Express request/response objects.
 - Service importing Express response objects.
 - Controller importing Prisma directly.
+- Controller importing repository or calling repository methods directly.
 - Module importing another module's repository directly.
 - Frontend response formatting inside repositories.
 - Zod request validation inside repositories.
