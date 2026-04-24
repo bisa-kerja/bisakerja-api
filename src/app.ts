@@ -14,6 +14,7 @@ import {
   securityHeadersMiddleware
 } from "@/core/middlewares/security.middleware";
 import { registerRoutes } from "@/modules";
+import { registerApiReferenceRoutes } from "@/shared/docs/api-reference";
 export type { AppOptions } from "@/app.types";
 
 export function createApp(config: AppConfig = env, options: AppOptions = {}) {
@@ -41,6 +42,7 @@ export function createApp(config: AppConfig = env, options: AppOptions = {}) {
     app.use(requestLoggingMiddleware());
   }
 
+  registerApiReferenceRoutes(app, config);
   registerRoutes(app, config, options.routes);
 
   app.use((_req, _res, next) => {

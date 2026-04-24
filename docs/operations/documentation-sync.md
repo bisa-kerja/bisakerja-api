@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/documentation-sync.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Documentation Sync
@@ -136,6 +136,7 @@ Minimum service-side checks:
 
 Current repository commands:
 
+- `bun run docs:generate:openapi` writes `docs/generated/openapi.json` from the canonical OpenAPI source used by the runtime Scalar reference.
 - `bun run docs:generate:routes` writes `docs/generated/routes.md` from the runtime route registry.
 - `bun run docs:generate:sync-readiness` writes `docs/generated/sync-readiness.md` from the current `docs/**` tree and sync target rules.
 - `bun run docs:check` validates frontmatter and parses all fenced `json` examples under `docs/**`.

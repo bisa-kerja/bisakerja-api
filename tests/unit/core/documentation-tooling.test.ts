@@ -125,4 +125,13 @@ last_reviewed: 2026-04-23
       "| `docs/api-reference.md` | `docs/services/backend-api/synced/api-reference.md` |"
     );
   });
+
+  test("marks OpenAPI as available when a generated artifact exists", () => {
+    const report = buildSyncReadinessReport([
+      "docs/api-reference.md",
+      "docs/generated/openapi.json"
+    ]);
+
+    expect(report.openApiStatus).toBe("available");
+  });
 });

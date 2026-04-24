@@ -4,6 +4,7 @@ import { format } from "prettier";
 
 import {
   buildSyncReadinessReport,
+  listGeneratedDocArtifacts,
   listServiceDocFiles,
   renderSyncReadinessMarkdown
 } from "@/shared/docs/documentation-tooling";
@@ -12,7 +13,8 @@ const generatedAt = new Date().toISOString();
 const sourceCommit = process.env.SOURCE_SHA ?? "unknown";
 const outputPath = path.join(process.cwd(), "docs/generated/sync-readiness.md");
 const docPaths = await listServiceDocFiles();
-const report = buildSyncReadinessReport(docPaths);
+const generatedArtifacts = await listGeneratedDocArtifacts();
+const report = buildSyncReadinessReport([...docPaths, ...generatedArtifacts]);
 const markdown = await format(
   renderSyncReadinessMarkdown(report, generatedAt, sourceCommit),
   {

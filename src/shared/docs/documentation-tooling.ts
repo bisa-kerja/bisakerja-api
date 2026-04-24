@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 export type DocumentationIssue = {
@@ -31,6 +31,25 @@ export async function listServiceDocFiles(rootDir = process.cwd()) {
   const docsRoot = path.join(rootDir, "docs");
 
   return walkMarkdownFiles(docsRoot, rootDir);
+}
+
+export async function listGeneratedDocArtifacts(rootDir = process.cwd()) {
+  const candidatePaths = [
+    "docs/generated/openapi.json",
+    "docs/generated/openapi.md"
+  ];
+  const discovered: string[] = [];
+
+  for (const filePath of candidatePaths) {
+    try {
+      await access(path.join(rootDir, filePath));
+      discovered.push(filePath);
+    } catch {
+      // Ignore missing optional generated artifacts.
+    }
+  }
+
+  return discovered;
 }
 
 export async function validateServiceDocs(rootDir = process.cwd()) {

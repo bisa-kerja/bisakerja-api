@@ -65,7 +65,7 @@ export async function injectRoute(
   return {
     status: res.statusCode,
     headers,
-    body: rawBody ? (JSON.parse(rawBody) as unknown) : null
+    body: parseResponseBody(rawBody, readHeader(headers, "content-type"))
   };
 }
 
@@ -130,8 +130,34 @@ async function injectMultipartRoute(
   return {
     status: res.statusCode,
     headers,
-    body: responseBody ? (JSON.parse(responseBody) as unknown) : null
+    body: parseResponseBody(responseBody, readHeader(headers, "content-type"))
   };
+}
+
+function parseResponseBody(
+  rawBody: string,
+  contentType: string | string[] | undefined
+) {
+  if (rawBody === "") {
+    return null;
+  }
+
+  const normalizedContentType = Array.isArray(contentType)
+    ? contentType[0]
+    : contentType;
+
+  if (normalizedContentType?.includes("application/json")) {
+    return JSON.parse(rawBody) as unknown;
+  }
+
+  return rawBody;
+}
+
+function readHeader(
+  headers: Record<string, string | string[] | undefined>,
+  name: string
+) {
+  return headers[name];
 }
 
 type ResponseCookie = {

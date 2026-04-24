@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-reference.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Reference
@@ -19,7 +19,48 @@ Detailed endpoint request and response schemas are documented in module pages as
 
 Generated route inventory lives in `docs/generated/routes.md`. It is derived from the runtime route registry and should be used as the fastest drift check against this reference page when new endpoints are added or removed.
 
-Machine-readable OpenAPI output is not published yet because the canonical generation source is still being finalized. Once that source is chosen, the same artifact can also back an interactive API portal, including a Scalar-based presentation if adopted later.
+Machine-readable OpenAPI output now lives in `docs/generated/openapi.json`. The runtime also publishes the same document at `/openapi.json`, and the built-in interactive API reference is available through Scalar at `/docs/api`.
+
+## OpenAPI And Scalar
+
+The backend now exposes one canonical OpenAPI document and one interactive viewer:
+
+| Surface                  | Path                          | Purpose                                                                |
+| ------------------------ | ----------------------------- | ---------------------------------------------------------------------- |
+| Generated artifact       | `docs/generated/openapi.json` | Committed machine-readable contract used for review, sync, and tooling |
+| Runtime OpenAPI endpoint | `/openapi.json`               | Same contract served directly by the running backend                   |
+| Runtime Scalar reference | `/docs/api`                   | Interactive API documentation rendered by Scalar with default config   |
+
+Scalar is intentionally configured with the simplest setup that matches the official documentation pattern: it only points to the local OpenAPI URL and does not require additional theme or proxy customization for the current same-origin backend setup.
+
+Because the backend uses strict Helmet security headers, the docs page also sends a route-specific CSP that permits the Scalar script source and a per-request nonce for the inline initializer without weakening the application's global CSP policy.
+
+Recommended local workflow:
+
+1. Start the backend.
+2. Open `http://localhost:3000/docs/api`.
+3. Use `http://localhost:3000/openapi.json` when another tool needs the raw OpenAPI contract.
+
+When routes or request and response contracts change:
+
+1. Update the relevant module implementation and module docs.
+2. Regenerate the committed OpenAPI artifact with `bun run docs:generate:openapi`.
+3. Regenerate route inventory and sync-readiness docs with `bun run docs:generate:routes` and `bun run docs:generate:sync-readiness` when the route surface or sync metadata changes.
+4. Run documentation checks before merging.
+
+## Documentation Map
+
+Use the documentation set in this order when onboarding or reviewing API changes:
+
+| File                                    | Use it for                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| `docs/api-reference.md`                 | Main API index, route grouping, auth model, shared query and header rules |
+| `docs/generated/openapi.json`           | Canonical machine-readable contract for Scalar and external tooling       |
+| `docs/generated/routes.md`              | Fast runtime drift check against mounted routes                           |
+| `docs/modules/*.md`                     | Per-module endpoint behavior, request and response examples, and errors   |
+| `docs/api-response-standard.md`         | Shared success and error envelope rules                                   |
+| `docs/operations/testing.md`            | Test commands, folder structure, helpers, and how to add new tests        |
+| `docs/operations/documentation-sync.md` | How generated and hand-authored docs are kept in sync                     |
 
 ## Base URL And Versioning
 

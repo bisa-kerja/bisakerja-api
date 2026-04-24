@@ -8,9 +8,9 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/sync-readiness.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-24
 generated_by: sync-readiness-script
-generated_at: 2026-04-23T11:02:37.696Z
+generated_at: 2026-04-24T02:29:40.506Z
 source_commit: unknown
 ---
 
@@ -22,14 +22,14 @@ This page is generated from the current service-owned docs tree and the document
 
 | Metric         | Value                      |
 | -------------- | -------------------------- |
-| Total docs     | 29                         |
-| Generated docs | 2                          |
-| Generated at   | `2026-04-23T11:02:37.696Z` |
+| Total docs     | 31                         |
+| Generated docs | 3                          |
+| Generated at   | `2026-04-24T02:29:40.506Z` |
 | Source commit  | `unknown`                  |
 
 ## OpenAPI Status
 
-No generated OpenAPI artifact is published yet. The machine-readable API source is still pending final selection, and interactive documentation can be attached later once that source is adopted.
+A generated OpenAPI artifact is present under `docs/generated/`.
 
 An interactive API portal can be introduced later from the same machine-readable source, including a Scalar-based presentation if that becomes the chosen documentation surface.
 
@@ -49,6 +49,7 @@ An interactive API portal can be introduced later from the same machine-readable
 | `docs/generated/sync-readiness.md`      | `docs/services/backend-api/synced/generated/sync-readiness.md`      |
 | `docs/integrations/job-sources.md`      | `docs/services/backend-api/synced/integrations/job-sources.md`      |
 | `docs/integrations/model-api.md`        | `docs/services/backend-api/synced/integrations/model-api.md`        |
+| `docs/integrations/resend.md`           | `docs/services/backend-api/synced/integrations/resend.md`           |
 | `docs/integrations/scraper-api.md`      | `docs/services/backend-api/synced/integrations/scraper-api.md`      |
 | `docs/modules/ai-cv-analyzer.md`        | `docs/services/backend-api/synced/modules/ai-cv-analyzer.md`        |
 | `docs/modules/ai-job-fit.md`            | `docs/services/backend-api/synced/modules/ai-job-fit.md`            |
@@ -66,6 +67,7 @@ An interactive API portal can be introduced later from the same machine-readable
 | `docs/overview.md`                      | `docs/services/backend-api/synced/overview.md`                      |
 | `docs/project-structure.md`             | `docs/services/backend-api/synced/project-structure.md`             |
 | `docs/tech-stack.md`                    | `docs/services/backend-api/synced/tech-stack.md`                    |
+| `docs/generated/openapi.json`           | `docs/services/backend-api/synced/generated/openapi.json`           |
 
 ## Validation Outcome
 

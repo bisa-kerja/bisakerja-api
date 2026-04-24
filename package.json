@@ -18,6 +18,7 @@
     "test:integration": "bun test tests/integration",
     "test:contracts": "bun test tests/integration/contracts",
     "test:smoke": "bun test tests/smoke",
+    "docs:generate:openapi": "bun run src/scripts/generate-openapi.ts",
     "docs:generate:routes": "bun run src/scripts/generate-route-inventory.ts",
     "docs:generate:sync-readiness": "bun run src/scripts/generate-sync-readiness.ts",
     "docs:check": "bun run src/scripts/verify-docs.ts",

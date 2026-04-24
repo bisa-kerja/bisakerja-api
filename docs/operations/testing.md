@@ -13,9 +13,12 @@ last_reviewed: 2026-04-24
 
 # Backend API Testing Strategy
 
-This document defines the verification strategy for the Bisakerja Backend API before implementation starts. The goal is to make every MVP module testable through explicit unit, route, repository, integration, contract, and smoke paths.
+This document defines the testing workflow for the Bisakerja Backend API. It covers the tools used in the repository, the current test folder structure, how to run each category of test, and the expected conventions when adding new coverage.
 
-The project reserves stable test command names for scaffold and CI wiring. The categories and acceptance rules in this document should remain stable even if implementation details change.
+The goal is twofold:
+
+- make the current backend easy to verify locally and in CI
+- make test additions predictable for developers who are new to the codebase
 
 ## Testing Principles
 
@@ -26,6 +29,37 @@ The project reserves stable test command names for scaffold and CI wiring. The c
 - Test security-sensitive flows with both success and failure paths.
 - Keep tests deterministic by using stable fixtures, isolated users, and predictable timestamps where possible.
 - Never mark a release ready when migrations, route contracts, or auth ownership checks are unverified.
+
+## Quick Start
+
+For the most common local workflow:
+
+1. Copy `.env.test.example` to a local test environment file if your setup needs it.
+2. Run `bun test` for the default suite.
+3. Run `bun run test:integration` when working on repository-backed behavior.
+4. Run `bun run docs:check` after documentation changes.
+5. Run `bun run prisma:verify:migrations` before changes that affect Prisma schema or migrations.
+
+For documentation-related changes, also regenerate the committed artifacts when needed:
+
+- `bun run docs:generate:openapi`
+- `bun run docs:generate:routes`
+- `bun run docs:generate:sync-readiness`
+
+## Testing Tools
+
+The repository uses a small set of testing tools and helpers:
+
+| Tool or helper                      | Purpose                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| `bun test`                          | Primary test runner for unit, route, integration, contract, and smoke tests     |
+| `tests/helpers/route.ts`            | In-memory route injection helper for exercising Express without binding a port  |
+| `node-mocks-http`                   | Mock request and response objects used by the route injection harness           |
+| Prisma + isolated PostgreSQL        | Repository and migration verification against real schema behavior              |
+| `tests/helpers/test-environment.ts` | Guards that prevent accidental database test execution outside test-safe config |
+| `tests/fixtures/**`                 | Synthetic fixture data for users, jobs, downstream contracts, and schemas       |
+
+Use the shared helpers before introducing new test utilities. That keeps behavior consistent across modules and reduces duplicate harness code.
 
 ## Test Categories
 
@@ -40,27 +74,38 @@ The project reserves stable test command names for scaffold and CI wiring. The c
 | Smoke tests                  | Startup, env validation, health, readiness, and database connectivity                   | Release and runtime readiness                                  |
 | Documentation checks         | Required docs, metadata, examples, and response standards                               | Keep docs sync-ready                                           |
 
-## Expected Test Layout
+## Current Test Layout
 
-The target test layout follows `docs/project-structure.md`.
+The repository already follows a stable test layout. New tests should fit into the closest existing folder before creating a new subtree.
 
 ```text
 tests/
   helpers/
+    config.ts
+    prisma.ts
+    route.ts
+    test-environment.ts
   unit/
+    ai-cv-analyzer/
+    ai-job-fit/
+    applications/
+    auth/
+    bookmarks/
     core/
-    modules/
+    jobs/
+    preferences/
+    shared/
+    users/
     fixtures/
   integration/
-    repositories/
     routes/
-    workflows/
+    repositories/
     contracts/
   fixtures/
-    users/
     jobs/
     model-api/
     scraper-api/
+    users/
   smoke/
 ```
 
@@ -72,6 +117,14 @@ Rules:
 - Contract fixtures must be versioned with the backend source code.
 - Fixtures must not contain real user CVs, passwords, tokens, or production job source payloads.
 - Test helpers should create data through repositories or seed utilities instead of relying on brittle global database state.
+
+Placement guidance:
+
+- Put pure validation, mapper, utility, and service-rule tests in `tests/unit/**`.
+- Put end-to-end route behavior that should pass through middleware, auth, validation, and controller layers in `tests/integration/routes/**`.
+- Put Prisma query and ownership assertions in `tests/integration/repositories/**`.
+- Put downstream shape verification in `tests/integration/contracts/**`.
+- Put startup and environment sanity checks in `tests/smoke/**`.
 
 ## Test Environment
 
@@ -107,6 +160,109 @@ Reserved commands:
 | `bun run test:smoke`               | Startup, env, health, and basic route smoke checks    |
 | `bun run prisma:verify:migrations` | Migration verification against an empty test database |
 | `bun run docs:check`               | Frontmatter and JSON example validation for `docs/**` |
+
+## Choosing The Right Test Type
+
+Use the lightest test that can prove the behavior you changed:
+
+| If you changed...                                        | Prefer this test type first |
+| -------------------------------------------------------- | --------------------------- |
+| Zod validation, mapper logic, pure helper                | Unit test                   |
+| Controller wiring, auth, status code, envelope           | Route test                  |
+| Prisma filtering, transactions, ownership at query level | Repository integration test |
+| Model API fixture shape or downstream schema contract    | Contract test               |
+| App startup, liveness, readiness, env guard              | Smoke test                  |
+
+When a bug crosses layers, combine test types instead of overloading one large route suite.
+
+## Running Tests
+
+Common commands:
+
+| Command                            | When to use it                                                 |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `bun test`                         | Default project-wide run                                       |
+| `bun run test:unit`                | Fast feedback for schema, service, utility, and mapper changes |
+| `bun run test:routes`              | HTTP contract, middleware, auth, and validation behavior       |
+| `bun run test:integration`         | Prisma-backed repository and route integration suites          |
+| `bun run test:contracts`           | Model API and fixture contract verification                    |
+| `bun run test:smoke`               | Startup and environment-level checks                           |
+| `bun run docs:check`               | Documentation validation after doc changes                     |
+| `bun run prisma:verify:migrations` | Prisma migration and repository verification before release    |
+
+If you only changed one area, run the smallest relevant subset first, then expand to the broader suite before considering the task done.
+
+## Writing A New Test
+
+Recommended workflow when adding a new test:
+
+1. Identify the lowest layer where the bug or rule can be reproduced safely.
+2. Reuse existing fixtures and helpers before adding new custom setup.
+3. Name the test file after the module or behavior under test.
+4. Assert status code, response envelope, and important fields together for route behavior.
+5. Add at least one negative-path assertion when the feature has auth, validation, or ownership rules.
+
+Route test example:
+
+```ts
+import { describe, expect, test } from "bun:test";
+
+import { createApp } from "@/app";
+import { testConfig } from "../../helpers/config";
+import { injectRoute } from "../../helpers/route";
+
+describe("health routes", () => {
+  test("returns liveness envelope", async () => {
+    const response = await injectRoute(createApp(testConfig()), {
+      url: "/health/live"
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+      message: "Service is live",
+      data: {
+        service: "bisakerja-api",
+        status: "live",
+        env: "test"
+      },
+      meta: null
+    });
+  });
+});
+```
+
+Schema or unit-style test example:
+
+```ts
+import { describe, expect, test } from "bun:test";
+
+import { registerSchema } from "@/modules/auth/auth.schema";
+
+describe("register schema", () => {
+  test("rejects mismatched password confirmation", () => {
+    const result = registerSchema.safeParse({
+      username: "salman",
+      email: "salman@example.com",
+      phoneNumber: "+6281234567890",
+      password: "StrongPassword123!",
+      confirmPassword: "DifferentPassword123!"
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+```
+
+## Adding A Test File
+
+When adding a new test file:
+
+- mirror the module path and naming style that already exists
+- prefer one responsibility per file
+- keep fixtures synthetic and product-shaped
+- keep repository tests guarded by the existing test-environment helpers
+- avoid binding a real HTTP port when `tests/helpers/route.ts` is sufficient
 
 ## Database Test Setup
 

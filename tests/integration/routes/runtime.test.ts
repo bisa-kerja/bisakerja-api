@@ -30,6 +30,39 @@ describe("runtime routes and middleware", () => {
     });
   });
 
+  test("serves the OpenAPI document", async () => {
+    const response = await injectRoute(createApp(testConfig()), {
+      url: "/openapi.json"
+    });
+    const body = response.body as {
+      openapi: string;
+      paths: Record<string, unknown>;
+    };
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-type"]).toContain("application/json");
+    expect(body.openapi).toBe("3.1.0");
+    expect(body.paths["/api/v1/jobs"]).toBeDefined();
+    expect(body.paths["/api/v1/ai/cv-analyzer"]).toBeDefined();
+  });
+
+  test("serves the Scalar API reference page", async () => {
+    const response = await injectRoute(createApp(testConfig()), {
+      url: "/docs/api"
+    });
+    const body = response.body as string;
+    const csp = response.headers["content-security-policy"];
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-type"]).toContain("text/html");
+    expect(body).toContain("@scalar/api-reference");
+    expect(body).toContain('url: "/openapi.json"');
+    expect(body).toContain("<script nonce=");
+    expect(csp).toContain("https://cdn.jsdelivr.net");
+    expect(csp).toContain("script-src");
+    expect(csp).toContain("nonce-");
+  });
+
   test("propagates a valid incoming request id", async () => {
     const response = await injectRoute(createApp(testConfig()), {
       url: "/health/live",
