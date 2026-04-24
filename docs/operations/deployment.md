@@ -221,6 +221,7 @@ Current delivery workflow split:
 Current delivery behavior:
 
 - reinstall dependencies with the pinned Bun runtime and committed lockfile
+- generate the Prisma client before typecheck or documentation validation so delivery checks match a clean runner state
 - rerun Prisma validation, typecheck, docs generation, docs validation, and Scalar config validation
 - fail if generated docs differ from committed artifacts
 - upload the current `docs/**` tree as a workflow artifact for audit or reuse
@@ -228,6 +229,11 @@ Current delivery behavior:
 - after successful verification, synchronize service-owned docs into the central `bisakerja-docs` repository through the dedicated docs-sync workflow
 
 Because hosting details are still open, this workflow should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
+
+Workflow hardening rules:
+
+- Keep workflow env overrides limited to values that are truly environment-specific for the job.
+- Prefer repository defaults for unrelated secrets or optional config so CI does not drift from the validated application schema.
 
 ## Release Readiness Checklist
 

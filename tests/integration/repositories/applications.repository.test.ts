@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { PrismaApplicationsRepository } from "@/modules/applications";
+import { PrismaApplicationsRepository } from "@/modules/applications/applications.repository";
 import {
   createRepositoryTestContext,
   logRepositorySkip

@@ -156,6 +156,7 @@ Current repository automation:
 - `.github/workflows/cd-delivery-readiness.yml` runs on push to `develop` and `main`.
 - `.github/workflows/cd-sync-docs.yml` runs on push to `develop` and `main`.
 - The quality and delivery-readiness workflows regenerate documentation artifacts.
+- The quality, delivery-readiness, and docs-sync readiness workflows generate the Prisma client before static analysis or docs validation so clean runners have the required generated types.
 - The quality, delivery-readiness, and docs-sync readiness checks fail if the committed `docs/generated/openapi.json` artifact is stale.
 - Route inventory and sync-readiness markdown are regenerated for validation and publishing, but they are not clean-tree gates because they intentionally include generation metadata.
 - Cross-repository docs sync happens only after delivery checks pass.

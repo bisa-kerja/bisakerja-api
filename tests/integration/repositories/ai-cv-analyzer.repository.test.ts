@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer";
+import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.repository";
 import {
   createRepositoryTestContext,
   logRepositorySkip

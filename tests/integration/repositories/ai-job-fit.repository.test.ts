@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { PrismaAiJobFitRepository } from "@/modules/ai-job-fit";
+import { PrismaAiJobFitRepository } from "@/modules/ai-job-fit/ai-job-fit.repository";
 import {
   createRepositoryTestContext,
   logRepositorySkip

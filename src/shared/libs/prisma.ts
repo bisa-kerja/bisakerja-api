@@ -1,17 +1,20 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { env } from "@/config/env";
-import { logger } from "@/config/logger";
+import { loadEnv } from "@/config/env";
+import { createLogger } from "@/config/logger";
 import { PrismaClient } from "@/generated/prisma/client";
 export type { PrismaTransaction } from "@/shared/libs/prisma.types";
 
+const prismaEnv = loadEnv();
+const prismaLogger = createLogger(prismaEnv);
+
 const prismaLogLevels =
-  env.database.prismaLogLevel === "query"
+  prismaEnv.database.prismaLogLevel === "query"
     ? (["query", "warn", "error"] as const)
-    : ([env.database.prismaLogLevel] as const);
+    : ([prismaEnv.database.prismaLogLevel] as const);
 
 const adapter = new PrismaPg({
-  connectionString: env.database.url
+  connectionString: prismaEnv.database.url
 });
 
 export const prisma = new PrismaClient({
@@ -23,7 +26,7 @@ export const prisma = new PrismaClient({
 });
 
 prisma.$on("query", (event) => {
-  logger.debug(
+  prismaLogger.debug(
     {
       durationMs: event.duration,
       target: event.target
@@ -33,14 +36,14 @@ prisma.$on("query", (event) => {
 });
 
 prisma.$on("warn", (event) => {
-  logger.warn(
+  prismaLogger.warn(
     { message: event.message, target: event.target },
     "Prisma warning"
   );
 });
 
 prisma.$on("error", (event) => {
-  logger.error(
+  prismaLogger.error(
     { message: event.message, target: event.target },
     "Prisma error"
   );

@@ -185,6 +185,7 @@ Current CI workflow split:
 Current CI expectations:
 
 - install dependencies with the committed Bun lockfile
+- run `bun run prisma:generate` before static analysis so generated Prisma types exist in clean runners
 - run `bun run prisma:validate`
 - run `bun run lint`
 - run `bun run format:check`
@@ -199,6 +200,11 @@ Current CI expectations:
 The route inventory and sync-readiness markdown files are still regenerated in CI and CD, but they are not used as a clean-working-tree gate because they intentionally embed runtime metadata such as generation timestamps and source references.
 
 This split keeps fast feedback for most checks while still proving that committed Prisma migrations and repository integration tests work against a real PostgreSQL service in CI.
+
+Workflow safety notes:
+
+- CI intentionally keeps workflow env overrides minimal and lets the validated repo defaults cover non-essential secrets or tokens.
+- Repository integration tests should import repository files directly when possible, rather than broad module barrels, so CI does not evaluate unrelated route or controller wiring during repository-only verification.
 
 ## Choosing The Right Test Type
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { PrismaBookmarksRepository } from "@/modules/bookmarks";
+import { PrismaBookmarksRepository } from "@/modules/bookmarks/bookmarks.repository";
 import {
   createRepositoryTestContext,
   logRepositorySkip

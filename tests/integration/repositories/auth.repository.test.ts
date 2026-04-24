@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { PrismaAuthRepository } from "@/modules/auth";
+import { PrismaAuthRepository } from "@/modules/auth/auth.repository";
 import { passwordHashAlgorithm } from "@/shared/utils/password";
 import { hashToken } from "@/shared/utils/token";
 import {

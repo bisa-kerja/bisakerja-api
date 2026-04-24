@@ -1,6 +1,6 @@
 import pino from "pino";
 
-import { env } from "@/config/env";
+import { loadEnv } from "@/config/env";
 import type { AppConfig } from "@/config/env";
 
 const redactPaths = [
@@ -46,7 +46,7 @@ const redactPaths = [
   "*.RESEND_API_KEY"
 ];
 
-export function createLogger(config: AppConfig = env) {
+export function createLogger(config: AppConfig) {
   return pino({
     level: config.observability.logLevel,
     base: {
@@ -61,4 +61,4 @@ export function createLogger(config: AppConfig = env) {
   });
 }
 
-export const logger = createLogger();
+export const logger = createLogger(loadEnv());
