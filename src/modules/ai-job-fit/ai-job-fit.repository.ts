@@ -83,34 +83,32 @@ export class PrismaAiJobFitRepository implements AiJobFitRepository {
   }
 
   async createSnapshot(input: JobFitAnalysisSnapshotInput): Promise<void> {
-    await this.client.$transaction([
-      this.client.fitScoreResult.create({
-        data: {
-          userId: input.userId,
-          jobListingId: input.jobId,
-          fitScore: input.response.fitScore,
-          readinessLevel: input.response.readinessLevel,
-          recommendationDecision: input.response.recommendation.decision,
-          recommendationSummary: input.response.recommendation.summary,
-          breakdown: input.response.breakdown,
-          modelName: input.response.model.name,
-          modelVersion: input.response.model.version,
-          analyzedAt: new Date(input.response.analyzedAt),
-          inputSummary: createInputSummary(input.payload)
-        }
-      }),
-      this.client.skillGapResult.create({
-        data: {
-          userId: input.userId,
-          jobListingId: input.jobId,
-          gaps: input.response.skillGaps,
-          modelName: input.response.model.name,
-          modelVersion: input.response.model.version,
-          analyzedAt: new Date(input.response.analyzedAt),
-          inputSummary: createInputSummary(input.payload)
-        }
-      })
-    ]);
+    await this.client.fitScoreResult.create({
+      data: {
+        userId: input.userId,
+        jobListingId: input.jobId,
+        fitScore: input.response.fitScore,
+        readinessLevel: input.response.readinessLevel,
+        recommendationDecision: input.response.recommendation.decision,
+        recommendationSummary: input.response.recommendation.summary,
+        breakdown: input.response.breakdown,
+        modelName: input.response.model.name,
+        modelVersion: input.response.model.version,
+        analyzedAt: new Date(input.response.analyzedAt),
+        inputSummary: createInputSummary(input.payload)
+      }
+    });
+    await this.client.skillGapResult.create({
+      data: {
+        userId: input.userId,
+        jobListingId: input.jobId,
+        gaps: input.response.skillGaps,
+        modelName: input.response.model.name,
+        modelVersion: input.response.model.version,
+        analyzedAt: new Date(input.response.analyzedAt),
+        inputSummary: createInputSummary(input.payload)
+      }
+    });
   }
 }
 

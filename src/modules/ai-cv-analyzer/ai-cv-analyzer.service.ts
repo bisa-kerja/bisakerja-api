@@ -57,12 +57,11 @@ export class AiCvAnalyzerService {
       ]);
     }
 
-    const [job, hasOwnedBookmark] = await Promise.all([
-      this.repository.findVisibleJob(input.jobId),
+    const job = await this.repository.findVisibleJob(input.jobId);
+    const hasOwnedBookmark =
       input.compareSource === "BOOKMARK"
-        ? this.repository.hasOwnedBookmarkForJob(userId, input.jobId)
-        : Promise.resolve(true)
-    ]);
+        ? await this.repository.hasOwnedBookmarkForJob(userId, input.jobId)
+        : true;
 
     if (!job) {
       throw new NotFoundError("Job not found", jobsErrorCodes.jobNotFound);

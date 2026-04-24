@@ -155,6 +155,12 @@ The final `.env.test.example` should be created during scaffold work and kept in
 
 Test helpers must fail fast when integration tests are configured outside the test runtime. Database-backed tests should call the environment guard before connecting to PostgreSQL, reject database URLs that do not clearly point to an isolated local or test database, and skip with an explicit reason when the configured PostgreSQL port is unavailable.
 
+For local database-backed verification, prefer explicit environment overrides so the active database target is obvious in terminal history. Example:
+
+- `APP_ENV=test NODE_ENV=test DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test RUN_DATABASE_TESTS=true bun test`
+
+The seeded route sweep mutates seeded auth and application state during execution. Always point it to an isolated test database, not to the normal local development database.
+
 Reserved commands:
 
 | Command                            | Purpose                                               |
@@ -205,7 +211,7 @@ Current deployment workflow expectations:
 - also push a commit-specific `sha-<git-sha>` image tag
 - trigger automatically from `develop` and allow manual runs only for validated branches
 - use the GitHub environment `staging` while the rollout is still validating on the staging VPS
-- SSH into the target VPS with a pinned host key entry
+- SSH into the target VPS with the configured VPS private key through one deploy action step
 - write the runtime `.env.production` file from GitHub environment secrets
 - reject rollout when the runtime env file does not declare `APP_ENV=staging` for the current staging target
 - authenticate the VPS to GHCR, pull the latest image, run `prisma migrate deploy`, and start the app through `docker compose`
@@ -253,6 +259,13 @@ Common commands:
 | `bun run prisma:verify:migrations` | Prisma migration and repository verification before release    |
 
 If you only changed one area, run the smallest relevant subset first, then expand to the broader suite before considering the task done.
+
+For PostgreSQL-backed local verification, this staged sequence is the preferred order:
+
+1. `bun run typecheck`
+2. `APP_ENV=test NODE_ENV=test DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test RUN_DATABASE_TESTS=true bun test tests/integration/repositories`
+3. `APP_ENV=test NODE_ENV=test DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test RUN_DATABASE_TESTS=true bun test tests/integration/routes/seeded-prisma-sweep.test.ts`
+4. `APP_ENV=test NODE_ENV=test DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/bisakerja_api_test RUN_DATABASE_TESTS=true bun test`
 
 ## Writing A New Test
 

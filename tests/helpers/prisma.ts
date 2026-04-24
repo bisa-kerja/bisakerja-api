@@ -91,62 +91,60 @@ export async function createRepositoryTestContext() {
     prisma,
     runId,
     cleanup: async () => {
-      await prisma.$transaction([
-        prisma.fitScoreResult.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.skillGapResult.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.cvAnalysisResult.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.cvFileMetadata.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.applicationStatusHistory.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.applicationRecord.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.bookmark.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.userPreference.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.userSkill.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.userProfile.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.authCredential.deleteMany({
-          where: { user: { email: { endsWith: `-${runId}@example.test` } } }
-        }),
-        prisma.user.deleteMany({
-          where: { email: { endsWith: `-${runId}@example.test` } }
-        }),
-        prisma.jobRequirement.deleteMany({
-          where: { jobListing: { externalJobId: { contains: runId } } }
-        }),
-        prisma.jobSkill.deleteMany({
-          where: { jobListing: { externalJobId: { contains: runId } } }
-        }),
-        prisma.jobListing.deleteMany({
-          where: { externalJobId: { contains: runId } }
-        }),
-        prisma.company.deleteMany({
-          where: { slug: { contains: runId } }
-        }),
-        prisma.skill.deleteMany({
-          where: { slug: { contains: runId } }
-        }),
-        prisma.sourcePlatform.deleteMany({
-          where: { slug: { contains: runId } }
-        })
-      ]);
+      await prisma.fitScoreResult.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.skillGapResult.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.cvAnalysisResult.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.cvFileMetadata.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.applicationStatusHistory.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.applicationRecord.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.bookmark.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.userPreference.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.userSkill.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.userProfile.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.authCredential.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
+      await prisma.user.deleteMany({
+        where: { email: { endsWith: `-${runId}@example.test` } }
+      });
+      await prisma.jobRequirement.deleteMany({
+        where: { jobListing: { externalJobId: { contains: runId } } }
+      });
+      await prisma.jobSkill.deleteMany({
+        where: { jobListing: { externalJobId: { contains: runId } } }
+      });
+      await prisma.jobListing.deleteMany({
+        where: { externalJobId: { contains: runId } }
+      });
+      await prisma.company.deleteMany({
+        where: { slug: { contains: runId } }
+      });
+      await prisma.skill.deleteMany({
+        where: { slug: { contains: runId } }
+      });
+      await prisma.sourcePlatform.deleteMany({
+        where: { slug: { contains: runId } }
+      });
       await prisma.$disconnect();
     }
   };

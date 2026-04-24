@@ -37,16 +37,14 @@ export class PrismaApplicationsRepository implements ApplicationsRepository {
     const orderBy = buildOrderBy(query.sort);
     const skip = (query.page - 1) * query.limit;
 
-    const [items, total] = await this.client.$transaction([
-      this.client.applicationRecord.findMany({
-        where,
-        orderBy,
-        skip,
-        take: query.limit,
-        include: { jobListing: { include: jobInclude } }
-      }),
-      this.client.applicationRecord.count({ where })
-    ]);
+    const items = await this.client.applicationRecord.findMany({
+      where,
+      orderBy,
+      skip,
+      take: query.limit,
+      include: { jobListing: { include: jobInclude } }
+    });
+    const total = await this.client.applicationRecord.count({ where });
 
     return {
       items: items.map(mapApplication),
@@ -102,29 +100,24 @@ export class PrismaApplicationsRepository implements ApplicationsRepository {
     userId: string,
     input: CreateApplicationInput
   ): Promise<ApplicationRecord> {
-    const application = await this.client.$transaction(async (tx) => {
-      const created = await tx.applicationRecord.create({
-        data: {
-          userId,
-          jobListingId: input.jobId,
-          status: input.status,
-          source: input.source,
-          notes: input.notes
-        },
-        include: { jobListing: { include: jobInclude } }
-      });
-
-      await tx.applicationStatusHistory.create({
-        data: {
-          applicationRecordId: created.id,
-          userId,
-          fromStatus: null,
-          toStatus: created.status,
-          notes: input.notes
-        }
-      });
-
-      return created;
+    const application = await this.client.applicationRecord.create({
+      data: {
+        userId,
+        jobListingId: input.jobId,
+        status: input.status,
+        source: input.source,
+        notes: input.notes
+      },
+      include: { jobListing: { include: jobInclude } }
+    });
+    await this.client.applicationStatusHistory.create({
+      data: {
+        applicationRecordId: application.id,
+        userId,
+        fromStatus: null,
+        toStatus: application.status,
+        notes: input.notes
+      }
     });
 
     return mapApplication(application);
@@ -159,39 +152,37 @@ export class PrismaApplicationsRepository implements ApplicationsRepository {
     input: UpdateApplicationStatusInput,
     fromStatus: ApplicationRecord["status"]
   ): Promise<ApplicationRecord | null> {
-    const application = await this.client.$transaction(async (tx) => {
-      const result = await tx.applicationRecord.updateMany({
-        where: {
-          id: applicationId,
-          userId
-        },
-        data: {
-          status: input.status,
-          ...(input.notes !== undefined ? { notes: input.notes } : {})
-        }
-      });
-
-      if (result.count === 0) {
-        return null;
+    const result = await this.client.applicationRecord.updateMany({
+      where: {
+        id: applicationId,
+        userId
+      },
+      data: {
+        status: input.status,
+        ...(input.notes !== undefined ? { notes: input.notes } : {})
       }
+    });
 
-      await tx.applicationStatusHistory.create({
-        data: {
-          applicationRecordId: applicationId,
-          userId,
-          fromStatus,
-          toStatus: input.status,
-          notes: input.notes
-        }
-      });
+    if (result.count === 0) {
+      return null;
+    }
 
-      return tx.applicationRecord.findFirst({
-        where: {
-          id: applicationId,
-          userId
-        },
-        include: { jobListing: { include: jobInclude } }
-      });
+    await this.client.applicationStatusHistory.create({
+      data: {
+        applicationRecordId: applicationId,
+        userId,
+        fromStatus,
+        toStatus: input.status,
+        notes: input.notes
+      }
+    });
+
+    const application = await this.client.applicationRecord.findFirst({
+      where: {
+        id: applicationId,
+        userId
+      },
+      include: { jobListing: { include: jobInclude } }
     });
 
     return application ? mapApplication(application) : null;

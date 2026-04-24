@@ -116,7 +116,6 @@ jobs:
           DEPLOY_VPS_PORT: ${{ secrets.DEPLOY_VPS_PORT }}
           DEPLOY_VPS_USERNAME: ${{ secrets.DEPLOY_VPS_USERNAME }}
           DEPLOY_VPS_KEY: ${{ secrets.DEPLOY_VPS_KEY }}
-          DEPLOY_VPS_KNOWN_HOSTS: ${{ secrets.DEPLOY_VPS_KNOWN_HOSTS }}
           DEPLOY_REMOTE_PATH: ${{ secrets.DEPLOY_REMOTE_PATH }}
           DEPLOY_ENV_FILE: ${{ secrets.DEPLOY_ENV_FILE }}
           GHCR_READ_PACKAGES_TOKEN: ${{ secrets.GHCR_READ_PACKAGES_TOKEN }}
@@ -129,7 +128,6 @@ jobs:
             DEPLOY_VPS_PORT
             DEPLOY_VPS_USERNAME
             DEPLOY_VPS_KEY
-            DEPLOY_VPS_KNOWN_HOSTS
             DEPLOY_REMOTE_PATH
             DEPLOY_ENV_FILE
             GHCR_READ_PACKAGES_TOKEN
@@ -149,84 +147,57 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare SSH client
-        env:
-          DEPLOY_VPS_KEY: ${{ secrets.DEPLOY_VPS_KEY }}
-          DEPLOY_VPS_KNOWN_HOSTS: ${{ secrets.DEPLOY_VPS_KNOWN_HOSTS }}
-        run: |
-          set -euo pipefail
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_VPS_HOST }}
+          username: ${{ secrets.DEPLOY_VPS_USERNAME }}
+          key: ${{ secrets.DEPLOY_VPS_KEY }}
+          port: ${{ secrets.DEPLOY_VPS_PORT }}
+          timeout: 60s
+          command_timeout: 20m
+          script: |
+            #!/usr/bin/env bash
+            set -euo pipefail
 
-          install -d -m 700 "$HOME/.ssh"
-          printf '%s\n' "$DEPLOY_VPS_KEY" > "$HOME/.ssh/id_ed25519"
-          printf '%s\n' "$DEPLOY_VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+            REMOTE_PATH="${{ secrets.DEPLOY_REMOTE_PATH }}"
+            RUNTIME_ENV_FILE="${{ env.RUNTIME_ENV_FILE }}"
 
-      - name: Write runtime env file on VPS
-        env:
-          VPS_HOST: ${{ secrets.DEPLOY_VPS_HOST }}
-          VPS_PORT: ${{ secrets.DEPLOY_VPS_PORT }}
-          VPS_USERNAME: ${{ secrets.DEPLOY_VPS_USERNAME }}
-          REMOTE_PATH: ${{ secrets.DEPLOY_REMOTE_PATH }}
-          DEPLOY_ENV_FILE: ${{ secrets.DEPLOY_ENV_FILE }}
-        run: |
-          set -euo pipefail
+            install -d -m 755 "$REMOTE_PATH"
+            cat <<'EOF' > "$REMOTE_PATH/$RUNTIME_ENV_FILE"
+            ${{ secrets.DEPLOY_ENV_FILE }}
+            EOF
+            chmod 600 "$REMOTE_PATH/$RUNTIME_ENV_FILE"
 
-          ssh -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" "install -d -m 755 '$REMOTE_PATH'"
-          printf '%s' "$DEPLOY_ENV_FILE" | base64 -w0 | \
-            ssh -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" "base64 -d > '$REMOTE_PATH/${{ env.RUNTIME_ENV_FILE }}' && chmod 600 '$REMOTE_PATH/${{ env.RUNTIME_ENV_FILE }}'"
+            cd "$REMOTE_PATH"
 
-      - name: Log in to GHCR on VPS
-        env:
-          VPS_HOST: ${{ secrets.DEPLOY_VPS_HOST }}
-          VPS_PORT: ${{ secrets.DEPLOY_VPS_PORT }}
-          VPS_USERNAME: ${{ secrets.DEPLOY_VPS_USERNAME }}
-          GHCR_READ_PACKAGES_TOKEN: ${{ secrets.GHCR_READ_PACKAGES_TOKEN }}
-          GH_USERNAME: ${{ secrets.GH_USERNAME }}
-        run: |
-          set -euo pipefail
+            printf '%s' '${{ secrets.GHCR_READ_PACKAGES_TOKEN }}' | docker login ghcr.io -u '${{ secrets.GH_USERNAME }}' --password-stdin
 
-          printf '%s' "$GHCR_READ_PACKAGES_TOKEN" | \
-            ssh -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" "docker login ghcr.io -u '$GH_USERNAME' --password-stdin"
-
-      - name: Run remote deployment
-        env:
-          VPS_HOST: ${{ secrets.DEPLOY_VPS_HOST }}
-          VPS_PORT: ${{ secrets.DEPLOY_VPS_PORT }}
-          VPS_USERNAME: ${{ secrets.DEPLOY_VPS_USERNAME }}
-          REMOTE_PATH: ${{ secrets.DEPLOY_REMOTE_PATH }}
-          DEPLOY_BRANCH: ${{ needs.build-and-push.outputs.deploy_branch }}
-          IMAGE_NAME: ${{ needs.build-and-push.outputs.image_name }}
-          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
-          APP_PORT: ${{ env.DEFAULT_APP_PORT }}
-          COMPOSE_FILE: ${{ env.COMPOSE_FILE }}
-          RUNTIME_ENV_FILE: ${{ env.RUNTIME_ENV_FILE }}
-          DEPLOY_TARGET: ${{ env.DEPLOY_TARGET }}
-          EXPECTED_APP_ENV: ${{ env.EXPECTED_APP_ENV }}
-          COMPOSE_PROJECT_NAME: ${{ env.COMPOSE_PROJECT_NAME }}
-        run: |
-          set -euo pipefail
-
-          ssh -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" \
-            "bash -s -- '$REMOTE_PATH' '$DEPLOY_BRANCH' '$IMAGE_NAME' '$IMAGE_TAG' '$APP_PORT' '$COMPOSE_FILE' '$RUNTIME_ENV_FILE' '$DEPLOY_TARGET' '$EXPECTED_APP_ENV' '$COMPOSE_PROJECT_NAME'" \
-            < scripts/deploy/remote-deploy.sh
+            bash scripts/deploy/remote-deploy.sh \
+              "$REMOTE_PATH" \
+              "${{ needs.build-and-push.outputs.deploy_branch }}" \
+              "${{ needs.build-and-push.outputs.image_name }}" \
+              "${{ needs.build-and-push.outputs.image_tag }}" \
+              "${{ env.DEFAULT_APP_PORT }}" \
+              "${{ env.COMPOSE_FILE }}" \
+              "${{ env.RUNTIME_ENV_FILE }}" \
+              "${{ env.DEPLOY_TARGET }}" \
+              "${{ env.EXPECTED_APP_ENV }}" \
+              "${{ env.COMPOSE_PROJECT_NAME }}"
 
       - name: Collect remote diagnostics on failure
         if: failure()
-        env:
-          VPS_HOST: ${{ secrets.DEPLOY_VPS_HOST }}
-          VPS_PORT: ${{ secrets.DEPLOY_VPS_PORT }}
-          VPS_USERNAME: ${{ secrets.DEPLOY_VPS_USERNAME }}
-          REMOTE_PATH: ${{ secrets.DEPLOY_REMOTE_PATH }}
-          APP_PORT: ${{ env.DEFAULT_APP_PORT }}
-          COMPOSE_FILE: ${{ env.COMPOSE_FILE }}
-          RUNTIME_ENV_FILE: ${{ env.RUNTIME_ENV_FILE }}
-          COMPOSE_PROJECT_NAME: ${{ env.COMPOSE_PROJECT_NAME }}
-        run: |
-          set +e
-
-          ssh -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" "
-            cd '$REMOTE_PATH' &&
-            export APP_PORT='$APP_PORT' COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME' &&
-            docker compose -f '$COMPOSE_FILE' --env-file '$RUNTIME_ENV_FILE' ps &&
-            docker compose -f '$COMPOSE_FILE' --env-file '$RUNTIME_ENV_FILE' logs --tail=100 app db
-          "
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_VPS_HOST }}
+          username: ${{ secrets.DEPLOY_VPS_USERNAME }}
+          key: ${{ secrets.DEPLOY_VPS_KEY }}
+          port: ${{ secrets.DEPLOY_VPS_PORT }}
+          timeout: 60s
+          command_timeout: 5m
+          script: |
+            set +e
+            cd "${{ secrets.DEPLOY_REMOTE_PATH }}"
+            export APP_PORT="${{ env.DEFAULT_APP_PORT }}" COMPOSE_PROJECT_NAME="${{ env.COMPOSE_PROJECT_NAME }}"
+            docker compose -f "${{ env.COMPOSE_FILE }}" --env-file "${{ env.RUNTIME_ENV_FILE }}" ps
+            docker compose -f "${{ env.COMPOSE_FILE }}" --env-file "${{ env.RUNTIME_ENV_FILE }}" logs --tail=100 app db

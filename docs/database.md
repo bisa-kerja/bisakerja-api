@@ -546,6 +546,7 @@ Allowed seed data:
 - Sample skills and job skills.
 - Test users with clearly fake emails.
 - Sample preferences, bookmarks, and application records.
+- Sanitized AI result snapshots, CV metadata, and request logs for development-only flows.
 
 Seed rules:
 
@@ -557,13 +558,36 @@ Seed rules:
 
 The seed script lives at `prisma/seed.ts` and creates deterministic normalized data for local development:
 
-- Source platforms: Glints, Jobstreet, Kalibrr, and Dealls.
-- Synthetic companies.
-- Synthetic normalized job listings.
-- Normalized requirements.
-- Shared skills and job-skill links.
+- Five source platforms, five companies, and five ingestion runs.
+- Five user accounts with auth credentials, refresh tokens, verification tokens, and password reset tokens.
+- Five user profiles, five preference records, and realistic profile history through experience, education, and user skills.
+- Five product-shaped job listings with normalized requirements and job-skill links.
+- User activity data through bookmarks, application tracker records, and status histories.
+- Development-only AI artifacts through fit score snapshots, skill gap snapshots, CV file metadata, CV analysis results, and AI request logs.
 
-Seed data must stay product-shaped but synthetic. It must not include raw external provider payloads, real user records, raw CV content, raw model payloads, passwords, tokens, OTP values, or service credentials.
+Current seeded local accounts:
+
+| User           | Email                         | Primary focus                  |
+| -------------- | ----------------------------- | ------------------------------ |
+| Annisa Pratama | `annisa.pratama@example.test` | Backend / platform engineering |
+| Bima Saputra   | `bima.saputra@example.test`   | Full stack engineering         |
+| Citra Lestari  | `citra.lestari@example.test`  | Data analysis                  |
+| Dion Wijaya    | `dion.wijaya@example.test`    | Product / operations           |
+| Eka Novita     | `eka.novita@example.test`     | Product design                 |
+
+Run locally:
+
+1. Apply migrations with `bun run prisma:migrate:deploy` or `bun run prisma:migrate:dev`.
+2. Run `bun run prisma:seed`.
+3. Optionally set `SEED_USER_PASSWORD` before seeding if local login accounts should use a password other than the default `Password123!`.
+
+Seed expectations:
+
+- Every Prisma-backed table currently in `prisma/schema.prisma` receives at least five deterministic records.
+- Seed values are synthetic but product-shaped, so list, detail, bookmark, application, and AI-history screens can be exercised immediately.
+- Re-running the seed replaces the same deterministic records instead of creating unbounded duplicates.
+
+Seed data must stay product-shaped but synthetic. It must not include raw external provider payloads, real user records, raw CV content, raw model payloads, production credentials, tokens, OTP values, or service credentials. A local-only default password may be documented for development convenience when the environment is disposable.
 
 ## Data Retention
 

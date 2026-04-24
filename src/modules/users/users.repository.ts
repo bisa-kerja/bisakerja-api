@@ -108,58 +108,56 @@ export class PrismaUsersRepository implements UsersRepository {
     userId: string,
     input: ReplaceUserSkillInput[]
   ): Promise<void> {
-    await this.client.$transaction(async (tx) => {
-      await tx.userSkill.deleteMany({
-        where: { userId }
+    await this.client.userSkill.deleteMany({
+      where: { userId }
+    });
+
+    if (input.length === 0) {
+      return;
+    }
+
+    const slugs = input.map((skill) => skill.slug);
+    const existingSkills = await this.client.skill.findMany({
+      where: { slug: { in: slugs } },
+      select: { slug: true }
+    });
+    const existingSlugs = new Set(existingSkills.map((skill) => skill.slug));
+    const toCreate = input
+      .filter((skill) => !existingSlugs.has(skill.slug))
+      .map((skill) => ({
+        name: skill.name,
+        slug: skill.slug
+      }));
+
+    if (toCreate.length > 0) {
+      await this.client.skill.createMany({
+        data: toCreate,
+        skipDuplicates: true
       });
+    }
 
-      if (input.length === 0) {
-        return;
-      }
+    const persistedSkills = await this.client.skill.findMany({
+      where: { slug: { in: slugs } },
+      select: { id: true, slug: true }
+    });
+    const skillIdBySlug = new Map(
+      persistedSkills.map((skill) => [skill.slug, skill.id])
+    );
 
-      const slugs = input.map((skill) => skill.slug);
-      const existingSkills = await tx.skill.findMany({
-        where: { slug: { in: slugs } },
-        select: { slug: true }
-      });
-      const existingSlugs = new Set(existingSkills.map((skill) => skill.slug));
-      const toCreate = input
-        .filter((skill) => !existingSlugs.has(skill.slug))
-        .map((skill) => ({
-          name: skill.name,
-          slug: skill.slug
-        }));
-
-      if (toCreate.length > 0) {
-        await tx.skill.createMany({
-          data: toCreate,
-          skipDuplicates: true
-        });
-      }
-
-      const persistedSkills = await tx.skill.findMany({
-        where: { slug: { in: slugs } },
-        select: { id: true, slug: true }
-      });
-      const skillIdBySlug = new Map(
-        persistedSkills.map((skill) => [skill.slug, skill.id])
-      );
-
-      await tx.userSkill.createMany({
-        data: input.flatMap((skill) => {
-          const skillId = skillIdBySlug.get(skill.slug);
-          if (!skillId) {
-            return [];
+    await this.client.userSkill.createMany({
+      data: input.flatMap((skill) => {
+        const skillId = skillIdBySlug.get(skill.slug);
+        if (!skillId) {
+          return [];
+        }
+        return [
+          {
+            userId,
+            skillId,
+            level: skill.level
           }
-          return [
-            {
-              userId,
-              skillId,
-              level: skill.level
-            }
-          ];
-        })
-      });
+        ];
+      })
     });
   }
 
@@ -167,28 +165,26 @@ export class PrismaUsersRepository implements UsersRepository {
     userId: string,
     input: ReplaceUserExperienceInput[]
   ): Promise<void> {
-    await this.client.$transaction(async (tx) => {
-      await tx.userExperience.deleteMany({
-        where: { userId }
-      });
+    await this.client.userExperience.deleteMany({
+      where: { userId }
+    });
 
-      if (input.length === 0) {
-        return;
-      }
+    if (input.length === 0) {
+      return;
+    }
 
-      await tx.userExperience.createMany({
-        data: input.map((experience, index) => ({
-          userId,
-          title: experience.title,
-          company: experience.company,
-          employmentType: experience.employmentType,
-          startDate: experience.startDate,
-          endDate: experience.endDate,
-          isCurrent: experience.isCurrent,
-          description: experience.description,
-          sortOrder: index
-        }))
-      });
+    await this.client.userExperience.createMany({
+      data: input.map((experience, index) => ({
+        userId,
+        title: experience.title,
+        company: experience.company,
+        employmentType: experience.employmentType,
+        startDate: experience.startDate,
+        endDate: experience.endDate,
+        isCurrent: experience.isCurrent,
+        description: experience.description,
+        sortOrder: index
+      }))
     });
   }
 
@@ -196,26 +192,24 @@ export class PrismaUsersRepository implements UsersRepository {
     userId: string,
     input: ReplaceUserEducationInput[]
   ): Promise<void> {
-    await this.client.$transaction(async (tx) => {
-      await tx.userEducation.deleteMany({
-        where: { userId }
-      });
+    await this.client.userEducation.deleteMany({
+      where: { userId }
+    });
 
-      if (input.length === 0) {
-        return;
-      }
+    if (input.length === 0) {
+      return;
+    }
 
-      await tx.userEducation.createMany({
-        data: input.map((education, index) => ({
-          userId,
-          institution: education.institution,
-          degree: education.degree,
-          fieldOfStudy: education.fieldOfStudy,
-          startYear: education.startYear,
-          endYear: education.endYear,
-          sortOrder: index
-        }))
-      });
+    await this.client.userEducation.createMany({
+      data: input.map((education, index) => ({
+        userId,
+        institution: education.institution,
+        degree: education.degree,
+        fieldOfStudy: education.fieldOfStudy,
+        startYear: education.startYear,
+        endYear: education.endYear,
+        sortOrder: index
+      }))
     });
   }
 

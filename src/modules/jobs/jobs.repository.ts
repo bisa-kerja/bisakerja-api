@@ -31,16 +31,14 @@ export class PrismaJobsRepository implements JobsRepository {
     const orderBy = buildOrderBy(query.sort);
     const skip = (query.page - 1) * query.limit;
 
-    const [items, total] = await this.client.$transaction([
-      this.client.jobListing.findMany({
-        where,
-        orderBy,
-        skip,
-        take: query.limit,
-        include: jobInclude
-      }),
-      this.client.jobListing.count({ where })
-    ]);
+    const items = await this.client.jobListing.findMany({
+      where,
+      orderBy,
+      skip,
+      take: query.limit,
+      include: jobInclude
+    });
+    const total = await this.client.jobListing.count({ where });
 
     return {
       items: items.map(mapJob),

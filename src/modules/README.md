@@ -80,6 +80,7 @@ Aturan:
 3. Repository tidak tahu format response API.
 4. Route hanya merakit middleware + handler.
 5. Controller tidak mengakses repository langsung, termasuk hanya untuk kebutuhan audit/logging. Jika controller butuh metadata domain tambahan, service harus mengembalikannya.
+6. Jika module memakai Prisma client berbasis `@prisma/adapter-pg`, hindari query paralel pada client yang sama lewat `Promise.all` atau array form `prisma.$transaction([...])` kecuali sudah diverifikasi aman. Utamakan `await` berurutan, atau transaction callback yang memang diperlukan.
 
 ## Konvensi Naming
 
@@ -183,6 +184,7 @@ Gunakan checklist ini saat review atau menambah module baru:
 8. `index.ts` harus sempit: ekspor route factory, kontrak type utama, dan dependency public yang memang dipakai oleh app/test. Hindari kebocoran implementation detail.
 9. Controller dan helper yang hanya dipakai oleh `route.ts` tetap dianggap internal module.
 10. Shared layer tidak boleh bergantung pada module constants atau module utils internal. Jika `src/shared/**` membutuhkan vocabulary domain, pindahkan vocabulary itu ke shared constants lebih dulu.
+11. Untuk module yang diuji dengan PostgreSQL nyata, test setup harus aman untuk rerun pada database seed yang sama. Normalisasi state test boleh dilakukan di helper atau preflight test, tetapi tidak boleh mengubah kontrak domain runtime.
 
 ## Pola Implementasi yang Sudah Diterapkan (April 2026)
 

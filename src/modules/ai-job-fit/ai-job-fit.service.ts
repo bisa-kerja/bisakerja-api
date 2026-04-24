@@ -28,10 +28,8 @@ export class AiJobFitService {
     requestId: string,
     input: AnalyzeJobFitInput
   ): Promise<JobFitAnalysisResult> {
-    const [context, job] = await Promise.all([
-      this.repository.findUserContext(userId),
-      this.repository.findVisibleJob(input.jobId)
-    ]);
+    const context = await this.repository.findUserContext(userId);
+    const job = await this.repository.findVisibleJob(input.jobId);
 
     if (!job) {
       throw new NotFoundError("Job not found", jobsErrorCodes.jobNotFound);

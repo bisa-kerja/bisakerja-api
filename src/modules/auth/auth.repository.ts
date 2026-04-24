@@ -99,16 +99,14 @@ export class PrismaAuthRepository implements AuthRepository {
   }
 
   async markEmailVerified(userId: string, tokenId: string): Promise<AuthUser> {
-    const [user] = await this.client.$transaction([
-      this.client.user.update({
-        where: { id: userId },
-        data: { emailVerifiedAt: new Date() }
-      }),
-      this.client.emailVerificationToken.update({
-        where: { id: tokenId },
-        data: { usedAt: new Date() }
-      })
-    ]);
+    const user = await this.client.user.update({
+      where: { id: userId },
+      data: { emailVerifiedAt: new Date() }
+    });
+    await this.client.emailVerificationToken.update({
+      where: { id: tokenId },
+      data: { usedAt: new Date() }
+    });
 
     return mapAuthUser(user);
   }
@@ -138,24 +136,22 @@ export class PrismaAuthRepository implements AuthRepository {
     passwordHash: string,
     passwordHashAlgorithm: string
   ): Promise<void> {
-    await this.client.$transaction([
-      this.client.authCredential.update({
-        where: { userId },
-        data: {
-          passwordHash,
-          passwordHashAlgorithm,
-          passwordUpdatedAt: new Date()
-        }
-      }),
-      this.client.passwordResetToken.update({
-        where: { id: tokenId },
-        data: { usedAt: new Date() }
-      }),
-      this.client.refreshToken.updateMany({
-        where: { userId, revokedAt: null },
-        data: { revokedAt: new Date() }
-      })
-    ]);
+    await this.client.authCredential.update({
+      where: { userId },
+      data: {
+        passwordHash,
+        passwordHashAlgorithm,
+        passwordUpdatedAt: new Date()
+      }
+    });
+    await this.client.passwordResetToken.update({
+      where: { id: tokenId },
+      data: { usedAt: new Date() }
+    });
+    await this.client.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() }
+    });
   }
 
   async createRefreshToken(

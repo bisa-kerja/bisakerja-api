@@ -218,8 +218,6 @@ End-to-end deployment now lives in one dedicated workflow:
 
 Its scope is intentionally narrow:
 
-- build the application image from repository source
-- push the image to GHCR
 - connect to the VPS through SSH
 - write the runtime `.env.production` file from GitHub Actions secrets
 - authenticate the VPS to GHCR
@@ -241,7 +239,6 @@ Required GitHub environment secrets for the active deploy environment:
 - `DEPLOY_VPS_PORT`
 - `DEPLOY_VPS_USERNAME`
 - `DEPLOY_VPS_KEY`
-- `DEPLOY_VPS_KNOWN_HOSTS`
 - `DEPLOY_REMOTE_PATH`
 - `DEPLOY_ENV_FILE`
 - `GHCR_READ_PACKAGES_TOKEN`
@@ -249,11 +246,10 @@ Required GitHub environment secrets for the active deploy environment:
 
 Secret handling rules:
 
-- `DEPLOY_VPS_KNOWN_HOSTS` should contain the pinned host key entry for the VPS, not be generated ad hoc during the workflow.
 - `DEPLOY_ENV_FILE` should contain the full multi-line runtime env file that will be written to `${DEPLOY_REMOTE_PATH}/.env.production`.
 - The current staging rollout expects that env file to declare `APP_ENV=staging`.
+- `DEPLOY_VPS_KEY` should stay scoped to deployment only and be rotated independently of application secrets.
 - `GHCR_READ_PACKAGES_TOKEN` should be scoped as narrowly as possible, ideally `read:packages`.
-- SSH keys should stay scoped to deployment only and be rotated independently of application secrets.
 - The current workflow uses the GitHub environment `staging` while rollout is still being validated on the staging VPS.
 
 Current release guard:
@@ -335,7 +331,7 @@ Current delivery behavior:
 - fail if generated docs differ from committed artifacts
 - run `bun run prisma:verify:migrations` against a PostgreSQL service container
 - synchronize service-owned docs into the central `bisakerja-docs` repository through the final CI job
-- in the deployment workflow, log in to GHCR with `GITHUB_TOKEN`, build and push the repository Docker image, then deploy that image to the VPS over SSH
+- in the deployment workflow, build and push the repository Docker image, then SSH once into the VPS to write `.env.production`, log in to GHCR, and run the remote deploy script
 - keep the deploy logic auditable by storing the remote steps in `scripts/deploy/remote-deploy.sh`
 - the workflow writes `.env.production` and deploys through `docker-compose.yml`
 

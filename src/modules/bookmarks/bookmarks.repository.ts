@@ -31,16 +31,14 @@ export class PrismaBookmarksRepository implements BookmarksRepository {
     const orderBy = buildOrderBy(query.sort);
     const skip = (query.page - 1) * query.limit;
 
-    const [items, total] = await this.client.$transaction([
-      this.client.bookmark.findMany({
-        where,
-        orderBy,
-        skip,
-        take: query.limit,
-        include: { jobListing: { include: jobInclude } }
-      }),
-      this.client.bookmark.count({ where })
-    ]);
+    const items = await this.client.bookmark.findMany({
+      where,
+      orderBy,
+      skip,
+      take: query.limit,
+      include: { jobListing: { include: jobInclude } }
+    });
+    const total = await this.client.bookmark.count({ where });
 
     return {
       items: items.map(mapBookmark),
