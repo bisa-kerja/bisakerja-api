@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/deployment.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Deployment Operations
@@ -207,6 +207,28 @@ Before deploying to staging or production:
 - Health endpoints are implemented.
 - Logs include request id and redact sensitive fields.
 
+## GitHub Actions Delivery Workflows
+
+The repository delivery workflows currently run on push to `develop` and `main`.
+
+Its purpose is to keep release hygiene and documentation delivery automated even before a hosting-specific deploy target is finalized.
+
+Current delivery workflow split:
+
+- `.github/workflows/cd-delivery-readiness.yml` prepares delivery-ready documentation artifacts and revalidates key non-database release gates.
+- `.github/workflows/cd-sync-docs.yml` verifies documentation sync readiness, reruns database-backed migration verification, and pushes service-owned docs into the central docs repository.
+
+Current delivery behavior:
+
+- reinstall dependencies with the pinned Bun runtime and committed lockfile
+- rerun Prisma validation, typecheck, docs generation, docs validation, and Scalar config validation
+- fail if generated docs differ from committed artifacts
+- upload the current `docs/**` tree as a workflow artifact for audit or reuse
+- run `bun run prisma:verify:migrations` against a PostgreSQL service container
+- after successful verification, synchronize service-owned docs into the central `bisakerja-docs` repository through the dedicated docs-sync workflow
+
+Because hosting details are still open, this workflow should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
+
 ## Release Readiness Checklist
 
 The release owner must confirm these before marking a release ready.
@@ -256,7 +278,7 @@ Every production deployment should record the artifact version, migration versio
 
 - Hosting provider for backend runtime.
 - Whether Docker is required for all environments.
-- CI command names for build, tests, migration verification, and smoke checks.
+- Whether a compiled application artifact, container image, or direct Bun runtime deploy will become the production unit.
 - Database pooler strategy and connection limits.
 - Object storage provider for CV uploads if local storage is insufficient.
 - Error reporting provider.

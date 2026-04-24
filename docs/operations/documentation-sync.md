@@ -42,6 +42,12 @@ The central landing page is owned by the central docs repository and must never 
 
 Merge sync should be the default path for daily documentation updates. Release sync should be enabled when backend contracts or operations need release-specific historical evidence.
 
+Current branch rule:
+
+- Source updates may originate from either `develop` or `main` in this repository.
+- Automatic sync to the central docs repository must always push into the destination branch `develop`.
+- Automatic sync must never target the destination branch `main`.
+
 ## Required Frontmatter
 
 Every service-owned doc that can be synced must include:
@@ -143,6 +149,17 @@ Current repository commands:
 - `bun run docs:scalar:check-config` validates `scalar.config.json` through the Scalar CLI.
 - `bun run docs:scalar:preview` starts a local Scalar Docs preview using `scalar.config.json`.
 
+Current repository automation:
+
+- `.github/workflows/ci-quality.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches.
+- `.github/workflows/ci-database.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches.
+- `.github/workflows/cd-delivery-readiness.yml` runs on push to `develop` and `main`.
+- `.github/workflows/cd-sync-docs.yml` runs on push to `develop` and `main`.
+- The quality and delivery-readiness workflows regenerate documentation artifacts.
+- The quality, delivery-readiness, and docs-sync readiness checks fail if the committed `docs/generated/openapi.json` artifact is stale.
+- Route inventory and sync-readiness markdown are regenerated for validation and publishing, but they are not clean-tree gates because they intentionally include generation metadata.
+- Cross-repository docs sync happens only after delivery checks pass.
+
 Repository-level Scalar Docs configuration lives in `scalar.config.json`. It is not part of the `docs/**` sync payload itself, but it acts as the site map for previewing or publishing the same backend docs set through Scalar Docs using repo-managed files.
 
 The central repository should validate:
@@ -218,6 +235,18 @@ Rules:
 - Record failure reason and owning service in the sync report.
 
 Rollback should preserve the central service landing page and any other central-owned content.
+
+## GitHub Repository Requirements
+
+The current cross-repository sync workflow expects:
+
+- source repository: `bisa-kerja/bisakerja-api`
+- destination repository: `bisa-kerja/bisakerja-docs`
+- destination path root: `docs/services/backend-api/synced/**`
+- destination branch: `develop`
+- GitHub secret: `DOCS_REPO_TOKEN`
+
+`DOCS_REPO_TOKEN` should grant only the repository access needed to push synchronized service documentation into `bisakerja-docs`.
 
 ## Review And Freshness
 

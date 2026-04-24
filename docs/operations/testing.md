@@ -168,6 +168,38 @@ Reserved commands:
 | `bun run prisma:verify:migrations` | Migration verification against an empty test database |
 | `bun run docs:check`               | Frontmatter and JSON example validation for `docs/**` |
 
+## GitHub Actions Coverage
+
+The repository GitHub Actions CI pipelines validate changes on:
+
+- push to `develop`
+- push to `main`
+- pull requests targeting `develop`
+- pull requests targeting `main`
+
+Current CI workflow split:
+
+- `.github/workflows/ci-quality.yml` handles repository quality checks, documentation validation, and non-database test suites.
+- `.github/workflows/ci-database.yml` handles PostgreSQL-backed migration and repository integration verification.
+
+Current CI expectations:
+
+- install dependencies with the committed Bun lockfile
+- run `bun run prisma:validate`
+- run `bun run lint`
+- run `bun run format:check`
+- run `bun run typecheck`
+- regenerate `docs/generated/openapi.json`, `docs/generated/routes.md`, and `docs/generated/sync-readiness.md`
+- run Scalar config validation with Node.js 24 because the current Scalar CLI requires that runtime level
+- run `bun run docs:check` and `bun run docs:scalar:check-config`
+- fail if `docs/generated/openapi.json` changes after regeneration, because the committed OpenAPI artifact must stay in sync with source
+- run `bun test`, `bun run test:routes`, `bun run test:contracts`, and `bun run test:smoke`
+- run `bun run prisma:verify:migrations` in a separate PostgreSQL-backed job
+
+The route inventory and sync-readiness markdown files are still regenerated in CI and CD, but they are not used as a clean-working-tree gate because they intentionally embed runtime metadata such as generation timestamps and source references.
+
+This split keeps fast feedback for most checks while still proving that committed Prisma migrations and repository integration tests work against a real PostgreSQL service in CI.
+
 ## Choosing The Right Test Type
 
 Use the lightest test that can prove the behavior you changed:
