@@ -21,7 +21,13 @@ export function corsMiddleware(config: AppConfig): RequestHandler {
         return;
       }
 
-      if (allowedOrigins.has("*") || allowedOrigins.has(origin)) {
+      const normalizedOrigin = normalizeOrigin(origin);
+
+      if (
+        allowedOrigins.has("*") ||
+        allowedOrigins.has(origin) ||
+        allowedOrigins.has(normalizedOrigin)
+      ) {
         callback(null, true);
         return;
       }
@@ -34,4 +40,12 @@ export function corsMiddleware(config: AppConfig): RequestHandler {
       );
     }
   });
+}
+
+function normalizeOrigin(value: string) {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value;
+  }
 }

@@ -36,6 +36,8 @@ Scalar is intentionally configured with the simplest setup that matches the offi
 
 Because the backend uses strict Helmet security headers, the docs page also sends a route-specific CSP that permits the Scalar script source and a per-request nonce for the inline initializer without weakening the application's global CSP policy.
 
+The interactive API client in Scalar sends browser requests, so CORS rules still apply. The backend automatically allows the normalized origins from `APP_URL` and `FRONTEND_URL` in addition to `CORS_ORIGINS`, which keeps same-origin testing from `/docs/api` working without extra local CORS duplication.
+
 Recommended local workflow:
 
 1. Start the backend.

@@ -4,9 +4,17 @@ export type { AppConfig, AppEnvironment } from "@/config/env.types";
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
   const parsed = envSchema.parse(source);
-  const corsOrigins = parsed.CORS_ORIGINS.split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  const corsOrigins = Array.from(
+    new Set(
+      [
+        ...parsed.CORS_ORIGINS.split(",").map((origin) => origin.trim()),
+        parsed.FRONTEND_URL,
+        parsed.APP_URL
+      ]
+        .map(normalizeOrigin)
+        .filter(Boolean)
+    )
+  );
 
   return {
     app: {
@@ -83,3 +91,15 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
 }
 
 export const env = loadEnv();
+
+function normalizeOrigin(value: string) {
+  if (value === "*") {
+    return value;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value;
+  }
+}

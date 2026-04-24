@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/environment.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Environment Configuration
@@ -96,6 +96,13 @@ Rules:
 | `AUTH_RATE_LIMIT_MAX`   | Yes      | `10`                    | Stricter limit for auth-sensitive endpoints |
 | `UPLOAD_RATE_LIMIT_MAX` | Yes      | `10`                    | Stricter limit for CV upload endpoints      |
 | `AI_RATE_LIMIT_MAX`     | Yes      | `20`                    | Stricter limit for AI inference endpoints   |
+
+Rules:
+
+- `CORS_ORIGINS` remains the explicit allowlist for external browser origins.
+- The backend also treats the normalized origins derived from `APP_URL` and `FRONTEND_URL` as allowed automatically.
+- This behavior keeps the built-in Scalar docs at `/docs/api` usable on the same backend origin without requiring a duplicate manual CORS entry.
+- In local development, changing `APP_URL`, `FRONTEND_URL`, or `CORS_ORIGINS` requires restarting the backend process before browser tests are retried.
 
 ## Model API Variables
 

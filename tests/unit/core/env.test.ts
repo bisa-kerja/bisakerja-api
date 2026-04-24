@@ -19,7 +19,8 @@ describe("environment validation", () => {
     expect(config.app.port).toBe(3100);
     expect(config.security.corsOrigins).toEqual([
       "http://localhost:5173",
-      "http://localhost:3001"
+      "http://localhost:3001",
+      "http://localhost:3000"
     ]);
     expect(config.database.runtimeUrl).toContain("bisakerja_api_test");
     expect(config.database.prismaLogLevel).toBe("warn");
@@ -34,6 +35,26 @@ describe("environment validation", () => {
 
   test("rejects invalid port values", () => {
     expect(() => testConfig({ PORT: "not-a-number" })).toThrow(ZodError);
+  });
+
+  test("always includes app and frontend origins in allowed cors origins", () => {
+    const config = loadEnv({
+      APP_ENV: "local",
+      NODE_ENV: "development",
+      PORT: "3000",
+      API_PREFIX: "/api/v1",
+      APP_URL: "http://localhost:3000/docs",
+      FRONTEND_URL: "http://localhost:5173/app",
+      CORS_ORIGINS: "http://localhost:5174",
+      MODEL_API_ENABLE_MOCK: "true",
+      MODEL_API_SERVICE_TOKEN: "test-model-token"
+    });
+
+    expect(config.security.corsOrigins).toEqual([
+      "http://localhost:5174",
+      "http://localhost:5173",
+      "http://localhost:3000"
+    ]);
   });
 
   test("rejects wildcard CORS origins in production", () => {

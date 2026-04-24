@@ -44,6 +44,33 @@ describe("security middleware", () => {
     );
   });
 
+  test("allows the backend app origin for scalar docs requests", async () => {
+    const app = express();
+    const config = testConfig({
+      APP_URL: "http://localhost:3000",
+      CORS_ORIGINS: "https://frontend.example"
+    });
+
+    app.use(requestIdMiddleware(config));
+    app.use(corsMiddleware(config));
+    app.get("/resource", (_req, res) => {
+      res.json(successResponse({ ok: true }));
+    });
+    app.use(errorHandler);
+
+    const response = await injectRoute(app, {
+      url: "/resource",
+      headers: {
+        Origin: "http://localhost:3000"
+      }
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      "http://localhost:3000"
+    );
+  });
+
   test("rejects disallowed origins with a safe error envelope", async () => {
     const app = express();
     const config = testConfig({
