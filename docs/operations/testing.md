@@ -170,17 +170,16 @@ Reserved commands:
 
 ## GitHub Actions Coverage
 
-The repository GitHub Actions CI pipelines validate changes on:
+The repository GitHub Actions CI workflow validates changes on:
 
 - push to `develop`
 - push to `main`
 - pull requests targeting `develop`
 - pull requests targeting `main`
 
-Current CI workflow split:
+Current CI workflow structure:
 
-- `.github/workflows/ci-quality.yml` handles repository quality checks, documentation validation, and non-database test suites.
-- `.github/workflows/ci-database.yml` handles PostgreSQL-backed migration and repository integration verification.
+- `.github/workflows/ci.yml` contains two jobs: repository quality validation and PostgreSQL-backed migration or repository verification.
 
 Current CI expectations:
 
@@ -204,6 +203,7 @@ This split keeps fast feedback for most checks while still proving that committe
 Workflow safety notes:
 
 - CI intentionally keeps workflow env overrides minimal and lets the validated repo defaults cover non-essential secrets or tokens.
+- CI generates the Prisma client before lint, typecheck, or docs generation so clean runners do not depend on committed generated build artifacts.
 - Repository integration tests should import repository files directly when possible, rather than broad module barrels, so CI does not evaluate unrelated route or controller wiring during repository-only verification.
 
 ## Choosing The Right Test Type

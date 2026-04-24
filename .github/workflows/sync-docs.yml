@@ -1,0 +1,43 @@
+name: Sync Docs
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+concurrency:
+  group: sync-docs-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  sync-docs:
+    name: Sync Service Docs To Central Repo
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.head_branch == 'develop' ||
+        github.event.workflow_run.head_branch == 'main')
+
+    steps:
+      - name: Checkout repository at validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Push docs to bisakerja-docs develop
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.DOCS_REPO_TOKEN }}
+        with:
+          source-directory: docs
+          destination-github-username: bisa-kerja
+          destination-repository-name: bisakerja-docs
+          user-email: github-actions[bot]@users.noreply.github.com
+          user-name: github-actions[bot]
+          commit-message: >-
+            sync: backend-api docs from ${{ github.event.workflow_run.head_branch }} (${{ github.event.workflow_run.head_sha }})
+          target-directory: docs/services/backend-api/synced
+          target-branch: develop

@@ -207,28 +207,27 @@ Before deploying to staging or production:
 - Health endpoints are implemented.
 - Logs include request id and redact sensitive fields.
 
-## GitHub Actions Delivery Workflows
+## GitHub Actions Delivery Workflow
 
-The repository delivery workflows currently run on push to `develop` and `main`.
+The repository currently uses one validation workflow and one follow-up docs sync workflow.
 
-Its purpose is to keep release hygiene and documentation delivery automated even before a hosting-specific deploy target is finalized.
+Their purpose is to keep release hygiene and documentation delivery automated even before a hosting-specific deploy target is finalized.
 
-Current delivery workflow split:
+Current workflow structure:
 
-- `.github/workflows/cd-delivery-readiness.yml` prepares delivery-ready documentation artifacts and revalidates key non-database release gates.
-- `.github/workflows/cd-sync-docs.yml` verifies documentation sync readiness, reruns database-backed migration verification, and pushes service-owned docs into the central docs repository.
+- `.github/workflows/ci.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches. It performs the release-readiness validation jobs.
+- `.github/workflows/sync-docs.yml` runs only after `CI` succeeds on `develop` or `main`, then pushes service-owned docs into the central docs repository.
 
 Current delivery behavior:
 
-- reinstall dependencies with the pinned Bun runtime and committed lockfile
+- reinstall dependencies with the pinned Bun runtime and committed lockfile during CI
 - generate the Prisma client before typecheck or documentation validation so delivery checks match a clean runner state
 - rerun Prisma validation, typecheck, docs generation, docs validation, and Scalar config validation
 - fail if generated docs differ from committed artifacts
-- upload the current `docs/**` tree as a workflow artifact for audit or reuse
 - run `bun run prisma:verify:migrations` against a PostgreSQL service container
-- after successful verification, synchronize service-owned docs into the central `bisakerja-docs` repository through the dedicated docs-sync workflow
+- after successful CI verification, synchronize service-owned docs from the validated commit into the central `bisakerja-docs` repository through the dedicated docs-sync workflow
 
-Because hosting details are still open, this workflow should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
+Because hosting details are still open, these workflows should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
 
 Workflow hardening rules:
 

@@ -52,7 +52,9 @@
   "paths": {
     "/health/live": {
       "get": {
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "summary": "Liveness check",
         "description": "Confirms the API process can respond to HTTP requests. This route does not verify downstream dependencies.",
         "responses": {
@@ -63,7 +65,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -98,7 +105,9 @@
     },
     "/health/ready": {
       "get": {
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "summary": "Readiness check",
         "description": "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL.",
         "responses": {
@@ -109,7 +118,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -171,7 +185,9 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Register a new account",
         "description": "Creates a user account and starts the email verification flow.",
         "requestBody": {
@@ -199,7 +215,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -211,7 +232,9 @@
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["user"],
+                      "required": [
+                        "user"
+                      ],
                       "properties": {
                         "user": {
                           "$ref": "#/components/schemas/AuthUser"
@@ -314,7 +337,9 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Login",
         "description": "Authenticates with email or username and password, then returns an access token while setting the refresh token cookie.",
         "requestBody": {
@@ -347,7 +372,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -359,7 +389,10 @@
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["user", "session"],
+                      "required": [
+                        "user",
+                        "session"
+                      ],
                       "properties": {
                         "user": {
                           "$ref": "#/components/schemas/AuthUser"
@@ -470,7 +503,9 @@
     },
     "/api/v1/auth/refresh": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Refresh session",
         "description": "Issues a new access token using the refresh token cookie.",
         "security": [
@@ -506,7 +541,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -518,7 +558,10 @@
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["user", "session"],
+                      "required": [
+                        "user",
+                        "session"
+                      ],
                       "properties": {
                         "user": {
                           "$ref": "#/components/schemas/AuthUser"
@@ -629,7 +672,9 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Logout",
         "description": "Invalidates the current session and clears the refresh token cookie.",
         "security": [
@@ -665,7 +710,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -744,7 +794,9 @@
     },
     "/api/v1/auth/forgot-password": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Request password reset",
         "description": "Sends password reset instructions when the email exists. The response is intentionally generic for security.",
         "requestBody": {
@@ -768,7 +820,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -847,7 +904,9 @@
     },
     "/api/v1/auth/reset-password": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Reset password",
         "description": "Sets a new password when the reset token is valid.",
         "requestBody": {
@@ -873,7 +932,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -972,7 +1036,9 @@
     },
     "/api/v1/auth/verify-email": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Verify email",
         "description": "Verifies email ownership using the OTP code sent by email.",
         "requestBody": {
@@ -997,7 +1063,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -1009,7 +1080,9 @@
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["user"],
+                      "required": [
+                        "user"
+                      ],
                       "properties": {
                         "user": {
                           "$ref": "#/components/schemas/AuthUser"
@@ -1112,7 +1185,9 @@
     },
     "/api/v1/auth/google": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Google SSO placeholder",
         "description": "Reserved placeholder route for future Google SSO integration. It currently always returns not implemented.",
         "responses": {
@@ -1163,7 +1238,9 @@
     },
     "/api/v1/jobs": {
       "get": {
-        "tags": ["Jobs"],
+        "tags": [
+          "Jobs"
+        ],
         "summary": "List jobs",
         "description": "Searches, filters, sorts, and paginates normalized public job listings.",
         "parameters": [
@@ -1227,7 +1304,11 @@
             "name": "workType",
             "schema": {
               "type": "string",
-              "enum": ["REMOTE", "HYBRID", "ONSITE"]
+              "enum": [
+                "REMOTE",
+                "HYBRID",
+                "ONSITE"
+              ]
             }
           },
           {
@@ -1249,7 +1330,13 @@
             "name": "experienceLevel",
             "schema": {
               "type": "string",
-              "enum": ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
+              "enum": [
+                "ENTRY_LEVEL",
+                "JUNIOR",
+                "MID_LEVEL",
+                "SENIOR",
+                "LEAD"
+              ]
             }
           },
           {
@@ -1318,7 +1405,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -1336,7 +1428,9 @@
                     "meta": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["pagination"],
+                      "required": [
+                        "pagination"
+                      ],
                       "properties": {
                         "pagination": {
                           "$ref": "#/components/schemas/PaginationMeta"
@@ -1444,7 +1538,9 @@
     },
     "/api/v1/jobs/{jobId}": {
       "get": {
-        "tags": ["Jobs"],
+        "tags": [
+          "Jobs"
+        ],
         "summary": "Get job detail",
         "description": "Returns normalized job detail for a visible job listing.",
         "parameters": [
@@ -1467,7 +1563,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -1527,7 +1628,11 @@
                         "priority": "HIGH"
                       }
                     ],
-                    "skills": ["TypeScript", "PostgreSQL", "REST API"],
+                    "skills": [
+                      "TypeScript",
+                      "PostgreSQL",
+                      "REST API"
+                    ],
                     "externalApplyUrl": "https://glints.com/example-job"
                   },
                   "meta": null
@@ -1586,7 +1691,9 @@
     },
     "/api/v1/me": {
       "get": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Get current user profile",
         "description": "Returns the authenticated user's current profile and onboarding-related data.",
         "security": [
@@ -1602,7 +1709,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -1700,7 +1812,9 @@
         }
       },
       "patch": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Update current user profile",
         "description": "Updates basic current-user account fields such as username, phone number, and display name.",
         "security": [
@@ -1731,7 +1845,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -1877,7 +1996,9 @@
     },
     "/api/v1/me/profile-photo": {
       "put": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Upsert profile photo metadata",
         "description": "Stores profile photo metadata for the authenticated user. The upload transport is managed separately from this route.",
         "security": [
@@ -1909,7 +2030,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2035,7 +2161,9 @@
     },
     "/api/v1/me/skills": {
       "put": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Replace skills",
         "description": "Replaces the authenticated user's skill list.",
         "security": [
@@ -2073,7 +2201,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2199,7 +2332,9 @@
     },
     "/api/v1/me/experience": {
       "put": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Replace experience",
         "description": "Replaces the authenticated user's experience entries.",
         "security": [
@@ -2238,7 +2373,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2364,7 +2504,9 @@
     },
     "/api/v1/me/education": {
       "put": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Replace education",
         "description": "Replaces the authenticated user's education entries.",
         "security": [
@@ -2401,7 +2543,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2527,7 +2674,9 @@
     },
     "/api/v1/me/preferences": {
       "get": {
-        "tags": ["Preferences"],
+        "tags": [
+          "Preferences"
+        ],
         "summary": "Get preferences",
         "description": "Returns the authenticated user's active career preferences.",
         "security": [
@@ -2543,7 +2692,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2577,7 +2731,10 @@
                         "city": "Jakarta Selatan"
                       }
                     ],
-                    "workTypes": ["REMOTE", "HYBRID"],
+                    "workTypes": [
+                      "REMOTE",
+                      "HYBRID"
+                    ],
                     "salaryExpectation": {
                       "min": 5000000,
                       "max": 10000000,
@@ -2636,7 +2793,9 @@
         }
       },
       "put": {
-        "tags": ["Preferences"],
+        "tags": [
+          "Preferences"
+        ],
         "summary": "Replace preferences",
         "description": "Creates or replaces the authenticated user's active career preferences.",
         "security": [
@@ -2654,14 +2813,20 @@
               "example": {
                 "careerStatus": "FRESH_GRADUATE",
                 "jobSeekingStatus": "IMMEDIATE",
-                "targetRoles": ["Backend Developer", "Full Stack Developer"],
+                "targetRoles": [
+                  "Backend Developer",
+                  "Full Stack Developer"
+                ],
                 "locations": [
                   {
                     "province": "DKI Jakarta",
                     "city": "Jakarta Selatan"
                   }
                 ],
-                "workTypes": ["REMOTE", "HYBRID"],
+                "workTypes": [
+                  "REMOTE",
+                  "HYBRID"
+                ],
                 "salaryExpectation": {
                   "min": 5000000,
                   "max": 10000000,
@@ -2681,7 +2846,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2715,7 +2885,10 @@
                         "city": "Jakarta Selatan"
                       }
                     ],
-                    "workTypes": ["REMOTE", "HYBRID"],
+                    "workTypes": [
+                      "REMOTE",
+                      "HYBRID"
+                    ],
                     "salaryExpectation": {
                       "min": 5000000,
                       "max": 10000000,
@@ -2780,7 +2953,9 @@
         }
       },
       "patch": {
-        "tags": ["Preferences"],
+        "tags": [
+          "Preferences"
+        ],
         "summary": "Patch preferences",
         "description": "Applies a partial update to the authenticated user's active career preferences.",
         "security": [
@@ -2796,7 +2971,9 @@
                 "$ref": "#/components/schemas/PreferencesPatchRequest"
               },
               "example": {
-                "workTypes": ["REMOTE"],
+                "workTypes": [
+                  "REMOTE"
+                ],
                 "emailNotificationsEnabled": false
               }
             }
@@ -2810,7 +2987,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2844,7 +3026,9 @@
                         "city": "Jakarta Selatan"
                       }
                     ],
-                    "workTypes": ["REMOTE"],
+                    "workTypes": [
+                      "REMOTE"
+                    ],
                     "salaryExpectation": {
                       "min": 5000000,
                       "max": 10000000,
@@ -2911,7 +3095,9 @@
     },
     "/api/v1/me/bookmarks": {
       "get": {
-        "tags": ["Bookmarks"],
+        "tags": [
+          "Bookmarks"
+        ],
         "summary": "List bookmarks",
         "description": "Returns paginated current-user bookmarks.",
         "security": [
@@ -2972,7 +3158,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -2990,7 +3181,9 @@
                     "meta": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["pagination"],
+                      "required": [
+                        "pagination"
+                      ],
                       "properties": {
                         "pagination": {
                           "$ref": "#/components/schemas/PaginationMeta"
@@ -3118,7 +3311,9 @@
         }
       },
       "post": {
-        "tags": ["Bookmarks"],
+        "tags": [
+          "Bookmarks"
+        ],
         "summary": "Save a job",
         "description": "Creates a bookmark for the authenticated user.",
         "security": [
@@ -3147,7 +3342,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -3268,7 +3468,9 @@
     },
     "/api/v1/me/bookmarks/{jobId}": {
       "delete": {
-        "tags": ["Bookmarks"],
+        "tags": [
+          "Bookmarks"
+        ],
         "summary": "Delete a bookmark",
         "description": "Removes the authenticated user's bookmark for the given job.",
         "security": [
@@ -3363,7 +3565,9 @@
     },
     "/api/v1/me/applications": {
       "get": {
-        "tags": ["Applications"],
+        "tags": [
+          "Applications"
+        ],
         "summary": "List applications",
         "description": "Returns paginated current-user application tracker records.",
         "security": [
@@ -3405,7 +3609,12 @@
             "name": "status",
             "schema": {
               "type": "string",
-              "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"]
+              "enum": [
+                "APPLIED",
+                "INTERVIEW",
+                "REJECTED",
+                "ACCEPTED"
+              ]
             }
           },
           {
@@ -3413,7 +3622,11 @@
             "name": "sort",
             "schema": {
               "type": "string",
-              "enum": ["updated_desc", "created_desc", "newest"],
+              "enum": [
+                "updated_desc",
+                "created_desc",
+                "newest"
+              ],
               "default": "updated_desc"
             }
           }
@@ -3426,7 +3639,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -3444,7 +3662,9 @@
                     "meta": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["pagination"],
+                      "required": [
+                        "pagination"
+                      ],
                       "properties": {
                         "pagination": {
                           "$ref": "#/components/schemas/PaginationMeta"
@@ -3576,7 +3796,9 @@
         }
       },
       "post": {
-        "tags": ["Applications"],
+        "tags": [
+          "Applications"
+        ],
         "summary": "Create an application tracker record",
         "description": "Creates a current-user application tracker record for a job.",
         "security": [
@@ -3608,7 +3830,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -3764,7 +3991,9 @@
     },
     "/api/v1/me/applications/{applicationId}": {
       "patch": {
-        "tags": ["Applications"],
+        "tags": [
+          "Applications"
+        ],
         "summary": "Update application metadata",
         "description": "Updates notes or source metadata for a current-user application record.",
         "security": [
@@ -3806,7 +4035,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -3942,7 +4176,9 @@
     },
     "/api/v1/me/applications/{applicationId}/status": {
       "patch": {
-        "tags": ["Applications"],
+        "tags": [
+          "Applications"
+        ],
         "summary": "Update application status",
         "description": "Updates the status of a current-user application record.",
         "security": [
@@ -3984,7 +4220,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -4140,7 +4381,9 @@
     },
     "/api/v1/ai/job-fit": {
       "post": {
-        "tags": ["AI Job Fit"],
+        "tags": [
+          "AI Job Fit"
+        ],
         "summary": "Analyze job fit",
         "description": "Builds backend-owned user and preference context, calls Model API, and returns a job fit analysis for the selected job.",
         "security": [
@@ -4170,7 +4413,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -4207,8 +4455,13 @@
                     "breakdown": {
                       "skillMatch": {
                         "score": 85,
-                        "matchedSkills": ["TypeScript", "PostgreSQL"],
-                        "missingSkills": ["Docker"]
+                        "matchedSkills": [
+                          "TypeScript",
+                          "PostgreSQL"
+                        ],
+                        "missingSkills": [
+                          "Docker"
+                        ]
                       },
                       "experienceMatch": {
                         "score": 75,
@@ -4216,7 +4469,10 @@
                       },
                       "preferenceMatch": {
                         "score": 90,
-                        "matchedPreferences": ["REMOTE", "DKI Jakarta"],
+                        "matchedPreferences": [
+                          "REMOTE",
+                          "DKI Jakarta"
+                        ],
                         "unmatchedPreferences": []
                       }
                     },
@@ -4369,7 +4625,9 @@
     },
     "/api/v1/ai/cv-analyzer": {
       "post": {
-        "tags": ["AI CV Analyzer"],
+        "tags": [
+          "AI CV Analyzer"
+        ],
         "summary": "Analyze CV",
         "description": "Accepts a multipart PDF upload and compares the CV against a selected job using Model API.",
         "security": [
@@ -4400,7 +4658,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["success", "message", "data", "meta"],
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "success": {
                       "type": "boolean",
@@ -4435,7 +4698,10 @@
                         "REST API",
                         "PostgreSQL"
                       ],
-                      "missingSignals": ["Docker", "CI/CD"]
+                      "missingSignals": [
+                        "Docker",
+                        "CI/CD"
+                      ]
                     },
                     "atsFriendliness": {
                       "score": 74,
@@ -4629,7 +4895,11 @@
       "ValidationIssue": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["path", "message", "code"],
+        "required": [
+          "path",
+          "message",
+          "code"
+        ],
         "properties": {
           "path": {
             "type": "string"
@@ -4645,7 +4915,12 @@
       "ErrorEnvelope": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["success", "message", "data", "error"],
+        "required": [
+          "success",
+          "message",
+          "data",
+          "error"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -4660,7 +4935,11 @@
           "error": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["code", "details", "requestId"],
+            "required": [
+              "code",
+              "details",
+              "requestId"
+            ],
             "properties": {
               "code": {
                 "type": "string"
@@ -4730,7 +5009,11 @@
       "SourcePlatform": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "slug"],
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -4748,7 +5031,11 @@
       "CompanyCard": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "logoUrl"],
+        "required": [
+          "id",
+          "name",
+          "logoUrl"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -4798,7 +5085,11 @@
       "Location": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["display", "province", "city"],
+        "required": [
+          "display",
+          "province",
+          "city"
+        ],
         "properties": {
           "display": {
             "type": "string"
@@ -4821,7 +5112,13 @@
       "Salary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["min", "max", "currency", "period", "display"],
+        "required": [
+          "min",
+          "max",
+          "currency",
+          "period",
+          "display"
+        ],
         "properties": {
           "min": {
             "anyOf": [
@@ -4851,7 +5148,10 @@
           },
           "period": {
             "type": "string",
-            "enum": ["MONTHLY", "YEARLY"]
+            "enum": [
+              "MONTHLY",
+              "YEARLY"
+            ]
           },
           "display": {
             "type": "string"
@@ -4861,18 +5161,30 @@
       "JobRequirement": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["type", "value", "priority"],
+        "required": [
+          "type",
+          "value",
+          "priority"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["SKILL", "EXPERIENCE", "OTHER"]
+            "enum": [
+              "SKILL",
+              "EXPERIENCE",
+              "OTHER"
+            ]
           },
           "value": {
             "type": "string"
           },
           "priority": {
             "type": "string",
-            "enum": ["HIGH", "MEDIUM", "LOW"]
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
           }
         }
       },
@@ -4910,7 +5222,11 @@
           },
           "workType": {
             "type": "string",
-            "enum": ["REMOTE", "HYBRID", "ONSITE"]
+            "enum": [
+              "REMOTE",
+              "HYBRID",
+              "ONSITE"
+            ]
           },
           "employmentType": {
             "type": "string",
@@ -4924,7 +5240,13 @@
           },
           "experienceLevel": {
             "type": "string",
-            "enum": ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
+            "enum": [
+              "ENTRY_LEVEL",
+              "JUNIOR",
+              "MID_LEVEL",
+              "SENIOR",
+              "LEAD"
+            ]
           },
           "location": {
             "$ref": "#/components/schemas/Location"
@@ -5035,7 +5357,10 @@
       "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["identifier", "password"],
+        "required": [
+          "identifier",
+          "password"
+        ],
         "properties": {
           "identifier": {
             "type": "string",
@@ -5052,7 +5377,9 @@
       "ForgotPasswordRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -5063,7 +5390,11 @@
       "ResetPasswordRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["token", "password", "confirmPassword"],
+        "required": [
+          "token",
+          "password",
+          "confirmPassword"
+        ],
         "properties": {
           "token": {
             "type": "string",
@@ -5083,7 +5414,10 @@
       "VerifyEmailRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["email", "otp"],
+        "required": [
+          "email",
+          "otp"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -5124,7 +5458,11 @@
           },
           "onboardingStatus": {
             "type": "string",
-            "enum": ["PENDING", "IN_PROGRESS", "COMPLETED"]
+            "enum": [
+              "PENDING",
+              "IN_PROGRESS",
+              "COMPLETED"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -5136,7 +5474,11 @@
       "AuthSession": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["accessToken", "expiresIn", "tokenType"],
+        "required": [
+          "accessToken",
+          "expiresIn",
+          "tokenType"
+        ],
         "properties": {
           "accessToken": {
             "type": "string"
@@ -5154,7 +5496,11 @@
       "ProfilePhoto": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["url", "mimeType", "sizeBytes"],
+        "required": [
+          "url",
+          "mimeType",
+          "sizeBytes"
+        ],
         "properties": {
           "url": {
             "anyOf": [
@@ -5169,7 +5515,11 @@
           },
           "mimeType": {
             "type": "string",
-            "enum": ["image/jpeg", "image/png", "image/webp"]
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
           },
           "sizeBytes": {
             "type": "integer",
@@ -5181,13 +5531,21 @@
       "CurrentUserProfile": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["careerStatus", "latestRole", "summary"],
+        "required": [
+          "careerStatus",
+          "latestRole",
+          "summary"
+        ],
         "properties": {
           "careerStatus": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
+                "enum": [
+                  "FRESH_GRADUATE",
+                  "EARLY_CAREER",
+                  "CAREER_SWITCHER"
+                ]
               },
               {
                 "type": "null"
@@ -5219,7 +5577,11 @@
       "CurrentUserSkill": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "level"],
+        "required": [
+          "id",
+          "name",
+          "level"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -5233,7 +5595,11 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["BASIC", "INTERMEDIATE", "ADVANCED"]
+                "enum": [
+                  "BASIC",
+                  "INTERMEDIATE",
+                  "ADVANCED"
+                ]
               },
               {
                 "type": "null"
@@ -5463,7 +5829,11 @@
           },
           "onboardingStatus": {
             "type": "string",
-            "enum": ["PENDING", "IN_PROGRESS", "COMPLETED"]
+            "enum": [
+              "PENDING",
+              "IN_PROGRESS",
+              "COMPLETED"
+            ]
           },
           "profile": {
             "anyOf": [
@@ -5532,7 +5902,11 @@
       "ProfilePhotoUpsertRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["storageKey", "mimeType", "sizeBytes"],
+        "required": [
+          "storageKey",
+          "mimeType",
+          "sizeBytes"
+        ],
         "properties": {
           "storageKey": {
             "type": "string",
@@ -5554,7 +5928,11 @@
           },
           "mimeType": {
             "type": "string",
-            "enum": ["image/jpeg", "image/png", "image/webp"]
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
           },
           "sizeBytes": {
             "type": "integer",
@@ -5566,7 +5944,9 @@
       "ReplaceSkillsRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["skills"],
+        "required": [
+          "skills"
+        ],
         "properties": {
           "skills": {
             "type": "array",
@@ -5574,7 +5954,9 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["name"],
+              "required": [
+                "name"
+              ],
               "properties": {
                 "name": {
                   "type": "string",
@@ -5583,7 +5965,11 @@
                 },
                 "level": {
                   "type": "string",
-                  "enum": ["BASIC", "INTERMEDIATE", "ADVANCED"]
+                  "enum": [
+                    "BASIC",
+                    "INTERMEDIATE",
+                    "ADVANCED"
+                  ]
                 }
               }
             }
@@ -5593,7 +5979,9 @@
       "ReplaceExperienceRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["experience"],
+        "required": [
+          "experience"
+        ],
         "properties": {
           "experience": {
             "type": "array",
@@ -5601,7 +5989,9 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["title"],
+              "required": [
+                "title"
+              ],
               "properties": {
                 "title": {
                   "type": "string",
@@ -5683,7 +6073,9 @@
       "ReplaceEducationRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["education"],
+        "required": [
+          "education"
+        ],
         "properties": {
           "education": {
             "type": "array",
@@ -5691,7 +6083,11 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["institution", "degree", "fieldOfStudy"],
+              "required": [
+                "institution",
+                "degree",
+                "fieldOfStudy"
+              ],
               "properties": {
                 "institution": {
                   "type": "string",
@@ -5740,7 +6136,10 @@
       "PreferenceLocation": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["province", "city"],
+        "required": [
+          "province",
+          "city"
+        ],
         "properties": {
           "province": {
             "type": "string",
@@ -5763,7 +6162,12 @@
       "SalaryExpectation": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["min", "max", "currency", "period"],
+        "required": [
+          "min",
+          "max",
+          "currency",
+          "period"
+        ],
         "properties": {
           "min": {
             "anyOf": [
@@ -5795,7 +6199,10 @@
           },
           "period": {
             "type": "string",
-            "enum": ["MONTHLY", "YEARLY"]
+            "enum": [
+              "MONTHLY",
+              "YEARLY"
+            ]
           }
         }
       },
@@ -5822,11 +6229,19 @@
           },
           "careerStatus": {
             "type": "string",
-            "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
+            "enum": [
+              "FRESH_GRADUATE",
+              "EARLY_CAREER",
+              "CAREER_SWITCHER"
+            ]
           },
           "jobSeekingStatus": {
             "type": "string",
-            "enum": ["IMMEDIATE", "ONE_MONTH", "THREE_MONTHS"]
+            "enum": [
+              "IMMEDIATE",
+              "ONE_MONTH",
+              "THREE_MONTHS"
+            ]
           },
           "targetRoles": {
             "type": "array",
@@ -5844,7 +6259,11 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["REMOTE", "HYBRID", "ONSITE"]
+              "enum": [
+                "REMOTE",
+                "HYBRID",
+                "ONSITE"
+              ]
             }
           },
           "salaryExpectation": {
@@ -5880,11 +6299,19 @@
         "properties": {
           "careerStatus": {
             "type": "string",
-            "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
+            "enum": [
+              "FRESH_GRADUATE",
+              "EARLY_CAREER",
+              "CAREER_SWITCHER"
+            ]
           },
           "jobSeekingStatus": {
             "type": "string",
-            "enum": ["IMMEDIATE", "ONE_MONTH", "THREE_MONTHS"]
+            "enum": [
+              "IMMEDIATE",
+              "ONE_MONTH",
+              "THREE_MONTHS"
+            ]
           },
           "targetRoles": {
             "type": "array",
@@ -5910,7 +6337,11 @@
             "maxItems": 3,
             "items": {
               "type": "string",
-              "enum": ["REMOTE", "HYBRID", "ONSITE"]
+              "enum": [
+                "REMOTE",
+                "HYBRID",
+                "ONSITE"
+              ]
             }
           },
           "salaryExpectation": {
@@ -5927,11 +6358,19 @@
         "properties": {
           "careerStatus": {
             "type": "string",
-            "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
+            "enum": [
+              "FRESH_GRADUATE",
+              "EARLY_CAREER",
+              "CAREER_SWITCHER"
+            ]
           },
           "jobSeekingStatus": {
             "type": "string",
-            "enum": ["IMMEDIATE", "ONE_MONTH", "THREE_MONTHS"]
+            "enum": [
+              "IMMEDIATE",
+              "ONE_MONTH",
+              "THREE_MONTHS"
+            ]
           },
           "targetRoles": {
             "type": "array",
@@ -5957,7 +6396,11 @@
             "maxItems": 3,
             "items": {
               "type": "string",
-              "enum": ["REMOTE", "HYBRID", "ONSITE"]
+              "enum": [
+                "REMOTE",
+                "HYBRID",
+                "ONSITE"
+              ]
             }
           },
           "salaryExpectation": {
@@ -5993,7 +6436,10 @@
               },
               "period": {
                 "type": "string",
-                "enum": ["MONTHLY", "YEARLY"]
+                "enum": [
+                  "MONTHLY",
+                  "YEARLY"
+                ]
               }
             }
           },
@@ -6005,7 +6451,9 @@
       "SaveBookmarkRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["jobId"],
+        "required": [
+          "jobId"
+        ],
         "properties": {
           "jobId": {
             "type": "string",
@@ -6017,7 +6465,11 @@
       "BookmarkSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "jobId", "createdAt"],
+        "required": [
+          "id",
+          "jobId",
+          "createdAt"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -6039,7 +6491,11 @@
       "BookmarkResource": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "job", "createdAt"],
+        "required": [
+          "id",
+          "job",
+          "createdAt"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -6059,7 +6515,9 @@
       "CreateApplicationRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["jobId"],
+        "required": [
+          "jobId"
+        ],
         "properties": {
           "jobId": {
             "type": "string",
@@ -6068,7 +6526,12 @@
           },
           "status": {
             "type": "string",
-            "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"],
+            "enum": [
+              "APPLIED",
+              "INTERVIEW",
+              "REJECTED",
+              "ACCEPTED"
+            ],
             "default": "APPLIED"
           },
           "notes": {
@@ -6077,7 +6540,10 @@
           },
           "source": {
             "type": "string",
-            "enum": ["MANUAL", "EXTERNAL_APPLY_CLICK"],
+            "enum": [
+              "MANUAL",
+              "EXTERNAL_APPLY_CLICK"
+            ],
             "default": "MANUAL"
           }
         }
@@ -6100,18 +6566,28 @@
           },
           "source": {
             "type": "string",
-            "enum": ["MANUAL", "EXTERNAL_APPLY_CLICK"]
+            "enum": [
+              "MANUAL",
+              "EXTERNAL_APPLY_CLICK"
+            ]
           }
         }
       },
       "UpdateApplicationStatusRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"]
+            "enum": [
+              "APPLIED",
+              "INTERVIEW",
+              "REJECTED",
+              "ACCEPTED"
+            ]
           },
           "notes": {
             "type": "string",
@@ -6139,7 +6615,12 @@
           },
           "status": {
             "type": "string",
-            "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"]
+            "enum": [
+              "APPLIED",
+              "INTERVIEW",
+              "REJECTED",
+              "ACCEPTED"
+            ]
           },
           "notes": {
             "anyOf": [
@@ -6153,7 +6634,10 @@
           },
           "source": {
             "type": "string",
-            "enum": ["MANUAL", "EXTERNAL_APPLY_CLICK"]
+            "enum": [
+              "MANUAL",
+              "EXTERNAL_APPLY_CLICK"
+            ]
           },
           "appliedAt": {
             "type": "string",
@@ -6173,7 +6657,9 @@
       "AnalyzeJobFitRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["jobId"],
+        "required": [
+          "jobId"
+        ],
         "properties": {
           "jobId": {
             "type": "string",
@@ -6231,7 +6717,11 @@
             "properties": {
               "decision": {
                 "type": "string",
-                "enum": ["APPLY_NOW", "IMPROVE_FIRST", "SAVE_FOR_LATER"]
+                "enum": [
+                  "APPLY_NOW",
+                  "IMPROVE_FIRST",
+                  "SAVE_FOR_LATER"
+                ]
               },
               "summary": {
                 "type": "string"
@@ -6252,12 +6742,20 @@
           "breakdown": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["skillMatch", "experienceMatch", "preferenceMatch"],
+            "required": [
+              "skillMatch",
+              "experienceMatch",
+              "preferenceMatch"
+            ],
             "properties": {
               "skillMatch": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["score", "matchedSkills", "missingSkills"],
+                "required": [
+                  "score",
+                  "matchedSkills",
+                  "missingSkills"
+                ],
                 "properties": {
                   "score": {
                     "type": "integer",
@@ -6281,7 +6779,10 @@
               "experienceMatch": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["score", "reason"],
+                "required": [
+                  "score",
+                  "reason"
+                ],
                 "properties": {
                   "score": {
                     "type": "integer",
@@ -6328,14 +6829,22 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["skill", "priority", "reason"],
+              "required": [
+                "skill",
+                "priority",
+                "reason"
+              ],
               "properties": {
                 "skill": {
                   "type": "string"
                 },
                 "priority": {
                   "type": "string",
-                  "enum": ["HIGH", "MEDIUM", "LOW"]
+                  "enum": [
+                    "HIGH",
+                    "MEDIUM",
+                    "LOW"
+                  ]
                 },
                 "reason": {
                   "type": "string"
@@ -6346,7 +6855,10 @@
           "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "version"],
+            "required": [
+              "name",
+              "version"
+            ],
             "properties": {
               "name": {
                 "type": "string"
@@ -6366,7 +6878,12 @@
       "AnalyzeCvMultipartRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["jobId", "language", "inputMode", "cvFile"],
+        "required": [
+          "jobId",
+          "language",
+          "inputMode",
+          "cvFile"
+        ],
         "properties": {
           "jobId": {
             "type": "string",
@@ -6375,15 +6892,25 @@
           },
           "language": {
             "type": "string",
-            "enum": ["id", "en"]
+            "enum": [
+              "id",
+              "en"
+            ]
           },
           "inputMode": {
             "type": "string",
-            "enum": ["UPLOAD", "REFERENCE"]
+            "enum": [
+              "UPLOAD",
+              "REFERENCE"
+            ]
           },
           "compareSource": {
             "type": "string",
-            "enum": ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"],
+            "enum": [
+              "BOOKMARK",
+              "JOB_SEARCH",
+              "DIRECT_JOB_DETAIL"
+            ],
             "default": "JOB_SEARCH"
           },
           "persistResult": {
@@ -6393,7 +6920,10 @@
               },
               {
                 "type": "string",
-                "enum": ["true", "false"]
+                "enum": [
+                  "true",
+                  "false"
+                ]
               }
             ],
             "default": false
@@ -6433,12 +6963,18 @@
           },
           "language": {
             "type": "string",
-            "enum": ["id", "en"]
+            "enum": [
+              "id",
+              "en"
+            ]
           },
           "overallImpression": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["score", "summary"],
+            "required": [
+              "score",
+              "summary"
+            ],
             "properties": {
               "score": {
                 "type": "integer",
@@ -6485,7 +7021,10 @@
           "atsFriendliness": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["score", "issues"],
+            "required": [
+              "score",
+              "issues"
+            ],
             "properties": {
               "score": {
                 "type": "integer",
@@ -6503,7 +7042,10 @@
           "keywordOptimization": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["recommendedKeywords", "reason"],
+            "required": [
+              "recommendedKeywords",
+              "reason"
+            ],
             "properties": {
               "recommendedKeywords": {
                 "type": "array",
@@ -6519,7 +7061,10 @@
           "experienceQuantification": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["score", "suggestions"],
+            "required": [
+              "score",
+              "suggestions"
+            ],
             "properties": {
               "score": {
                 "type": "integer",
@@ -6543,7 +7088,10 @@
           "generatedCv": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["available", "note"],
+            "required": [
+              "available",
+              "note"
+            ],
             "properties": {
               "available": {
                 "type": "boolean"
@@ -6556,7 +7104,10 @@
           "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "version"],
+            "required": [
+              "name",
+              "version"
+            ],
             "properties": {
               "name": {
                 "type": "string"
@@ -6576,7 +7127,11 @@
       "HealthLiveData": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["service", "status", "env"],
+        "required": [
+          "service",
+          "status",
+          "env"
+        ],
         "properties": {
           "service": {
             "type": "string",
@@ -6594,7 +7149,12 @@
       "HealthReadyData": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["service", "status", "env", "dependencies"],
+        "required": [
+          "service",
+          "status",
+          "env",
+          "dependencies"
+        ],
         "properties": {
           "service": {
             "type": "string",
@@ -6610,11 +7170,16 @@
           "dependencies": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["postgresql"],
+            "required": [
+              "postgresql"
+            ],
             "properties": {
               "postgresql": {
                 "type": "string",
-                "enum": ["healthy", "unhealthy"]
+                "enum": [
+                  "healthy",
+                  "unhealthy"
+                ]
               }
             }
           }

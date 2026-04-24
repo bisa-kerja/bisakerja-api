@@ -1,18 +1,22 @@
-name: CD Sync Docs
+name: CI
 
 on:
   push:
     branches:
       - develop
       - main
+  pull_request:
+    branches:
+      - develop
+      - main
 
 concurrency:
-  group: cd-sync-docs-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  verify-docs-sync-readiness:
-    name: Verify Docs Sync Readiness
+  quality:
+    name: Quality And Docs Validation
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -46,26 +50,50 @@ jobs:
       - name: Generate Prisma client
         run: bun run prisma:generate
 
-      - name: Generate docs bundle
+      - name: Prisma validate
+        run: bun run prisma:validate
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Check formatting
+        run: bun run format:check
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Generate docs artifacts
         env:
           SOURCE_SHA: ${{ github.sha }}
         run: |
           bun run docs:generate:openapi
           bun run docs:generate:routes
           bun run docs:generate:sync-readiness
+
+      - name: Validate docs
+        run: |
           bun run docs:check
           bun run docs:scalar:check-config
 
       - name: Ensure committed OpenAPI artifact is in sync
         run: git diff --exit-code -- docs/generated/openapi.json
 
-  verify-database-before-sync:
-    name: Verify Database Before Docs Sync
+      - name: Run default test suite
+        run: bun test
+
+      - name: Run route tests
+        run: bun run test:routes
+
+      - name: Run contract tests
+        run: bun run test:contracts
+
+      - name: Run smoke tests
+        run: bun run test:smoke
+
+  database-verification:
+    name: Database Integration And Migration Verification
     runs-on: ubuntu-latest
     timeout-minutes: 25
-
-    needs:
-      - verify-docs-sync-readiness
 
     services:
       postgres:
@@ -104,33 +132,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Verify migrations and database-backed integration
+      - name: Generate Prisma client
+        run: bun run prisma:generate
+
+      - name: Verify migrations and repository integration
         run: bun run prisma:verify:migrations
-
-  sync-docs:
-    name: Sync Service Docs To Central Repo
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    needs:
-      - verify-docs-sync-readiness
-      - verify-database-before-sync
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Push docs to bisakerja-docs develop
-        uses: cpina/github-action-push-to-another-repository@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.DOCS_REPO_TOKEN }}
-        with:
-          source-directory: docs
-          destination-github-username: bisa-kerja
-          destination-repository-name: bisakerja-docs
-          user-email: github-actions[bot]@users.noreply.github.com
-          user-name: github-actions[bot]
-          commit-message: >-
-            sync: backend-api docs from ${{ github.ref_name }} (${{ github.sha }})
-          target-directory: docs/services/backend-api/synced
-          target-branch: develop
