@@ -207,6 +207,23 @@ When the project scaffold is created, `.env.example` must:
 - Mark variables that are only required when a feature is enabled.
 - Stay in sync with `src/config/env.ts`.
 
+## Deployment Env File Example
+
+The repository provides one deployment-oriented example for Compose-based VPS rollout:
+
+| File                      | Intended use                                                             |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `.env.production.example` | Baseline for `docker-compose.yml` and the single VPS deployment workflow |
+
+Rules:
+
+- This file is an operator-facing template, not a committed secret.
+- The deployment workflow writes its secret payload to `.env.production`.
+- `APP_ENV` in that file must match the target runtime environment, because the remote deploy script rejects mismatches when an explicit expectation is configured.
+- The current staging rollout expects `APP_ENV=staging` with `NODE_ENV=production`.
+- Compose-specific variables such as `APP_BIND_ADDRESS`, `APP_PORT`, and PostgreSQL bootstrap values should stay documented in this template.
+- The current rollout still targets staging first, but it intentionally uses the same production-style env file that will later be reused when the deployment branch changes to `main`.
+
 ## `.env.test.example` Requirements
 
 The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.

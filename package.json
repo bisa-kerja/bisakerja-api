@@ -8,6 +8,10 @@
   "scripts": {
     "start": "bun run src/server.ts",
     "dev": "bun --watch src/server.ts",
+    "docker:compose:config": "docker compose -f docker-compose.yml config",
+    "docker:compose:pull": "docker compose -f docker-compose.yml pull",
+    "docker:compose:up": "docker compose -f docker-compose.yml up -d",
+    "docker:compose:down": "docker compose -f docker-compose.yml down",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier . --write",

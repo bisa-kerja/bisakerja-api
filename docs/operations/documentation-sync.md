@@ -152,6 +152,7 @@ Current repository commands:
 Current repository automation:
 
 - `.github/workflows/ci.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches.
+- `.github/workflows/deploy.yml` is separate and does not own docs publication; it owns image build and VPS deployment for the current rollout branch.
 - The `CI` workflow regenerates documentation artifacts and generates the Prisma client before static analysis or docs validation so clean runners have the required generated types.
 - The `CI` workflow fails if the committed `docs/generated/openapi.json` artifact is stale.
 - The generated OpenAPI JSON artifact should be emitted with repository Prettier formatting so documentation validation and formatting checks do not disagree.

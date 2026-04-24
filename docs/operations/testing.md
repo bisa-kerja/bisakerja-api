@@ -179,7 +179,8 @@ The repository GitHub Actions CI workflow validates changes on:
 
 Current CI workflow structure:
 
-- `.github/workflows/ci.yml` contains three jobs: repository quality validation, PostgreSQL-backed migration or repository verification, and final docs synchronization for push events to `develop` or `main`.
+- `.github/workflows/ci.yml` contains repository quality validation, PostgreSQL-backed migration or repository verification, and final docs synchronization for push events to `develop` or `main`.
+- `.github/workflows/deploy.yml` is separate from CI and handles build-plus-deploy for the current rollout branch, which is `develop`.
 
 Current CI expectations:
 
@@ -198,9 +199,23 @@ Current CI expectations:
 - run `bun run prisma:verify:migrations` in a separate PostgreSQL-backed job
 - run docs sync only after both CI validation jobs succeed, and only for push events to `develop` or `main`
 
+Current deployment workflow expectations:
+
+- build and push `ghcr.io/bisa-kerja/bisakerja-api:<deploy-branch>`
+- also push a commit-specific `sha-<git-sha>` image tag
+- trigger automatically from `develop` and allow manual runs only for validated branches
+- use the GitHub environment `staging` while the rollout is still validating on the staging VPS
+- SSH into the target VPS with a pinned host key entry
+- write the runtime `.env.production` file from GitHub environment secrets
+- reject rollout when the runtime env file does not declare `APP_ENV=staging` for the current staging target
+- authenticate the VPS to GHCR, pull the latest image, run `prisma migrate deploy`, and start the app through `docker compose`
+- verify `GET /health/live` and `GET /health/ready` from the VPS after deployment
+
+When the staging rollout is considered stable, the deploy trigger can be moved from `develop` to `main` without introducing a second deployment topology.
+
 The route inventory and sync-readiness markdown files are still regenerated in CI and CD, but they are not used as a clean-working-tree gate because they intentionally embed runtime metadata such as generation timestamps and source references.
 
-This split keeps fast feedback for most checks while still proving that committed Prisma migrations and repository integration tests work against a real PostgreSQL service in CI.
+This split keeps fast feedback for most checks while still proving that committed Prisma migrations and repository integration tests work against a real PostgreSQL service in CI, while deployment-specific concerns stay in their own workflows.
 
 Workflow safety notes:
 

@@ -163,6 +163,113 @@ Container runtime rules:
 - Upload storage must use a mounted volume or object storage when files must survive container replacement.
 - Logs should go to stdout/stderr in structured format.
 
+## Container Image Delivery
+
+The repository publishes a runnable application image to GitHub Container Registry at `ghcr.io/bisa-kerja/bisakerja-api`.
+
+Current image delivery rules:
+
+- The image is built in GitHub Actions, not on the VPS.
+- The deployment workflow publishes a stable branch tag that matches the branch being deployed.
+- Every published image also gets a commit-specific tag in the form `sha-<git-sha>`.
+- The VPS pulls the branch tag that matches the deployment workflow input or trigger branch.
+
+This keeps the deployment unit reproducible and lets the VPS pull a known image tag directly from GHCR without rebuilding source code on the server.
+
+Image pull requirements:
+
+- The target host must be able to authenticate to GHCR if the package is private.
+- The selected tag should be explicit for controlled roll-forward or rollback.
+- Environment variables still come from the host or deployment platform, not from the image.
+
+## Compose Runtime File
+
+The repository provides one deployment Compose file:
+
+| File                 | Runtime env file  | Default image tag | Port exposure default        |
+| -------------------- | ----------------- | ----------------- | ---------------------------- |
+| `docker-compose.yml` | `.env.production` | `develop`         | `127.0.0.1:${APP_PORT}:3000` |
+
+Current compose behavior:
+
+- the app service overrides `DATABASE_URL` and `DIRECT_DATABASE_URL` so the container talks to the Compose PostgreSQL service by hostname `db`
+- PostgreSQL persists data in a named volume
+- uploaded CV files persist in a named volume mounted at `/app/storage/uploads`
+- liveness uses `GET /health/live`
+- the backend port binds to loopback by default, so it is intended to sit behind a reverse proxy or host-level tunnel
+- PostgreSQL is not published to the host
+- the app and database containers both set `no-new-privileges`
+- log rotation is configured through Docker `json-file` options
+
+Compose-only variables:
+
+- `APP_IMAGE` overrides the image tag or digest to pull
+- `APP_BIND_ADDRESS` controls the host bind address for the backend port
+- `APP_PORT` overrides the published backend port
+- `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` tune the PostgreSQL service
+
+The current rollout still targets staging first, but it intentionally uses the same production-style Compose topology that will later be reused when the deployment branch changes to `main`.
+
+## VPS Deployment Workflow
+
+End-to-end deployment now lives in one dedicated workflow:
+
+- `.github/workflows/deploy.yml`
+
+Its scope is intentionally narrow:
+
+- build the application image from repository source
+- push the image to GHCR
+- connect to the VPS through SSH
+- write the runtime `.env.production` file from GitHub Actions secrets
+- authenticate the VPS to GHCR
+- pull the latest app image
+- start PostgreSQL
+- run `prisma migrate deploy`
+- start or recreate the backend container
+- run `GET /health/live` and `GET /health/ready` smoke checks from the host
+
+The workflow uses one reusable shell entrypoint:
+
+- `scripts/deploy/remote-deploy.sh`
+
+That script keeps the server-side steps reviewable in the repository rather than burying all deployment logic inside YAML.
+
+Required GitHub environment secrets for the active deploy environment:
+
+- `DEPLOY_VPS_HOST`
+- `DEPLOY_VPS_PORT`
+- `DEPLOY_VPS_USERNAME`
+- `DEPLOY_VPS_KEY`
+- `DEPLOY_VPS_KNOWN_HOSTS`
+- `DEPLOY_REMOTE_PATH`
+- `DEPLOY_ENV_FILE`
+- `GHCR_READ_PACKAGES_TOKEN`
+- `GH_USERNAME`
+
+Secret handling rules:
+
+- `DEPLOY_VPS_KNOWN_HOSTS` should contain the pinned host key entry for the VPS, not be generated ad hoc during the workflow.
+- `DEPLOY_ENV_FILE` should contain the full multi-line runtime env file that will be written to `${DEPLOY_REMOTE_PATH}/.env.production`.
+- The current staging rollout expects that env file to declare `APP_ENV=staging`.
+- `GHCR_READ_PACKAGES_TOKEN` should be scoped as narrowly as possible, ideally `read:packages`.
+- SSH keys should stay scoped to deployment only and be rotated independently of application secrets.
+- The current workflow uses the GitHub environment `staging` while rollout is still being validated on the staging VPS.
+
+Current release guard:
+
+- `.github/workflows/deploy.yml` deploys `develop` automatically and supports manual runs only for validated branches.
+- After staging validation is finished, the workflow trigger can be switched to `main` without introducing another Compose file or another deployment workflow.
+
+Remote host expectations:
+
+- Docker Engine and Docker Compose v2 are installed.
+- The target path already contains a checkout of this repository.
+- The deploy user can run `docker` and write within the target path.
+- The target path contains `docker-compose.yml` and receives updates through `git pull`.
+- Port `3000` is reachable locally on the VPS for smoke checks, whether or not an external reverse proxy sits in front of it.
+- The staging VPS should not share the same Docker project namespace, env file, or repository path with any later production rollout host.
+
 ## Health And Readiness In Deployment
 
 Deployment platforms should use health endpoints consistently.
@@ -209,14 +316,16 @@ Before deploying to staging or production:
 
 ## GitHub Actions Delivery Workflow
 
-The repository currently uses one validation workflow and one follow-up docs sync workflow.
+The repository currently uses one validation workflow and one deployment workflow.
 
 Its purpose is to keep release hygiene and documentation delivery automated even before a hosting-specific deploy target is finalized.
 
 Current workflow structure:
 
 - `.github/workflows/ci.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches.
-- The same workflow contains a final `sync-docs` job that runs only for push events to `develop` or `main`, and only after the validation jobs succeed.
+- `.github/workflows/deploy.yml` runs on push to `develop` and can also be triggered manually for validated branches.
+- The final `sync-docs` job in `CI` runs only after the validation jobs succeed.
+- The deployment workflow is responsible for publishing the rollout image and deploying it to the active VPS environment.
 
 Current delivery behavior:
 
@@ -225,9 +334,12 @@ Current delivery behavior:
 - rerun Prisma validation, typecheck, docs generation, docs validation, and Scalar config validation
 - fail if generated docs differ from committed artifacts
 - run `bun run prisma:verify:migrations` against a PostgreSQL service container
-- after successful CI verification, synchronize service-owned docs into the central `bisakerja-docs` repository through the final CI job
+- synchronize service-owned docs into the central `bisakerja-docs` repository through the final CI job
+- in the deployment workflow, log in to GHCR with `GITHUB_TOKEN`, build and push the repository Docker image, then deploy that image to the VPS over SSH
+- keep the deploy logic auditable by storing the remote steps in `scripts/deploy/remote-deploy.sh`
+- the workflow writes `.env.production` and deploys through `docker-compose.yml`
 
-Because hosting details are still open, this workflow should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
+Because the server topology intentionally reuses one simple production-style Compose model, the current deployment automation should be treated as a safe baseline for staging-first VPS rollout, not as a full blue-green or rollback-automated release system.
 
 Workflow hardening rules:
 
