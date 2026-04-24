@@ -38,13 +38,11 @@ export type AppConfig = {
     audience: string;
   };
   email: {
-    provider: "fake" | "smtp";
+    provider: "fake" | "resend";
     from: string;
-    smtp: {
-      host: string;
-      port: number;
-      user: string;
-      password: string;
+    resend: {
+      apiKey: string;
+      maxRetries: number;
     };
   };
   integrations: {

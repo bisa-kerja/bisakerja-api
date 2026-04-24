@@ -18,6 +18,8 @@ const redactPaths = [
   "*.secret",
   "credential",
   "*.credential",
+  "apiKey",
+  "*.apiKey",
   "token",
   "*.token",
   "accessToken",
@@ -39,7 +41,9 @@ const redactPaths = [
   "sourcePayload",
   "*.sourcePayload",
   "DATABASE_URL",
-  "*.DATABASE_URL"
+  "*.DATABASE_URL",
+  "RESEND_API_KEY",
+  "*.RESEND_API_KEY"
 ];
 
 export function createLogger(config: AppConfig = env) {

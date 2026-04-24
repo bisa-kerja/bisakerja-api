@@ -44,11 +44,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
     email: {
       provider: parsed.EMAIL_PROVIDER,
       from: parsed.EMAIL_FROM,
-      smtp: {
-        host: parsed.SMTP_HOST,
-        port: parsed.SMTP_PORT,
-        user: parsed.SMTP_USER,
-        password: parsed.SMTP_PASSWORD
+      resend: {
+        apiKey: parsed.RESEND_API_KEY,
+        maxRetries: parsed.RESEND_MAX_RETRIES
       }
     },
     integrations: {

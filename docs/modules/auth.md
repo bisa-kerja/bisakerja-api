@@ -17,6 +17,8 @@ The Auth module owns account entry flows for Bisakerja. It validates identity in
 
 The Auth module uses short-lived access JWTs plus opaque refresh tokens stored in `HttpOnly` cookies and persisted server-side as hashes.
 
+Auth email delivery is routed through the shared email service abstraction in `src/shared/email/**`. The default production-capable provider is Resend, while local and test environments may keep the fake provider for deterministic flows.
+
 ## Responsibility
 
 The Auth module owns:

@@ -11,6 +11,7 @@ describe("environment validation", () => {
       CORS_ORIGINS: "http://localhost:5173,http://localhost:3001",
       TRUST_PROXY: "true",
       ENABLE_REQUEST_LOGGING: "true",
+      EMAIL_FROM: "Bisakerja <no-reply@bisakerja.example>",
       MODEL_API_ENABLE_MOCK: "false",
       MODEL_API_SERVICE_TOKEN: "live-model-token"
     });
@@ -28,6 +29,7 @@ describe("environment validation", () => {
     expect(config.integrations.modelApi.timeoutMs).toBe(10000);
     expect(config.integrations.modelApi.serviceToken).toBe("live-model-token");
     expect(config.integrations.modelApi.enableMock).toBe(false);
+    expect(config.email.from).toBe("Bisakerja <no-reply@bisakerja.example>");
   });
 
   test("rejects invalid port values", () => {
@@ -67,14 +69,20 @@ describe("environment validation", () => {
         FRONTEND_URL: "https://bisakerja.example",
         CORS_ORIGINS: "https://bisakerja.example",
         AUTH_COOKIE_SECURE: "false",
-        EMAIL_PROVIDER: "smtp",
-        EMAIL_FROM: "no-reply@bisakerja.example",
-        SMTP_HOST: "smtp.example",
-        SMTP_PORT: "587",
-        SMTP_USER: "smtp-user",
-        SMTP_PASSWORD: "smtp-password",
+        EMAIL_PROVIDER: "resend",
+        EMAIL_FROM: "Bisakerja <no-reply@bisakerja.example>",
+        RESEND_API_KEY: "re_test_123",
         MODEL_API_ENABLE_MOCK: "false",
         MODEL_API_SERVICE_TOKEN: "prod-model-token"
+      })
+    ).toThrow(ZodError);
+  });
+
+  test("rejects missing resend api key when resend provider is enabled", () => {
+    expect(() =>
+      testConfig({
+        EMAIL_PROVIDER: "resend",
+        RESEND_API_KEY: ""
       })
     ).toThrow(ZodError);
   });

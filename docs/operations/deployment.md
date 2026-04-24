@@ -84,7 +84,7 @@ Minimum production variable groups:
 | Model API        | `MODEL_API_BASE_URL`, timeout, service credential if required                  |
 | Scraper/job data | Job freshness threshold and any internal scraper status credential if used     |
 | Uploads          | Storage driver, upload path or bucket, max size, MIME allowlist, retention     |
-| Email            | Provider, sender, SMTP or provider credentials for auth email flows            |
+| Email            | Provider, sender, and Resend credentials for auth email flows                  |
 | Observability    | Log level, request id header, health timeout, error reporting DSN if used      |
 
 Rules:

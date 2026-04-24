@@ -5,7 +5,7 @@ import { createAuthMiddleware } from "@/core/middlewares/auth.middleware";
 import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { AuthController } from "@/modules/auth/auth.controller";
-import { FakeEmailProvider } from "@/modules/auth/auth.email";
+import { createAuthEmailProvider } from "@/modules/auth/auth.email";
 import { PrismaAuthRepository } from "@/modules/auth/auth.repository";
 import {
   emptyBodySchema,
@@ -22,7 +22,10 @@ export function createAuthRouter(
   options: AuthRouterOptions = {}
 ): Router {
   const router = Router();
-  const { repository, emailProvider } = resolveAuthDependencies(options);
+  const { repository, emailProvider } = resolveAuthDependencies(
+    config,
+    options
+  );
   const authMiddleware =
     options.authMiddleware ?? createAuthMiddleware(config, repository);
   const controller = new AuthController({
@@ -81,9 +84,12 @@ export function createAuthRouter(
   return router;
 }
 
-function resolveAuthDependencies(options: AuthRouterOptions) {
+function resolveAuthDependencies(
+  config: AppConfig,
+  options: AuthRouterOptions
+) {
   return {
     repository: options.repository ?? new PrismaAuthRepository(),
-    emailProvider: options.emailProvider ?? new FakeEmailProvider()
+    emailProvider: options.emailProvider ?? createAuthEmailProvider(config)
   };
 }

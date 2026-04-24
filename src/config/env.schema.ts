@@ -41,6 +41,26 @@ const numberFromString = (defaultValue: number) =>
       return parsed;
     });
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const emailFromSchema = z
+  .string()
+  .min(1)
+  .refine(
+    (value) => {
+      if (emailPattern.test(value)) {
+        return true;
+      }
+
+      const displayMatch = /^.+ <([^<>]+)>$/.exec(value);
+      return Boolean(displayMatch?.[1] && emailPattern.test(displayMatch[1]));
+    },
+    {
+      message:
+        "Expected a valid sender address like email@example.com or Name <email@example.com>"
+    }
+  );
+
 export const envSchema = z
   .object({
     APP_NAME: z.string().min(1).default("bisakerja-api"),
@@ -90,12 +110,12 @@ export const envSchema = z
     AUTH_COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).default("lax"),
     AUTH_ISSUER: z.string().min(1).default("bisakerja-api"),
     AUTH_AUDIENCE: z.string().min(1).default("bisakerja-frontend"),
-    EMAIL_PROVIDER: z.enum(["fake", "smtp"]).default("fake"),
-    EMAIL_FROM: z.email().default("no-reply@example.test"),
-    SMTP_HOST: z.string().optional().default(""),
-    SMTP_PORT: numberFromString(587).pipe(z.number().int().positive()),
-    SMTP_USER: z.string().optional().default(""),
-    SMTP_PASSWORD: z.string().optional().default(""),
+    EMAIL_PROVIDER: z.enum(["fake", "resend"]).default("fake"),
+    EMAIL_FROM: emailFromSchema.default("Bisakerja <no-reply@example.test>"),
+    RESEND_API_KEY: z.string().optional().default(""),
+    RESEND_MAX_RETRIES: numberFromString(2).pipe(
+      z.number().int().min(0).max(5)
+    ),
     MODEL_API_BASE_URL: z.url().default("http://localhost:8000"),
     MODEL_API_TIMEOUT_MS: numberFromString(10000).pipe(
       z.number().int().positive()
@@ -166,16 +186,12 @@ export const envSchema = z
       });
     }
 
-    if (value.EMAIL_PROVIDER === "smtp") {
-      for (const key of ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD"] as const) {
-        if (!value[key]) {
-          ctx.addIssue({
-            code: "custom",
-            path: [key],
-            message: `${key} is required when EMAIL_PROVIDER=smtp`
-          });
-        }
-      }
+    if (value.EMAIL_PROVIDER === "resend" && !value.RESEND_API_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["RESEND_API_KEY"],
+        message: "RESEND_API_KEY is required when EMAIL_PROVIDER=resend"
+      });
     }
 
     if (!value.MODEL_API_ENABLE_MOCK && !value.MODEL_API_SERVICE_TOKEN) {

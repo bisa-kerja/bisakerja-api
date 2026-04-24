@@ -151,14 +151,19 @@ Rules:
 
 ## Email Variables
 
-| Variable         | Required                 | Local default | Notes                                                    |
-| ---------------- | ------------------------ | ------------- | -------------------------------------------------------- |
-| `EMAIL_PROVIDER` | Yes for auth email flows | `smtp`        | Provider abstraction for verification and password reset |
-| `EMAIL_FROM`     | Yes                      | None          | Sender address                                           |
-| `SMTP_HOST`      | Yes for SMTP             | None          | SMTP host                                                |
-| `SMTP_PORT`      | Yes for SMTP             | `587`         | SMTP port                                                |
-| `SMTP_USER`      | Yes for SMTP             | None          | SMTP username                                            |
-| `SMTP_PASSWORD`  | Yes for SMTP             | None          | SMTP password                                            |
+| Variable             | Required                 | Local default                       | Notes                                                                      |
+| -------------------- | ------------------------ | ----------------------------------- | -------------------------------------------------------------------------- |
+| `EMAIL_PROVIDER`     | Yes for auth email flows | `fake`                              | `fake` for local/tests, `resend` for real delivery                         |
+| `EMAIL_FROM`         | Yes                      | `Bisakerja <no-reply@example.test>` | Sender address in `email@example.com` or `Name <email@example.com>` format |
+| `RESEND_API_KEY`     | Yes for Resend           | None                                | Resend API key stored in secrets manager or env                            |
+| `RESEND_MAX_RETRIES` | No                       | `2`                                 | Additional retry attempts for transient Resend failures                    |
+
+Rules:
+
+- Production must not use `EMAIL_PROVIDER=fake`.
+- If `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` is required and `EMAIL_FROM` should use a verified Resend sending domain.
+- Retry logic should rely on Resend idempotency keys and only retry transient failures such as rate limiting, temporary concurrency conflicts, or 5xx provider errors.
+- Test defaults should keep `EMAIL_PROVIDER=fake` so auth flows remain deterministic and offline-safe.
 
 ## Observability Variables
 
@@ -207,5 +212,6 @@ Repository integration tests should keep `RUN_DATABASE_TESTS=false` for ordinary
 
 - `docs/overview.md`
 - `docs/tech-stack.md`
+- `docs/integrations/resend.md`
 - `references/docs/overview/authentication-and-trust-boundaries.mdx`
 - `references/docs/operations/environments.mdx`
