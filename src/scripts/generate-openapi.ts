@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { format } from "prettier";
 
 process.env.APP_ENV = "test";
 process.env.NODE_ENV = "test";
@@ -12,8 +13,11 @@ const { buildOpenApiDocument } = await import("@/shared/docs/openapi");
 const config = loadEnv(process.env);
 const outputPath = path.join(process.cwd(), "docs/generated/openapi.json");
 const document = buildOpenApiDocument(config);
+const contents = await format(JSON.stringify(document), {
+  parser: "json"
+});
 
 await mkdir(path.dirname(outputPath), { recursive: true });
-await writeFile(outputPath, `${JSON.stringify(document, null, 2)}\n`, "utf8");
+await writeFile(outputPath, contents, "utf8");
 
 console.log("Generated docs/generated/openapi.json");

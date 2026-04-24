@@ -5,12 +5,7 @@
     "version": "0.1.0",
     "description": "OpenAPI reference for the Bisakerja Backend API. This document is the canonical source for the built-in Scalar API reference and covers public, authenticated, and AI-assisted routes shipped by the current runtime registry."
   },
-  "servers": [
-    {
-      "url": "/",
-      "description": "Current deployment origin"
-    }
-  ],
+  "servers": [{ "url": "/", "description": "Current deployment origin" }],
   "tags": [
     {
       "name": "Health",
@@ -32,10 +27,7 @@
       "name": "Preferences",
       "description": "Current-user career preference settings."
     },
-    {
-      "name": "Bookmarks",
-      "description": "Current-user saved jobs."
-    },
+    { "name": "Bookmarks", "description": "Current-user saved jobs." },
     {
       "name": "Applications",
       "description": "Current-user application tracker records."
@@ -52,9 +44,7 @@
   "paths": {
     "/health/live": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Liveness check",
         "description": "Confirms the API process can respond to HTTP requests. This route does not verify downstream dependencies.",
         "responses": {
@@ -65,26 +55,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/HealthLiveData"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/HealthLiveData" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -105,9 +81,7 @@
     },
     "/health/ready": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Readiness check",
         "description": "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL.",
         "responses": {
@@ -118,26 +92,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/HealthReadyData"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/HealthReadyData" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -147,9 +107,7 @@
                     "service": "bisakerja-api",
                     "status": "ready",
                     "env": "test",
-                    "dependencies": {
-                      "postgresql": "healthy"
-                    }
+                    "dependencies": { "postgresql": "healthy" }
                   },
                   "meta": null
                 }
@@ -160,9 +118,7 @@
             "description": "A required dependency is unavailable.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Service is not ready",
@@ -170,9 +126,7 @@
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",
                     "details": {
-                      "dependencies": {
-                        "postgresql": "unhealthy"
-                      }
+                      "dependencies": { "postgresql": "unhealthy" }
                     },
                     "requestId": "req_1234567890"
                   }
@@ -185,18 +139,14 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register a new account",
         "description": "Creates a user account and starts the email verification flow.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" },
               "example": {
                 "username": "salman",
                 "email": "salman@example.com",
@@ -215,35 +165,19 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "user"
-                      ],
+                      "required": ["user"],
                       "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AuthUser"
-                        }
+                        "user": { "$ref": "#/components/schemas/AuthUser" }
                       }
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -268,9 +202,7 @@
             "description": "Email or username already exists.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Email is already registered",
@@ -288,9 +220,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -314,18 +244,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -337,18 +263,14 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Login",
         "description": "Authenticates with email or username and password, then returns an access token while setting the refresh token cookie.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
               "example": {
                 "identifier": "salman@example.com",
                 "password": "StrongPassword123!"
@@ -362,9 +284,7 @@
             "headers": {
               "Set-Cookie": {
                 "description": "Refresh token cookie (bisakerja_refresh).",
-                "schema": {
-                  "type": "string"
-                }
+                "schema": { "type": "string" }
               }
             },
             "content": {
@@ -372,39 +292,22 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "user",
-                        "session"
-                      ],
+                      "required": ["user", "session"],
                       "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AuthUser"
-                        },
+                        "user": { "$ref": "#/components/schemas/AuthUser" },
                         "session": {
                           "$ref": "#/components/schemas/AuthSession"
                         }
                       }
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -434,9 +337,7 @@
             "description": "Credentials are invalid.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Invalid credentials",
@@ -454,9 +355,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -480,18 +379,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -503,24 +398,15 @@
     },
     "/api/v1/auth/refresh": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Refresh session",
         "description": "Issues a new access token using the refresh token cookie.",
-        "security": [
-          {
-            "refreshTokenCookie": []
-          }
-        ],
+        "security": [{ "refreshTokenCookie": [] }],
         "requestBody": {
           "required": false,
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false
-              },
+              "schema": { "type": "object", "additionalProperties": false },
               "example": {}
             }
           }
@@ -531,9 +417,7 @@
             "headers": {
               "Set-Cookie": {
                 "description": "Rotated refresh token cookie (bisakerja_refresh).",
-                "schema": {
-                  "type": "string"
-                }
+                "schema": { "type": "string" }
               }
             },
             "content": {
@@ -541,39 +425,22 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "user",
-                        "session"
-                      ],
+                      "required": ["user", "session"],
                       "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AuthUser"
-                        },
+                        "user": { "$ref": "#/components/schemas/AuthUser" },
                         "session": {
                           "$ref": "#/components/schemas/AuthSession"
                         }
                       }
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -603,9 +470,7 @@
             "description": "Refresh cookie is missing or invalid.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -623,9 +488,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -649,18 +512,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -672,24 +531,15 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Logout",
         "description": "Invalidates the current session and clears the refresh token cookie.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": false,
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false
-              },
+              "schema": { "type": "object", "additionalProperties": false },
               "example": {}
             }
           }
@@ -700,9 +550,7 @@
             "headers": {
               "Set-Cookie": {
                 "description": "Cleared refresh token cookie (bisakerja_refresh).",
-                "schema": {
-                  "type": "string"
-                }
+                "schema": { "type": "string" }
               }
             },
             "content": {
@@ -710,26 +558,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "null"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "type": "null" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -745,9 +579,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -771,18 +603,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -794,9 +622,7 @@
     },
     "/api/v1/auth/forgot-password": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Request password reset",
         "description": "Sends password reset instructions when the email exists. The response is intentionally generic for security.",
         "requestBody": {
@@ -806,9 +632,7 @@
               "schema": {
                 "$ref": "#/components/schemas/ForgotPasswordRequest"
               },
-              "example": {
-                "email": "salman@example.com"
-              }
+              "example": { "email": "salman@example.com" }
             }
           }
         },
@@ -820,26 +644,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "null"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "type": "null" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -855,9 +665,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -881,18 +689,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -904,18 +708,14 @@
     },
     "/api/v1/auth/reset-password": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Reset password",
         "description": "Sets a new password when the reset token is valid.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetPasswordRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/ResetPasswordRequest" },
               "example": {
                 "token": "reset_token_1234567890abcdef1234567890abcd",
                 "password": "NewStrongPassword123!",
@@ -932,26 +732,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "null"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "type": "null" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -967,9 +753,7 @@
             "description": "Reset token is expired or invalid.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Password reset token is invalid",
@@ -987,9 +771,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -1013,18 +795,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -1036,22 +814,15 @@
     },
     "/api/v1/auth/verify-email": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Verify email",
         "description": "Verifies email ownership using the OTP code sent by email.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerifyEmailRequest"
-              },
-              "example": {
-                "email": "salman@example.com",
-                "otp": "123456"
-              }
+              "schema": { "$ref": "#/components/schemas/VerifyEmailRequest" },
+              "example": { "email": "salman@example.com", "otp": "123456" }
             }
           }
         },
@@ -1063,35 +834,19 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "user"
-                      ],
+                      "required": ["user"],
                       "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AuthUser"
-                        }
+                        "user": { "$ref": "#/components/schemas/AuthUser" }
                       }
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -1116,9 +871,7 @@
             "description": "Email verification OTP is expired or invalid.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Email verification OTP is invalid",
@@ -1136,9 +889,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -1162,18 +913,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -1185,9 +932,7 @@
     },
     "/api/v1/auth/google": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Google SSO placeholder",
         "description": "Reserved placeholder route for future Google SSO integration. It currently always returns not implemented.",
         "responses": {
@@ -1195,18 +940,14 @@
             "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Too many requests",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
-                    "details": {
-                      "limit": "auth"
-                    },
+                    "details": { "limit": "auth" },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -1217,9 +958,7 @@
             "description": "Google SSO is not configured.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Google SSO is not configured",
@@ -1238,20 +977,14 @@
     },
     "/api/v1/jobs": {
       "get": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "List jobs",
         "description": "Searches, filters, sorts, and paginates normalized public job listings.",
         "parameters": [
           {
             "in": "query",
             "name": "page",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
           },
           {
             "in": "query",
@@ -1266,49 +999,29 @@
           {
             "in": "query",
             "name": "keyword",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
             "name": "location",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
             "name": "province",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
             "name": "city",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
             "name": "workType",
             "schema": {
               "type": "string",
-              "enum": [
-                "REMOTE",
-                "HYBRID",
-                "ONSITE"
-              ]
+              "enum": ["REMOTE", "HYBRID", "ONSITE"]
             }
           },
           {
@@ -1330,30 +1043,18 @@
             "name": "experienceLevel",
             "schema": {
               "type": "string",
-              "enum": [
-                "ENTRY_LEVEL",
-                "JUNIOR",
-                "MID_LEVEL",
-                "SENIOR",
-                "LEAD"
-              ]
+              "enum": ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
             }
           },
           {
             "in": "query",
             "name": "salaryMin",
-            "schema": {
-              "type": "integer",
-              "minimum": 0
-            }
+            "schema": { "type": "integer", "minimum": 0 }
           },
           {
             "in": "query",
             "name": "salaryMax",
-            "schema": {
-              "type": "integer",
-              "minimum": 0
-            }
+            "schema": { "type": "integer", "minimum": 0 }
           },
           {
             "in": "query",
@@ -1367,20 +1068,12 @@
           {
             "in": "query",
             "name": "skill",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
             "name": "category",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
@@ -1405,32 +1098,18 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/JobCard"
-                      }
+                      "items": { "$ref": "#/components/schemas/JobCard" }
                     },
                     "meta": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "pagination"
-                      ],
+                      "required": ["pagination"],
                       "properties": {
                         "pagination": {
                           "$ref": "#/components/schemas/PaginationMeta"
@@ -1443,10 +1122,7 @@
                             "workType": "REMOTE"
                           }
                         },
-                        "sort": {
-                          "type": "string",
-                          "example": "relevance"
-                        }
+                        "sort": { "type": "string", "example": "relevance" }
                       }
                     }
                   }
@@ -1497,10 +1173,7 @@
                       "hasNextPage": true,
                       "hasPrevPage": false
                     },
-                    "filters": {
-                      "keyword": "backend",
-                      "workType": "REMOTE"
-                    },
+                    "filters": { "keyword": "backend", "workType": "REMOTE" },
                     "sort": "relevance"
                   }
                 }
@@ -1511,9 +1184,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -1538,9 +1209,7 @@
     },
     "/api/v1/jobs/{jobId}": {
       "get": {
-        "tags": [
-          "Jobs"
-        ],
+        "tags": ["Jobs"],
         "summary": "Get job detail",
         "description": "Returns normalized job detail for a visible job listing.",
         "parameters": [
@@ -1563,26 +1232,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/JobDetail"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/JobDetail" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -1628,11 +1283,7 @@
                         "priority": "HIGH"
                       }
                     ],
-                    "skills": [
-                      "TypeScript",
-                      "PostgreSQL",
-                      "REST API"
-                    ],
+                    "skills": ["TypeScript", "PostgreSQL", "REST API"],
                     "externalApplyUrl": "https://glints.com/example-job"
                   },
                   "meta": null
@@ -1644,9 +1295,7 @@
             "description": "Job is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Job not found",
@@ -1664,9 +1313,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -1691,16 +1338,10 @@
     },
     "/api/v1/me": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get current user profile",
         "description": "Returns the authenticated user's current profile and onboarding-related data.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Profile retrieved successfully.",
@@ -1709,26 +1350,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CurrentUser"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CurrentUser" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -1793,9 +1420,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -1812,16 +1437,10 @@
         }
       },
       "patch": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update current user profile",
         "description": "Updates basic current-user account fields such as username, phone number, and display name.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -1845,26 +1464,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CurrentUser"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CurrentUser" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -1929,9 +1534,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -1949,9 +1552,7 @@
             "description": "Username is already used.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Username is already registered",
@@ -1969,9 +1570,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -1996,16 +1595,10 @@
     },
     "/api/v1/me/profile-photo": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Upsert profile photo metadata",
         "description": "Stores profile photo metadata for the authenticated user. The upload transport is managed separately from this route.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2030,26 +1623,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CurrentUser"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CurrentUser" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -2114,9 +1693,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -2134,9 +1711,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -2161,33 +1736,19 @@
     },
     "/api/v1/me/skills": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Replace skills",
         "description": "Replaces the authenticated user's skill list.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplaceSkillsRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/ReplaceSkillsRequest" },
               "example": {
                 "skills": [
-                  {
-                    "name": "TypeScript",
-                    "level": "INTERMEDIATE"
-                  },
-                  {
-                    "name": "PostgreSQL",
-                    "level": "BASIC"
-                  }
+                  { "name": "TypeScript", "level": "INTERMEDIATE" },
+                  { "name": "PostgreSQL", "level": "BASIC" }
                 ]
               }
             }
@@ -2201,26 +1762,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CurrentUser"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CurrentUser" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -2285,9 +1832,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -2305,9 +1850,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -2332,16 +1875,10 @@
     },
     "/api/v1/me/experience": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Replace experience",
         "description": "Replaces the authenticated user's experience entries.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2373,26 +1910,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CurrentUser"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CurrentUser" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -2457,9 +1980,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -2477,9 +1998,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -2504,16 +2023,10 @@
     },
     "/api/v1/me/education": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Replace education",
         "description": "Replaces the authenticated user's education entries.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2543,26 +2056,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CurrentUser"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CurrentUser" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -2627,9 +2126,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -2647,9 +2144,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -2674,16 +2169,10 @@
     },
     "/api/v1/me/preferences": {
       "get": {
-        "tags": [
-          "Preferences"
-        ],
+        "tags": ["Preferences"],
         "summary": "Get preferences",
         "description": "Returns the authenticated user's active career preferences.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Preferences retrieved successfully.",
@@ -2692,26 +2181,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Preferences"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/Preferences" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -2726,15 +2201,9 @@
                       "Full Stack Developer"
                     ],
                     "locations": [
-                      {
-                        "province": "DKI Jakarta",
-                        "city": "Jakarta Selatan"
-                      }
+                      { "province": "DKI Jakarta", "city": "Jakarta Selatan" }
                     ],
-                    "workTypes": [
-                      "REMOTE",
-                      "HYBRID"
-                    ],
+                    "workTypes": ["REMOTE", "HYBRID"],
                     "salaryExpectation": {
                       "min": 5000000,
                       "max": 10000000,
@@ -2754,9 +2223,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -2774,9 +2241,7 @@
             "description": "Preferences do not exist yet.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Preferences not found",
@@ -2793,16 +2258,10 @@
         }
       },
       "put": {
-        "tags": [
-          "Preferences"
-        ],
+        "tags": ["Preferences"],
         "summary": "Replace preferences",
         "description": "Creates or replaces the authenticated user's active career preferences.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2813,20 +2272,11 @@
               "example": {
                 "careerStatus": "FRESH_GRADUATE",
                 "jobSeekingStatus": "IMMEDIATE",
-                "targetRoles": [
-                  "Backend Developer",
-                  "Full Stack Developer"
-                ],
+                "targetRoles": ["Backend Developer", "Full Stack Developer"],
                 "locations": [
-                  {
-                    "province": "DKI Jakarta",
-                    "city": "Jakarta Selatan"
-                  }
+                  { "province": "DKI Jakarta", "city": "Jakarta Selatan" }
                 ],
-                "workTypes": [
-                  "REMOTE",
-                  "HYBRID"
-                ],
+                "workTypes": ["REMOTE", "HYBRID"],
                 "salaryExpectation": {
                   "min": 5000000,
                   "max": 10000000,
@@ -2846,26 +2296,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Preferences"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/Preferences" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -2880,15 +2316,9 @@
                       "Full Stack Developer"
                     ],
                     "locations": [
-                      {
-                        "province": "DKI Jakarta",
-                        "city": "Jakarta Selatan"
-                      }
+                      { "province": "DKI Jakarta", "city": "Jakarta Selatan" }
                     ],
-                    "workTypes": [
-                      "REMOTE",
-                      "HYBRID"
-                    ],
+                    "workTypes": ["REMOTE", "HYBRID"],
                     "salaryExpectation": {
                       "min": 5000000,
                       "max": 10000000,
@@ -2908,9 +2338,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -2928,9 +2356,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -2953,16 +2379,10 @@
         }
       },
       "patch": {
-        "tags": [
-          "Preferences"
-        ],
+        "tags": ["Preferences"],
         "summary": "Patch preferences",
         "description": "Applies a partial update to the authenticated user's active career preferences.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2971,9 +2391,7 @@
                 "$ref": "#/components/schemas/PreferencesPatchRequest"
               },
               "example": {
-                "workTypes": [
-                  "REMOTE"
-                ],
+                "workTypes": ["REMOTE"],
                 "emailNotificationsEnabled": false
               }
             }
@@ -2987,26 +2405,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Preferences"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/Preferences" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -3021,14 +2425,9 @@
                       "Full Stack Developer"
                     ],
                     "locations": [
-                      {
-                        "province": "DKI Jakarta",
-                        "city": "Jakarta Selatan"
-                      }
+                      { "province": "DKI Jakarta", "city": "Jakarta Selatan" }
                     ],
-                    "workTypes": [
-                      "REMOTE"
-                    ],
+                    "workTypes": ["REMOTE"],
                     "salaryExpectation": {
                       "min": 5000000,
                       "max": 10000000,
@@ -3048,9 +2447,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -3068,9 +2465,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -3095,25 +2490,15 @@
     },
     "/api/v1/me/bookmarks": {
       "get": {
-        "tags": [
-          "Bookmarks"
-        ],
+        "tags": ["Bookmarks"],
         "summary": "List bookmarks",
         "description": "Returns paginated current-user bookmarks.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "in": "query",
             "name": "page",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
           },
           {
             "in": "query",
@@ -3128,11 +2513,7 @@
           {
             "in": "query",
             "name": "keyword",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
@@ -3158,20 +2539,10 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "array",
                       "items": {
@@ -3181,9 +2552,7 @@
                     "meta": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "pagination"
-                      ],
+                      "required": ["pagination"],
                       "properties": {
                         "pagination": {
                           "$ref": "#/components/schemas/PaginationMeta"
@@ -3191,14 +2560,9 @@
                         "filters": {
                           "type": "object",
                           "additionalProperties": true,
-                          "example": {
-                            "keyword": "backend"
-                          }
+                          "example": { "keyword": "backend" }
                         },
-                        "sort": {
-                          "type": "string",
-                          "example": "created_desc"
-                        }
+                        "sort": { "type": "string", "example": "created_desc" }
                       }
                     }
                   }
@@ -3253,9 +2617,7 @@
                       "hasNextPage": false,
                       "hasPrevPage": false
                     },
-                    "filters": {
-                      "keyword": "backend"
-                    },
+                    "filters": { "keyword": "backend" },
                     "sort": "created_desc"
                   }
                 }
@@ -3266,9 +2628,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -3286,9 +2646,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -3311,26 +2669,16 @@
         }
       },
       "post": {
-        "tags": [
-          "Bookmarks"
-        ],
+        "tags": ["Bookmarks"],
         "summary": "Save a job",
         "description": "Creates a bookmark for the authenticated user.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveBookmarkRequest"
-              },
-              "example": {
-                "jobId": "550e8400-e29b-41d4-a716-446655440010"
-              }
+              "schema": { "$ref": "#/components/schemas/SaveBookmarkRequest" },
+              "example": { "jobId": "550e8400-e29b-41d4-a716-446655440010" }
             }
           }
         },
@@ -3342,26 +2690,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/BookmarkSummary"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/BookmarkSummary" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -3381,9 +2715,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -3401,9 +2733,7 @@
             "description": "Job is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Job not found",
@@ -3421,9 +2751,7 @@
             "description": "Bookmark already exists.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Job is already saved",
@@ -3441,9 +2769,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -3468,16 +2794,10 @@
     },
     "/api/v1/me/bookmarks/{jobId}": {
       "delete": {
-        "tags": [
-          "Bookmarks"
-        ],
+        "tags": ["Bookmarks"],
         "summary": "Delete a bookmark",
         "description": "Removes the authenticated user's bookmark for the given job.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "in": "path",
@@ -3491,16 +2811,12 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "Bookmark deleted successfully."
-          },
+          "204": { "description": "Bookmark deleted successfully." },
           "401": {
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -3518,9 +2834,7 @@
             "description": "Bookmark is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Bookmark not found",
@@ -3538,9 +2852,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -3565,25 +2877,15 @@
     },
     "/api/v1/me/applications": {
       "get": {
-        "tags": [
-          "Applications"
-        ],
+        "tags": ["Applications"],
         "summary": "List applications",
         "description": "Returns paginated current-user application tracker records.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "in": "query",
             "name": "page",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
           },
           {
             "in": "query",
@@ -3598,23 +2900,14 @@
           {
             "in": "query",
             "name": "keyword",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "schema": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           {
             "in": "query",
             "name": "status",
             "schema": {
               "type": "string",
-              "enum": [
-                "APPLIED",
-                "INTERVIEW",
-                "REJECTED",
-                "ACCEPTED"
-              ]
+              "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"]
             }
           },
           {
@@ -3622,11 +2915,7 @@
             "name": "sort",
             "schema": {
               "type": "string",
-              "enum": [
-                "updated_desc",
-                "created_desc",
-                "newest"
-              ],
+              "enum": ["updated_desc", "created_desc", "newest"],
               "default": "updated_desc"
             }
           }
@@ -3639,20 +2928,10 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "type": "array",
                       "items": {
@@ -3662,9 +2941,7 @@
                     "meta": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": [
-                        "pagination"
-                      ],
+                      "required": ["pagination"],
                       "properties": {
                         "pagination": {
                           "$ref": "#/components/schemas/PaginationMeta"
@@ -3672,14 +2949,9 @@
                         "filters": {
                           "type": "object",
                           "additionalProperties": true,
-                          "example": {
-                            "status": "APPLIED"
-                          }
+                          "example": { "status": "APPLIED" }
                         },
-                        "sort": {
-                          "type": "string",
-                          "example": "updated_desc"
-                        }
+                        "sort": { "type": "string", "example": "updated_desc" }
                       }
                     }
                   }
@@ -3738,9 +3010,7 @@
                       "hasNextPage": false,
                       "hasPrevPage": false
                     },
-                    "filters": {
-                      "status": "APPLIED"
-                    },
+                    "filters": { "status": "APPLIED" },
                     "sort": "updated_desc"
                   }
                 }
@@ -3751,9 +3021,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -3771,9 +3039,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -3796,16 +3062,10 @@
         }
       },
       "post": {
-        "tags": [
-          "Applications"
-        ],
+        "tags": ["Applications"],
         "summary": "Create an application tracker record",
         "description": "Creates a current-user application tracker record for a job.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -3830,26 +3090,14 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "$ref": "#/components/schemas/ApplicationResource"
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -3904,9 +3152,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -3924,9 +3170,7 @@
             "description": "Job is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Job not found",
@@ -3944,9 +3188,7 @@
             "description": "Application is already tracked.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Application is already tracked",
@@ -3964,9 +3206,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -3991,16 +3231,10 @@
     },
     "/api/v1/me/applications/{applicationId}": {
       "patch": {
-        "tags": [
-          "Applications"
-        ],
+        "tags": ["Applications"],
         "summary": "Update application metadata",
         "description": "Updates notes or source metadata for a current-user application record.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "in": "path",
@@ -4035,26 +3269,14 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "$ref": "#/components/schemas/ApplicationResource"
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -4109,9 +3331,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -4129,9 +3349,7 @@
             "description": "Application is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Application not found",
@@ -4149,9 +3367,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -4176,16 +3392,10 @@
     },
     "/api/v1/me/applications/{applicationId}/status": {
       "patch": {
-        "tags": [
-          "Applications"
-        ],
+        "tags": ["Applications"],
         "summary": "Update application status",
         "description": "Updates the status of a current-user application record.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "in": "path",
@@ -4220,26 +3430,14 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
                     "data": {
                       "$ref": "#/components/schemas/ApplicationResource"
                     },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -4294,9 +3492,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -4314,9 +3510,7 @@
             "description": "Application is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Application not found",
@@ -4334,9 +3528,7 @@
             "description": "Requested status transition is not allowed.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Application status transition is not allowed",
@@ -4354,9 +3546,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -4381,23 +3571,15 @@
     },
     "/api/v1/ai/job-fit": {
       "post": {
-        "tags": [
-          "AI Job Fit"
-        ],
+        "tags": ["AI Job Fit"],
         "summary": "Analyze job fit",
         "description": "Builds backend-owned user and preference context, calls Model API, and returns a job fit analysis for the selected job.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AnalyzeJobFitRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/AnalyzeJobFitRequest" },
               "example": {
                 "jobId": "550e8400-e29b-41d4-a716-446655440010",
                 "persistResult": true
@@ -4413,26 +3595,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/JobFitAnalysis"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/JobFitAnalysis" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -4455,13 +3623,8 @@
                     "breakdown": {
                       "skillMatch": {
                         "score": 85,
-                        "matchedSkills": [
-                          "TypeScript",
-                          "PostgreSQL"
-                        ],
-                        "missingSkills": [
-                          "Docker"
-                        ]
+                        "matchedSkills": ["TypeScript", "PostgreSQL"],
+                        "missingSkills": ["Docker"]
                       },
                       "experienceMatch": {
                         "score": 75,
@@ -4469,10 +3632,7 @@
                       },
                       "preferenceMatch": {
                         "score": 90,
-                        "matchedPreferences": [
-                          "REMOTE",
-                          "DKI Jakarta"
-                        ],
+                        "matchedPreferences": ["REMOTE", "DKI Jakarta"],
                         "unmatchedPreferences": []
                       }
                     },
@@ -4483,10 +3643,7 @@
                         "reason": "The job mentions containerized deployment experience."
                       }
                     ],
-                    "model": {
-                      "name": "job-fit-model",
-                      "version": "v1"
-                    },
+                    "model": { "name": "job-fit-model", "version": "v1" },
                     "analyzedAt": "2026-04-24T08:00:00.000Z"
                   },
                   "meta": null
@@ -4498,9 +3655,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -4518,9 +3673,7 @@
             "description": "Job is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Job not found",
@@ -4538,9 +3691,7 @@
             "description": "User profile is incomplete.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Profile is incomplete",
@@ -4558,9 +3709,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -4584,9 +3733,7 @@
             "description": "Downstream response is invalid.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Downstream dependency returned an invalid response",
@@ -4604,9 +3751,7 @@
             "description": "Model API is unavailable.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Service is unavailable",
@@ -4625,16 +3770,10 @@
     },
     "/api/v1/ai/cv-analyzer": {
       "post": {
-        "tags": [
-          "AI CV Analyzer"
-        ],
+        "tags": ["AI CV Analyzer"],
         "summary": "Analyze CV",
         "description": "Accepts a multipart PDF upload and compares the CV against a selected job using Model API.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -4642,11 +3781,7 @@
               "schema": {
                 "$ref": "#/components/schemas/AnalyzeCvMultipartRequest"
               },
-              "encoding": {
-                "cvFile": {
-                  "contentType": "application/pdf"
-                }
-              }
+              "encoding": { "cvFile": { "contentType": "application/pdf" } }
             }
           }
         },
@@ -4658,26 +3793,12 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "success",
-                    "message",
-                    "data",
-                    "meta"
-                  ],
+                  "required": ["success", "message", "data", "meta"],
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CvAnalysis"
-                    },
-                    "meta": {
-                      "type": "null"
-                    }
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": { "$ref": "#/components/schemas/CvAnalysis" },
+                    "meta": { "type": "null" }
                   }
                 },
                 "example": {
@@ -4698,10 +3819,7 @@
                         "REST API",
                         "PostgreSQL"
                       ],
-                      "missingSignals": [
-                        "Docker",
-                        "CI/CD"
-                      ]
+                      "missingSignals": ["Docker", "CI/CD"]
                     },
                     "atsFriendliness": {
                       "score": 74,
@@ -4734,10 +3852,7 @@
                       "available": false,
                       "note": "Generated CV is future scope."
                     },
-                    "model": {
-                      "name": "cv-analyzer-model",
-                      "version": "v1"
-                    },
+                    "model": { "name": "cv-analyzer-model", "version": "v1" },
                     "analyzedAt": "2026-04-24T08:00:00.000Z"
                   },
                   "meta": null
@@ -4749,9 +3864,7 @@
             "description": "Authentication is required.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Authentication required",
@@ -4769,9 +3882,7 @@
             "description": "Job or bookmark is not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Bookmark not found",
@@ -4789,19 +3900,14 @@
             "description": "Uploaded CV exceeds the configured limit.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "CV file exceeds the maximum allowed size",
                   "data": null,
                   "error": {
                     "code": "PAYLOAD_TOO_LARGE",
-                    "details": {
-                      "path": "cvFile",
-                      "maxBytes": 5242880
-                    },
+                    "details": { "path": "cvFile", "maxBytes": 5242880 },
                     "requestId": "req_1234567890"
                   }
                 }
@@ -4812,9 +3918,7 @@
             "description": "Validation failed",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Validation failed",
@@ -4838,9 +3942,7 @@
             "description": "Downstream response is invalid.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Downstream dependency returned an invalid response",
@@ -4858,9 +3960,7 @@
             "description": "Model API is unavailable.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
                   "message": "Service is unavailable",
@@ -4895,76 +3995,38 @@
       "ValidationIssue": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "path",
-          "message",
-          "code"
-        ],
+        "required": ["path", "message", "code"],
         "properties": {
-          "path": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          }
+          "path": { "type": "string" },
+          "message": { "type": "string" },
+          "code": { "type": "string" }
         }
       },
       "ErrorEnvelope": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "success",
-          "message",
-          "data",
-          "error"
-        ],
+        "required": ["success", "message", "data", "error"],
         "properties": {
-          "success": {
-            "type": "boolean",
-            "const": false
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "type": "null"
-          },
+          "success": { "type": "boolean", "const": false },
+          "message": { "type": "string" },
+          "data": { "type": "null" },
           "error": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "code",
-              "details",
-              "requestId"
-            ],
+            "required": ["code", "details", "requestId"],
             "properties": {
-              "code": {
-                "type": "string"
-              },
+              "code": { "type": "string" },
               "details": {
                 "anyOf": [
                   {
                     "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ValidationIssue"
-                    }
+                    "items": { "$ref": "#/components/schemas/ValidationIssue" }
                   },
-                  {
-                    "type": "object",
-                    "additionalProperties": true
-                  },
-                  {
-                    "type": "null"
-                  }
+                  { "type": "object", "additionalProperties": true },
+                  { "type": "null" }
                 ]
               },
-              "requestId": {
-                "type": "string",
-                "example": "req_1234567890"
-              }
+              "requestId": { "type": "string", "example": "req_1234567890" }
             }
           }
         }
@@ -4981,101 +4043,55 @@
           "hasPrevPage"
         ],
         "properties": {
-          "page": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "limit": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100
-          },
-          "total": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "totalPages": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "hasNextPage": {
-            "type": "boolean"
-          },
-          "hasPrevPage": {
-            "type": "boolean"
-          }
+          "page": { "type": "integer", "minimum": 1 },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "total": { "type": "integer", "minimum": 0 },
+          "totalPages": { "type": "integer", "minimum": 0 },
+          "hasNextPage": { "type": "boolean" },
+          "hasPrevPage": { "type": "boolean" }
         }
       },
       "SourcePlatform": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "name",
-          "slug"
-        ],
+        "required": ["id", "name", "slug"],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          }
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
         }
       },
       "CompanyCard": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "name",
-          "logoUrl"
-        ],
+        "required": ["id", "name", "logoUrl"],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "name": {
-            "type": "string"
-          },
+          "name": { "type": "string" },
           "logoUrl": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uri"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }]
           }
         }
       },
       "CompanyDetail": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/CompanyCard"
-          },
+          { "$ref": "#/components/schemas/CompanyCard" },
           {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "websiteUrl": {
                 "anyOf": [
-                  {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  {
-                    "type": "null"
-                  }
+                  { "type": "string", "format": "uri" },
+                  { "type": "null" }
                 ]
               }
             }
@@ -5085,107 +4101,40 @@
       "Location": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "display",
-          "province",
-          "city"
-        ],
+        "required": ["display", "province", "city"],
         "properties": {
-          "display": {
-            "type": "string"
-          },
-          "province": {
-            "type": "string"
-          },
-          "city": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+          "display": { "type": "string" },
+          "province": { "type": "string" },
+          "city": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
         }
       },
       "Salary": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "min",
-          "max",
-          "currency",
-          "period",
-          "display"
-        ],
+        "required": ["min", "max", "currency", "period", "display"],
         "properties": {
           "min": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
           },
           "max": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
           },
-          "currency": {
-            "type": "string",
-            "example": "IDR"
-          },
-          "period": {
-            "type": "string",
-            "enum": [
-              "MONTHLY",
-              "YEARLY"
-            ]
-          },
-          "display": {
-            "type": "string"
-          }
+          "currency": { "type": "string", "example": "IDR" },
+          "period": { "type": "string", "enum": ["MONTHLY", "YEARLY"] },
+          "display": { "type": "string" }
         }
       },
       "JobRequirement": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "type",
-          "value",
-          "priority"
-        ],
+        "required": ["type", "value", "priority"],
         "properties": {
           "type": {
             "type": "string",
-            "enum": [
-              "SKILL",
-              "EXPERIENCE",
-              "OTHER"
-            ]
+            "enum": ["SKILL", "EXPERIENCE", "OTHER"]
           },
-          "value": {
-            "type": "string"
-          },
-          "priority": {
-            "type": "string",
-            "enum": [
-              "HIGH",
-              "MEDIUM",
-              "LOW"
-            ]
-          }
+          "value": { "type": "string" },
+          "priority": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] }
         }
       },
       "JobCard": {
@@ -5211,22 +4160,12 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "title": {
-            "type": "string"
-          },
-          "company": {
-            "$ref": "#/components/schemas/CompanyCard"
-          },
-          "sourcePlatform": {
-            "$ref": "#/components/schemas/SourcePlatform"
-          },
+          "title": { "type": "string" },
+          "company": { "$ref": "#/components/schemas/CompanyCard" },
+          "sourcePlatform": { "$ref": "#/components/schemas/SourcePlatform" },
           "workType": {
             "type": "string",
-            "enum": [
-              "REMOTE",
-              "HYBRID",
-              "ONSITE"
-            ]
+            "enum": ["REMOTE", "HYBRID", "ONSITE"]
           },
           "employmentType": {
             "type": "string",
@@ -5240,20 +4179,10 @@
           },
           "experienceLevel": {
             "type": "string",
-            "enum": [
-              "ENTRY_LEVEL",
-              "JUNIOR",
-              "MID_LEVEL",
-              "SENIOR",
-              "LEAD"
-            ]
+            "enum": ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
           },
-          "location": {
-            "$ref": "#/components/schemas/Location"
-          },
-          "salary": {
-            "$ref": "#/components/schemas/Salary"
-          },
+          "location": { "$ref": "#/components/schemas/Location" },
+          "salary": { "$ref": "#/components/schemas/Salary" },
           "postedAt": {
             "type": "string",
             "format": "date-time",
@@ -5264,16 +4193,12 @@
             "format": "date-time",
             "example": "2026-04-24T08:00:00.000Z"
           },
-          "isStale": {
-            "type": "boolean"
-          }
+          "isStale": { "type": "boolean" }
         }
       },
       "JobDetail": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/JobCard"
-          },
+          { "$ref": "#/components/schemas/JobCard" },
           {
             "type": "object",
             "additionalProperties": false,
@@ -5284,33 +4209,17 @@
               "externalApplyUrl"
             ],
             "properties": {
-              "company": {
-                "$ref": "#/components/schemas/CompanyDetail"
-              },
-              "description": {
-                "type": "string"
-              },
+              "company": { "$ref": "#/components/schemas/CompanyDetail" },
+              "description": { "type": "string" },
               "requirements": {
                 "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/JobRequirement"
-                }
+                "items": { "$ref": "#/components/schemas/JobRequirement" }
               },
-              "skills": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
+              "skills": { "type": "array", "items": { "type": "string" } },
               "externalApplyUrl": {
                 "anyOf": [
-                  {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  {
-                    "type": "null"
-                  }
+                  { "type": "string", "format": "uri" },
+                  { "type": "null" }
                 ]
               }
             }
@@ -5334,99 +4243,49 @@
             "maxLength": 30,
             "pattern": "^[a-z0-9_]+$"
           },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
+          "email": { "type": "string", "format": "email" },
           "phoneNumber": {
             "type": "string",
             "minLength": 8,
             "maxLength": 20,
             "pattern": "^\\+?62[0-9]{7,16}$"
           },
-          "password": {
-            "type": "string",
-            "minLength": 12,
-            "maxLength": 128
-          },
-          "confirmPassword": {
-            "type": "string"
-          }
+          "password": { "type": "string", "minLength": 12, "maxLength": 128 },
+          "confirmPassword": { "type": "string" }
         }
       },
       "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "identifier",
-          "password"
-        ],
+        "required": ["identifier", "password"],
         "properties": {
-          "identifier": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 254
-          },
-          "password": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 128
-          }
+          "identifier": { "type": "string", "minLength": 3, "maxLength": 254 },
+          "password": { "type": "string", "minLength": 1, "maxLength": 128 }
         }
       },
       "ForgotPasswordRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "email"
-        ],
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          }
-        }
+        "required": ["email"],
+        "properties": { "email": { "type": "string", "format": "email" } }
       },
       "ResetPasswordRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "token",
-          "password",
-          "confirmPassword"
-        ],
+        "required": ["token", "password", "confirmPassword"],
         "properties": {
-          "token": {
-            "type": "string",
-            "minLength": 32,
-            "maxLength": 256
-          },
-          "password": {
-            "type": "string",
-            "minLength": 12,
-            "maxLength": 128
-          },
-          "confirmPassword": {
-            "type": "string"
-          }
+          "token": { "type": "string", "minLength": 32, "maxLength": 256 },
+          "password": { "type": "string", "minLength": 12, "maxLength": 128 },
+          "confirmPassword": { "type": "string" }
         }
       },
       "VerifyEmailRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "email",
-          "otp"
-        ],
+        "required": ["email", "otp"],
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "otp": {
-            "type": "string",
-            "pattern": "^[0-9]{6}$"
-          }
+          "email": { "type": "string", "format": "email" },
+          "otp": { "type": "string", "pattern": "^[0-9]{6}$" }
         }
       },
       "AuthUser": {
@@ -5446,23 +4305,12 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "username": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "emailVerified": {
-            "type": "boolean"
-          },
+          "username": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "emailVerified": { "type": "boolean" },
           "onboardingStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "IN_PROGRESS",
-              "COMPLETED"
-            ]
+            "enum": ["PENDING", "IN_PROGRESS", "COMPLETED"]
           },
           "createdAt": {
             "type": "string",
@@ -5474,136 +4322,64 @@
       "AuthSession": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "accessToken",
-          "expiresIn",
-          "tokenType"
-        ],
+        "required": ["accessToken", "expiresIn", "tokenType"],
         "properties": {
-          "accessToken": {
-            "type": "string"
-          },
-          "expiresIn": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "tokenType": {
-            "type": "string",
-            "const": "Bearer"
-          }
+          "accessToken": { "type": "string" },
+          "expiresIn": { "type": "integer", "minimum": 1 },
+          "tokenType": { "type": "string", "const": "Bearer" }
         }
       },
       "ProfilePhoto": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "url",
-          "mimeType",
-          "sizeBytes"
-        ],
+        "required": ["url", "mimeType", "sizeBytes"],
         "properties": {
           "url": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uri"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }]
           },
           "mimeType": {
             "type": "string",
-            "enum": [
-              "image/jpeg",
-              "image/png",
-              "image/webp"
-            ]
+            "enum": ["image/jpeg", "image/png", "image/webp"]
           },
-          "sizeBytes": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 5242880
-          }
+          "sizeBytes": { "type": "integer", "minimum": 1, "maximum": 5242880 }
         }
       },
       "CurrentUserProfile": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "careerStatus",
-          "latestRole",
-          "summary"
-        ],
+        "required": ["careerStatus", "latestRole", "summary"],
         "properties": {
           "careerStatus": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "FRESH_GRADUATE",
-                  "EARLY_CAREER",
-                  "CAREER_SWITCHER"
-                ]
+                "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
               },
-              {
-                "type": "null"
-              }
+              { "type": "null" }
             ]
           },
-          "latestRole": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "summary": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+          "latestRole": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+          "summary": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
         }
       },
       "CurrentUserSkill": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "name",
-          "level"
-        ],
+        "required": ["id", "name", "level"],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "name": {
-            "type": "string"
-          },
+          "name": { "type": "string" },
           "level": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "BASIC",
-                  "INTERMEDIATE",
-                  "ADVANCED"
-                ]
+                "enum": ["BASIC", "INTERMEDIATE", "ADVANCED"]
               },
-              {
-                "type": "null"
-              }
+              { "type": "null" }
             ]
           }
         }
@@ -5627,19 +4403,8 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "title": {
-            "type": "string"
-          },
-          "company": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
+          "title": { "type": "string" },
+          "company": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
           "employmentType": {
             "anyOf": [
               {
@@ -5652,48 +4417,23 @@
                   "FREELANCE"
                 ]
               },
-              {
-                "type": "null"
-              }
+              { "type": "null" }
             ]
           },
           "startDate": {
             "anyOf": [
-              {
-                "type": "string",
-                "format": "date",
-                "example": "2026-04-24"
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "format": "date", "example": "2026-04-24" },
+              { "type": "null" }
             ]
           },
           "endDate": {
             "anyOf": [
-              {
-                "type": "string",
-                "format": "date",
-                "example": "2026-04-24"
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "format": "date", "example": "2026-04-24" },
+              { "type": "null" }
             ]
           },
-          "isCurrent": {
-            "type": "boolean"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+          "isCurrent": { "type": "boolean" },
+          "description": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
         }
       },
       "CurrentUserEducation": {
@@ -5713,51 +4453,21 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "institution": {
-            "type": "string"
-          },
-          "degree": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
+          "institution": { "type": "string" },
+          "degree": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
           "fieldOfStudy": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
           },
           "startYear": {
             "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 1900,
-                "maximum": 2100
-              },
-              {
-                "type": "null"
-              }
+              { "type": "integer", "minimum": 1900, "maximum": 2100 },
+              { "type": "null" }
             ]
           },
           "endYear": {
             "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 1900,
-                "maximum": 2100
-              },
-              {
-                "type": "null"
-              }
+              { "type": "integer", "minimum": 1900, "maximum": 2100 },
+              { "type": "null" }
             ]
           }
         }
@@ -5787,81 +4497,42 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "username": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "emailVerified": {
-            "type": "boolean"
-          },
+          "username": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "emailVerified": { "type": "boolean" },
           "phoneNumber": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
           },
           "displayName": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
           },
           "profilePhoto": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/ProfilePhoto"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/ProfilePhoto" },
+              { "type": "null" }
             ]
           },
           "onboardingStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "IN_PROGRESS",
-              "COMPLETED"
-            ]
+            "enum": ["PENDING", "IN_PROGRESS", "COMPLETED"]
           },
           "profile": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/CurrentUserProfile"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/CurrentUserProfile" },
+              { "type": "null" }
             ]
           },
           "skills": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentUserSkill"
-            }
+            "items": { "$ref": "#/components/schemas/CurrentUserSkill" }
           },
           "experience": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentUserExperience"
-            }
+            "items": { "$ref": "#/components/schemas/CurrentUserExperience" }
           },
           "education": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentUserEducation"
-            }
+            "items": { "$ref": "#/components/schemas/CurrentUserEducation" }
           },
           "createdAt": {
             "type": "string",
@@ -5892,21 +4563,13 @@
             "maxLength": 20,
             "pattern": "^\\+?62[0-9]{7,16}$"
           },
-          "displayName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
-          }
+          "displayName": { "type": "string", "minLength": 1, "maxLength": 80 }
         }
       },
       "ProfilePhotoUpsertRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "storageKey",
-          "mimeType",
-          "sizeBytes"
-        ],
+        "required": ["storageKey", "mimeType", "sizeBytes"],
         "properties": {
           "storageKey": {
             "type": "string",
@@ -5916,37 +4579,21 @@
           },
           "url": {
             "anyOf": [
-              {
-                "type": "string",
-                "format": "uri",
-                "maxLength": 1024
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "format": "uri", "maxLength": 1024 },
+              { "type": "null" }
             ]
           },
           "mimeType": {
             "type": "string",
-            "enum": [
-              "image/jpeg",
-              "image/png",
-              "image/webp"
-            ]
+            "enum": ["image/jpeg", "image/png", "image/webp"]
           },
-          "sizeBytes": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 5242880
-          }
+          "sizeBytes": { "type": "integer", "minimum": 1, "maximum": 5242880 }
         }
       },
       "ReplaceSkillsRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "skills"
-        ],
+        "required": ["skills"],
         "properties": {
           "skills": {
             "type": "array",
@@ -5954,22 +4601,12 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "name"
-              ],
+              "required": ["name"],
               "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 80
-                },
+                "name": { "type": "string", "minLength": 1, "maxLength": 80 },
                 "level": {
                   "type": "string",
-                  "enum": [
-                    "BASIC",
-                    "INTERMEDIATE",
-                    "ADVANCED"
-                  ]
+                  "enum": ["BASIC", "INTERMEDIATE", "ADVANCED"]
                 }
               }
             }
@@ -5979,9 +4616,7 @@
       "ReplaceExperienceRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "experience"
-        ],
+        "required": ["experience"],
         "properties": {
           "experience": {
             "type": "array",
@@ -5989,25 +4624,13 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "title"
-              ],
+              "required": ["title"],
               "properties": {
-                "title": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 120
-                },
+                "title": { "type": "string", "minLength": 1, "maxLength": 120 },
                 "company": {
                   "anyOf": [
-                    {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 120
-                    },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "string", "minLength": 1, "maxLength": 120 },
+                    { "type": "null" }
                   ]
                 },
                 "employmentType": {
@@ -6022,9 +4645,7 @@
                         "FREELANCE"
                       ]
                     },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "null" }
                   ]
                 },
                 "startDate": {
@@ -6034,9 +4655,7 @@
                       "format": "date",
                       "example": "2026-04-24"
                     },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "null" }
                   ]
                 },
                 "endDate": {
@@ -6046,23 +4665,14 @@
                       "format": "date",
                       "example": "2026-04-24"
                     },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "null" }
                   ]
                 },
-                "isCurrent": {
-                  "type": "boolean"
-                },
+                "isCurrent": { "type": "boolean" },
                 "description": {
                   "anyOf": [
-                    {
-                      "type": "string",
-                      "maxLength": 2000
-                    },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "string", "maxLength": 2000 },
+                    { "type": "null" }
                   ]
                 }
               }
@@ -6073,9 +4683,7 @@
       "ReplaceEducationRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "education"
-        ],
+        "required": ["education"],
         "properties": {
           "education": {
             "type": "array",
@@ -6083,11 +4691,7 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "institution",
-                "degree",
-                "fieldOfStudy"
-              ],
+              "required": ["institution", "degree", "fieldOfStudy"],
               "properties": {
                 "institution": {
                   "type": "string",
@@ -6106,26 +4710,14 @@
                 },
                 "startYear": {
                   "anyOf": [
-                    {
-                      "type": "integer",
-                      "minimum": 1900,
-                      "maximum": 2100
-                    },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "integer", "minimum": 1900, "maximum": 2100 },
+                    { "type": "null" }
                   ]
                 },
                 "endYear": {
                   "anyOf": [
-                    {
-                      "type": "integer",
-                      "minimum": 1900,
-                      "maximum": 2100
-                    },
-                    {
-                      "type": "null"
-                    }
+                    { "type": "integer", "minimum": 1900, "maximum": 2100 },
+                    { "type": "null" }
                   ]
                 }
               }
@@ -6136,25 +4728,13 @@
       "PreferenceLocation": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "province",
-          "city"
-        ],
+        "required": ["province", "city"],
         "properties": {
-          "province": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 120
-          },
+          "province": { "type": "string", "minLength": 1, "maxLength": 120 },
           "city": {
             "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 120
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "maxLength": 120 },
+              { "type": "null" }
             ]
           }
         }
@@ -6162,34 +4742,13 @@
       "SalaryExpectation": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "min",
-          "max",
-          "currency",
-          "period"
-        ],
+        "required": ["min", "max", "currency", "period"],
         "properties": {
           "min": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
           },
           "max": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
           },
           "currency": {
             "type": "string",
@@ -6197,13 +4756,7 @@
             "maxLength": 3,
             "example": "IDR"
           },
-          "period": {
-            "type": "string",
-            "enum": [
-              "MONTHLY",
-              "YEARLY"
-            ]
-          }
+          "period": { "type": "string", "enum": ["MONTHLY", "YEARLY"] }
         }
       },
       "Preferences": {
@@ -6229,49 +4782,28 @@
           },
           "careerStatus": {
             "type": "string",
-            "enum": [
-              "FRESH_GRADUATE",
-              "EARLY_CAREER",
-              "CAREER_SWITCHER"
-            ]
+            "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
           },
           "jobSeekingStatus": {
             "type": "string",
-            "enum": [
-              "IMMEDIATE",
-              "ONE_MONTH",
-              "THREE_MONTHS"
-            ]
+            "enum": ["IMMEDIATE", "ONE_MONTH", "THREE_MONTHS"]
           },
-          "targetRoles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
+          "targetRoles": { "type": "array", "items": { "type": "string" } },
           "locations": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PreferenceLocation"
-            }
+            "items": { "$ref": "#/components/schemas/PreferenceLocation" }
           },
           "workTypes": {
             "type": "array",
             "items": {
               "type": "string",
-              "enum": [
-                "REMOTE",
-                "HYBRID",
-                "ONSITE"
-              ]
+              "enum": ["REMOTE", "HYBRID", "ONSITE"]
             }
           },
           "salaryExpectation": {
             "$ref": "#/components/schemas/SalaryExpectation"
           },
-          "emailNotificationsEnabled": {
-            "type": "boolean"
-          },
+          "emailNotificationsEnabled": { "type": "boolean" },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -6299,37 +4831,23 @@
         "properties": {
           "careerStatus": {
             "type": "string",
-            "enum": [
-              "FRESH_GRADUATE",
-              "EARLY_CAREER",
-              "CAREER_SWITCHER"
-            ]
+            "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
           },
           "jobSeekingStatus": {
             "type": "string",
-            "enum": [
-              "IMMEDIATE",
-              "ONE_MONTH",
-              "THREE_MONTHS"
-            ]
+            "enum": ["IMMEDIATE", "ONE_MONTH", "THREE_MONTHS"]
           },
           "targetRoles": {
             "type": "array",
             "minItems": 1,
             "maxItems": 20,
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "items": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           "locations": {
             "type": "array",
             "minItems": 1,
             "maxItems": 20,
-            "items": {
-              "$ref": "#/components/schemas/PreferenceLocation"
-            }
+            "items": { "$ref": "#/components/schemas/PreferenceLocation" }
           },
           "workTypes": {
             "type": "array",
@@ -6337,19 +4855,13 @@
             "maxItems": 3,
             "items": {
               "type": "string",
-              "enum": [
-                "REMOTE",
-                "HYBRID",
-                "ONSITE"
-              ]
+              "enum": ["REMOTE", "HYBRID", "ONSITE"]
             }
           },
           "salaryExpectation": {
             "$ref": "#/components/schemas/SalaryExpectation"
           },
-          "emailNotificationsEnabled": {
-            "type": "boolean"
-          }
+          "emailNotificationsEnabled": { "type": "boolean" }
         }
       },
       "PreferencesPatchRequest": {
@@ -6358,37 +4870,23 @@
         "properties": {
           "careerStatus": {
             "type": "string",
-            "enum": [
-              "FRESH_GRADUATE",
-              "EARLY_CAREER",
-              "CAREER_SWITCHER"
-            ]
+            "enum": ["FRESH_GRADUATE", "EARLY_CAREER", "CAREER_SWITCHER"]
           },
           "jobSeekingStatus": {
             "type": "string",
-            "enum": [
-              "IMMEDIATE",
-              "ONE_MONTH",
-              "THREE_MONTHS"
-            ]
+            "enum": ["IMMEDIATE", "ONE_MONTH", "THREE_MONTHS"]
           },
           "targetRoles": {
             "type": "array",
             "minItems": 1,
             "maxItems": 20,
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
+            "items": { "type": "string", "minLength": 1, "maxLength": 120 }
           },
           "locations": {
             "type": "array",
             "minItems": 1,
             "maxItems": 20,
-            "items": {
-              "$ref": "#/components/schemas/PreferenceLocation"
-            }
+            "items": { "$ref": "#/components/schemas/PreferenceLocation" }
           },
           "workTypes": {
             "type": "array",
@@ -6396,11 +4894,7 @@
             "maxItems": 3,
             "items": {
               "type": "string",
-              "enum": [
-                "REMOTE",
-                "HYBRID",
-                "ONSITE"
-              ]
+              "enum": ["REMOTE", "HYBRID", "ONSITE"]
             }
           },
           "salaryExpectation": {
@@ -6409,51 +4903,27 @@
             "properties": {
               "min": {
                 "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  {
-                    "type": "null"
-                  }
+                  { "type": "integer", "minimum": 0 },
+                  { "type": "null" }
                 ]
               },
               "max": {
                 "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  {
-                    "type": "null"
-                  }
+                  { "type": "integer", "minimum": 0 },
+                  { "type": "null" }
                 ]
               },
-              "currency": {
-                "type": "string",
-                "minLength": 3,
-                "maxLength": 3
-              },
-              "period": {
-                "type": "string",
-                "enum": [
-                  "MONTHLY",
-                  "YEARLY"
-                ]
-              }
+              "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+              "period": { "type": "string", "enum": ["MONTHLY", "YEARLY"] }
             }
           },
-          "emailNotificationsEnabled": {
-            "type": "boolean"
-          }
+          "emailNotificationsEnabled": { "type": "boolean" }
         }
       },
       "SaveBookmarkRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "jobId"
-        ],
+        "required": ["jobId"],
         "properties": {
           "jobId": {
             "type": "string",
@@ -6465,11 +4935,7 @@
       "BookmarkSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "jobId",
-          "createdAt"
-        ],
+        "required": ["id", "jobId", "createdAt"],
         "properties": {
           "id": {
             "type": "string",
@@ -6491,20 +4957,14 @@
       "BookmarkResource": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "id",
-          "job",
-          "createdAt"
-        ],
+        "required": ["id", "job", "createdAt"],
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "job": {
-            "$ref": "#/components/schemas/JobCard"
-          },
+          "job": { "$ref": "#/components/schemas/JobCard" },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -6515,9 +4975,7 @@
       "CreateApplicationRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "jobId"
-        ],
+        "required": ["jobId"],
         "properties": {
           "jobId": {
             "type": "string",
@@ -6526,24 +4984,13 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "APPLIED",
-              "INTERVIEW",
-              "REJECTED",
-              "ACCEPTED"
-            ],
+            "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"],
             "default": "APPLIED"
           },
-          "notes": {
-            "type": "string",
-            "maxLength": 2000
-          },
+          "notes": { "type": "string", "maxLength": 2000 },
           "source": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "EXTERNAL_APPLY_CLICK"
-            ],
+            "enum": ["MANUAL", "EXTERNAL_APPLY_CLICK"],
             "default": "MANUAL"
           }
         }
@@ -6555,44 +5002,26 @@
         "properties": {
           "notes": {
             "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "maxLength": 2000 },
+              { "type": "null" }
             ]
           },
           "source": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "EXTERNAL_APPLY_CLICK"
-            ]
+            "enum": ["MANUAL", "EXTERNAL_APPLY_CLICK"]
           }
         }
       },
       "UpdateApplicationStatusRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "APPLIED",
-              "INTERVIEW",
-              "REJECTED",
-              "ACCEPTED"
-            ]
+            "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"]
           },
-          "notes": {
-            "type": "string",
-            "maxLength": 2000
-          }
+          "notes": { "type": "string", "maxLength": 2000 }
         }
       },
       "ApplicationResource": {
@@ -6615,29 +5044,12 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "APPLIED",
-              "INTERVIEW",
-              "REJECTED",
-              "ACCEPTED"
-            ]
+            "enum": ["APPLIED", "INTERVIEW", "REJECTED", "ACCEPTED"]
           },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
+          "notes": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
           "source": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "EXTERNAL_APPLY_CLICK"
-            ]
+            "enum": ["MANUAL", "EXTERNAL_APPLY_CLICK"]
           },
           "appliedAt": {
             "type": "string",
@@ -6649,27 +5061,20 @@
             "format": "date-time",
             "example": "2026-04-24T08:00:00.000Z"
           },
-          "job": {
-            "$ref": "#/components/schemas/JobCard"
-          }
+          "job": { "$ref": "#/components/schemas/JobCard" }
         }
       },
       "AnalyzeJobFitRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "jobId"
-        ],
+        "required": ["jobId"],
         "properties": {
           "jobId": {
             "type": "string",
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "persistResult": {
-            "type": "boolean",
-            "default": false
-          }
+          "persistResult": { "type": "boolean", "default": false }
         }
       },
       "JobFitAnalysis": {
@@ -6691,11 +5096,7 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "fitScore": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 100
-          },
+          "fitScore": { "type": "integer", "minimum": 0, "maximum": 100 },
           "readinessLevel": {
             "type": "string",
             "enum": [
@@ -6717,21 +5118,10 @@
             "properties": {
               "decision": {
                 "type": "string",
-                "enum": [
-                  "APPLY_NOW",
-                  "IMPROVE_FIRST",
-                  "SAVE_FOR_LATER"
-                ]
+                "enum": ["APPLY_NOW", "IMPROVE_FIRST", "SAVE_FOR_LATER"]
               },
-              "summary": {
-                "type": "string"
-              },
-              "nextSteps": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
+              "summary": { "type": "string" },
+              "nextSteps": { "type": "array", "items": { "type": "string" } },
               "successProbability": {
                 "type": "number",
                 "minimum": 0,
@@ -6742,56 +5132,31 @@
           "breakdown": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "skillMatch",
-              "experienceMatch",
-              "preferenceMatch"
-            ],
+            "required": ["skillMatch", "experienceMatch", "preferenceMatch"],
             "properties": {
               "skillMatch": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [
-                  "score",
-                  "matchedSkills",
-                  "missingSkills"
-                ],
+                "required": ["score", "matchedSkills", "missingSkills"],
                 "properties": {
-                  "score": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 100
-                  },
+                  "score": { "type": "integer", "minimum": 0, "maximum": 100 },
                   "matchedSkills": {
                     "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                    "items": { "type": "string" }
                   },
                   "missingSkills": {
                     "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                    "items": { "type": "string" }
                   }
                 }
               },
               "experienceMatch": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [
-                  "score",
-                  "reason"
-                ],
+                "required": ["score", "reason"],
                 "properties": {
-                  "score": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 100
-                  },
-                  "reason": {
-                    "type": "string"
-                  }
+                  "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+                  "reason": { "type": "string" }
                 }
               },
               "preferenceMatch": {
@@ -6803,22 +5168,14 @@
                   "unmatchedPreferences"
                 ],
                 "properties": {
-                  "score": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 100
-                  },
+                  "score": { "type": "integer", "minimum": 0, "maximum": 100 },
                   "matchedPreferences": {
                     "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                    "items": { "type": "string" }
                   },
                   "unmatchedPreferences": {
                     "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                    "items": { "type": "string" }
                   }
                 }
               }
@@ -6829,43 +5186,24 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "skill",
-                "priority",
-                "reason"
-              ],
+              "required": ["skill", "priority", "reason"],
               "properties": {
-                "skill": {
-                  "type": "string"
-                },
+                "skill": { "type": "string" },
                 "priority": {
                   "type": "string",
-                  "enum": [
-                    "HIGH",
-                    "MEDIUM",
-                    "LOW"
-                  ]
+                  "enum": ["HIGH", "MEDIUM", "LOW"]
                 },
-                "reason": {
-                  "type": "string"
-                }
+                "reason": { "type": "string" }
               }
             }
           },
           "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "name",
-              "version"
-            ],
+            "required": ["name", "version"],
             "properties": {
-              "name": {
-                "type": "string"
-              },
-              "version": {
-                "type": "string"
-              }
+              "name": { "type": "string" },
+              "version": { "type": "string" }
             }
           },
           "analyzedAt": {
@@ -6878,53 +5216,24 @@
       "AnalyzeCvMultipartRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "jobId",
-          "language",
-          "inputMode",
-          "cvFile"
-        ],
+        "required": ["jobId", "language", "inputMode", "cvFile"],
         "properties": {
           "jobId": {
             "type": "string",
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "language": {
-            "type": "string",
-            "enum": [
-              "id",
-              "en"
-            ]
-          },
-          "inputMode": {
-            "type": "string",
-            "enum": [
-              "UPLOAD",
-              "REFERENCE"
-            ]
-          },
+          "language": { "type": "string", "enum": ["id", "en"] },
+          "inputMode": { "type": "string", "enum": ["UPLOAD", "REFERENCE"] },
           "compareSource": {
             "type": "string",
-            "enum": [
-              "BOOKMARK",
-              "JOB_SEARCH",
-              "DIRECT_JOB_DETAIL"
-            ],
+            "enum": ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"],
             "default": "JOB_SEARCH"
           },
           "persistResult": {
             "oneOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "true",
-                  "false"
-                ]
-              }
+              { "type": "boolean" },
+              { "type": "string", "enum": ["true", "false"] }
             ],
             "default": false
           },
@@ -6933,10 +5242,7 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "cvFile": {
-            "type": "string",
-            "format": "binary"
-          }
+          "cvFile": { "type": "string", "format": "binary" }
         }
       },
       "CvAnalysis": {
@@ -6961,29 +5267,14 @@
             "format": "uuid",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "language": {
-            "type": "string",
-            "enum": [
-              "id",
-              "en"
-            ]
-          },
+          "language": { "type": "string", "enum": ["id", "en"] },
           "overallImpression": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "score",
-              "summary"
-            ],
+            "required": ["score", "summary"],
             "properties": {
-              "score": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 100
-              },
-              "summary": {
-                "type": "string"
-              }
+              "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "summary": { "type": "string" }
             }
           },
           "jobFitAlignment": {
@@ -6996,125 +5287,68 @@
               "missingSignals"
             ],
             "properties": {
-              "score": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 100
-              },
-              "summary": {
-                "type": "string"
-              },
+              "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "summary": { "type": "string" },
               "matchedSignals": {
                 "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "items": { "type": "string" }
               },
               "missingSignals": {
                 "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "items": { "type": "string" }
               }
             }
           },
           "atsFriendliness": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "score",
-              "issues"
-            ],
+            "required": ["score", "issues"],
             "properties": {
-              "score": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 100
-              },
-              "issues": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
+              "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "issues": { "type": "array", "items": { "type": "string" } }
             }
           },
           "keywordOptimization": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "recommendedKeywords",
-              "reason"
-            ],
+            "required": ["recommendedKeywords", "reason"],
             "properties": {
               "recommendedKeywords": {
                 "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "items": { "type": "string" }
               },
-              "reason": {
-                "type": "string"
-              }
+              "reason": { "type": "string" }
             }
           },
           "experienceQuantification": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "score",
-              "suggestions"
-            ],
+            "required": ["score", "suggestions"],
             "properties": {
-              "score": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 100
-              },
-              "suggestions": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
+              "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "suggestions": { "type": "array", "items": { "type": "string" } }
             }
           },
           "actionableImprovements": {
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           },
           "generatedCv": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "available",
-              "note"
-            ],
+            "required": ["available", "note"],
             "properties": {
-              "available": {
-                "type": "boolean"
-              },
-              "note": {
-                "type": "string"
-              }
+              "available": { "type": "boolean" },
+              "note": { "type": "string" }
             }
           },
           "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "name",
-              "version"
-            ],
+            "required": ["name", "version"],
             "properties": {
-              "name": {
-                "type": "string"
-              },
-              "version": {
-                "type": "string"
-              }
+              "name": { "type": "string" },
+              "version": { "type": "string" }
             }
           },
           "analyzedAt": {
@@ -7127,59 +5361,29 @@
       "HealthLiveData": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "service",
-          "status",
-          "env"
-        ],
+        "required": ["service", "status", "env"],
         "properties": {
-          "service": {
-            "type": "string",
-            "const": "bisakerja-api"
-          },
-          "status": {
-            "type": "string",
-            "const": "live"
-          },
-          "env": {
-            "type": "string"
-          }
+          "service": { "type": "string", "const": "bisakerja-api" },
+          "status": { "type": "string", "const": "live" },
+          "env": { "type": "string" }
         }
       },
       "HealthReadyData": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "service",
-          "status",
-          "env",
-          "dependencies"
-        ],
+        "required": ["service", "status", "env", "dependencies"],
         "properties": {
-          "service": {
-            "type": "string",
-            "const": "bisakerja-api"
-          },
-          "status": {
-            "type": "string",
-            "const": "ready"
-          },
-          "env": {
-            "type": "string"
-          },
+          "service": { "type": "string", "const": "bisakerja-api" },
+          "status": { "type": "string", "const": "ready" },
+          "env": { "type": "string" },
           "dependencies": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "postgresql"
-            ],
+            "required": ["postgresql"],
             "properties": {
               "postgresql": {
                 "type": "string",
-                "enum": [
-                  "healthy",
-                  "unhealthy"
-                ]
+                "enum": ["healthy", "unhealthy"]
               }
             }
           }

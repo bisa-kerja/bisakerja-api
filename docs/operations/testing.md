@@ -179,7 +179,7 @@ The repository GitHub Actions CI workflow validates changes on:
 
 Current CI workflow structure:
 
-- `.github/workflows/ci.yml` contains two jobs: repository quality validation and PostgreSQL-backed migration or repository verification.
+- `.github/workflows/ci.yml` contains three jobs: repository quality validation, PostgreSQL-backed migration or repository verification, and final docs synchronization for push events to `develop` or `main`.
 
 Current CI expectations:
 
@@ -190,11 +190,13 @@ Current CI expectations:
 - run `bun run format:check`
 - run `bun run typecheck`
 - regenerate `docs/generated/openapi.json`, `docs/generated/routes.md`, and `docs/generated/sync-readiness.md`
+- expect `docs/generated/openapi.json` to be written with the repository Prettier rules so `bun run format:check` and the OpenAPI sync gate agree
 - run Scalar config validation with Node.js 24 because the current Scalar CLI requires that runtime level
 - run `bun run docs:check` and `bun run docs:scalar:check-config`
 - fail if `docs/generated/openapi.json` changes after regeneration, because the committed OpenAPI artifact must stay in sync with source
 - run `bun test`, `bun run test:routes`, `bun run test:contracts`, and `bun run test:smoke`
 - run `bun run prisma:verify:migrations` in a separate PostgreSQL-backed job
+- run docs sync only after both CI validation jobs succeed, and only for push events to `develop` or `main`
 
 The route inventory and sync-readiness markdown files are still regenerated in CI and CD, but they are not used as a clean-working-tree gate because they intentionally embed runtime metadata such as generation timestamps and source references.
 

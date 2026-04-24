@@ -152,11 +152,12 @@ Current repository commands:
 Current repository automation:
 
 - `.github/workflows/ci.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches.
-- `.github/workflows/sync-docs.yml` runs only after `CI` succeeds on `develop` or `main`.
 - The `CI` workflow regenerates documentation artifacts and generates the Prisma client before static analysis or docs validation so clean runners have the required generated types.
 - The `CI` workflow fails if the committed `docs/generated/openapi.json` artifact is stale.
+- The generated OpenAPI JSON artifact should be emitted with repository Prettier formatting so documentation validation and formatting checks do not disagree.
 - Route inventory and sync-readiness markdown are regenerated for validation and publishing, but they are not clean-tree gates because they intentionally include generation metadata.
-- Cross-repository docs sync happens only after the validated `CI` workflow passes.
+- The final `sync-docs` job inside `CI` runs only for push events to `develop` or `main`, and only after the validation jobs pass.
+- Cross-repository docs sync happens only after the validated `CI` jobs pass.
 
 Repository-level Scalar Docs configuration lives in `scalar.config.json`. It is not part of the `docs/**` sync payload itself, but it acts as the site map for previewing or publishing the same backend docs set through Scalar Docs using repo-managed files.
 

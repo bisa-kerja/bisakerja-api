@@ -211,12 +211,12 @@ Before deploying to staging or production:
 
 The repository currently uses one validation workflow and one follow-up docs sync workflow.
 
-Their purpose is to keep release hygiene and documentation delivery automated even before a hosting-specific deploy target is finalized.
+Its purpose is to keep release hygiene and documentation delivery automated even before a hosting-specific deploy target is finalized.
 
 Current workflow structure:
 
-- `.github/workflows/ci.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches. It performs the release-readiness validation jobs.
-- `.github/workflows/sync-docs.yml` runs only after `CI` succeeds on `develop` or `main`, then pushes service-owned docs into the central docs repository.
+- `.github/workflows/ci.yml` runs on push to `develop` and `main`, plus pull requests targeting those branches.
+- The same workflow contains a final `sync-docs` job that runs only for push events to `develop` or `main`, and only after the validation jobs succeed.
 
 Current delivery behavior:
 
@@ -225,9 +225,9 @@ Current delivery behavior:
 - rerun Prisma validation, typecheck, docs generation, docs validation, and Scalar config validation
 - fail if generated docs differ from committed artifacts
 - run `bun run prisma:verify:migrations` against a PostgreSQL service container
-- after successful CI verification, synchronize service-owned docs from the validated commit into the central `bisakerja-docs` repository through the dedicated docs-sync workflow
+- after successful CI verification, synchronize service-owned docs into the central `bisakerja-docs` repository through the final CI job
 
-Because hosting details are still open, these workflows should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
+Because hosting details are still open, this workflow should be treated as delivery readiness and documentation publish automation rather than infrastructure deployment.
 
 Workflow hardening rules:
 

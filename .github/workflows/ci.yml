@@ -137,3 +137,31 @@ jobs:
 
       - name: Verify migrations and repository integration
         run: bun run prisma:verify:migrations
+
+  sync-docs:
+    name: Sync Service Docs To Central Repo
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - quality
+      - database-verification
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Push docs to bisakerja-docs develop
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.DOCS_REPO_TOKEN }}
+        with:
+          source-directory: docs
+          destination-github-username: bisa-kerja
+          destination-repository-name: bisakerja-docs
+          user-email: github-actions[bot]@users.noreply.github.com
+          user-name: github-actions[bot]
+          commit-message: >-
+            sync: backend-api docs from ${{ github.ref_name }} (${{ github.sha }})
+          target-directory: docs/services/backend-api/synced
+          target-branch: develop
