@@ -9,10 +9,8 @@ import type {
   BookmarksRepository,
   BookmarksServiceOptions
 } from "@/modules/bookmarks/bookmarks.types";
-import {
-  serializeJobCard,
-  serializeProvidedFilters
-} from "@/modules/jobs/jobs.mapper";
+import { serializeProvidedFilters } from "@/shared/utils/filters";
+import { serializeJobCard } from "@/shared/utils/job-presentation";
 
 export class BookmarksService {
   private readonly now: () => Date;

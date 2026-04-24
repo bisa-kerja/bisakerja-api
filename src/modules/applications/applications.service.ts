@@ -16,10 +16,8 @@ import type {
   ApplicationStatus,
   UpdateApplicationStatusResult
 } from "@/modules/applications/applications.types";
-import {
-  serializeJobCard,
-  serializeProvidedFilters
-} from "@/modules/jobs/jobs.mapper";
+import { serializeProvidedFilters } from "@/shared/utils/filters";
+import { serializeJobCard } from "@/shared/utils/job-presentation";
 
 export class ApplicationsService {
   private readonly now: () => Date;

@@ -8,11 +8,11 @@ import {
   defaultSalaryCurrency,
   defaultSalaryPeriod
 } from "@/modules/preferences/preferences.constants";
+import { toPreferenceRoleKey } from "@/modules/preferences/preferences.utils";
 import {
   normalizeOptionalWhitespace,
-  normalizeWhitespace,
-  toPreferenceRoleKey
-} from "@/modules/preferences/preferences.utils";
+  normalizeWhitespace
+} from "@/shared/utils/text";
 
 const targetRoleSchema = z
   .string()

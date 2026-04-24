@@ -3,9 +3,9 @@ import { jobsErrorCodes } from "@/modules/jobs/jobs.constants";
 import type { ListJobsQueryInput } from "@/modules/jobs/jobs.schema";
 import {
   serializeJobCard,
-  serializeJobDetail,
-  serializeProvidedFilters
-} from "@/modules/jobs/jobs.mapper";
+  serializeJobDetail
+} from "@/shared/utils/job-presentation";
+import { serializeProvidedFilters } from "@/shared/utils/filters";
 import type {
   JobsRepository,
   JobsServiceOptions

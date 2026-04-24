@@ -1,6 +1,6 @@
-export function normalizeWhitespace(value: string): string {
-  return value.trim().replace(/\s+/g, " ");
-}
+import { normalizeWhitespace } from "@/shared/utils/text";
+
+export { normalizeWhitespace } from "@/shared/utils/text";
 
 export function toSkillSlug(name: string): string {
   return normalizeWhitespace(name)

@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { allowedCareerStatuses } from "@/modules/preferences/preferences.constants";
 import {
   allowedEmploymentTypes,
   allowedExperienceLevels,
-  allowedWorkTypes
-} from "@/modules/jobs/jobs.constants";
+  allowedWorkTypes,
+  allowedCareerStatuses
+} from "@/shared/constants/domain-vocabulary";
 import { allowedSkillGapPriorities } from "@/shared/integrations/model-api.constants";
 import {
   allowedAnalysisLanguages,

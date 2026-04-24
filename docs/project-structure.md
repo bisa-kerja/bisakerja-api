@@ -71,6 +71,8 @@ This structure refines `folder-structur-reference.md` by making module file name
 |   |   `-- index.ts
 |   |
 |   `-- shared/
+|       |-- constants/
+|       |   `-- domain-vocabulary.ts
 |       |-- integrations/
 |       |   `-- model-api.client.ts
 |       |-- libs/
@@ -78,8 +80,11 @@ This structure refines `folder-structur-reference.md` by making module file name
 |       |-- types/
 |       |   `-- global.d.ts
 |       `-- utils/
+|           |-- filters.ts
 |           |-- hash.ts
+|           |-- job-presentation.ts
 |           |-- jwt.ts
+|           |-- text.ts
 |           `-- pagination.ts
 |
 |-- tests/
@@ -105,7 +110,7 @@ This structure refines `folder-structur-reference.md` by making module file name
 | `src/config/`      | Environment validation schema, typed runtime config mapping, logger configuration, and setup   |
 | `src/core/`        | Global framework-level concerns that are not domain-specific                                   |
 | `src/modules/`     | Feature modules and their routes, controllers, services, repositories, schemas, and types      |
-| `src/shared/`      | Reusable utilities, integration clients, shared types, and wrappers used by multiple modules   |
+| `src/shared/`      | Reusable cross-module vocabulary, utilities, integration clients, shared types, and wrappers   |
 | `tests/`           | Unit, integration, route, contract, and fixture test support                                   |
 | `tests/helpers/`   | Shared test utilities such as route injection and environment guards                           |
 | `tests/fixtures/`  | Synthetic users, jobs, model responses, normalized scraper records, and shared fixture schemas |
@@ -138,6 +143,8 @@ Modules may add narrowly scoped extra files when the responsibility is still mod
 If an extra helper starts being reused by multiple modules, move it to `src/shared/**` instead of importing the internal file of another module.
 
 `index.ts` should stay intentionally narrow. Export route factories, stable service/repository contracts, and selected pure helpers only when they are genuinely used by tests, scripts, or other approved consumers. Controllers and route-only helper middleware remain internal by default.
+
+Use `src/shared/constants/` for domain vocabulary that is referenced by multiple modules or by the shared layer itself. Use `src/shared/utils/` for generic helpers that are not owned by a single feature module.
 
 File responsibilities:
 

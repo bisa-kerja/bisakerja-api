@@ -5,7 +5,8 @@ import {
   maxExperienceDescriptionLength,
   maxProfilePhotoBytes
 } from "@/modules/users/users.constants";
-import { normalizeWhitespace, toSkillSlug } from "@/modules/users/users.utils";
+import { toSkillSlug } from "@/modules/users/users.utils";
+import { normalizeWhitespace } from "@/shared/utils/text";
 
 const usernameSchema = z
   .string()

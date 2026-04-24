@@ -49,6 +49,8 @@ Aturan:
 3. `index.ts` hanya mengekspor public API yang memang dibutuhkan dari luar module. Jangan mengekspor controller/helper internal tanpa alasan jelas.
 4. Controller class, route-only middleware helper, dan validator wiring internal tidak diekspor dari `index.ts`.
 5. Pure helper dari service boleh diekspor hanya jika memang dipakai oleh test, script, atau consumer lintas module yang sah.
+6. Vocabulary domain bersama seperti enum/allowed values yang dipakai lintas module atau oleh `src/shared/**` harus dipusatkan di `src/shared/constants/**`, bukan diduplikasi di beberapa module.
+7. Helper generik seperti normalisasi teks, filter serialization, atau presenter yang sudah dipakai lintas module harus dipusatkan di `src/shared/utils/**`.
 
 ## Peran Setiap Jenis File
 
@@ -180,6 +182,7 @@ Gunakan checklist ini saat review atau menambah module baru:
 7. Helper normalisasi string, slug, atau filter yang bersifat generik tidak boleh diduplikasi antar module.
 8. `index.ts` harus sempit: ekspor route factory, kontrak type utama, dan dependency public yang memang dipakai oleh app/test. Hindari kebocoran implementation detail.
 9. Controller dan helper yang hanya dipakai oleh `route.ts` tetap dianggap internal module.
+10. Shared layer tidak boleh bergantung pada module constants atau module utils internal. Jika `src/shared/**` membutuhkan vocabulary domain, pindahkan vocabulary itu ke shared constants lebih dulu.
 
 ## Pola Implementasi yang Sudah Diterapkan (April 2026)
 
