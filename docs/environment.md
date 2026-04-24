@@ -43,17 +43,18 @@ Environment variables must be validated at startup with Zod in `src/config/env.t
 
 ## Database Variables
 
-| Variable              | Required | Local default | Notes                                                                |
-| --------------------- | -------- | ------------- | -------------------------------------------------------------------- |
-| `DATABASE_URL`        | Yes      | None          | PostgreSQL connection string used by Prisma                          |
-| `DIRECT_DATABASE_URL` | No       | None          | Optional direct database URL for migrations if pooling is introduced |
-| `PRISMA_LOG_LEVEL`    | No       | `warn`        | Prisma logging level for development and debugging                   |
-| `RUN_DATABASE_TESTS`  | No       | `false`       | Test-only flag that enables repository tests against PostgreSQL      |
+| Variable              | Required | Local default | Notes                                                                               |
+| --------------------- | -------- | ------------- | ----------------------------------------------------------------------------------- |
+| `DATABASE_URL`        | Yes      | None          | PostgreSQL connection string used by Prisma runtime; prefer the provider pooler URL |
+| `DIRECT_DATABASE_URL` | No       | None          | Optional direct PostgreSQL URL for Prisma migrations or long-running admin tasks    |
+| `PRISMA_LOG_LEVEL`    | No       | `warn`        | Prisma logging level for development and debugging                                  |
+| `RUN_DATABASE_TESTS`  | No       | `false`       | Test-only flag that enables repository tests against PostgreSQL                     |
 
 Rules:
 
 - Never commit real database credentials.
 - Use a separate database for tests.
+- For Neon, Supabase, or similar managed PostgreSQL, set `DATABASE_URL` to the pooled connection string and `DIRECT_DATABASE_URL` to the non-pooled direct host when the provider recommends it for migrations.
 - Keep `RUN_DATABASE_TESTS=false` for ordinary local test runs unless the isolated test database is running and migrations are applied.
 - Run migrations explicitly in deployment workflows; do not rely on application startup to mutate production schema unless that deployment policy is approved.
 
@@ -221,12 +222,13 @@ Rules:
 - The deployment workflow writes its secret payload to `.env.production`.
 - `APP_ENV` in that file must match the target runtime environment, because the remote deploy script rejects mismatches when an explicit expectation is configured.
 - The current staging rollout expects `APP_ENV=staging` with `NODE_ENV=production`.
-- Compose-specific variables such as `APP_BIND_ADDRESS`, `APP_PORT`, and PostgreSQL bootstrap values should stay documented in this template.
+- Compose-specific variables such as `APP_BIND_ADDRESS` and `APP_PORT` should stay documented in this template.
+- The deployment template no longer bootstraps a PostgreSQL container; `DATABASE_URL` and optional `DIRECT_DATABASE_URL` must point to the managed database instance directly.
 - The current rollout still targets staging first, but it intentionally uses the same production-style env file that will later be reused when the deployment branch changes to `main`.
 
 ## `.env.test.example` Requirements
 
-The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
+The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. That isolated database may live on localhost or on a managed PostgreSQL provider, but the URL should clearly identify test-only scope such as a dedicated test database name. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
 
 Test defaults should use fake providers or local mocks for email, Model API, Scraper API, and uploads. Test logs should default to `silent` unless a failing test needs diagnostic output.
 

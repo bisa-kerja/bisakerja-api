@@ -76,7 +76,9 @@ export const envSchema = z
     FRONTEND_URL: z.url().default("http://localhost:5173"),
     DATABASE_URL: z
       .url()
-      .default("postgresql://postgres:postgres@localhost:5432/bisakerja_api"),
+      .default(
+        "postgresql://app_user:replace-with-password@ep-local-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api?sslmode=require&channel_binding=require"
+      ),
     DIRECT_DATABASE_URL: z.string().optional().default(""),
     PRISMA_LOG_LEVEL: z
       .enum(["query", "info", "warn", "error"])

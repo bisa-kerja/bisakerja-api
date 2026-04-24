@@ -4,7 +4,7 @@ import { defineConfig } from "prisma/config";
 const databaseUrl =
   process.env.DIRECT_DATABASE_URL ||
   process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5432/bisakerja_api";
+  "postgresql://app_user:replace-with-password@ep-local-breeze-a1b2c3d4.ap-southeast-1.aws.neon.tech/bisakerja_api?sslmode=require&channel_binding=require";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

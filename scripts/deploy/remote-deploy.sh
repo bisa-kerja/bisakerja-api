@@ -89,9 +89,6 @@ export COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME_VALUE"
 log "Pulling latest application image $APP_IMAGE"
 docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" pull app
 
-log "Starting database service"
-docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" up -d --wait db
-
 log "Applying Prisma migrations"
 docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" run --rm --no-deps app bun run prisma:migrate:deploy
 

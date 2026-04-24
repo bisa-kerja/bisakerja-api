@@ -14,7 +14,7 @@ describe("integration test environment guard", () => {
     expect(() => {
       assertIntegrationTestEnvironment(testConfig(), {
         databaseUrl:
-          "postgresql://postgres:postgres@localhost:5432/bisakerja_api_test"
+          "postgresql://app_user:password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require"
       });
     }).not.toThrow();
   });

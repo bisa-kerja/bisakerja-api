@@ -7,12 +7,6 @@ services:
     env_file:
       - path: .env.production
         required: false
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-bisakerja_api}
-      DIRECT_DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-bisakerja_api}
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:3000"
     healthcheck:
@@ -37,35 +31,6 @@ services:
         max-size: 10m
         max-file: "3"
 
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-bisakerja_api}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-bisakerja_api}"
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    security_opt:
-      - no-new-privileges:true
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: "3"
-
 volumes:
   app-storage:
-    driver: local
-  postgres-data:
     driver: local

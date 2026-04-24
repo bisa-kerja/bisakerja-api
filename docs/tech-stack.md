@@ -131,10 +131,10 @@ The project uses these script names for scaffold and CI wiring:
 | `bun run test:smoke`               | Startup, env, health, and basic route smoke tests                                                                      |
 | `bun run prisma:generate`          | Generate Prisma client into `src/generated/prisma`                                                                     |
 | `bun run prisma:migrate:dev`       | Create/apply local migrations only                                                                                     |
-| `bun run prisma:migrate:deploy`    | Apply existing migrations in test/staging/production style environments                                                |
+| `bun run prisma:migrate:deploy`    | Apply existing migrations in test/staging/production style environments, typically against managed PostgreSQL          |
 | `bun run prisma:seed`              | Seed deterministic local data for every Prisma table, including auth, user, jobs, applications, and AI history samples |
-| `bun run prisma:validate`          | Validate Prisma schema syntax and configuration                                                                        |
-| `bun run prisma:verify:migrations` | Verify migrations against an empty test database                                                                       |
+| `bun run prisma:validate`          | Validate Prisma schema syntax and configuration for the configured PostgreSQL URLs                                     |
+| `bun run prisma:verify:migrations` | Verify migrations against an empty isolated test database                                                              |
 
 ## Formatting And Linting Policy
 

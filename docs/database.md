@@ -8,12 +8,18 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/database.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Database Design
 
 PostgreSQL is the durable source of truth for Bisakerja application state and normalized job data. Prisma is the Backend API schema, migration, and query abstraction.
+
+Operational note:
+
+- Runtime environments are expected to use managed or otherwise externally hosted PostgreSQL through `DATABASE_URL`.
+- If the provider exposes a pooled runtime URL and a separate direct host for migrations, configure the pooler in `DATABASE_URL` and the direct host in `DIRECT_DATABASE_URL`.
+- The deployment Compose file no longer provisions its own PostgreSQL container.
 
 This document defines the initial database architecture for MVP documentation. It is intentionally implementation-ready, but the final `prisma/schema.prisma` must still be reviewed during schema implementation.
 

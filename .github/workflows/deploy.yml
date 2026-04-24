@@ -200,4 +200,4 @@ jobs:
             cd "${{ secrets.DEPLOY_REMOTE_PATH }}"
             export APP_PORT="${{ env.DEFAULT_APP_PORT }}" COMPOSE_PROJECT_NAME="${{ env.COMPOSE_PROJECT_NAME }}"
             docker compose -f "${{ env.COMPOSE_FILE }}" --env-file "${{ env.RUNTIME_ENV_FILE }}" ps
-            docker compose -f "${{ env.COMPOSE_FILE }}" --env-file "${{ env.RUNTIME_ENV_FILE }}" logs --tail=100 app db
+            docker compose -f "${{ env.COMPOSE_FILE }}" --env-file "${{ env.RUNTIME_ENV_FILE }}" logs --tail=100 app

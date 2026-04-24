@@ -1,6 +1,6 @@
 ---
 title: Backend API Deployment Operations
-description: Bun runtime, environment variables, PostgreSQL, Prisma migrations, Docker readiness, environment topology, release readiness, and rollback direction for the Bisakerja Backend API.
+description: Bun runtime, environment variables, managed PostgreSQL, Prisma migrations, Docker readiness, environment topology, release readiness, and rollback direction for the Bisakerja Backend API.
 owner: backend-owner
 reviewers:
   - platform-docs-maintainer
@@ -108,7 +108,12 @@ Deployment requirements:
 - Ensure backups exist before production launch.
 - Monitor connection failures, slow queries, and migration failures.
 
-If a pooler is introduced, document whether Prisma uses `DATABASE_URL`, `DIRECT_DATABASE_URL`, or both for runtime and migrations.
+For managed providers such as Neon or Supabase, prefer this split:
+
+- `DATABASE_URL` uses the provider pooler or standard runtime URL.
+- `DIRECT_DATABASE_URL` uses the direct host when Prisma migrations should bypass the pooler.
+
+If the provider does not require a separate direct connection, `DIRECT_DATABASE_URL` may stay empty and Prisma will reuse `DATABASE_URL`.
 
 ## Prisma Migration Execution
 
@@ -192,13 +197,12 @@ The repository provides one deployment Compose file:
 
 Current compose behavior:
 
-- the app service overrides `DATABASE_URL` and `DIRECT_DATABASE_URL` so the container talks to the Compose PostgreSQL service by hostname `db`
-- PostgreSQL persists data in a named volume
+- the app service reads `DATABASE_URL` and optional `DIRECT_DATABASE_URL` directly from `.env.production`
 - uploaded CV files persist in a named volume mounted at `/app/storage/uploads`
 - liveness uses `GET /health/live`
 - the backend port binds to loopback by default, so it is intended to sit behind a reverse proxy or host-level tunnel
-- PostgreSQL is not published to the host
-- the app and database containers both set `no-new-privileges`
+- the Compose topology no longer provisions a PostgreSQL container, so database durability and TLS are handled by the external provider
+- the app container sets `no-new-privileges`
 - log rotation is configured through Docker `json-file` options
 
 Compose-only variables:
@@ -206,7 +210,6 @@ Compose-only variables:
 - `APP_IMAGE` overrides the image tag or digest to pull
 - `APP_BIND_ADDRESS` controls the host bind address for the backend port
 - `APP_PORT` overrides the published backend port
-- `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` tune the PostgreSQL service
 
 The current rollout still targets staging first, but it intentionally uses the same production-style Compose topology that will later be reused when the deployment branch changes to `main`.
 
@@ -222,7 +225,6 @@ Its scope is intentionally narrow:
 - write the runtime `.env.production` file from GitHub Actions secrets
 - authenticate the VPS to GHCR
 - pull the latest app image
-- start PostgreSQL
 - run `prisma migrate deploy`
 - start or recreate the backend container
 - run `GET /health/live` and `GET /health/ready` smoke checks from the host

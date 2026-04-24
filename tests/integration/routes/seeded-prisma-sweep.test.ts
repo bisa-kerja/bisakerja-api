@@ -25,8 +25,8 @@ import { injectRoute } from "../../helpers/route";
 import { assertIntegrationTestEnvironment } from "../../helpers/test-environment";
 
 const testDatabaseUrl =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@127.0.0.1:5432/bisakerja_api_test";
+  process.env.DATABASE_URL ??
+  "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require";
 const seedPassword = process.env.SEED_USER_PASSWORD ?? "Password123!";
 const annisa = users.find(
   (user) => user.email === "annisa.pratama@example.test"

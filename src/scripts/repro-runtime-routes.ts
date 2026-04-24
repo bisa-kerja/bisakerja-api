@@ -58,8 +58,10 @@ const config = loadEnv({
   PRISMA_LOG_LEVEL: process.env.PRISMA_LOG_LEVEL ?? "warn",
   DATABASE_URL:
     process.env.DATABASE_URL ??
-    "postgresql://salmanabd:salmanabd@localhost:5432/bisakerja_api_test",
-  DIRECT_DATABASE_URL: process.env.DIRECT_DATABASE_URL ?? "",
+    "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require",
+  DIRECT_DATABASE_URL:
+    process.env.DIRECT_DATABASE_URL ??
+    "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require",
   JOB_STALE_AFTER_HOURS: process.env.JOB_STALE_AFTER_HOURS ?? "72"
 });
 
@@ -124,7 +126,7 @@ async function main() {
 }
 
 main()
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error("REPRO_ERROR", error);
     process.exitCode = 1;
   })
