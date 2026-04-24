@@ -22,6 +22,8 @@
     "docs:generate:routes": "bun run src/scripts/generate-route-inventory.ts",
     "docs:generate:sync-readiness": "bun run src/scripts/generate-sync-readiness.ts",
     "docs:check": "bun run src/scripts/verify-docs.ts",
+    "docs:scalar:check-config": "bunx @scalar/cli project check-config scalar.config.json",
+    "docs:scalar:preview": "bunx @scalar/cli project preview scalar.config.json",
     "cleanup:cv-uploads": "bun run src/scripts/cleanup-expired-cv-files.ts",
     "prisma:generate": "bunx prisma generate",
     "prisma:migrate:dev": "bunx prisma migrate dev",

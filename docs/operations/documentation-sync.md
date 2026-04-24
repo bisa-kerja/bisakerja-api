@@ -140,6 +140,10 @@ Current repository commands:
 - `bun run docs:generate:routes` writes `docs/generated/routes.md` from the runtime route registry.
 - `bun run docs:generate:sync-readiness` writes `docs/generated/sync-readiness.md` from the current `docs/**` tree and sync target rules.
 - `bun run docs:check` validates frontmatter and parses all fenced `json` examples under `docs/**`.
+- `bun run docs:scalar:check-config` validates `scalar.config.json` through the Scalar CLI.
+- `bun run docs:scalar:preview` starts a local Scalar Docs preview using `scalar.config.json`.
+
+Repository-level Scalar Docs configuration lives in `scalar.config.json`. It is not part of the `docs/**` sync payload itself, but it acts as the site map for previewing or publishing the same backend docs set through Scalar Docs using repo-managed files.
 
 The central repository should validate:
 

@@ -45,6 +45,13 @@ For documentation-related changes, also regenerate the committed artifacts when 
 - `bun run docs:generate:openapi`
 - `bun run docs:generate:routes`
 - `bun run docs:generate:sync-readiness`
+- `bun run docs:scalar:check-config`
+
+If you preview or publish the documentation through Scalar Docs, keep `scalar.config.json` in sync with any new page, renamed page, or OpenAPI path move.
+
+To preview the repo-managed docs site locally through Scalar Docs, use:
+
+- `bun run docs:scalar:preview`
 
 ## Testing Tools
 

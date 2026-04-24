@@ -1,0 +1,166 @@
+{
+  "$schema": "https://registry.scalar.com/@scalar/schemas/config",
+  "scalar": "2.0.0",
+  "info": {
+    "title": "Bisakerja Backend API Docs",
+    "description": "Service documentation and API reference for the Bisakerja Backend API."
+  },
+  "navigation": {
+    "routes": {
+      "/": {
+        "title": "Overview",
+        "type": "page",
+        "filepath": "docs/overview.md"
+      },
+      "/api": {
+        "title": "API Reference",
+        "type": "openapi",
+        "filepath": "docs/generated/openapi.json"
+      },
+      "/architecture": {
+        "title": "Architecture",
+        "type": "page",
+        "filepath": "docs/architecture.md"
+      },
+      "/environment": {
+        "title": "Environment",
+        "type": "page",
+        "filepath": "docs/environment.md"
+      },
+      "/project-structure": {
+        "title": "Project Structure",
+        "type": "page",
+        "filepath": "docs/project-structure.md"
+      },
+      "/database": {
+        "title": "Database",
+        "type": "page",
+        "filepath": "docs/database.md"
+      },
+      "/api-reference": {
+        "title": "API Guide",
+        "type": "page",
+        "filepath": "docs/api-reference.md"
+      },
+      "/api-response-standard": {
+        "title": "API Response Standard",
+        "type": "page",
+        "filepath": "docs/api-response-standard.md"
+      },
+      "/modules": {
+        "title": "Modules",
+        "type": "group",
+        "children": {
+          "/modules/auth": {
+            "title": "Auth",
+            "type": "page",
+            "filepath": "docs/modules/auth.md"
+          },
+          "/modules/users": {
+            "title": "Users",
+            "type": "page",
+            "filepath": "docs/modules/users.md"
+          },
+          "/modules/preferences": {
+            "title": "Preferences",
+            "type": "page",
+            "filepath": "docs/modules/preferences.md"
+          },
+          "/modules/jobs": {
+            "title": "Jobs",
+            "type": "page",
+            "filepath": "docs/modules/jobs.md"
+          },
+          "/modules/bookmarks": {
+            "title": "Bookmarks",
+            "type": "page",
+            "filepath": "docs/modules/bookmarks.md"
+          },
+          "/modules/applications": {
+            "title": "Applications",
+            "type": "page",
+            "filepath": "docs/modules/applications.md"
+          },
+          "/modules/ai-job-fit": {
+            "title": "AI Job Fit",
+            "type": "page",
+            "filepath": "docs/modules/ai-job-fit.md"
+          },
+          "/modules/ai-cv-analyzer": {
+            "title": "AI CV Analyzer",
+            "type": "page",
+            "filepath": "docs/modules/ai-cv-analyzer.md"
+          }
+        }
+      },
+      "/operations": {
+        "title": "Operations",
+        "type": "group",
+        "children": {
+          "/operations/testing": {
+            "title": "Testing",
+            "type": "page",
+            "filepath": "docs/operations/testing.md"
+          },
+          "/operations/security": {
+            "title": "Security",
+            "type": "page",
+            "filepath": "docs/operations/security.md"
+          },
+          "/operations/observability": {
+            "title": "Observability",
+            "type": "page",
+            "filepath": "docs/operations/observability.md"
+          },
+          "/operations/deployment": {
+            "title": "Deployment",
+            "type": "page",
+            "filepath": "docs/operations/deployment.md"
+          },
+          "/operations/documentation-sync": {
+            "title": "Documentation Sync",
+            "type": "page",
+            "filepath": "docs/operations/documentation-sync.md"
+          }
+        }
+      },
+      "/integrations": {
+        "title": "Integrations",
+        "type": "group",
+        "children": {
+          "/integrations/model-api": {
+            "title": "Model API",
+            "type": "page",
+            "filepath": "docs/integrations/model-api.md"
+          },
+          "/integrations/scraper-api": {
+            "title": "Scraper API",
+            "type": "page",
+            "filepath": "docs/integrations/scraper-api.md"
+          },
+          "/integrations/job-sources": {
+            "title": "Job Sources",
+            "type": "page",
+            "filepath": "docs/integrations/job-sources.md"
+          },
+          "/integrations/resend": {
+            "title": "Resend",
+            "type": "page",
+            "filepath": "docs/integrations/resend.md"
+          }
+        }
+      }
+    }
+  },
+  "siteConfig": {
+    "theme": "default",
+    "layout": {
+      "toc": true,
+      "header": true,
+      "search": {
+        "enabled": true,
+        "position": "header"
+      }
+    }
+  }
+}

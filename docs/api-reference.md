@@ -23,13 +23,14 @@ Machine-readable OpenAPI output now lives in `docs/generated/openapi.json`. The 
 
 ## OpenAPI And Scalar
 
-The backend now exposes one canonical OpenAPI document and one interactive viewer:
+The backend now exposes one canonical OpenAPI document, one runtime interactive viewer, and one repository-level Scalar Docs config:
 
-| Surface                  | Path                          | Purpose                                                                |
-| ------------------------ | ----------------------------- | ---------------------------------------------------------------------- |
-| Generated artifact       | `docs/generated/openapi.json` | Committed machine-readable contract used for review, sync, and tooling |
-| Runtime OpenAPI endpoint | `/openapi.json`               | Same contract served directly by the running backend                   |
-| Runtime Scalar reference | `/docs/api`                   | Interactive API documentation rendered by Scalar with default config   |
+| Surface                  | Path                          | Purpose                                                                    |
+| ------------------------ | ----------------------------- | -------------------------------------------------------------------------- |
+| Generated artifact       | `docs/generated/openapi.json` | Committed machine-readable contract used for review, sync, and tooling     |
+| Runtime OpenAPI endpoint | `/openapi.json`               | Same contract served directly by the running backend                       |
+| Runtime Scalar reference | `/docs/api`                   | Interactive API documentation rendered by Scalar with default config       |
+| Scalar Docs config       | `scalar.config.json`          | Repository-level config for previewing or publishing docs with Scalar Docs |
 
 Scalar is intentionally configured with the simplest setup that matches the official documentation pattern: it only points to the local OpenAPI URL and does not require additional theme or proxy customization for the current same-origin backend setup.
 
@@ -41,12 +42,19 @@ Recommended local workflow:
 2. Open `http://localhost:3000/docs/api`.
 3. Use `http://localhost:3000/openapi.json` when another tool needs the raw OpenAPI contract.
 
+For repository-based Scalar Docs preview, use the committed [scalar.config.json](/Users/macbookpro/Development/bisakerja-api/scalar.config.json:1). It maps the existing `docs/**` pages plus `docs/generated/openapi.json` into a Scalar Docs navigation tree, so the same content can be previewed or published without reorganizing the repository.
+
+Available Scalar Docs commands from `package.json`:
+
+- `bun run docs:scalar:check-config`
+- `bun run docs:scalar:preview`
+
 When routes or request and response contracts change:
 
 1. Update the relevant module implementation and module docs.
 2. Regenerate the committed OpenAPI artifact with `bun run docs:generate:openapi`.
 3. Regenerate route inventory and sync-readiness docs with `bun run docs:generate:routes` and `bun run docs:generate:sync-readiness` when the route surface or sync metadata changes.
-4. Run documentation checks before merging.
+4. Run `bun run docs:check` and `bun run docs:scalar:check-config` before merging.
 
 ## Documentation Map
 
@@ -57,6 +65,7 @@ Use the documentation set in this order when onboarding or reviewing API changes
 | `docs/api-reference.md`                 | Main API index, route grouping, auth model, shared query and header rules |
 | `docs/generated/openapi.json`           | Canonical machine-readable contract for Scalar and external tooling       |
 | `docs/generated/routes.md`              | Fast runtime drift check against mounted routes                           |
+| `scalar.config.json`                    | Scalar Docs site map that wires repo pages and OpenAPI into one docs site |
 | `docs/modules/*.md`                     | Per-module endpoint behavior, request and response examples, and errors   |
 | `docs/api-response-standard.md`         | Shared success and error envelope rules                                   |
 | `docs/operations/testing.md`            | Test commands, folder structure, helpers, and how to add new tests        |
