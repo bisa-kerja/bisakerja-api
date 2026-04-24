@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/testing.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Testing Strategy
@@ -245,12 +245,14 @@ Security-sensitive behavior must have automated tests before the corresponding f
 Required security test cases:
 
 - Unauthenticated users cannot access profile, preference, bookmark, tracker, AI job fit, or CV analyzer routes.
+- Protected routes reject missing, malformed, invalid, and expired access tokens with `401 UNAUTHENTICATED`.
 - Authenticated users cannot read or mutate another user's records.
 - Password reset and email verification tokens expire.
 - Token or session logout invalidates future use according to the selected auth strategy.
 - CORS rejects disallowed origins in production-like configuration.
+- Refresh cookie responses honor configured `Secure` and `SameSite` flags.
 - Upload validation rejects unsupported MIME types, oversized files, and missing files.
-- Error responses do not include stack traces, secrets, tokens, OTP values, raw CV contents, or raw downstream payloads.
+- Error and audit log assertions verify that responses do not include stack traces, secrets, tokens, OTP values, raw CV contents, or raw downstream payloads.
 
 ## Smoke Tests
 

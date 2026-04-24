@@ -259,6 +259,21 @@ describe("applications routes", () => {
       toStatus: "INTERVIEW"
     });
 
+    const otherUser = await injectRoute(context.app, {
+      method: "PATCH",
+      url: `/api/v1/me/applications/${application.id}/status`,
+      headers: authHeaders("user-2", "req_applications_status_other"),
+      body: { status: "REJECTED" }
+    });
+
+    expect(otherUser.status).toBe(404);
+    expect(otherUser.body).toMatchObject({
+      error: {
+        code: "APPLICATION_NOT_FOUND",
+        requestId: "req_applications_status_other"
+      }
+    });
+
     const invalidTransition = await injectRoute(context.app, {
       method: "PATCH",
       url: `/api/v1/me/applications/${application.id}/status`,

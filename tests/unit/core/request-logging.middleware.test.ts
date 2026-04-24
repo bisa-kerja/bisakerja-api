@@ -32,7 +32,9 @@ describe("requestLoggingMiddleware", () => {
       method: "POST",
       url: "/login?token=secret-query-token",
       headers: {
-        "x-request-id": "req_log_123"
+        "x-request-id": "req_log_123",
+        Authorization: "Bearer secret-header-token",
+        Cookie: "session=secret-cookie"
       },
       body: {
         email: "user@example.test",
@@ -61,6 +63,8 @@ describe("requestLoggingMiddleware", () => {
     expect(serializedLog).not.toContain("secret-password");
     expect(serializedLog).not.toContain("secret-token");
     expect(serializedLog).not.toContain("secret-query-token");
+    expect(serializedLog).not.toContain("secret-header-token");
+    expect(serializedLog).not.toContain("secret-cookie");
   });
 
   test("includes error code when the error handler maps a failure", async () => {

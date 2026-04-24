@@ -12,27 +12,35 @@ describe("audit event helper", () => {
         password: "plain",
         profile: {
           displayName: "Test User",
-          refreshToken: "token-value"
+          refreshToken: "token-value",
+          authorizationHeader: "Bearer secret"
         },
         files: [
           {
             fileMetadataId: "cv_123",
             rawCvContent: "private cv text"
           }
-        ]
+        ],
+        serviceCredential: "service-secret",
+        rawModelPayload: {
+          prompt: "private model input"
+        }
       })
     ).toEqual({
       password: "[REDACTED]",
       profile: {
         displayName: "Test User",
-        refreshToken: "[REDACTED]"
+        refreshToken: "[REDACTED]",
+        authorizationHeader: "[REDACTED]"
       },
       files: [
         {
           fileMetadataId: "cv_123",
           rawCvContent: "[REDACTED]"
         }
-      ]
+      ],
+      serviceCredential: "[REDACTED]",
+      rawModelPayload: "[REDACTED]"
     });
   });
 

@@ -145,6 +145,17 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         user.id,
         job.id
       );
+      const otherUser = await context.prisma.user.create({
+        data: {
+          email: `cv-other-${context.runId}@example.test`,
+          username: `cv-other-${context.runId}`,
+          emailVerifiedAt: new Date("2026-04-22T00:00:00.000Z")
+        }
+      });
+      const otherUserHasBookmark = await repository.hasOwnedBookmarkForJob(
+        otherUser.id,
+        job.id
+      );
       const expiredBeforeDelete = await repository.findExpiredActiveCvFiles(
         new Date("2026-04-25T00:00:00.000Z")
       );
@@ -163,6 +174,7 @@ describe("PrismaAiCvAnalyzerRepository", () => {
 
       expect(visibleJob).toMatchObject({ id: job.id, title: job.title });
       expect(hasBookmark).toBe(true);
+      expect(otherUserHasBookmark).toBe(false);
       expect(expiredBeforeDelete).toEqual([
         {
           id: metadata.id,

@@ -3,6 +3,7 @@ import type { ErrorRequestHandler } from "express";
 import { AppError, PayloadTooLargeError } from "@/core/errors/app.error";
 import { errorResponse } from "@/core/responses/response.formatter";
 import { logger } from "@/config/logger";
+import { sanitizeSensitiveValue } from "@/shared/observability/redaction";
 
 function normalizeError(error: unknown): AppError {
   if (error instanceof AppError) {
@@ -61,7 +62,7 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
         appError.message,
         appError.code,
         requestId,
-        appError.details
+        sanitizeSensitiveValue(appError.details)
       )
     );
 };

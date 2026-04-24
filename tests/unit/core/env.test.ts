@@ -49,6 +49,36 @@ describe("environment validation", () => {
     ).toThrow(ZodError);
   });
 
+  test("rejects insecure refresh cookie settings", () => {
+    expect(() =>
+      testConfig({
+        AUTH_COOKIE_SAME_SITE: "none",
+        AUTH_COOKIE_SECURE: "false"
+      })
+    ).toThrow(ZodError);
+
+    expect(() =>
+      loadEnv({
+        APP_ENV: "production",
+        NODE_ENV: "production",
+        PORT: "3000",
+        API_PREFIX: "/api/v1",
+        APP_URL: "https://api.bisakerja.example",
+        FRONTEND_URL: "https://bisakerja.example",
+        CORS_ORIGINS: "https://bisakerja.example",
+        AUTH_COOKIE_SECURE: "false",
+        EMAIL_PROVIDER: "smtp",
+        EMAIL_FROM: "no-reply@bisakerja.example",
+        SMTP_HOST: "smtp.example",
+        SMTP_PORT: "587",
+        SMTP_USER: "smtp-user",
+        SMTP_PASSWORD: "smtp-password",
+        MODEL_API_ENABLE_MOCK: "false",
+        MODEL_API_SERVICE_TOKEN: "prod-model-token"
+      })
+    ).toThrow(ZodError);
+  });
+
   test("rejects missing model api token outside mock mode", () => {
     expect(() =>
       testConfig({

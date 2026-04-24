@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/security.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-24
 ---
 
 # Backend API Security Operations
@@ -236,7 +236,7 @@ Required process:
 
 - Select current compatible packages during setup instead of floating `latest` ranges.
 - Review packages for Bun and TypeScript compatibility.
-- Run dependency audit or equivalent security review in CI once package manager workflow is final.
+- Run `bun audit --json` or an equivalent security review in CI once package manager workflow is final.
 - Document accepted high-risk dependency exceptions before release.
 - Avoid abandoned packages for auth, upload parsing, validation, and rate limiting.
 - Keep lockfile committed after package installation.
@@ -248,6 +248,7 @@ Error responses must follow `docs/api-response-standard.md`.
 Rules:
 
 - Do not include stack traces in responses.
+- Redact sensitive keys recursively from error details before returning them to clients.
 - Do not expose raw downstream response bodies.
 - Use `401 UNAUTHENTICATED` for missing, expired, or invalid credentials.
 - Use `403 FORBIDDEN` for authenticated users without permission when existence is not sensitive.
@@ -261,6 +262,7 @@ Rules:
 Before implementing a security-sensitive feature, add tests for:
 
 - Missing auth.
+- Malformed auth header.
 - Invalid auth.
 - Expired token or session.
 - Resource ownership negative case.
@@ -273,6 +275,7 @@ Before release, confirm:
 
 - Production CORS is not wildcard.
 - Production cookie settings are secure if cookies are used.
+- Refresh cookie output reflects configured `HttpOnly`, `Secure`, and `SameSite` flags.
 - Secrets are environment-specific.
 - Password hashing parameters are documented.
 - Upload limits and retention are enforced.

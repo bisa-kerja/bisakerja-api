@@ -176,6 +176,31 @@ describe("auth routes", () => {
     expect(afterLogout.status).toBe(401);
   });
 
+  test("applies configured secure refresh cookie flags", async () => {
+    const context = createAuthRouteContext({
+      AUTH_COOKIE_SECURE: "true",
+      AUTH_COOKIE_SAME_SITE: "none"
+    });
+
+    await registerAndVerify(context);
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/auth/login",
+      headers: { "x-request-id": "req_login_cookie_flags" },
+      body: {
+        identifier: "salman@example.com",
+        password: "StrongPassword123!"
+      }
+    });
+
+    expect(response.status).toBe(200);
+    const cookie = getSetCookie(response);
+    expect(cookie).toContain("HttpOnly");
+    expect(cookie).toContain("Secure");
+    expect(cookie).toContain("SameSite=none");
+  });
+
   test("rejects invalid login and unverified email with safe responses", async () => {
     const context = createAuthRouteContext();
 
