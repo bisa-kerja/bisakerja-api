@@ -191,9 +191,9 @@ Image pull requirements:
 
 The repository provides one deployment Compose file:
 
-| File                 | Runtime env file  | Default image tag | Port exposure default        |
-| -------------------- | ----------------- | ----------------- | ---------------------------- |
-| `docker-compose.yml` | `.env.production` | `develop`         | `127.0.0.1:${APP_PORT}:3000` |
+| File                 | Runtime env file  | Default image tag | Port exposure default           |
+| -------------------- | ----------------- | ----------------- | ------------------------------- |
+| `docker-compose.yml` | `.env.production` | `develop`         | `127.0.0.1:${APP_PORT}:${PORT}` |
 
 Current compose behavior:
 
@@ -210,6 +210,7 @@ Compose-only variables:
 - `APP_IMAGE` overrides the image tag or digest to pull
 - `APP_BIND_ADDRESS` controls the host bind address for the backend port
 - `APP_PORT` overrides the published backend port
+- `PORT` controls the HTTP port inside the app container and must match the internal Compose target and healthcheck
 
 The current rollout still targets staging first, but it intentionally uses the same production-style Compose topology that will later be reused when the deployment branch changes to `main`.
 
@@ -265,7 +266,7 @@ Remote host expectations:
 - The target path already contains a checkout of this repository.
 - The deploy user can run `docker` and write within the target path.
 - The target path contains `docker-compose.yml` and receives updates through `git pull`.
-- Port `3000` is reachable locally on the VPS for smoke checks, whether or not an external reverse proxy sits in front of it.
+- The published `APP_PORT` is reachable locally on the VPS for smoke checks, whether or not an external reverse proxy sits in front of it.
 - The staging VPS should not share the same Docker project namespace, env file, or repository path with any later production rollout host.
 
 ## Health And Readiness In Deployment

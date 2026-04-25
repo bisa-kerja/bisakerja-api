@@ -36,7 +36,7 @@ Environment variables must be validated at startup with Zod in `src/config/env.t
 | `APP_NAME`     | No       | `bisakerja-api`         | Service name used in logs and health output                                |
 | `APP_ENV`      | Yes      | `local`                 | Allowed values should include `local`, `test`, `staging`, and `production` |
 | `NODE_ENV`     | Yes      | `development`           | Runtime ecosystem mode                                                     |
-| `PORT`         | Yes      | `3000`                  | HTTP server port                                                           |
+| `PORT`         | Yes      | `3000`                  | HTTP server port inside the runtime container or local process             |
 | `API_PREFIX`   | Yes      | `/api/v1`               | Default REST route prefix                                                  |
 | `APP_URL`      | Yes      | `http://localhost:3000` | Backend base URL for callbacks or generated links                          |
 | `FRONTEND_URL` | Yes      | `http://localhost:5173` | Primary frontend origin for local development                              |

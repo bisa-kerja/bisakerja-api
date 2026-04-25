@@ -8,14 +8,14 @@ services:
       - path: .env.production
         required: false
     ports:
-      - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:3000"
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:${PORT:-3000}"
     healthcheck:
       test:
         [
           "CMD",
           "bun",
           "-e",
-          "const response = await fetch('http://127.0.0.1:3000/health/live'); if (!response.ok) process.exit(1);"
+          "const response = await fetch('http://127.0.0.1:${PORT:-3000}/health/live'); if (!response.ok) process.exit(1);"
         ]
       interval: 30s
       timeout: 5s

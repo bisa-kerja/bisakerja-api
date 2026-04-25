@@ -6,7 +6,7 @@ APP_DIR="${1:?APP_DIR is required}"
 DEPLOY_BRANCH="${2:?DEPLOY_BRANCH is required}"
 IMAGE_NAME="${3:?IMAGE_NAME is required}"
 IMAGE_TAG="${4:?IMAGE_TAG is required}"
-APP_PORT="${5:-3000}"
+DEFAULT_APP_PORT="${5:-3000}"
 COMPOSE_FILE="${6:-docker-compose.yml}"
 RUNTIME_ENV_FILE="${7:-.env.production}"
 DEPLOY_TARGET="${8:-deploy}"
@@ -57,6 +57,16 @@ declared_app_env="$(
   ' "$RUNTIME_ENV_FILE"
 )"
 
+declared_app_port="$(
+  awk -F= '
+    $1 == "APP_PORT" {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2)
+      print $2
+      exit
+    }
+  ' "$RUNTIME_ENV_FILE"
+)"
+
 if [ -z "$declared_app_env" ]; then
   printf 'APP_ENV is missing in %s\n' "$RUNTIME_ENV_FILE" >&2
   exit 1
@@ -83,7 +93,7 @@ fi
 git pull --ff-only origin "$DEPLOY_BRANCH"
 
 export APP_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
-export APP_PORT
+export APP_PORT="${declared_app_port:-$DEFAULT_APP_PORT}"
 export COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME_VALUE"
 
 log "Pulling latest application image $APP_IMAGE"
