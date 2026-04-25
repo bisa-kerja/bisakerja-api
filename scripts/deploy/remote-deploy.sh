@@ -85,12 +85,18 @@ fi
 log "Syncing repository branch $DEPLOY_BRANCH"
 git fetch origin "$DEPLOY_BRANCH" --prune
 
-CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$CURRENT_BRANCH" != "$DEPLOY_BRANCH" ]; then
-  git checkout "$DEPLOY_BRANCH"
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  printf 'Target repository has local changes; refusing to reset deploy checkout.\n' >&2
+  git status --short >&2
+  exit 1
 fi
 
-git pull --ff-only origin "$DEPLOY_BRANCH"
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$CURRENT_BRANCH" != "$DEPLOY_BRANCH" ]; then
+  git checkout -B "$DEPLOY_BRANCH" "origin/$DEPLOY_BRANCH"
+fi
+
+git reset --hard "origin/$DEPLOY_BRANCH"
 
 export APP_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 export APP_PORT="${declared_app_port:-$DEFAULT_APP_PORT}"
