@@ -24,6 +24,8 @@ import { modelApiFixtures } from "../../fixtures/model-api";
 import { injectRoute } from "../../helpers/route";
 import { assertIntegrationTestEnvironment } from "../../helpers/test-environment";
 
+const describeIfDatabaseTestsEnabled =
+  process.env.RUN_DATABASE_TESTS === "true" ? describe : describe.skip;
 const testDatabaseUrl =
   process.env.DATABASE_URL ??
   "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require";
@@ -62,7 +64,7 @@ const seededJobForDetail = jobForDetail;
 const seededJobForBookmark = jobForBookmark;
 const seededJobForNewApplication = jobForNewApplication;
 
-describe("seeded Prisma route sweep", () => {
+describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
   const emailProvider = new CapturingEmailProvider();
   const config = testConfig({
     DATABASE_URL: testDatabaseUrl,

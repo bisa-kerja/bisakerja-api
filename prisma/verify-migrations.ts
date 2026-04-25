@@ -1,13 +1,18 @@
+function getOptionalEnv(name: string, fallback = "") {
+  return Object.prototype.hasOwnProperty.call(process.env, name)
+    ? (process.env[name] ?? fallback)
+    : fallback;
+}
+
 const verificationEnv = {
   ...process.env,
   APP_ENV: process.env.APP_ENV || "test",
   NODE_ENV: process.env.NODE_ENV || "test",
-  DATABASE_URL:
-    process.env.DATABASE_URL ||
-    "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require",
-  DIRECT_DATABASE_URL:
-    process.env.DIRECT_DATABASE_URL ||
-    "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require",
+  DATABASE_URL: getOptionalEnv(
+    "DATABASE_URL",
+    "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require"
+  ),
+  DIRECT_DATABASE_URL: getOptionalEnv("DIRECT_DATABASE_URL"),
   RUN_DATABASE_TESTS: "true"
 };
 
