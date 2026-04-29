@@ -109,16 +109,18 @@ Manifest rules:
 
 Path mapping must be deterministic.
 
-| Source path                     | Latest central path                                         |
-| ------------------------------- | ----------------------------------------------------------- |
-| `docs/overview.md`              | `docs/services/backend-api/synced/overview.md`              |
-| `docs/modules/auth.md`          | `docs/services/backend-api/synced/modules/auth.md`          |
-| `docs/operations/deployment.md` | `docs/services/backend-api/synced/operations/deployment.md` |
-| `docs/future/mentoring.md`      | `docs/services/backend-api/synced/future/mentoring.md`      |
+| Source path                     | Latest central path                                          |
+| ------------------------------- | ------------------------------------------------------------ |
+| `docs/overview.md`              | `docs/services/backend-api/synced/overview.mdx`              |
+| `docs/modules/auth.md`          | `docs/services/backend-api/synced/modules/auth.mdx`          |
+| `docs/operations/deployment.md` | `docs/services/backend-api/synced/operations/deployment.mdx` |
+| `docs/future/mentoring.md`      | `docs/services/backend-api/synced/future/mentoring.mdx`      |
 
 Rules:
 
 - Keep relative directory structure under `docs/**`.
+- Normalize all markdown sync payload to `.mdx` before publish.
+- Rewrite internal relative markdown links from `.md` to `.mdx` in the sync payload.
 - Reject any source path that resolves outside the Backend API service subtree.
 - Do not publish service files to central `docs/services/backend-api/index.mdx`.
 - Do not publish service files to central overview, standards, or shared reference paths.
@@ -158,6 +160,7 @@ Current repository automation:
 - The generated OpenAPI JSON artifact should be emitted with repository Prettier formatting so documentation validation and formatting checks do not disagree.
 - Route inventory and sync-readiness markdown are regenerated for validation and publishing, but they are not clean-tree gates because they intentionally include generation metadata.
 - The final `sync-docs` job inside `CI` runs only for push events to `develop` or `main`, and only after the validation jobs pass.
+- The `sync-docs` job builds `.tmp/docs-sync` from `docs/**` and normalizes all `.md` files to `.mdx` before cross-repository push.
 - Cross-repository docs sync happens only after the validated `CI` jobs pass.
 
 Repository-level Scalar Docs configuration lives in `scalar.config.json`. It is not part of the `docs/**` sync payload itself, but it acts as the site map for previewing or publishing the same backend docs set through Scalar Docs using repo-managed files.

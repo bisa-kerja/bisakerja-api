@@ -232,7 +232,9 @@ This split keeps fast feedback for most checks while still proving that committe
 
 Workflow safety notes:
 
-- CI intentionally keeps workflow env overrides minimal and lets the validated repo defaults cover non-essential secrets or tokens.
+- CI bootstraps a full test env set before execution.
+- Prefer GitHub secret `TEST_ENV_FILE` for CI env parity with team-managed test credentials.
+- If `TEST_ENV_FILE` is absent, CI falls back to `.env.test.example`, then applies job-specific overrides (`DATABASE_URL`, `DIRECT_DATABASE_URL`, `RUN_DATABASE_TESTS`, and logging flags).
 - CI generates the Prisma client before lint, typecheck, or docs generation so clean runners do not depend on committed generated build artifacts.
 - Repository integration tests should import repository files directly when possible, rather than broad module barrels, so CI does not evaluate unrelated route or controller wiring during repository-only verification.
 

@@ -44,7 +44,7 @@ Recommended local workflow:
 2. Open `http://localhost:3000/docs/api`.
 3. Use `http://localhost:3000/openapi.json` when another tool needs the raw OpenAPI contract.
 
-For repository-based Scalar Docs preview, use the committed [scalar.config.json](/Users/macbookpro/Development/bisakerja-api/scalar.config.json:1). It maps the existing `docs/**` pages plus `docs/generated/openapi.json` into a Scalar Docs navigation tree, so the same content can be previewed or published without reorganizing the repository.
+For repository-based Scalar Docs preview, use the committed `scalar.config.json`. It maps the existing `docs/**` pages plus `docs/generated/openapi.json` into a Scalar Docs navigation tree, so the same content can be previewed or published without reorganizing the repository.
 
 Available Scalar Docs commands from `package.json`:
 

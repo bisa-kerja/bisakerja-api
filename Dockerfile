@@ -8,6 +8,7 @@ FROM oven/bun:1.3.3-alpine AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV DIRECT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bisakerja_api_build
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json bun.lock tsconfig.json prisma.config.ts ./

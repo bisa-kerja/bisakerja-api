@@ -20,19 +20,64 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    env:
-      APP_ENV: test
-      NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
-      DIRECT_DATABASE_URL: ""
-      RUN_DATABASE_TESTS: "false"
-      MODEL_API_ENABLE_MOCK: "true"
-      LOG_LEVEL: silent
-      ENABLE_REQUEST_LOGGING: "false"
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Prepare CI test environment variables
+        env:
+          TEST_ENV_FILE: ${{ secrets.TEST_ENV_FILE }}
+        run: |
+          set -euo pipefail
+
+          ci_env_file=".tmp/ci-quality.env"
+          mkdir -p .tmp
+
+          if [ -n "${TEST_ENV_FILE:-}" ]; then
+            printf '%s\n' "${TEST_ENV_FILE}" > "$ci_env_file"
+          else
+            cp .env.test.example "$ci_env_file"
+          fi
+
+          tr -d '\r' < "$ci_env_file" > "${ci_env_file}.normalized"
+          mv "${ci_env_file}.normalized" "$ci_env_file"
+          set -a
+          # shellcheck disable=SC1090
+          . "$ci_env_file"
+          set +a
+
+          append_env() {
+            local key="$1"
+            local value="${!key-}"
+            {
+              echo "${key}<<__ENV_VALUE__"
+              printf '%s\n' "$value"
+              echo "__ENV_VALUE__"
+            } >> "$GITHUB_ENV"
+          }
+
+          append_override() {
+            local key="$1"
+            local value="$2"
+            {
+              echo "${key}<<__ENV_VALUE__"
+              printf '%s\n' "$value"
+              echo "__ENV_VALUE__"
+            } >> "$GITHUB_ENV"
+          }
+
+          while IFS= read -r key; do
+            append_env "$key"
+          done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ci_env_file" | cut -d'=' -f1)
+
+          append_override APP_ENV test
+          append_override NODE_ENV test
+          append_override DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
+          append_override DIRECT_DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
+          append_override RUN_DATABASE_TESTS false
+          append_override MODEL_API_ENABLE_MOCK true
+          append_override LOG_LEVEL silent
+          append_override ENABLE_REQUEST_LOGGING false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -110,19 +155,64 @@ jobs:
           --health-timeout 5s
           --health-retries 20
 
-    env:
-      APP_ENV: test
-      NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
-      DIRECT_DATABASE_URL: ""
-      RUN_DATABASE_TESTS: "true"
-      MODEL_API_ENABLE_MOCK: "true"
-      LOG_LEVEL: silent
-      ENABLE_REQUEST_LOGGING: "false"
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Prepare CI test environment variables
+        env:
+          TEST_ENV_FILE: ${{ secrets.TEST_ENV_FILE }}
+        run: |
+          set -euo pipefail
+
+          ci_env_file=".tmp/ci-database.env"
+          mkdir -p .tmp
+
+          if [ -n "${TEST_ENV_FILE:-}" ]; then
+            printf '%s\n' "${TEST_ENV_FILE}" > "$ci_env_file"
+          else
+            cp .env.test.example "$ci_env_file"
+          fi
+
+          tr -d '\r' < "$ci_env_file" > "${ci_env_file}.normalized"
+          mv "${ci_env_file}.normalized" "$ci_env_file"
+          set -a
+          # shellcheck disable=SC1090
+          . "$ci_env_file"
+          set +a
+
+          append_env() {
+            local key="$1"
+            local value="${!key-}"
+            {
+              echo "${key}<<__ENV_VALUE__"
+              printf '%s\n' "$value"
+              echo "__ENV_VALUE__"
+            } >> "$GITHUB_ENV"
+          }
+
+          append_override() {
+            local key="$1"
+            local value="$2"
+            {
+              echo "${key}<<__ENV_VALUE__"
+              printf '%s\n' "$value"
+              echo "__ENV_VALUE__"
+            } >> "$GITHUB_ENV"
+          }
+
+          while IFS= read -r key; do
+            append_env "$key"
+          done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ci_env_file" | cut -d'=' -f1)
+
+          append_override APP_ENV test
+          append_override NODE_ENV test
+          append_override DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
+          append_override DIRECT_DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
+          append_override RUN_DATABASE_TESTS true
+          append_override MODEL_API_ENABLE_MOCK true
+          append_override LOG_LEVEL silent
+          append_override ENABLE_REQUEST_LOGGING false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -151,12 +241,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Prepare docs sync bundle (.md -> .mdx)
+        run: bun run docs:prepare:sync-bundle
+
       - name: Push docs to bisakerja-docs develop
         uses: cpina/github-action-push-to-another-repository@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.DOCS_REPO_TOKEN }}
         with:
-          source-directory: docs
+          source-directory: .tmp/docs-sync
           destination-github-username: bisa-kerja
           destination-repository-name: bisakerja-docs
           user-email: github-actions[bot]@users.noreply.github.com
