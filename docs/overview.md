@@ -121,13 +121,13 @@ The domain model must support all four sources through a normalized `source_plat
 
 Use these local references when writing or changing backend docs:
 
-| Source                         | Purpose                                                                                                    |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| `bisakerja-product-idea.md`    | Product vision, user problem, MVP features, and value proposition                                          |
-| `bisakerja-feature-flow.md`    | User journeys, onboarding flow, job discovery, tracker, AI CV Analyzer, and future Mentoring flow          |
-| `bisakerja-project-plan.md`    | Capstone scope, service responsibilities, integration direction, milestone plan, and team responsibilities |
-| `folder-structur-reference.md` | Initial backend folder structure and module organization                                                   |
-| `references/docs/**`           | Platform architecture, service boundaries, metadata, sync, review, freshness, and documentation standards  |
+| Source                      | Purpose                                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `bisakerja-product-idea.md` | Product vision, user problem, MVP features, and value proposition                                          |
+| `bisakerja-feature-flow.md` | User journeys, onboarding flow, job discovery, tracker, AI CV Analyzer, and future Mentoring flow          |
+| `bisakerja-project-plan.md` | Capstone scope, service responsibilities, integration direction, milestone plan, and team responsibilities |
+| `docs/project-structure.md` | Current backend folder structure, module organization, and dependency boundaries                           |
+| `references/docs/**`        | Platform architecture, service boundaries, metadata, sync, review, freshness, and documentation standards  |
 
 ## Documentation Sync
 

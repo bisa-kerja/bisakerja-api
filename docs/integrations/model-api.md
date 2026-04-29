@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/integrations/model-api.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-29
 ---
 
 # Model API Integration
@@ -115,7 +115,7 @@ Backend-prepared payload shape:
     }
   },
   "job": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "description": "Build backend APIs.",
     "requirements": [
@@ -169,7 +169,7 @@ Backend-prepared payload shape:
     "storageKey": "cv/user_123/cv_file_123.pdf"
   },
   "job": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "description": "Build backend APIs.",
     "requirements": [

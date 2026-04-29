@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-cv-analyzer.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-29
 ---
 
 # AI CV Analyzer Module
@@ -82,7 +82,7 @@ For multipart upload, metadata fields are sent alongside file part.
 
 ```json
 {
-  "jobId": "job_123",
+  "jobId": "11111111-1111-4111-8111-111111111111",
   "language": "id",
   "inputMode": "UPLOAD",
   "compareSource": "JOB_SEARCH",
@@ -126,7 +126,7 @@ CV file validation:
     "storageKey": "cv/user_123/cv_file_123.pdf"
   },
   "job": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "description": "Build and maintain backend APIs.",
     "requirements": [
@@ -157,7 +157,7 @@ Payload rules:
   "success": true,
   "message": "CV analysis completed successfully",
   "data": {
-    "jobId": "job_123",
+    "jobId": "11111111-1111-4111-8111-111111111111",
     "language": "id",
     "overallImpression": {
       "score": 85,

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/observability.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Observability
@@ -32,7 +32,7 @@ Observability should support local debugging, staging validation, production mon
 | --------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Structured logs | Debug requests, failures, auth events, dependency behavior     | JSON logs with request id and redaction                                 |
 | Request id      | Correlate frontend reports, logs, errors, and downstream calls | Default header `x-request-id`                                           |
-| Error reporting | Group unexpected exceptions and dependency failures            | Optional `ERROR_REPORTING_DSN` integration                              |
+| Error reporting | Group unexpected exceptions and dependency failures            | Future provider integration if a dedicated reporting service is adopted |
 | Health checks   | Separate process liveness from dependency readiness            | `/health/live` and `/health/ready`                                      |
 | Metrics         | Track latency, throughput, errors, and dependency state        | Start with logger-compatible counters/timers; add metrics backend later |
 | Audit events    | Preserve sensitive workflow history without sensitive payloads | Structured audit logs or audit table after implementation decision      |
@@ -117,15 +117,14 @@ Error reports must not include:
 
 Health endpoints should live under the health module and remain stable for deployment systems.
 
-Recommended endpoints:
+Current runtime endpoints:
 
-| Endpoint                   | Purpose                               | Dependency behavior                                                          |
-| -------------------------- | ------------------------------------- | ---------------------------------------------------------------------------- |
-| `GET /health/live`         | Process liveness                      | Does not require database or downstream services                             |
-| `GET /health/ready`        | Runtime readiness                     | Checks PostgreSQL and critical startup configuration                         |
-| `GET /health/dependencies` | Internal dependency detail, if needed | Checks PostgreSQL, Model API, scraper freshness metadata, email, and storage |
+| Endpoint            | Purpose           | Dependency behavior                                  |
+| ------------------- | ----------------- | ---------------------------------------------------- |
+| `GET /health/live`  | Process liveness  | Does not require database or downstream services     |
+| `GET /health/ready` | Runtime readiness | Checks PostgreSQL and critical startup configuration |
 
-Public exposure of dependency details should be restricted. If `GET /health/dependencies` is implemented, it should be internal-only or return sanitized output.
+If a future dependency-detail endpoint is introduced, it should be internal-only or return sanitized output and must be documented as a separate runtime contract.
 
 Example readiness response:
 
@@ -136,10 +135,9 @@ Example readiness response:
   "data": {
     "service": "bisakerja-api",
     "status": "ready",
+    "env": "staging",
     "dependencies": {
-      "postgresql": "healthy",
-      "modelApi": "degraded",
-      "jobFreshness": "healthy"
+      "postgresql": "healthy"
     }
   },
   "meta": {
@@ -275,7 +273,7 @@ Local development should support:
 - Request id visible in responses and logs.
 - Mock Model API behavior through `MODEL_API_ENABLE_MOCK=true`.
 - Fixture-backed job data for search and detail workflows.
-- Clear readiness output for PostgreSQL and optional dependencies.
+- Clear readiness output for PostgreSQL plus route-level logs for optional dependency degradation.
 
 ## Release Observability Checklist
 

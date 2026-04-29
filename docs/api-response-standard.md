@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-response-standard.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Response Standard
@@ -46,7 +46,7 @@ Use this shape for single resource reads, mutations, and action responses that r
   "success": true,
   "message": "Request completed successfully",
   "data": {
-    "id": "job_123"
+    "id": "11111111-1111-4111-8111-111111111111"
   },
   "meta": null
 }
@@ -84,7 +84,7 @@ Use this shape for paginated collection endpoints.
   "message": "Jobs retrieved successfully",
   "data": [
     {
-      "id": "job_123",
+      "id": "11111111-1111-4111-8111-111111111111",
       "title": "Backend Developer"
     }
   ],

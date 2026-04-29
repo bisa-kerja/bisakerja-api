@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/tech-stack.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Tech Stack
@@ -29,33 +29,30 @@ This document defines the initial technology direction for the Bisakerja Backend
 
 ## Baseline Packages
 
-All package versions are pinned exactly in `package.json`.
+Runtime and dependency versions are declared in `package.json` and locked through `bun.lock`. Some packages intentionally use explicit semver ranges, so treat the combination of both files as the source of truth.
 
-| Category               | Package/version                                               | Purpose                                                                 |
-| ---------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| HTTP server            | `express@5.2.1`                                               | Route structure, middleware order, error handler, and request lifecycle |
-| TypeScript tooling     | `typescript@5.9.3`, `bun-types@1.3.3`                         | Strict compiler settings and Bun runtime type support                   |
-| Environment validation | `zod@4.3.6`                                                   | Runtime config and request schema validation                            |
-| Logging                | `pino@10.3.1`                                                 | Structured JSON logging with redaction                                  |
-| Security headers       | `helmet@8.1.0`                                                | Default HTTP hardening headers                                          |
-| CORS                   | `cors@2.8.5`                                                  | Allowed-origin enforcement and request id header exposure               |
-| Rate limiting          | `express-rate-limit@8.2.1`                                    | Default, auth, upload, and AI limiter skeletons                         |
-| Cookie parsing         | `cookie-parser@1.4.7`                                         | Parse refresh-token cookies on Express routes                           |
-| Password hashing       | `argon2@0.44.0`                                               | Argon2id password hashing with documented cost parameters               |
-| Token handling         | `jsonwebtoken@9.0.2`                                          | Sign and verify short-lived access JWTs                                 |
-| Route test harness     | `node-mocks-http@1.17.2`                                      | Express route and middleware contract tests without a bound socket      |
-| Linting and formatting | `eslint@10.2.1`, `typescript-eslint@8.59.0`, `prettier@3.8.3` | TypeScript linting and no-write format checks                           |
-| API docs generation    | Not selected                                                  | OpenAPI generation source remains a later implementation decision       |
-
-Planned but not yet installed packages:
-
-| Category        | Candidate package family                         | Documentation requirement                                              |
-| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------- |
-| Upload handling | Multipart parser compatible with Express and Bun | CV upload limits, content-type validation, storage path, and retention |
+| Category               | Package/version                                                       | Purpose                                                                   |
+| ---------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| HTTP server            | `express@5.2.1`                                                       | Route structure, middleware order, error handler, and request lifecycle   |
+| TypeScript tooling     | `typescript@5.9.3`, `bun-types@1.3.3`                                 | Strict compiler settings and Bun runtime type support                     |
+| Environment validation | `zod@4.3.6`                                                           | Runtime config and request schema validation                              |
+| Logging                | `pino@10.3.1`                                                         | Structured JSON logging with redaction                                    |
+| Security headers       | `helmet@8.1.0`                                                        | Default HTTP hardening headers                                            |
+| CORS                   | `cors@2.8.5`                                                          | Allowed-origin enforcement and request id header exposure                 |
+| Rate limiting          | `express-rate-limit@8.4.0`                                            | Default, auth, upload, and AI limiter skeletons                           |
+| Cookie parsing         | `cookie-parser@1.4.7`                                                 | Parse refresh-token cookies on Express routes                             |
+| Password hashing       | `argon2@0.44.0`                                                       | Argon2id password hashing with documented cost parameters                 |
+| Token handling         | `jsonwebtoken@9.0.2`                                                  | Sign and verify short-lived access JWTs                                   |
+| File uploads           | `multer@2.1.1`                                                        | Parse multipart CV uploads before validation and storage handling         |
+| Email delivery         | `resend@^6.12.2`                                                      | Send verification and password-reset emails when fake mode is disabled    |
+| Prisma stack           | `prisma@^7.8.0`, `@prisma/client@^7.8.0`, `@prisma/adapter-pg@^7.8.0` | Schema, client generation, and PostgreSQL adapter wiring                  |
+| Route test harness     | `node-mocks-http@1.17.2`                                              | Express route and middleware contract tests without a bound socket        |
+| Linting and formatting | `eslint@10.2.1`, `typescript-eslint@8.59.0`, `prettier@3.8.3`         | TypeScript linting and no-write format checks                             |
+| API docs               | Repository OpenAPI builder + Scalar tooling                           | Generate committed OpenAPI, serve `/openapi.json`, and render `/docs/api` |
 
 ## Versioning Policy
 
-- Pin exact package versions in `package.json`; do not rely on floating `latest` ranges.
+- Keep Bun pinned exactly and keep package.json declarations intentional; when a dependency range changes, commit the matching `bun.lock` update in the same change.
 - Pin Bun to `1.3.3` for the current scaffold and document any upgrade with compatibility checks.
 - Prefer actively maintained stable releases over release candidates.
 - Record important package choices in this file after setup.
@@ -160,5 +157,5 @@ Route tests currently use an in-memory Express request/response harness. This ke
 
 - `docs/overview.md`
 - `docs/environment.md`
-- `folder-structur-reference.md`
+- `docs/project-structure.md`
 - `references/docs/references/integrations.mdx`

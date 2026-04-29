@@ -223,7 +223,7 @@ Important variable groups:
 - Database: `DATABASE_URL`, `DIRECT_DATABASE_URL`, `SEED_USER_PASSWORD`, `RUN_DATABASE_TESTS`
 - Auth: access-token secret, refresh-token secret, TTLs, cookie settings
 - Security: CORS origins, trusted proxy, body limit, rate limit settings
-- Integrations: Model API URL, scraper/job source settings, email provider
+- Integrations: Model API URL/token, email provider, job freshness threshold
 - Uploads: storage driver, upload path, CV limits, retention
 - Observability: log level, request id header, health timeout
 
@@ -253,25 +253,27 @@ bun run prisma:verify:migrations
 
 ## Available Scripts
 
-| Script                          | Purpose                                                    |
-| ------------------------------- | ---------------------------------------------------------- |
-| `bun run dev`                   | Start the API in watch mode                                |
-| `bun run start`                 | Start the API                                              |
-| `bun run typecheck`             | Run TypeScript contract checks                             |
-| `bun run lint`                  | Run ESLint                                                 |
-| `bun run format`                | Format files with Prettier                                 |
-| `bun run format:check`          | Check formatting without writing                           |
-| `bun test`                      | Run the default test suite                                 |
-| `bun run test:unit`             | Run unit tests                                             |
-| `bun run test:routes`           | Run route/API contract tests                               |
-| `bun run test:integration`      | Run integration tests                                      |
-| `bun run test:contracts`        | Run downstream contract tests                              |
-| `bun run test:smoke`            | Run smoke tests                                            |
-| `bun run docs:generate:openapi` | Regenerate OpenAPI artifact                                |
-| `bun run docs:generate:routes`  | Regenerate route inventory                                 |
-| `bun run docs:check`            | Verify documentation metadata and examples                 |
-| `bun run docs:scalar:preview`   | Preview repo documentation through Scalar Docs             |
-| `bun run cleanup:cv-uploads`    | Remove expired temporary CV uploads according to retention |
+| Script                                 | Purpose                                                    |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `bun run dev`                          | Start the API in watch mode                                |
+| `bun run start`                        | Start the API                                              |
+| `bun run typecheck`                    | Run TypeScript contract checks                             |
+| `bun run lint`                         | Run ESLint                                                 |
+| `bun run format`                       | Format files with Prettier                                 |
+| `bun run format:check`                 | Check formatting without writing                           |
+| `bun test`                             | Run the default test suite                                 |
+| `bun run test:unit`                    | Run unit tests                                             |
+| `bun run test:routes`                  | Run route/API contract tests                               |
+| `bun run test:integration`             | Run integration tests                                      |
+| `bun run test:contracts`               | Run downstream contract tests                              |
+| `bun run test:smoke`                   | Run smoke tests                                            |
+| `bun run docs:generate:openapi`        | Regenerate OpenAPI artifact                                |
+| `bun run docs:generate:routes`         | Regenerate route inventory                                 |
+| `bun run docs:generate:sync-readiness` | Regenerate sync-readiness inventory                        |
+| `bun run docs:check`                   | Verify documentation metadata and examples                 |
+| `bun run docs:scalar:check-config`     | Validate Scalar Docs configuration                         |
+| `bun run docs:scalar:preview`          | Preview repo documentation through Scalar Docs             |
+| `bun run cleanup:cv-uploads`           | Remove expired temporary CV uploads according to retention |
 
 ## Testing And Verification
 

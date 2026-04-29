@@ -8,14 +8,14 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/project-structure.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Project Structure
 
 The Bisakerja Backend API should use a feature-based module structure. Each product capability lives under `src/modules/<module>/`, while global runtime setup, cross-cutting middleware, shared utilities, Prisma, and tests stay outside feature modules.
 
-This structure refines `folder-structur-reference.md` by making module file names consistent with the module directory name.
+This document is the current source of truth for repo layout, module file names, and dependency boundaries inside the backend codebase.
 
 ## Target Layout
 
@@ -391,4 +391,4 @@ Before implementing a new module:
 - `docs/tech-stack.md`
 - `docs/environment.md`
 - `src/modules/README.md`
-- `folder-structur-reference.md`
+- `README.md`

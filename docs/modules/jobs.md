@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/jobs.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-29
 ---
 
 # Jobs Module
@@ -107,15 +107,15 @@ If `relevance` is requested without a keyword, the API falls back to newest-firs
   "message": "Jobs retrieved successfully",
   "data": [
     {
-      "id": "job_123",
+      "id": "11111111-1111-4111-8111-111111111111",
       "title": "Backend Developer",
       "company": {
-        "id": "company_123",
+        "id": "22222222-2222-4222-8222-222222222222",
         "name": "Example Tech",
         "logoUrl": "https://cdn.example.com/company-logo.png"
       },
       "sourcePlatform": {
-        "id": "source_123",
+        "id": "33333333-3333-4333-8333-333333333333",
         "name": "Glints",
         "slug": "glints"
       },
@@ -171,16 +171,16 @@ List response rules:
   "success": true,
   "message": "Job retrieved successfully",
   "data": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "company": {
-      "id": "company_123",
+      "id": "22222222-2222-4222-8222-222222222222",
       "name": "Example Tech",
       "logoUrl": "https://cdn.example.com/company-logo.png",
       "websiteUrl": "https://example.com"
     },
     "sourcePlatform": {
-      "id": "source_123",
+      "id": "33333333-3333-4333-8333-333333333333",
       "name": "Glints",
       "slug": "glints"
     },

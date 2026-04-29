@@ -56,6 +56,11 @@
             "type": "page",
             "filepath": "docs/modules/auth.md"
           },
+          "/modules/health": {
+            "title": "Health",
+            "type": "page",
+            "filepath": "docs/modules/health.md"
+          },
           "/modules/users": {
             "title": "Users",
             "type": "page",

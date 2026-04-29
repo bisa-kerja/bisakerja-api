@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/sync-readiness.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-04-29
 generated_by: sync-readiness-script
-generated_at: 2026-04-24T02:29:40.506Z
-source_commit: unknown
+generated_at: 2026-04-29T14:51:06.048Z
+source_commit: 25f3c2be8ab92b7cc1e239bdd305ebc6b31992bc
 ---
 
 # Backend API Sync Readiness
@@ -20,12 +20,12 @@ This page is generated from the current service-owned docs tree and the document
 
 ## Summary
 
-| Metric         | Value                      |
-| -------------- | -------------------------- |
-| Total docs     | 31                         |
-| Generated docs | 3                          |
-| Generated at   | `2026-04-24T02:29:40.506Z` |
-| Source commit  | `unknown`                  |
+| Metric         | Value                                      |
+| -------------- | ------------------------------------------ |
+| Total docs     | 32                                         |
+| Generated docs | 3                                          |
+| Generated at   | `2026-04-29T14:51:06.048Z`                 |
+| Source commit  | `25f3c2be8ab92b7cc1e239bdd305ebc6b31992bc` |
 
 ## OpenAPI Status
 
@@ -56,6 +56,7 @@ An interactive API portal can be introduced later from the same machine-readable
 | `docs/modules/applications.md`          | `docs/services/backend-api/synced/modules/applications.md`          |
 | `docs/modules/auth.md`                  | `docs/services/backend-api/synced/modules/auth.md`                  |
 | `docs/modules/bookmarks.md`             | `docs/services/backend-api/synced/modules/bookmarks.md`             |
+| `docs/modules/health.md`                | `docs/services/backend-api/synced/modules/health.md`                |
 | `docs/modules/jobs.md`                  | `docs/services/backend-api/synced/modules/jobs.md`                  |
 | `docs/modules/preferences.md`           | `docs/services/backend-api/synced/modules/preferences.md`           |
 | `docs/modules/users.md`                 | `docs/services/backend-api/synced/modules/users.md`                 |

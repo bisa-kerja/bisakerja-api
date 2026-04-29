@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-job-fit.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-29
 ---
 
 # AI Job Fit Module
@@ -68,7 +68,7 @@ Future history endpoints may be added only after result persistence is implement
 
 ```json
 {
-  "jobId": "job_123",
+  "jobId": "11111111-1111-4111-8111-111111111111",
   "persistResult": true
 }
 ```
@@ -127,7 +127,7 @@ The backend prepares a minimal internal payload for Model API.
     }
   },
   "job": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "description": "Build and maintain backend APIs.",
     "requirements": [
@@ -168,7 +168,7 @@ Payload rules:
   "success": true,
   "message": "Job fit analysis completed successfully",
   "data": {
-    "jobId": "job_123",
+    "jobId": "11111111-1111-4111-8111-111111111111",
     "fitScore": 82,
     "readinessLevel": "READY_WITH_MINOR_GAPS",
     "recommendation": {

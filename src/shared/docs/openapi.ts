@@ -2028,9 +2028,21 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           additionalProperties: false,
           required: ["type", "value", "priority"],
           properties: {
-            type: { type: "string", enum: ["SKILL", "EXPERIENCE", "OTHER"] },
+            type: {
+              type: "string",
+              enum: [
+                "SKILL",
+                "EXPERIENCE",
+                "EDUCATION",
+                "RESPONSIBILITY",
+                "OTHER"
+              ]
+            },
             value: { type: "string" },
-            priority: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] }
+            priority: {
+              type: "string",
+              enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+            }
           }
         },
         JobCard: {

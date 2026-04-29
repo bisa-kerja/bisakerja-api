@@ -131,30 +131,27 @@ Rules:
 - `MODEL_API_SERVICE_TOKEN` is always required by env validation even when mock mode is enabled; local/test env files should use a safe non-empty placeholder.
 - Model API failures must map to documented 502 or 503 API responses.
 
-## Scraper And Job Source Variables
+## Job Catalog Freshness Variables
 
-| Variable                    | Required | Local default      | Notes                                                               |
-| --------------------------- | -------- | ------------------ | ------------------------------------------------------------------- |
-| `SCRAPER_API_BASE_URL`      | No       | None               | Required only if backend calls scraper status or internal endpoints |
-| `SCRAPER_API_SERVICE_TOKEN` | No       | None               | Internal credential if backend-scraper HTTP calls are introduced    |
-| `JOB_SOURCE_PRIORITY`       | No       | `glints,jobstreet` | Early implementation priority while domain supports four sources    |
-| `JOB_STALE_AFTER_HOURS`     | Yes      | `72`               | Threshold used by docs and future operations to flag stale listings |
+| Variable                | Required | Local default | Notes                                                       |
+| ----------------------- | -------- | ------------- | ----------------------------------------------------------- |
+| `JOB_STALE_AFTER_HOURS` | Yes      | `72`          | Threshold used by the backend to flag stale normalized jobs |
 
 Rules:
 
-- Supported source platforms are Glints, Jobstreet, Kalibrr, and Dealls.
+- Supported source platforms are Glints, Jobstreet, Kalibrr, and Dealls in repository docs and seed data.
 - Backend API should consume normalized job records, not raw source payloads.
-- Scraper-owned freshness and normalization behavior must be documented in integration docs before implementation.
+- Scraper-owned freshness and normalization behavior stay documented in integration docs, but the current runtime does not expose scraper-specific connection env vars.
 
 ## Upload Variables
 
-| Variable                | Required             | Local default       | Notes                                                                     |
-| ----------------------- | -------------------- | ------------------- | ------------------------------------------------------------------------- |
-| `FILE_STORAGE_DRIVER`   | Yes                  | `local`             | Expected values can start with `local`; object storage can be added later |
-| `UPLOAD_STORAGE_PATH`   | Yes for local driver | `./storage/uploads` | Local upload directory                                                    |
-| `CV_UPLOAD_MAX_BYTES`   | Yes                  | `5242880`           | Default 5 MB CV limit                                                     |
-| `CV_ALLOWED_MIME_TYPES` | Yes                  | `application/pdf`   | Start strict; expand only with documented parser support                  |
-| `CV_RETENTION_DAYS`     | Yes                  | `1`                 | Temporary retention for uploaded CV files or metadata                     |
+| Variable                | Required             | Local default       | Notes                                                    |
+| ----------------------- | -------------------- | ------------------- | -------------------------------------------------------- |
+| `FILE_STORAGE_DRIVER`   | Yes                  | `local`             | Current runtime supports only `local`                    |
+| `UPLOAD_STORAGE_PATH`   | Yes for local driver | `./storage/uploads` | Local upload directory                                   |
+| `CV_UPLOAD_MAX_BYTES`   | Yes                  | `5242880`           | Default 5 MB CV limit                                    |
+| `CV_ALLOWED_MIME_TYPES` | Yes                  | `application/pdf`   | Start strict; expand only with documented parser support |
+| `CV_RETENTION_DAYS`     | Yes                  | `1`                 | Temporary retention for uploaded CV files or metadata    |
 
 Rules:
 
@@ -188,16 +185,15 @@ Rules:
 | Variable                  | Required | Local default  | Notes                                |
 | ------------------------- | -------- | -------------- | ------------------------------------ |
 | `LOG_LEVEL`               | Yes      | `info`         | Structured logger level              |
-| `REQUEST_ID_HEADER`       | No       | `x-request-id` | Header used to propagate request id  |
-| `ENABLE_REQUEST_LOGGING`  | No       | `true`         | Log HTTP request summary             |
+| `REQUEST_ID_HEADER`       | Yes      | `x-request-id` | Header used to propagate request id  |
+| `ENABLE_REQUEST_LOGGING`  | Yes      | `true`         | Log HTTP request summary             |
 | `HEALTH_CHECK_TIMEOUT_MS` | Yes      | `2000`         | Timeout for dependency health checks |
-| `ERROR_REPORTING_DSN`     | No       | None           | Optional error reporting integration |
 
 Rules:
 
 - Logs must not include passwords, tokens, OTP values, raw CV content, or full sensitive payloads.
 - Every error response should include or correlate with a request id.
-- Dependency health should distinguish database, model service, and scraper-related issues.
+- Current runtime readiness checks PostgreSQL explicitly. Model API failures and job-data freshness issues are surfaced through route-level errors, logs, and module-specific handling rather than a separate global health env contract.
 
 ## Environment Separation
 
@@ -240,7 +236,7 @@ Rules:
 
 The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. That isolated database may live on localhost or on a managed PostgreSQL provider, but the URL should clearly identify test-only scope such as a dedicated test database name. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
 
-Test defaults should use fake providers or local mocks for email, Model API, Scraper API, and uploads. Test logs should default to `silent` unless a failing test needs diagnostic output. Even in fake/mock mode, env values should stay explicit and non-empty.
+Test defaults should use fake providers or local mocks for email and Model API, plus an isolated local upload path. Test logs should default to `silent` unless a failing test needs diagnostic output. Even in fake/mock mode, env values should stay explicit and non-empty.
 
 Repository integration tests should keep `RUN_DATABASE_TESTS=false` for ordinary full-suite runs. Set `RUN_DATABASE_TESTS=true` only when running against an isolated PostgreSQL test database with committed migrations applied. Migration verification commands may set this flag automatically after applying migrations.
 

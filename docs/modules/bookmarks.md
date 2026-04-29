@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/bookmarks.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-04-29
 ---
 
 # Bookmarks Module
@@ -84,15 +84,15 @@ Supported sort values:
 
 ```json
 {
-  "jobId": "job_123"
+  "jobId": "11111111-1111-4111-8111-111111111111"
 }
 ```
 
 Validation:
 
-| Field   | Rule                             |
-| ------- | -------------------------------- |
-| `jobId` | Required internal job listing id |
+| Field   | Rule                                     |
+| ------- | ---------------------------------------- |
+| `jobId` | Required UUID of internal job listing id |
 
 ## Response Schemas
 
@@ -100,17 +100,17 @@ Validation:
 
 ```json
 {
-  "id": "bookmark_123",
+  "id": "44444444-4444-4444-8444-444444444444",
   "job": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "company": {
-      "id": "company_123",
+      "id": "22222222-2222-4222-8222-222222222222",
       "name": "Example Tech",
       "logoUrl": "https://cdn.example.com/company-logo.png"
     },
     "sourcePlatform": {
-      "id": "source_123",
+      "id": "33333333-3333-4333-8333-333333333333",
       "name": "Glints",
       "slug": "glints"
     },
@@ -145,17 +145,17 @@ Validation:
   "message": "Bookmarks retrieved successfully",
   "data": [
     {
-      "id": "bookmark_123",
+      "id": "44444444-4444-4444-8444-444444444444",
       "job": {
-        "id": "job_123",
+        "id": "11111111-1111-4111-8111-111111111111",
         "title": "Backend Developer",
         "company": {
-          "id": "company_123",
+          "id": "22222222-2222-4222-8222-222222222222",
           "name": "Example Tech",
           "logoUrl": "https://cdn.example.com/company-logo.png"
         },
         "sourcePlatform": {
-          "id": "source_123",
+          "id": "33333333-3333-4333-8333-333333333333",
           "name": "Glints",
           "slug": "glints"
         },
@@ -207,8 +207,8 @@ Successful creation returns HTTP `201`.
   "success": true,
   "message": "Job saved successfully",
   "data": {
-    "id": "bookmark_123",
-    "jobId": "job_123",
+    "id": "44444444-4444-4444-8444-444444444444",
+    "jobId": "11111111-1111-4111-8111-111111111111",
     "createdAt": "2026-04-22T00:00:00.000Z"
   },
   "meta": null

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/applications.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-04-29
 ---
 
 # Applications Module
@@ -111,7 +111,7 @@ The MVP allows correction transitions because users may fix tracker mistakes. If
 
 ```json
 {
-  "jobId": "job_123",
+  "jobId": "11111111-1111-4111-8111-111111111111",
   "status": "APPLIED",
   "notes": "Applied from Glints after reviewing fit score.",
   "source": "EXTERNAL_APPLY_CLICK"
@@ -122,7 +122,7 @@ Validation:
 
 | Field    | Rule                                                                             |
 | -------- | -------------------------------------------------------------------------------- |
-| `jobId`  | Required internal job listing id                                                 |
+| `jobId`  | Required UUID of internal job listing id                                         |
 | `status` | Optional, defaults to `APPLIED`; initial tracker records must start as `APPLIED` |
 | `notes`  | Optional, max `2000` characters                                                  |
 | `source` | Optional enum: `MANUAL`, `EXTERNAL_APPLY_CLICK`                                  |
@@ -151,22 +151,22 @@ Validation:
 
 ```json
 {
-  "id": "application_123",
+  "id": "55555555-5555-4555-8555-555555555555",
   "status": "APPLIED",
   "notes": "Applied from Glints after reviewing fit score.",
   "source": "EXTERNAL_APPLY_CLICK",
   "appliedAt": "2026-04-22T00:00:00.000Z",
   "updatedAt": "2026-04-22T00:00:00.000Z",
   "job": {
-    "id": "job_123",
+    "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
     "company": {
-      "id": "company_123",
+      "id": "22222222-2222-4222-8222-222222222222",
       "name": "Example Tech",
       "logoUrl": "https://cdn.example.com/company-logo.png"
     },
     "sourcePlatform": {
-      "id": "source_123",
+      "id": "33333333-3333-4333-8333-333333333333",
       "name": "Glints",
       "slug": "glints"
     },
@@ -200,22 +200,22 @@ Validation:
   "message": "Applications retrieved successfully",
   "data": [
     {
-      "id": "application_123",
+      "id": "55555555-5555-4555-8555-555555555555",
       "status": "APPLIED",
       "notes": "Applied from Glints after reviewing fit score.",
       "source": "EXTERNAL_APPLY_CLICK",
       "appliedAt": "2026-04-22T00:00:00.000Z",
       "updatedAt": "2026-04-22T00:00:00.000Z",
       "job": {
-        "id": "job_123",
+        "id": "11111111-1111-4111-8111-111111111111",
         "title": "Backend Developer",
         "company": {
-          "id": "company_123",
+          "id": "22222222-2222-4222-8222-222222222222",
           "name": "Example Tech",
           "logoUrl": "https://cdn.example.com/company-logo.png"
         },
         "sourcePlatform": {
-          "id": "source_123",
+          "id": "33333333-3333-4333-8333-333333333333",
           "name": "Glints",
           "slug": "glints"
         },

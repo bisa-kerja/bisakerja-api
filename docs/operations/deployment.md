@@ -274,13 +274,12 @@ Remote host expectations:
 
 Deployment platforms should use health endpoints consistently.
 
-| Endpoint                   | Deployment use                                |
-| -------------------------- | --------------------------------------------- |
-| `GET /health/live`         | Container or process liveness                 |
-| `GET /health/ready`        | Traffic readiness and PostgreSQL availability |
-| `GET /health/dependencies` | Internal debugging only if implemented        |
+| Endpoint            | Deployment use                                |
+| ------------------- | --------------------------------------------- |
+| `GET /health/live`  | Container or process liveness                 |
+| `GET /health/ready` | Traffic readiness and PostgreSQL availability |
 
-Readiness should fail for invalid environment or unavailable PostgreSQL. Model API failures should be represented as degraded dependency state unless the route being deployed is specifically AI-only.
+Readiness should fail for invalid environment or unavailable PostgreSQL. Model API failures should surface through route-level errors and logs; they do not currently block the global readiness endpoint.
 
 ## Dependency Deployment Assumptions
 
