@@ -69,6 +69,16 @@ const app = createApp(config);
 const seedEmail = process.env.REPRO_SEED_EMAIL ?? "annisa.pratama@example.test";
 const seedPassword = process.env.REPRO_SEED_PASSWORD ?? "Password123!";
 
+type ResponseBody = {
+  success?: boolean;
+  message?: string;
+  data?: unknown;
+  error?: {
+    code?: string;
+    message?: string;
+  };
+};
+
 async function main() {
   const jobs = await injectRoute(app, {
     method: "GET",
@@ -76,7 +86,8 @@ async function main() {
     headers: { "x-request-id": "repro-jobs" }
   });
 
-  console.log("JOBS", jobs.status, JSON.stringify(jobs.body));
+  assertStatus("JOBS", jobs, 200);
+  console.log("JOBS", summarizeResponse(jobs));
 
   const login = await injectRoute(app, {
     method: "POST",
@@ -88,7 +99,8 @@ async function main() {
     }
   });
 
-  console.log("LOGIN", login.status, JSON.stringify(login.body));
+  assertStatus("LOGIN", login, 200);
+  console.log("LOGIN", summarizeResponse(login));
 
   const accessToken = (
     login.body as { data?: { session?: { accessToken?: string } } }
@@ -107,7 +119,8 @@ async function main() {
     }
   });
 
-  console.log("BOOKMARKS", bookmarks.status, JSON.stringify(bookmarks.body));
+  assertStatus("BOOKMARKS", bookmarks, 200);
+  console.log("BOOKMARKS", summarizeResponse(bookmarks));
 
   const applications = await injectRoute(app, {
     method: "GET",
@@ -118,11 +131,37 @@ async function main() {
     }
   });
 
-  console.log(
-    "APPLICATIONS",
-    applications.status,
-    JSON.stringify(applications.body)
+  assertStatus("APPLICATIONS", applications, 200);
+  console.log("APPLICATIONS", summarizeResponse(applications));
+}
+
+function assertStatus(
+  label: string,
+  response: Awaited<ReturnType<typeof injectRoute>>,
+  expectedStatus: number
+) {
+  if (response.status === expectedStatus) {
+    return;
+  }
+
+  const body = response.body as ResponseBody;
+  throw new Error(
+    `${label} expected ${String(expectedStatus)}, got ${String(response.status)}: ${
+      body.error?.code ?? body.message ?? "unknown response"
+    }`
   );
+}
+
+function summarizeResponse(response: Awaited<ReturnType<typeof injectRoute>>) {
+  const body = response.body as ResponseBody;
+  const data = body.data;
+
+  return JSON.stringify({
+    status: response.status,
+    success: body.success,
+    message: body.message,
+    itemCount: Array.isArray(data) ? data.length : undefined
+  });
 }
 
 main()

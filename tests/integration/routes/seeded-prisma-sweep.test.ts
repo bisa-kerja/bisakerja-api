@@ -145,12 +145,26 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       url: "/api/v1/jobs?page=1&limit=5&keyword=backend"
     });
     expect(jobsList.status).toBe(200);
+    expectListEnvelope(jobsList.body, "Jobs retrieved successfully");
+    expectListHasItems(jobsList.body);
+    expectNoInternalJobFields(jobsList.body);
 
     const jobDetail = await request(app, requestResults, {
       method: "GET",
       url: `/api/v1/jobs/${seededJobForDetail.id}`
     });
     expect(jobDetail.status).toBe(200);
+    expect(jobDetail.body).toMatchObject({
+      success: true,
+      message: "Job retrieved successfully",
+      data: {
+        id: seededJobForDetail.id,
+        company: { id: seededJobForDetail.companyId },
+        sourcePlatform: { id: seededJobForDetail.sourcePlatformId }
+      },
+      meta: null
+    });
+    expectNoInternalJobFields(jobDetail.body);
 
     const seedLogin = await request(app, requestResults, {
       method: "POST",
@@ -392,6 +406,8 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       headers: authHeadersForSeedUser
     });
     expect(listBookmarks.status).toBe(200);
+    expectListEnvelope(listBookmarks.body, "Bookmarks retrieved successfully");
+    expectNoInternalJobFields(listBookmarks.body);
 
     const createBookmark = await request(app, requestResults, {
       method: "POST",
@@ -402,6 +418,18 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       }
     });
     expect(createBookmark.status).toBe(201);
+    expect(createBookmark.body).toMatchObject({
+      success: true,
+      message: "Job saved successfully",
+      data: {
+        jobId: seededJobForBookmark.id
+      },
+      meta: null
+    });
+    expect(
+      typeof (createBookmark.body as { data?: { createdAt?: unknown } }).data
+        ?.createdAt
+    ).toBe("string");
 
     const deleteBookmark = await request(app, requestResults, {
       method: "DELETE",
@@ -416,6 +444,12 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       headers: authHeadersForSeedUser
     });
     expect(listApplications.status).toBe(200);
+    expectListEnvelope(
+      listApplications.body,
+      "Applications retrieved successfully"
+    );
+    expectListHasItems(listApplications.body);
+    expectNoInternalJobFields(listApplications.body);
 
     const createApplication = await request(app, requestResults, {
       method: "POST",
@@ -428,6 +462,18 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       }
     });
     expect(createApplication.status).toBe(201);
+    expect(createApplication.body).toMatchObject({
+      success: true,
+      message: "Application created successfully",
+      data: {
+        status: "APPLIED",
+        source: "MANUAL",
+        notes: "Created by seeded Prisma route sweep.",
+        job: { id: seededJobForNewApplication.id }
+      },
+      meta: null
+    });
+    expectNoInternalJobFields(createApplication.body);
 
     const patchApplication = await request(app, requestResults, {
       method: "PATCH",
@@ -439,6 +485,16 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       }
     });
     expect(patchApplication.status).toBe(200);
+    expect(patchApplication.body).toMatchObject({
+      success: true,
+      message: "Application updated successfully",
+      data: {
+        id: seededAnnisaApplication.id,
+        notes: "Interview follow-up confirmed by seeded route sweep.",
+        source: "EXTERNAL_APPLY_CLICK"
+      },
+      meta: null
+    });
 
     const patchApplicationStatus = await request(app, requestResults, {
       method: "PATCH",
@@ -450,6 +506,16 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       }
     });
     expect(patchApplicationStatus.status).toBe(200);
+    expect(patchApplicationStatus.body).toMatchObject({
+      success: true,
+      message: "Application status updated successfully",
+      data: {
+        id: seededAnnisaApplication.id,
+        status: "ACCEPTED",
+        notes: "Status changed during seeded route sweep."
+      },
+      meta: null
+    });
 
     const aiJobFit = await request(app, requestResults, {
       method: "POST",
@@ -664,6 +730,38 @@ function getSetCookie(headers: Record<string, string | string[] | undefined>) {
   }
 
   return value;
+}
+
+function expectListEnvelope(body: unknown, message: string) {
+  expect(body).toMatchObject({
+    success: true,
+    message,
+    meta: {
+      pagination: {
+        page: 1,
+        hasPrevPage: false
+      }
+    }
+  });
+  expect(
+    typeof (body as { meta?: { pagination?: { hasNextPage?: unknown } } }).meta
+      ?.pagination?.hasNextPage
+  ).toBe("boolean");
+  expect(Array.isArray((body as { data?: unknown }).data)).toBe(true);
+}
+
+function expectListHasItems(body: unknown) {
+  const data = (body as { data?: unknown }).data;
+
+  expect(Array.isArray(data)).toBe(true);
+  expect((data as unknown[]).length).toBeGreaterThan(0);
+}
+
+function expectNoInternalJobFields(body: unknown) {
+  const serialized = JSON.stringify(body);
+
+  expect(serialized).not.toContain("externalJobId");
+  expect(serialized).not.toContain("sourcePayload");
 }
 
 function buildCvAnalyzerFormData(jobId: string) {

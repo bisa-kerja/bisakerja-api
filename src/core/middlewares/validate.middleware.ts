@@ -35,24 +35,37 @@ function parsePart(
   assign(result.data);
 }
 
+function replaceRequestPart(
+  req: Request,
+  key: "params" | "query" | "body",
+  value: unknown
+) {
+  Object.defineProperty(req, key, {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value
+  });
+}
+
 export function validate(schemas: ValidationSchemas): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
       if (schemas.params) {
         parsePart(schemas.params, req.params, (parsed) => {
-          req.params = parsed as Request["params"];
+          replaceRequestPart(req, "params", parsed);
         });
       }
 
       if (schemas.query) {
         parsePart(schemas.query, req.query, (parsed) => {
-          req.query = parsed as Request["query"];
+          replaceRequestPart(req, "query", parsed);
         });
       }
 
       if (schemas.body) {
         parsePart(schemas.body, req.body, (parsed) => {
-          req.body = parsed;
+          replaceRequestPart(req, "body", parsed);
         });
       }
 
