@@ -6,7 +6,7 @@ export type SeedUser = {
   username: string;
   displayName: string;
   phoneNumber: string;
-  status: "ACTIVE" | "DISABLED";
+  status: "ACTIVE" | "DISABLED" | "DELETED";
   emailVerifiedAt: Date | null;
   onboardingStatus: "PENDING" | "IN_PROGRESS" | "COMPLETED";
   createdAt: Date;
@@ -269,10 +269,12 @@ const seedReferenceKeys = new Set([
   "skillId",
   "jobListingId",
   "applicationRecordId",
-  "cvFileMetadataId"
+  "cvFileMetadataId",
+  "jobId",
+  "fileId"
 ]);
 
-function seededUuid(value: string) {
+export function seededUuid(value: string) {
   const hash = createHash("sha1").update(value).digest("hex");
 
   return [
@@ -349,7 +351,7 @@ function replaceSeedReferences(
   return value;
 }
 
-function normalizeSeedReferences<T>(value: T): T {
+export function normalizeSeedReferences<T>(value: T): T {
   const referenceMap = new Map(
     [...collectSeedReferences(value)].map((reference) => [
       reference,
@@ -448,6 +450,60 @@ export const skills: SeedSkill[] = normalizeSeedReferences([
     slug: "project-management",
     name: "Project Management",
     category: "Operations"
+  },
+  {
+    id: "seed-skill-python",
+    slug: "python",
+    name: "Python",
+    category: "Programming"
+  },
+  {
+    id: "seed-skill-go",
+    slug: "go",
+    name: "Go",
+    category: "Programming"
+  },
+  {
+    id: "seed-skill-next-js",
+    slug: "next-js",
+    name: "Next.js",
+    category: "Frontend"
+  },
+  {
+    id: "seed-skill-tailwind-css",
+    slug: "tailwind-css",
+    name: "Tailwind CSS",
+    category: "Frontend"
+  },
+  {
+    id: "seed-skill-bi-tools",
+    slug: "bi-tools",
+    name: "BI Tools",
+    category: "Analytics"
+  },
+  {
+    id: "seed-skill-qa-automation",
+    slug: "qa-automation",
+    name: "QA Automation",
+    category: "Quality"
+  },
+  {
+    id: "seed-skill-product-discovery",
+    slug: "product-discovery",
+    name: "Product Discovery",
+    category: "Product"
+  },
+  {
+    id: "seed-skill-kotlin",
+    slug: "kotlin",
+    name: "Kotlin",
+    category: "Mobile"
+  },
+  {
+    id: "seed-skill-analytics-engineering",
+    slug: "analytics-engineering",
+    name: "Analytics Engineering",
+    category: "Analytics"
   }
 ]);
 
@@ -486,6 +542,34 @@ export const companies: SeedCompany[] = normalizeSeedReferences([
     name: "Solusi Talenta Nusantara",
     logoUrl: "https://example.test/assets/solusi-talenta-nusantara.png",
     websiteUrl: "https://example.test/solusi-talenta-nusantara"
+  },
+  {
+    id: "seed-company-lintas-fintech",
+    slug: "lintas-fintech",
+    name: "Lintas Fintech Indonesia",
+    logoUrl: "https://example.test/assets/lintas-fintech.png",
+    websiteUrl: "https://example.test/lintas-fintech"
+  },
+  {
+    id: "seed-company-urban-mobility",
+    slug: "urban-mobility",
+    name: "Urban Mobility Labs",
+    logoUrl: "https://example.test/assets/urban-mobility.png",
+    websiteUrl: "https://example.test/urban-mobility"
+  },
+  {
+    id: "seed-company-berdaya-health",
+    slug: "berdaya-health",
+    name: "Berdaya Health Tech",
+    logoUrl: "https://example.test/assets/berdaya-health.png",
+    websiteUrl: "https://example.test/berdaya-health"
+  },
+  {
+    id: "seed-company-arsip-cloud",
+    slug: "arsip-cloud",
+    name: "Arsip Cloud Nusantara",
+    logoUrl: "https://example.test/assets/arsip-cloud.png",
+    websiteUrl: "https://example.test/arsip-cloud"
   }
 ]);
 
@@ -919,6 +1003,390 @@ export const jobs: SeedJob[] = normalizeSeedReferences([
         confidence: "0.6500"
       }
     ]
+  },
+  {
+    id: "seed-job-006",
+    sourcePlatformId: "seed-source-glints",
+    companyId: "seed-company-lintas-fintech",
+    ingestionRunId: "seed-ingestion-001",
+    externalJobId: "seed-glints-go-backend-002",
+    title: "Backend Engineer (Go)",
+    normalizedTitle: "backend engineer go",
+    category: "Engineering",
+    description:
+      "Membangun service pembayaran, observability, dan integrasi partner untuk produk fintech volume tinggi.",
+    requirementSummary:
+      "Go, PostgreSQL, API design, dan pengalaman mengelola service production.",
+    workType: "HYBRID",
+    employmentType: "FULL_TIME",
+    experienceLevel: "MID_LEVEL",
+    locationDisplay: "Jakarta Pusat, DKI Jakarta",
+    province: "DKI Jakarta",
+    city: "Jakarta Pusat",
+    salaryMin: 14000000,
+    salaryMax: 22000000,
+    salaryCurrency: "IDR",
+    salaryPeriod: "MONTHLY",
+    salaryDisplay: "Rp14.000.000 - Rp22.000.000 / bulan",
+    sourceUrl:
+      "https://glints.com/id/opportunities/jobs/seed-glints-go-backend-002",
+    externalApplyUrl:
+      "https://glints.com/id/opportunities/jobs/seed-glints-go-backend-002/apply",
+    sourcePostedAt: date("2026-04-21T00:00:00.000Z"),
+    sourceUpdatedAt: date("2026-04-24T00:00:00.000Z"),
+    lastSeenAt: date("2026-04-24T08:15:00.000Z"),
+    expiredAt: null,
+    status: "ACTIVE",
+    requirements: [
+      {
+        id: "seed-job-006-req-001",
+        type: "SKILL",
+        value:
+          "Berpengalaman membangun service backend dengan Go dan SQL yang terukur performanya.",
+        priority: "HIGH",
+        sortOrder: 0
+      },
+      {
+        id: "seed-job-006-req-002",
+        type: "EXPERIENCE",
+        value:
+          "Pernah menangani incident production, observability, atau reliability backlog.",
+        priority: "HIGH",
+        sortOrder: 1
+      },
+      {
+        id: "seed-job-006-req-003",
+        type: "RESPONSIBILITY",
+        value:
+          "Berkolaborasi dengan risk dan product untuk menjaga stabilitas transaksi.",
+        priority: "MEDIUM",
+        sortOrder: 2
+      }
+    ],
+    skillLinks: [
+      {
+        id: "seed-job-006-skill-001",
+        skillId: "seed-skill-go",
+        confidence: "0.9900"
+      },
+      {
+        id: "seed-job-006-skill-002",
+        skillId: "seed-skill-postgresql",
+        confidence: "0.9400"
+      },
+      {
+        id: "seed-job-006-skill-003",
+        skillId: "seed-skill-rest-api",
+        confidence: "0.9300"
+      }
+    ]
+  },
+  {
+    id: "seed-job-007",
+    sourcePlatformId: "seed-source-jobstreet",
+    companyId: "seed-company-urban-mobility",
+    ingestionRunId: "seed-ingestion-002",
+    externalJobId: "seed-jobstreet-product-design-002",
+    title: "Product Designer",
+    normalizedTitle: "product designer",
+    category: "Design",
+    description:
+      "Mendesain flow rider dan driver, discovery lintas squad, dan eksperimen funnel aktivasi.",
+    requirementSummary:
+      "Figma, product discovery, design system, dan kolaborasi erat dengan product-engineering.",
+    workType: "HYBRID",
+    employmentType: "FULL_TIME",
+    experienceLevel: "MID_LEVEL",
+    locationDisplay: "Jakarta Selatan, DKI Jakarta",
+    province: "DKI Jakarta",
+    city: "Jakarta Selatan",
+    salaryMin: 11000000,
+    salaryMax: 17000000,
+    salaryCurrency: "IDR",
+    salaryPeriod: "MONTHLY",
+    salaryDisplay: "Rp11.000.000 - Rp17.000.000 / bulan",
+    sourceUrl:
+      "https://www.jobstreet.co.id/id/job/seed-jobstreet-product-design-002",
+    externalApplyUrl:
+      "https://www.jobstreet.co.id/id/job/seed-jobstreet-product-design-002/apply",
+    sourcePostedAt: date("2026-04-20T00:00:00.000Z"),
+    sourceUpdatedAt: date("2026-04-24T00:00:00.000Z"),
+    lastSeenAt: date("2026-04-24T09:00:00.000Z"),
+    expiredAt: null,
+    status: "ACTIVE",
+    requirements: [
+      {
+        id: "seed-job-007-req-001",
+        type: "SKILL",
+        value:
+          "Mampu menyusun artefak discovery, wireframe, dan high-fidelity prototype di Figma.",
+        priority: "HIGH",
+        sortOrder: 0
+      },
+      {
+        id: "seed-job-007-req-002",
+        type: "RESPONSIBILITY",
+        value:
+          "Mengubah insight riset menjadi eksperimen produk yang bisa diukur dampaknya.",
+        priority: "HIGH",
+        sortOrder: 1
+      },
+      {
+        id: "seed-job-007-req-003",
+        type: "OTHER",
+        value:
+          "Portofolio wajib memperlihatkan proses problem framing dan tradeoff desain.",
+        priority: "MEDIUM",
+        sortOrder: 2
+      }
+    ],
+    skillLinks: [
+      {
+        id: "seed-job-007-skill-001",
+        skillId: "seed-skill-figma",
+        confidence: "0.9900"
+      },
+      {
+        id: "seed-job-007-skill-002",
+        skillId: "seed-skill-product-discovery",
+        confidence: "0.9500"
+      },
+      {
+        id: "seed-job-007-skill-003",
+        skillId: "seed-skill-project-management",
+        confidence: "0.7900"
+      }
+    ]
+  },
+  {
+    id: "seed-job-008",
+    sourcePlatformId: "seed-source-kalibrr",
+    companyId: "seed-company-berdaya-health",
+    ingestionRunId: "seed-ingestion-003",
+    externalJobId: "seed-kalibrr-qa-automation-002",
+    title: "QA Automation Engineer",
+    normalizedTitle: "qa automation engineer",
+    category: "Quality Engineering",
+    description:
+      "Membangun automated regression suite untuk web, API, dan release validation di health-tech product.",
+    requirementSummary:
+      "QA automation, TypeScript, API testing, dan disiplin quality gate release.",
+    workType: "REMOTE",
+    employmentType: "CONTRACT",
+    experienceLevel: "JUNIOR",
+    locationDisplay: "Indonesia",
+    province: "Indonesia",
+    city: "Remote",
+    salaryMin: 8500000,
+    salaryMax: 13000000,
+    salaryCurrency: "IDR",
+    salaryPeriod: "MONTHLY",
+    salaryDisplay: "Rp8.500.000 - Rp13.000.000 / bulan",
+    sourceUrl:
+      "https://www.kalibrr.com/job-board/seed-kalibrr-qa-automation-002",
+    externalApplyUrl:
+      "https://www.kalibrr.com/job-board/seed-kalibrr-qa-automation-002/apply",
+    sourcePostedAt: date("2026-04-15T00:00:00.000Z"),
+    sourceUpdatedAt: date("2026-04-18T00:00:00.000Z"),
+    lastSeenAt: date("2026-04-22T14:00:00.000Z"),
+    expiredAt: date("2026-04-28T00:00:00.000Z"),
+    status: "EXPIRED",
+    requirements: [
+      {
+        id: "seed-job-008-req-001",
+        type: "SKILL",
+        value:
+          "Mampu membuat test otomatis API dan UI yang stabil untuk flow kritikal.",
+        priority: "HIGH",
+        sortOrder: 0
+      },
+      {
+        id: "seed-job-008-req-002",
+        type: "EXPERIENCE",
+        value:
+          "Minimal 1 tahun pengalaman QA manual atau automation di produk digital.",
+        priority: "MEDIUM",
+        sortOrder: 1
+      },
+      {
+        id: "seed-job-008-req-003",
+        type: "RESPONSIBILITY",
+        value:
+          "Menjaga release checklist dan melaporkan regression risk ke squad.",
+        priority: "MEDIUM",
+        sortOrder: 2
+      }
+    ],
+    skillLinks: [
+      {
+        id: "seed-job-008-skill-001",
+        skillId: "seed-skill-qa-automation",
+        confidence: "0.9900"
+      },
+      {
+        id: "seed-job-008-skill-002",
+        skillId: "seed-skill-typescript",
+        confidence: "0.8400"
+      },
+      {
+        id: "seed-job-008-skill-003",
+        skillId: "seed-skill-rest-api",
+        confidence: "0.9000"
+      }
+    ]
+  },
+  {
+    id: "seed-job-009",
+    sourcePlatformId: "seed-source-dealls",
+    companyId: "seed-company-arsip-cloud",
+    ingestionRunId: "seed-ingestion-004",
+    externalJobId: "seed-dealls-next-frontend-002",
+    title: "Frontend Engineer (Next.js)",
+    normalizedTitle: "frontend engineer next js",
+    category: "Engineering",
+    description:
+      "Mengembangkan portal dokumen B2B, dashboard pelanggan, dan komponen UI yang reusable.",
+    requirementSummary:
+      "React, Next.js, Tailwind CSS, dan kemampuan kerja sama dekat dengan backend.",
+    workType: "ONSITE",
+    employmentType: "FULL_TIME",
+    experienceLevel: "JUNIOR",
+    locationDisplay: "Semarang, Jawa Tengah",
+    province: "Jawa Tengah",
+    city: "Semarang",
+    salaryMin: 9000000,
+    salaryMax: 13500000,
+    salaryCurrency: "IDR",
+    salaryPeriod: "MONTHLY",
+    salaryDisplay: "Rp9.000.000 - Rp13.500.000 / bulan",
+    sourceUrl: "https://dealls.com/loker/seed-dealls-next-frontend-002",
+    externalApplyUrl:
+      "https://dealls.com/loker/seed-dealls-next-frontend-002/apply",
+    sourcePostedAt: date("2026-04-21T00:00:00.000Z"),
+    sourceUpdatedAt: date("2026-04-23T00:00:00.000Z"),
+    lastSeenAt: date("2026-04-24T10:00:00.000Z"),
+    expiredAt: null,
+    status: "ACTIVE",
+    requirements: [
+      {
+        id: "seed-job-009-req-001",
+        type: "SKILL",
+        value:
+          "Berpengalaman menggunakan React modern, Next.js, dan utility-first CSS.",
+        priority: "HIGH",
+        sortOrder: 0
+      },
+      {
+        id: "seed-job-009-req-002",
+        type: "RESPONSIBILITY",
+        value:
+          "Menerjemahkan kebutuhan B2B kompleks menjadi flow UI yang mudah dipahami.",
+        priority: "MEDIUM",
+        sortOrder: 1
+      },
+      {
+        id: "seed-job-009-req-003",
+        type: "OTHER",
+        value:
+          "Nilai tambah bila pernah membangun dashboard dokumen atau portal admin.",
+        priority: "LOW",
+        sortOrder: 2
+      }
+    ],
+    skillLinks: [
+      {
+        id: "seed-job-009-skill-001",
+        skillId: "seed-skill-react",
+        confidence: "0.9800"
+      },
+      {
+        id: "seed-job-009-skill-002",
+        skillId: "seed-skill-next-js",
+        confidence: "0.9900"
+      },
+      {
+        id: "seed-job-009-skill-003",
+        skillId: "seed-skill-tailwind-css",
+        confidence: "0.9100"
+      }
+    ]
+  },
+  {
+    id: "seed-job-010",
+    sourcePlatformId: "seed-source-linkedin",
+    companyId: "seed-company-satudata",
+    ingestionRunId: "seed-ingestion-005",
+    externalJobId: "seed-linkedin-analytics-engineer-002",
+    title: "Analytics Engineer",
+    normalizedTitle: "analytics engineer",
+    category: "Data",
+    description:
+      "Merapikan layer transformasi data, semantic metrics, dan dataset siap dashboard untuk tim growth.",
+    requirementSummary:
+      "SQL, Python, BI tools, dan pemahaman modelling data analitik.",
+    workType: "REMOTE",
+    employmentType: "FULL_TIME",
+    experienceLevel: "SENIOR",
+    locationDisplay: "Indonesia",
+    province: "Indonesia",
+    city: "Remote",
+    salaryMin: 18000000,
+    salaryMax: 26000000,
+    salaryCurrency: "IDR",
+    salaryPeriod: "MONTHLY",
+    salaryDisplay: "Rp18.000.000 - Rp26.000.000 / bulan",
+    sourceUrl:
+      "https://www.linkedin.com/jobs/view/seed-linkedin-analytics-engineer-002",
+    externalApplyUrl:
+      "https://www.linkedin.com/jobs/view/seed-linkedin-analytics-engineer-002/apply",
+    sourcePostedAt: date("2026-04-12T00:00:00.000Z"),
+    sourceUpdatedAt: date("2026-04-17T00:00:00.000Z"),
+    lastSeenAt: date("2026-04-19T09:30:00.000Z"),
+    expiredAt: date("2026-04-24T00:00:00.000Z"),
+    status: "CLOSED",
+    requirements: [
+      {
+        id: "seed-job-010-req-001",
+        type: "SKILL",
+        value:
+          "Kuat di SQL modelling, data transformation, dan definisi metric bisnis.",
+        priority: "HIGH",
+        sortOrder: 0
+      },
+      {
+        id: "seed-job-010-req-002",
+        type: "SKILL",
+        value:
+          "Nyaman memakai Python untuk quality check atau data tooling sederhana.",
+        priority: "MEDIUM",
+        sortOrder: 1
+      },
+      {
+        id: "seed-job-010-req-003",
+        type: "RESPONSIBILITY",
+        value:
+          "Bekerja erat dengan growth dan product untuk menjaga satu definisi data yang konsisten.",
+        priority: "MEDIUM",
+        sortOrder: 2
+      }
+    ],
+    skillLinks: [
+      {
+        id: "seed-job-010-skill-001",
+        skillId: "seed-skill-sql",
+        confidence: "0.9800"
+      },
+      {
+        id: "seed-job-010-skill-002",
+        skillId: "seed-skill-python",
+        confidence: "0.9200"
+      },
+      {
+        id: "seed-job-010-skill-003",
+        skillId: "seed-skill-analytics-engineering",
+        confidence: "0.9700"
+      }
+    ]
   }
 ]);
 
@@ -1340,6 +1808,276 @@ export const users: SeedUser[] = normalizeSeedReferences([
         level: "INTERMEDIATE"
       }
     ]
+  },
+  {
+    id: "seed-user-farah",
+    email: "farah.maharani@example.test",
+    username: "farah.maharani",
+    displayName: "Farah Maharani",
+    phoneNumber: "+6281266666666",
+    status: "ACTIVE",
+    emailVerifiedAt: date("2026-04-16T08:00:00.000Z"),
+    onboardingStatus: "COMPLETED",
+    createdAt: date("2026-04-06T08:00:00.000Z"),
+    updatedAt: date("2026-04-24T09:30:00.000Z"),
+    deletedAt: null,
+    profile: {
+      id: "seed-profile-farah",
+      careerStatus: "EARLY_CAREER",
+      latestRole: "Product Designer",
+      summary:
+        "Product designer yang kuat di discovery, design system, dan eksperimen onboarding mobile.",
+      profilePhotoStorageKey: "profiles/farah-maharani.jpg",
+      profilePhotoUrl: "https://example.test/profiles/farah-maharani.jpg",
+      profilePhotoMimeType: "image/jpeg",
+      profilePhotoSizeBytes: 168000
+    },
+    preference: {
+      id: "seed-preference-farah",
+      careerStatus: "EARLY_CAREER",
+      jobSeekingStatus: "ONE_MONTH",
+      targetRoles: ["Product Designer", "UI/UX Designer"],
+      locations: [
+        { province: "DKI Jakarta", city: "Jakarta Selatan" },
+        { province: "Indonesia", city: "Remote" }
+      ],
+      workTypes: ["HYBRID", "REMOTE"],
+      salaryMin: 11000000,
+      salaryMax: 17000000,
+      salaryCurrency: "IDR",
+      salaryPeriod: "MONTHLY",
+      emailNotificationsEnabled: true
+    },
+    experiences: [
+      {
+        id: "seed-exp-farah-001",
+        title: "Product Designer",
+        company: "Ruang Sehat Digital",
+        employmentType: "FULL_TIME",
+        startDate: date("2023-07-01T00:00:00.000Z"),
+        endDate: null,
+        isCurrent: true,
+        description:
+          "Menangani discovery, prototyping, dan eksperimen funnel aktivasi pengguna baru.",
+        sortOrder: 0
+      },
+      {
+        id: "seed-exp-farah-002",
+        title: "UI Designer",
+        company: "Kawan Edukasi",
+        employmentType: "FULL_TIME",
+        startDate: date("2021-08-01T00:00:00.000Z"),
+        endDate: date("2023-06-01T00:00:00.000Z"),
+        isCurrent: false,
+        description:
+          "Membangun design library dan flow registrasi untuk produk edukasi.",
+        sortOrder: 1
+      }
+    ],
+    educations: [
+      {
+        id: "seed-edu-farah-001",
+        institution: "Telkom University",
+        degree: "S.Ds.",
+        fieldOfStudy: "Desain Komunikasi Visual",
+        startYear: 2017,
+        endYear: 2021,
+        sortOrder: 0
+      }
+    ],
+    userSkillEntries: [
+      {
+        id: "seed-user-skill-farah-001",
+        skillSlug: "figma",
+        level: "ADVANCED"
+      },
+      {
+        id: "seed-user-skill-farah-002",
+        skillSlug: "product-discovery",
+        level: "ADVANCED"
+      },
+      {
+        id: "seed-user-skill-farah-003",
+        skillSlug: "project-management",
+        level: "INTERMEDIATE"
+      }
+    ]
+  },
+  {
+    id: "seed-user-gilang",
+    email: "gilang.ramadhan@example.test",
+    username: "gilang.ramadhan",
+    displayName: "Gilang Ramadhan",
+    phoneNumber: "+6281277777777",
+    status: "ACTIVE",
+    emailVerifiedAt: date("2026-04-18T08:00:00.000Z"),
+    onboardingStatus: "COMPLETED",
+    createdAt: date("2026-04-07T08:00:00.000Z"),
+    updatedAt: date("2026-04-24T11:00:00.000Z"),
+    deletedAt: null,
+    profile: {
+      id: "seed-profile-gilang",
+      careerStatus: "EARLY_CAREER",
+      latestRole: "QA Automation Engineer",
+      summary:
+        "QA engineer yang fokus pada release confidence, regression automation, dan API quality.",
+      profilePhotoStorageKey: null,
+      profilePhotoUrl: null,
+      profilePhotoMimeType: null,
+      profilePhotoSizeBytes: null
+    },
+    preference: {
+      id: "seed-preference-gilang",
+      careerStatus: "EARLY_CAREER",
+      jobSeekingStatus: "IMMEDIATE",
+      targetRoles: [
+        "QA Automation Engineer",
+        "Software Development Engineer in Test"
+      ],
+      locations: [
+        { province: "Indonesia", city: "Remote" },
+        { province: "DI Yogyakarta", city: "Sleman" }
+      ],
+      workTypes: ["REMOTE", "HYBRID"],
+      salaryMin: 9000000,
+      salaryMax: 14000000,
+      salaryCurrency: "IDR",
+      salaryPeriod: "MONTHLY",
+      emailNotificationsEnabled: true
+    },
+    experiences: [
+      {
+        id: "seed-exp-gilang-001",
+        title: "QA Automation Engineer",
+        company: "Prima Health App",
+        employmentType: "FULL_TIME",
+        startDate: date("2023-04-01T00:00:00.000Z"),
+        endDate: null,
+        isCurrent: true,
+        description:
+          "Membangun automation suite API dan smoke test release untuk aplikasi kesehatan.",
+        sortOrder: 0
+      },
+      {
+        id: "seed-exp-gilang-002",
+        title: "Manual QA Tester",
+        company: "Sistem Retail Nusantara",
+        employmentType: "CONTRACT",
+        startDate: date("2022-01-01T00:00:00.000Z"),
+        endDate: date("2023-03-01T00:00:00.000Z"),
+        isCurrent: false,
+        description:
+          "Menulis test case regresi dan menjalankan UAT untuk dashboard operasional.",
+        sortOrder: 1
+      }
+    ],
+    educations: [
+      {
+        id: "seed-edu-gilang-001",
+        institution: "Universitas Gadjah Mada",
+        degree: "S.Kom.",
+        fieldOfStudy: "Teknologi Informasi",
+        startYear: 2017,
+        endYear: 2021,
+        sortOrder: 0
+      }
+    ],
+    userSkillEntries: [
+      {
+        id: "seed-user-skill-gilang-001",
+        skillSlug: "qa-automation",
+        level: "ADVANCED"
+      },
+      {
+        id: "seed-user-skill-gilang-002",
+        skillSlug: "typescript",
+        level: "INTERMEDIATE"
+      },
+      {
+        id: "seed-user-skill-gilang-003",
+        skillSlug: "rest-api",
+        level: "ADVANCED"
+      }
+    ]
+  },
+  {
+    id: "seed-user-hana",
+    email: "hana.putri@example.test",
+    username: "hana.putri",
+    displayName: "Hana Putri",
+    phoneNumber: "+6281288888888",
+    status: "DELETED",
+    emailVerifiedAt: date("2026-04-11T08:00:00.000Z"),
+    onboardingStatus: "COMPLETED",
+    createdAt: date("2026-04-08T08:00:00.000Z"),
+    updatedAt: date("2026-04-23T13:00:00.000Z"),
+    deletedAt: date("2026-04-25T10:00:00.000Z"),
+    profile: {
+      id: "seed-profile-hana",
+      careerStatus: "EARLY_CAREER",
+      latestRole: "Data Operations Specialist",
+      summary:
+        "Pernah fokus pada operasional data dan reporting sebelum akun dinonaktifkan dari seed lifecycle.",
+      profilePhotoStorageKey: null,
+      profilePhotoUrl: null,
+      profilePhotoMimeType: null,
+      profilePhotoSizeBytes: null
+    },
+    preference: {
+      id: "seed-preference-hana",
+      careerStatus: "EARLY_CAREER",
+      jobSeekingStatus: "THREE_MONTHS",
+      targetRoles: ["Data Operations Specialist", "Operations Analyst"],
+      locations: [{ province: "Jawa Tengah", city: "Semarang" }],
+      workTypes: ["ONSITE"],
+      salaryMin: 7000000,
+      salaryMax: 10000000,
+      salaryCurrency: "IDR",
+      salaryPeriod: "MONTHLY",
+      emailNotificationsEnabled: false
+    },
+    experiences: [
+      {
+        id: "seed-exp-hana-001",
+        title: "Data Operations Specialist",
+        company: "Logistik Maju",
+        employmentType: "FULL_TIME",
+        startDate: date("2022-09-01T00:00:00.000Z"),
+        endDate: date("2026-04-10T00:00:00.000Z"),
+        isCurrent: false,
+        description:
+          "Menjaga kualitas data operasional harian dan rekonsiliasi laporan supply.",
+        sortOrder: 0
+      }
+    ],
+    educations: [
+      {
+        id: "seed-edu-hana-001",
+        institution: "Universitas Diponegoro",
+        degree: "S.E.",
+        fieldOfStudy: "Manajemen",
+        startYear: 2016,
+        endYear: 2020,
+        sortOrder: 0
+      }
+    ],
+    userSkillEntries: [
+      {
+        id: "seed-user-skill-hana-001",
+        skillSlug: "data-analysis",
+        level: "INTERMEDIATE"
+      },
+      {
+        id: "seed-user-skill-hana-002",
+        skillSlug: "sql",
+        level: "BASIC"
+      },
+      {
+        id: "seed-user-skill-hana-003",
+        skillSlug: "project-management",
+        level: "INTERMEDIATE"
+      }
+    ]
   }
 ]);
 
@@ -1403,6 +2141,42 @@ export const bookmarks: SeedBookmark[] = normalizeSeedReferences([
     userId: "seed-user-eka",
     jobListingId: "seed-job-005",
     createdAt: date("2026-04-20T17:00:00.000Z")
+  },
+  {
+    id: "seed-bookmark-011",
+    userId: "seed-user-farah",
+    jobListingId: "seed-job-007",
+    createdAt: date("2026-04-21T09:15:00.000Z")
+  },
+  {
+    id: "seed-bookmark-012",
+    userId: "seed-user-farah",
+    jobListingId: "seed-job-009",
+    createdAt: date("2026-04-21T10:00:00.000Z")
+  },
+  {
+    id: "seed-bookmark-013",
+    userId: "seed-user-gilang",
+    jobListingId: "seed-job-008",
+    createdAt: date("2026-04-21T11:00:00.000Z")
+  },
+  {
+    id: "seed-bookmark-014",
+    userId: "seed-user-gilang",
+    jobListingId: "seed-job-006",
+    createdAt: date("2026-04-21T11:30:00.000Z")
+  },
+  {
+    id: "seed-bookmark-015",
+    userId: "seed-user-annisa",
+    jobListingId: "seed-job-006",
+    createdAt: date("2026-04-21T12:00:00.000Z")
+  },
+  {
+    id: "seed-bookmark-016",
+    userId: "seed-user-citra",
+    jobListingId: "seed-job-010",
+    createdAt: date("2026-04-21T12:45:00.000Z")
   }
 ]);
 
@@ -1464,6 +2238,52 @@ export const applicationRecords: SeedApplicationRecord[] =
       appliedAt: date("2026-04-20T09:00:00.000Z"),
       createdAt: date("2026-04-20T09:00:00.000Z"),
       updatedAt: date("2026-04-20T09:00:00.000Z")
+    },
+    {
+      id: "seed-application-006",
+      userId: "seed-user-farah",
+      jobListingId: "seed-job-007",
+      status: "INTERVIEW",
+      source: "MANUAL",
+      notes:
+        "Sedang menunggu panel interview dengan product manager dan design lead.",
+      appliedAt: date("2026-04-21T08:30:00.000Z"),
+      createdAt: date("2026-04-21T08:30:00.000Z"),
+      updatedAt: date("2026-04-24T09:30:00.000Z")
+    },
+    {
+      id: "seed-application-007",
+      userId: "seed-user-gilang",
+      jobListingId: "seed-job-008",
+      status: "APPLIED",
+      source: "EXTERNAL_APPLY_CLICK",
+      notes: "Melamar melalui link eksternal Kalibrr sebelum lowongan expired.",
+      appliedAt: date("2026-04-18T07:45:00.000Z"),
+      createdAt: date("2026-04-18T07:45:00.000Z"),
+      updatedAt: date("2026-04-18T07:45:00.000Z")
+    },
+    {
+      id: "seed-application-008",
+      userId: "seed-user-annisa",
+      jobListingId: "seed-job-006",
+      status: "APPLIED",
+      source: "MANUAL",
+      notes: "Eksplorasi role backend fintech yang lebih berat di reliability.",
+      appliedAt: date("2026-04-22T10:15:00.000Z"),
+      createdAt: date("2026-04-22T10:15:00.000Z"),
+      updatedAt: date("2026-04-22T10:15:00.000Z")
+    },
+    {
+      id: "seed-application-009",
+      userId: "seed-user-citra",
+      jobListingId: "seed-job-010",
+      status: "APPLIED",
+      source: "MANUAL",
+      notes:
+        "Disimpan sebagai aspirational role untuk melihat gap analytics engineering.",
+      appliedAt: date("2026-04-23T15:00:00.000Z"),
+      createdAt: date("2026-04-23T15:00:00.000Z"),
+      updatedAt: date("2026-04-23T15:00:00.000Z")
     }
   ]);
 
@@ -1549,6 +2369,51 @@ export const applicationHistories: SeedApplicationHistory[] =
       toStatus: "APPLIED",
       notes: "Lamaran product design lintas fungsi dibuat secara manual.",
       createdAt: date("2026-04-20T09:00:00.000Z")
+    },
+    {
+      id: "seed-application-history-010",
+      applicationRecordId: "seed-application-006",
+      userId: "seed-user-farah",
+      fromStatus: null,
+      toStatus: "APPLIED",
+      notes: "Lamaran product designer berhasil dibuat.",
+      createdAt: date("2026-04-21T08:30:00.000Z")
+    },
+    {
+      id: "seed-application-history-011",
+      applicationRecordId: "seed-application-006",
+      userId: "seed-user-farah",
+      fromStatus: "APPLIED",
+      toStatus: "INTERVIEW",
+      notes: "Recruiter mengundang Farah ke panel case study.",
+      createdAt: date("2026-04-24T09:30:00.000Z")
+    },
+    {
+      id: "seed-application-history-012",
+      applicationRecordId: "seed-application-007",
+      userId: "seed-user-gilang",
+      fromStatus: null,
+      toStatus: "APPLIED",
+      notes: "Applied ke role QA automation melalui tautan eksternal.",
+      createdAt: date("2026-04-18T07:45:00.000Z")
+    },
+    {
+      id: "seed-application-history-013",
+      applicationRecordId: "seed-application-008",
+      userId: "seed-user-annisa",
+      fromStatus: null,
+      toStatus: "APPLIED",
+      notes: "Lamaran backend fintech dikirim setelah bookmark review.",
+      createdAt: date("2026-04-22T10:15:00.000Z")
+    },
+    {
+      id: "seed-application-history-014",
+      applicationRecordId: "seed-application-009",
+      userId: "seed-user-citra",
+      fromStatus: null,
+      toStatus: "APPLIED",
+      notes: "Role analytics engineer disimpan sebagai benchmark gap skill.",
+      createdAt: date("2026-04-23T15:00:00.000Z")
     }
   ]);
 
@@ -1724,6 +2589,110 @@ export const fitScoreResults: SeedFitScoreResult[] = normalizeSeedReferences([
     },
     analyzedAt: date("2026-04-21T12:00:00.000Z"),
     createdAt: date("2026-04-21T12:00:00.000Z")
+  },
+  {
+    id: "seed-fit-score-006",
+    userId: "seed-user-farah",
+    jobListingId: "seed-job-007",
+    fitScore: 89,
+    readinessLevel: "READY",
+    recommendationDecision: "PROCEED",
+    recommendationSummary:
+      "Farah punya kombinasi discovery dan execution yang sangat relevan untuk role product designer.",
+    breakdown: {
+      skillMatch: {
+        score: 92,
+        matchedSkills: ["Figma", "Product Discovery"],
+        missingSkills: []
+      },
+      experienceMatch: {
+        score: 86,
+        reason:
+          "Pengalaman dua role desain produk sudah menunjukkan ownership end-to-end."
+      },
+      preferenceMatch: {
+        score: 89,
+        matchedPreferences: ["Jakarta", "Hybrid"],
+        unmatchedPreferences: []
+      }
+    },
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    inputSummary: {
+      targetRoles: ["Product Designer"],
+      jobTitle: "Product Designer"
+    },
+    analyzedAt: date("2026-04-24T10:00:00.000Z"),
+    createdAt: date("2026-04-24T10:00:00.000Z")
+  },
+  {
+    id: "seed-fit-score-007",
+    userId: "seed-user-gilang",
+    jobListingId: "seed-job-008",
+    fitScore: 86,
+    readinessLevel: "READY",
+    recommendationDecision: "PROCEED",
+    recommendationSummary:
+      "Profil Gilang sangat selaras dengan kebutuhan automation dan API regression untuk role QA.",
+    breakdown: {
+      skillMatch: {
+        score: 90,
+        matchedSkills: ["QA Automation", "REST API"],
+        missingSkills: []
+      },
+      experienceMatch: {
+        score: 84,
+        reason: "Sudah memiliki exposure automation yang langsung relevan."
+      },
+      preferenceMatch: {
+        score: 85,
+        matchedPreferences: ["Remote"],
+        unmatchedPreferences: []
+      }
+    },
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    inputSummary: {
+      targetRoles: ["QA Automation Engineer"],
+      jobTitle: "QA Automation Engineer"
+    },
+    analyzedAt: date("2026-04-24T10:30:00.000Z"),
+    createdAt: date("2026-04-24T10:30:00.000Z")
+  },
+  {
+    id: "seed-fit-score-008",
+    userId: "seed-user-annisa",
+    jobListingId: "seed-job-006",
+    fitScore: 81,
+    readinessLevel: "NEAR_READY",
+    recommendationDecision: "PROCEED_WITH_GAPS",
+    recommendationSummary:
+      "Annisa kuat di backend fundamentals, dengan gap utama pada Go production ownership.",
+    breakdown: {
+      skillMatch: {
+        score: 79,
+        matchedSkills: ["PostgreSQL", "API Design"],
+        missingSkills: ["Go", "Observability"]
+      },
+      experienceMatch: {
+        score: 82,
+        reason:
+          "Fondasi backend relevan, tetapi domain fintech dan incident ownership masih terbatas."
+      },
+      preferenceMatch: {
+        score: 86,
+        matchedPreferences: ["Jakarta", "Hybrid"],
+        unmatchedPreferences: []
+      }
+    },
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    inputSummary: {
+      targetRoles: ["Backend Developer", "Platform Engineer"],
+      jobTitle: "Backend Engineer (Go)"
+    },
+    analyzedAt: date("2026-04-24T11:00:00.000Z"),
+    createdAt: date("2026-04-24T11:00:00.000Z")
   }
 ]);
 
@@ -1824,6 +2793,65 @@ export const skillGapResults: SeedSkillGapResult[] = normalizeSeedReferences([
     inputSummary: { matchedSkillCount: 1, missingSkillCount: 2 },
     analyzedAt: date("2026-04-21T12:01:00.000Z"),
     createdAt: date("2026-04-21T12:01:00.000Z")
+  },
+  {
+    id: "seed-skill-gap-006",
+    userId: "seed-user-farah",
+    jobListingId: "seed-job-007",
+    gaps: [
+      {
+        skill: "Experiment Instrumentation",
+        priority: "LOW",
+        reason: "Menambah kedalaman saat mengukur dampak desain ke funnel."
+      }
+    ],
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    inputSummary: { matchedSkillCount: 2, missingSkillCount: 1 },
+    analyzedAt: date("2026-04-24T10:01:00.000Z"),
+    createdAt: date("2026-04-24T10:01:00.000Z")
+  },
+  {
+    id: "seed-skill-gap-007",
+    userId: "seed-user-gilang",
+    jobListingId: "seed-job-008",
+    gaps: [
+      {
+        skill: "Performance Testing",
+        priority: "MEDIUM",
+        reason:
+          "Berguna untuk memperluas scope quality dari functional ke reliability."
+      }
+    ],
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    inputSummary: { matchedSkillCount: 2, missingSkillCount: 1 },
+    analyzedAt: date("2026-04-24T10:31:00.000Z"),
+    createdAt: date("2026-04-24T10:31:00.000Z")
+  },
+  {
+    id: "seed-skill-gap-008",
+    userId: "seed-user-annisa",
+    jobListingId: "seed-job-006",
+    gaps: [
+      {
+        skill: "Go",
+        priority: "HIGH",
+        reason:
+          "Masih perlu hands-on experience membangun service production dengan Go."
+      },
+      {
+        skill: "Observability",
+        priority: "MEDIUM",
+        reason:
+          "Role menuntut ownership dashboard, alert, dan post-incident follow-up."
+      }
+    ],
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    inputSummary: { matchedSkillCount: 2, missingSkillCount: 2 },
+    analyzedAt: date("2026-04-24T11:01:00.000Z"),
+    createdAt: date("2026-04-24T11:01:00.000Z")
   }
 ]);
 
@@ -1897,6 +2925,48 @@ export const cvFileMetadata: SeedCvFileMetadata[] = normalizeSeedReferences([
     deletedAt: null,
     createdAt: date("2026-04-21T08:30:00.000Z"),
     updatedAt: date("2026-04-21T08:30:00.000Z")
+  },
+  {
+    id: "seed-cv-file-006",
+    userId: "seed-user-farah",
+    originalFileName: "farah-maharani-product-designer-cv.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 238000,
+    storageDriver: "LOCAL",
+    storageKey: "cv/farah-maharani-product-designer-cv.pdf",
+    uploadedAt: date("2026-04-24T08:45:00.000Z"),
+    expiresAt: date("2026-05-01T08:45:00.000Z"),
+    deletedAt: null,
+    createdAt: date("2026-04-24T08:45:00.000Z"),
+    updatedAt: date("2026-04-24T08:45:00.000Z")
+  },
+  {
+    id: "seed-cv-file-007",
+    userId: "seed-user-gilang",
+    originalFileName: "gilang-ramadhan-qa-automation-cv.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 227000,
+    storageDriver: "LOCAL",
+    storageKey: "cv/gilang-ramadhan-qa-automation-cv.pdf",
+    uploadedAt: date("2026-04-24T09:00:00.000Z"),
+    expiresAt: date("2026-05-01T09:00:00.000Z"),
+    deletedAt: null,
+    createdAt: date("2026-04-24T09:00:00.000Z"),
+    updatedAt: date("2026-04-24T09:00:00.000Z")
+  },
+  {
+    id: "seed-cv-file-008",
+    userId: "seed-user-annisa",
+    originalFileName: "annisa-pratama-go-backend-cv.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 249000,
+    storageDriver: "LOCAL",
+    storageKey: "cv/annisa-pratama-go-backend-cv.pdf",
+    uploadedAt: date("2026-04-24T09:15:00.000Z"),
+    expiresAt: date("2026-05-01T09:15:00.000Z"),
+    deletedAt: null,
+    createdAt: date("2026-04-24T09:15:00.000Z"),
+    updatedAt: date("2026-04-24T09:15:00.000Z")
   }
 ]);
 
@@ -2143,6 +3213,160 @@ export const cvAnalysisResults: SeedCvAnalysisResult[] =
       },
       analyzedAt: date("2026-04-21T15:00:00.000Z"),
       createdAt: date("2026-04-21T15:00:00.000Z")
+    },
+    {
+      id: "seed-cv-analysis-006",
+      userId: "seed-user-farah",
+      jobListingId: "seed-job-007",
+      cvFileMetadataId: "seed-cv-file-006",
+      language: "EN",
+      inputMode: "UPLOAD",
+      compareSource: "BOOKMARK",
+      overallImpression: {
+        score: 89,
+        summary:
+          "The CV is strategic, concise, and clearly communicates product design ownership."
+      },
+      jobFitAlignment: {
+        score: 90,
+        summary:
+          "Discovery and design system work map closely to the open role.",
+        matchedSignals: [
+          "Figma",
+          "Discovery",
+          "Cross-functional collaboration"
+        ],
+        missingSignals: ["Experiment instrumentation"]
+      },
+      atsFriendliness: {
+        score: 88,
+        issues: ["Add one stronger metric for shipped onboarding improvements."]
+      },
+      keywordOptimization: {
+        recommendedKeywords: [
+          "Design system",
+          "Product discovery",
+          "Experiment"
+        ],
+        reason: "These terms mirror the role brief closely."
+      },
+      experienceQuantification: {
+        score: 82,
+        suggestions: [
+          "Quantify activation uplift or usability outcomes from released flows."
+        ]
+      },
+      actionableImprovements: [
+        "Add one measurable onboarding result.",
+        "Highlight collaboration with PM and engineering in the summary."
+      ],
+      modelName: "gpt-5.4-mini",
+      modelVersion: "2026-04",
+      inputSummary: {
+        jobTitle: "Product Designer",
+        compareSource: "BOOKMARK"
+      },
+      analyzedAt: date("2026-04-24T13:00:00.000Z"),
+      createdAt: date("2026-04-24T13:00:00.000Z")
+    },
+    {
+      id: "seed-cv-analysis-007",
+      userId: "seed-user-gilang",
+      jobListingId: "seed-job-008",
+      cvFileMetadataId: "seed-cv-file-007",
+      language: "ID",
+      inputMode: "UPLOAD",
+      compareSource: "JOB_SEARCH",
+      overallImpression: {
+        score: 85,
+        summary: "CV cukup fokus dan menunjukkan fondasi automation yang kuat."
+      },
+      jobFitAlignment: {
+        score: 87,
+        summary:
+          "Bukti API testing dan release regression sudah selaras dengan kebutuhan role.",
+        matchedSignals: ["QA Automation", "API testing", "Regression suite"],
+        missingSignals: ["Performance testing"]
+      },
+      atsFriendliness: {
+        score: 86,
+        issues: [
+          "Tambahkan section singkat untuk tools dan framework automation."
+        ]
+      },
+      keywordOptimization: {
+        recommendedKeywords: [
+          "Regression suite",
+          "Release validation",
+          "Smoke test"
+        ],
+        reason: "Istilah ini relevan langsung dengan brief lowongan."
+      },
+      experienceQuantification: {
+        score: 78,
+        suggestions: [
+          "Tambahkan jumlah test case, waktu eksekusi, atau pengurangan defect escaped."
+        ]
+      },
+      actionableImprovements: [
+        "Tambahkan metrik coverage automation.",
+        "Sorot kerja sama dengan developer dalam investigasi defect."
+      ],
+      modelName: "gpt-5.4-mini",
+      modelVersion: "2026-04",
+      inputSummary: {
+        jobTitle: "QA Automation Engineer",
+        compareSource: "JOB_SEARCH"
+      },
+      analyzedAt: date("2026-04-24T13:30:00.000Z"),
+      createdAt: date("2026-04-24T13:30:00.000Z")
+    },
+    {
+      id: "seed-cv-analysis-008",
+      userId: "seed-user-annisa",
+      jobListingId: "seed-job-006",
+      cvFileMetadataId: "seed-cv-file-008",
+      language: "ID",
+      inputMode: "UPLOAD",
+      compareSource: "DIRECT_JOB_DETAIL",
+      overallImpression: {
+        score: 83,
+        summary:
+          "CV backend Annisa tetap kuat, tetapi narasi domain fintech masih tipis."
+      },
+      jobFitAlignment: {
+        score: 80,
+        summary:
+          "API dan database sudah relevan, namun bukti observability dan Go production belum dominan.",
+        matchedSignals: ["PostgreSQL", "API", "Backend ownership"],
+        missingSignals: ["Go", "Incident response"]
+      },
+      atsFriendliness: {
+        score: 89,
+        issues: ["Tambahkan kata kunci observability, SLA, dan alerting."]
+      },
+      keywordOptimization: {
+        recommendedKeywords: ["Go", "Observability", "Incident response"],
+        reason: "Kata kunci ini muncul kuat pada requirement role."
+      },
+      experienceQuantification: {
+        score: 79,
+        suggestions: [
+          "Tambahkan throughput, latency, atau angka stabilitas API yang pernah dicapai."
+        ]
+      },
+      actionableImprovements: [
+        "Tambahkan pengalaman paling dekat dengan service reliability.",
+        "Sorot exposure pada monitoring atau on-call jika ada."
+      ],
+      modelName: "gpt-5.4-mini",
+      modelVersion: "2026-04",
+      inputSummary: {
+        jobTitle: "Backend Engineer (Go)",
+        compareSource: "DIRECT_JOB_DETAIL"
+      },
+      analyzedAt: date("2026-04-24T14:00:00.000Z"),
+      createdAt: date("2026-04-24T14:00:00.000Z")
     }
   ]);
 
@@ -2288,5 +3512,89 @@ export const aiRequestLogs: SeedAiRequestLog[] = normalizeSeedReferences([
       message: "Request rejected because user session was missing."
     },
     createdAt: date("2026-04-21T15:10:00.000Z")
+  },
+  {
+    id: "seed-ai-log-011",
+    userId: "seed-user-farah",
+    kind: "JOB_FIT",
+    status: "SUCCEEDED",
+    requestId: "seed-job-fit-request-006",
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    latencyMs: 1175,
+    errorCode: null,
+    inputSummary: { userId: "seed-user-farah", jobId: "seed-job-007" },
+    outputSummary: { fitScore: 89, readinessLevel: "READY" },
+    createdAt: date("2026-04-24T10:01:00.000Z")
+  },
+  {
+    id: "seed-ai-log-012",
+    userId: "seed-user-gilang",
+    kind: "JOB_FIT",
+    status: "SUCCEEDED",
+    requestId: "seed-job-fit-request-007",
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    latencyMs: 1210,
+    errorCode: null,
+    inputSummary: { userId: "seed-user-gilang", jobId: "seed-job-008" },
+    outputSummary: { fitScore: 86, readinessLevel: "READY" },
+    createdAt: date("2026-04-24T10:31:00.000Z")
+  },
+  {
+    id: "seed-ai-log-013",
+    userId: "seed-user-annisa",
+    kind: "JOB_FIT",
+    status: "SUCCEEDED",
+    requestId: "seed-job-fit-request-008",
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    latencyMs: 1335,
+    errorCode: null,
+    inputSummary: { userId: "seed-user-annisa", jobId: "seed-job-006" },
+    outputSummary: { fitScore: 81, readinessLevel: "NEAR_READY" },
+    createdAt: date("2026-04-24T11:01:00.000Z")
+  },
+  {
+    id: "seed-ai-log-014",
+    userId: "seed-user-farah",
+    kind: "CV_ANALYSIS",
+    status: "SUCCEEDED",
+    requestId: "seed-cv-analysis-request-006",
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    latencyMs: 1465,
+    errorCode: null,
+    inputSummary: { userId: "seed-user-farah", fileId: "seed-cv-file-006" },
+    outputSummary: { overallScore: 89 },
+    createdAt: date("2026-04-24T13:01:00.000Z")
+  },
+  {
+    id: "seed-ai-log-015",
+    userId: "seed-user-gilang",
+    kind: "CV_ANALYSIS",
+    status: "SUCCEEDED",
+    requestId: "seed-cv-analysis-request-007",
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    latencyMs: 1510,
+    errorCode: null,
+    inputSummary: { userId: "seed-user-gilang", fileId: "seed-cv-file-007" },
+    outputSummary: { overallScore: 85 },
+    createdAt: date("2026-04-24T13:31:00.000Z")
+  },
+  {
+    id: "seed-ai-log-016",
+    userId: "seed-user-annisa",
+    kind: "CV_ANALYSIS",
+    status: "SUCCEEDED",
+    requestId: "seed-cv-analysis-request-008",
+    modelName: "gpt-5.4-mini",
+    modelVersion: "2026-04",
+    latencyMs: 1480,
+    errorCode: null,
+    inputSummary: { userId: "seed-user-annisa", fileId: "seed-cv-file-008" },
+    outputSummary: { overallScore: 83 },
+    createdAt: date("2026-04-24T14:01:00.000Z")
   }
 ]);

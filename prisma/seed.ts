@@ -21,6 +21,7 @@ import {
   skillGapResults,
   skills,
   sourcePlatforms,
+  seededUuid,
   users
 } from "./seed-data";
 
@@ -41,9 +42,13 @@ function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function seedEntityId(namespace: string, reference: string) {
+  return seededUuid(`seed-${namespace}-${reference}`);
+}
+
 function buildAuthCredentials(passwordHashes: Record<string, string>) {
-  return users.map((user, index) => ({
-    id: `seed-auth-${index + 1}`,
+  return users.map((user) => ({
+    id: seedEntityId("auth", user.id),
     userId: user.id,
     provider: "LOCAL" as const,
     providerAccountId: null,
@@ -57,10 +62,10 @@ function buildAuthCredentials(passwordHashes: Record<string, string>) {
 
 function buildRefreshTokens() {
   return users.map((user, index) => ({
-    id: `seed-refresh-token-${index + 1}`,
+    id: seedEntityId("refresh-token", user.id),
     userId: user.id,
     tokenHash: sha256(`refresh:${user.email}`),
-    tokenFamilyId: `seed-refresh-family-${index + 1}`,
+    tokenFamilyId: seedEntityId("refresh-family", user.id),
     replacedByTokenId: null,
     userAgent: `Seed Browser ${index + 1}`,
     ipAddress: `10.10.0.${index + 11}`,
@@ -79,7 +84,7 @@ function buildRefreshTokens() {
 
 function buildEmailVerificationTokens() {
   return users.map((user, index) => ({
-    id: `seed-email-verification-${index + 1}`,
+    id: seedEntityId("email-verification", user.id),
     userId: user.id,
     otpHash: sha256(`otp:${user.email}`),
     expiresAt: new Date(
@@ -99,7 +104,7 @@ function buildEmailVerificationTokens() {
 
 function buildPasswordResetTokens() {
   return users.map((user, index) => ({
-    id: `seed-password-reset-${index + 1}`,
+    id: seedEntityId("password-reset", user.id),
     userId: user.id,
     tokenHash: sha256(`password-reset:${user.email}`),
     expiresAt: new Date(
@@ -213,7 +218,41 @@ function buildJobSkills() {
   );
 }
 
-async function cleanupExistingSeedData() {
+type SeedDatasets = {
+  authCredentials: ReturnType<typeof buildAuthCredentials>;
+  refreshTokens: ReturnType<typeof buildRefreshTokens>;
+  emailVerificationTokens: ReturnType<typeof buildEmailVerificationTokens>;
+  passwordResetTokens: ReturnType<typeof buildPasswordResetTokens>;
+  userProfiles: ReturnType<typeof buildUserProfiles>;
+  userPreferences: ReturnType<typeof buildUserPreferences>;
+  userExperiences: ReturnType<typeof buildUserExperiences>;
+  userEducations: ReturnType<typeof buildUserEducations>;
+  userSkills: ReturnType<typeof buildUserSkills>;
+  jobRequirements: ReturnType<typeof buildJobRequirements>;
+  jobSkills: ReturnType<typeof buildJobSkills>;
+};
+
+function buildSeedDatasets(
+  passwordHashes: Record<string, string>
+): SeedDatasets {
+  const skillIdBySlug = new Map(skills.map((skill) => [skill.slug, skill.id]));
+
+  return {
+    authCredentials: buildAuthCredentials(passwordHashes),
+    refreshTokens: buildRefreshTokens(),
+    emailVerificationTokens: buildEmailVerificationTokens(),
+    passwordResetTokens: buildPasswordResetTokens(),
+    userProfiles: buildUserProfiles(),
+    userPreferences: buildUserPreferences(),
+    userExperiences: buildUserExperiences(),
+    userEducations: buildUserEducations(),
+    userSkills: buildUserSkills(skillIdBySlug),
+    jobRequirements: buildJobRequirements(),
+    jobSkills: buildJobSkills()
+  };
+}
+
+async function cleanupExistingSeedData(datasets: SeedDatasets) {
   const seededUserIds = users.map((user) => user.id);
   const seededUserEmails = users.map((user) => user.email);
   const seededJobIds = jobs.map((job) => job.id);
@@ -223,36 +262,61 @@ async function cleanupExistingSeedData() {
   const seededSourceSlugs = sourcePlatforms.map(
     (sourcePlatform) => sourcePlatform.slug
   );
+  const seededAuthIds = datasets.authCredentials.map((entry) => entry.id);
+  const seededRefreshTokenIds = datasets.refreshTokens.map((entry) => entry.id);
+  const seededEmailVerificationIds = datasets.emailVerificationTokens.map(
+    (entry) => entry.id
+  );
+  const seededPasswordResetIds = datasets.passwordResetTokens.map(
+    (entry) => entry.id
+  );
+  const seededProfileIds = datasets.userProfiles.map((entry) => entry.id);
+  const seededPreferenceIds = datasets.userPreferences.map((entry) => entry.id);
+  const seededExperienceIds = datasets.userExperiences.map((entry) => entry.id);
+  const seededEducationIds = datasets.userEducations.map((entry) => entry.id);
+  const seededUserSkillIds = datasets.userSkills.map((entry) => entry.id);
+  const seededJobRequirementIds = datasets.jobRequirements.map(
+    (entry) => entry.id
+  );
+  const seededJobSkillIds = datasets.jobSkills.map((entry) => entry.id);
+  const seededBookmarkIds = bookmarks.map((entry) => entry.id);
+  const seededApplicationIds = applicationRecords.map((entry) => entry.id);
+  const seededApplicationHistoryIds = applicationHistories.map(
+    (entry) => entry.id
+  );
+  const seededFitScoreIds = fitScoreResults.map((entry) => entry.id);
+  const seededSkillGapIds = skillGapResults.map((entry) => entry.id);
+  const seededCvFileIds = cvFileMetadata.map((entry) => entry.id);
+  const seededCvAnalysisIds = cvAnalysisResults.map((entry) => entry.id);
+  const seededAiLogIds = aiRequestLogs.map((entry) => entry.id);
+  const seededAiRequestIds = aiRequestLogs.map((entry) => entry.requestId);
 
   await prisma.$transaction([
     prisma.aiRequestLog.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-ai-log-" } },
-          { requestId: { startsWith: "seed-" } }
+          { id: { in: seededAiLogIds } },
+          { requestId: { in: seededAiRequestIds } }
         ]
       }
     }),
     prisma.cvAnalysisResult.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-cv-analysis-" } },
+          { id: { in: seededCvAnalysisIds } },
           { userId: { in: seededUserIds } }
         ]
       }
     }),
     prisma.cvFileMetadata.deleteMany({
       where: {
-        OR: [
-          { id: { startsWith: "seed-cv-file-" } },
-          { userId: { in: seededUserIds } }
-        ]
+        OR: [{ id: { in: seededCvFileIds } }, { userId: { in: seededUserIds } }]
       }
     }),
     prisma.skillGapResult.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-skill-gap-" } },
+          { id: { in: seededSkillGapIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -260,7 +324,7 @@ async function cleanupExistingSeedData() {
     prisma.fitScoreResult.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-fit-score-" } },
+          { id: { in: seededFitScoreIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -268,7 +332,7 @@ async function cleanupExistingSeedData() {
     prisma.applicationStatusHistory.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-application-history-" } },
+          { id: { in: seededApplicationHistoryIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -276,7 +340,7 @@ async function cleanupExistingSeedData() {
     prisma.applicationRecord.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-application-" } },
+          { id: { in: seededApplicationIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -284,7 +348,7 @@ async function cleanupExistingSeedData() {
     prisma.bookmark.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-bookmark-" } },
+          { id: { in: seededBookmarkIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -292,7 +356,7 @@ async function cleanupExistingSeedData() {
     prisma.jobRequirement.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-job-" } },
+          { id: { in: seededJobRequirementIds } },
           { jobListingId: { in: seededJobIds } },
           { jobListing: { externalJobId: { in: seededJobExternalIds } } }
         ]
@@ -301,7 +365,7 @@ async function cleanupExistingSeedData() {
     prisma.jobSkill.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-job-" } },
+          { id: { in: seededJobSkillIds } },
           { jobListingId: { in: seededJobIds } },
           { jobListing: { externalJobId: { in: seededJobExternalIds } } }
         ]
@@ -326,7 +390,7 @@ async function cleanupExistingSeedData() {
     prisma.userPreference.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-preference-" } },
+          { id: { in: seededPreferenceIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -334,7 +398,7 @@ async function cleanupExistingSeedData() {
     prisma.userSkill.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-user-skill-" } },
+          { id: { in: seededUserSkillIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -342,7 +406,7 @@ async function cleanupExistingSeedData() {
     prisma.userEducation.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-edu-" } },
+          { id: { in: seededEducationIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -350,7 +414,7 @@ async function cleanupExistingSeedData() {
     prisma.userExperience.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-exp-" } },
+          { id: { in: seededExperienceIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -358,7 +422,7 @@ async function cleanupExistingSeedData() {
     prisma.userProfile.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-profile-" } },
+          { id: { in: seededProfileIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -366,7 +430,7 @@ async function cleanupExistingSeedData() {
     prisma.passwordResetToken.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-password-reset-" } },
+          { id: { in: seededPasswordResetIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -374,7 +438,7 @@ async function cleanupExistingSeedData() {
     prisma.emailVerificationToken.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-email-verification-" } },
+          { id: { in: seededEmailVerificationIds } },
           { userId: { in: seededUserIds } }
         ]
       }
@@ -382,17 +446,14 @@ async function cleanupExistingSeedData() {
     prisma.refreshToken.deleteMany({
       where: {
         OR: [
-          { id: { startsWith: "seed-refresh-token-" } },
+          { id: { in: seededRefreshTokenIds } },
           { userId: { in: seededUserIds } }
         ]
       }
     }),
     prisma.authCredential.deleteMany({
       where: {
-        OR: [
-          { id: { startsWith: "seed-auth-" } },
-          { userId: { in: seededUserIds } }
-        ]
+        OR: [{ id: { in: seededAuthIds } }, { userId: { in: seededUserIds } }]
       }
     }),
     prisma.user.deleteMany({
@@ -402,26 +463,17 @@ async function cleanupExistingSeedData() {
     }),
     prisma.company.deleteMany({
       where: {
-        OR: [
-          { id: { startsWith: "seed-company-" } },
-          { slug: { in: seededCompanySlugs } }
-        ]
+        OR: [{ slug: { in: seededCompanySlugs } }]
       }
     }),
     prisma.skill.deleteMany({
       where: {
-        OR: [
-          { id: { startsWith: "seed-skill-" } },
-          { slug: { in: seededSkillSlugs } }
-        ]
+        OR: [{ slug: { in: seededSkillSlugs } }]
       }
     }),
     prisma.sourcePlatform.deleteMany({
       where: {
-        OR: [
-          { id: { startsWith: "seed-source-" } },
-          { slug: { in: seededSourceSlugs } }
-        ]
+        OR: [{ slug: { in: seededSourceSlugs } }]
       }
     })
   ]);
@@ -433,8 +485,9 @@ async function main() {
       users.map(async (user) => [user.id, await hashPassword(seedUserPassword)])
     )
   );
+  const datasets = buildSeedDatasets(passwordHashes);
 
-  await cleanupExistingSeedData();
+  await cleanupExistingSeedData(datasets);
 
   await prisma.sourcePlatform.createMany({
     data: sourcePlatforms
@@ -469,40 +522,39 @@ async function main() {
   });
 
   await prisma.authCredential.createMany({
-    data: buildAuthCredentials(passwordHashes)
+    data: datasets.authCredentials
   });
 
   await prisma.refreshToken.createMany({
-    data: buildRefreshTokens()
+    data: datasets.refreshTokens
   });
 
   await prisma.emailVerificationToken.createMany({
-    data: buildEmailVerificationTokens()
+    data: datasets.emailVerificationTokens
   });
 
   await prisma.passwordResetToken.createMany({
-    data: buildPasswordResetTokens()
+    data: datasets.passwordResetTokens
   });
 
   await prisma.userProfile.createMany({
-    data: buildUserProfiles()
+    data: datasets.userProfiles
   });
 
   await prisma.userPreference.createMany({
-    data: buildUserPreferences()
+    data: datasets.userPreferences
   });
 
   await prisma.userExperience.createMany({
-    data: buildUserExperiences()
+    data: datasets.userExperiences
   });
 
   await prisma.userEducation.createMany({
-    data: buildUserEducations()
+    data: datasets.userEducations
   });
 
-  const skillIdBySlug = new Map(skills.map((skill) => [skill.slug, skill.id]));
   await prisma.userSkill.createMany({
-    data: buildUserSkills(skillIdBySlug)
+    data: datasets.userSkills
   });
 
   await prisma.jobListing.createMany({
@@ -539,11 +591,11 @@ async function main() {
   });
 
   await prisma.jobRequirement.createMany({
-    data: buildJobRequirements()
+    data: datasets.jobRequirements
   });
 
   await prisma.jobSkill.createMany({
-    data: buildJobSkills()
+    data: datasets.jobSkills
   });
 
   await prisma.bookmark.createMany({
@@ -584,18 +636,18 @@ async function main() {
     companies.length,
     ingestionRuns.length,
     users.length,
-    buildAuthCredentials(passwordHashes).length,
-    buildRefreshTokens().length,
-    buildEmailVerificationTokens().length,
-    buildPasswordResetTokens().length,
-    buildUserProfiles().length,
-    buildUserPreferences().length,
-    buildUserExperiences().length,
-    buildUserEducations().length,
-    buildUserSkills(skillIdBySlug).length,
+    datasets.authCredentials.length,
+    datasets.refreshTokens.length,
+    datasets.emailVerificationTokens.length,
+    datasets.passwordResetTokens.length,
+    datasets.userProfiles.length,
+    datasets.userPreferences.length,
+    datasets.userExperiences.length,
+    datasets.userEducations.length,
+    datasets.userSkills.length,
     jobs.length,
-    buildJobRequirements().length,
-    buildJobSkills().length,
+    datasets.jobRequirements.length,
+    datasets.jobSkills.length,
     bookmarks.length,
     applicationRecords.length,
     applicationHistories.length,

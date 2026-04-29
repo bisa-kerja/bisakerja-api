@@ -34,7 +34,9 @@
     "prisma:migrate:deploy": "bun node_modules/prisma/build/index.js migrate deploy",
     "prisma:seed": "bun run prisma/seed.ts",
     "prisma:validate": "bun node_modules/prisma/build/index.js validate",
-    "prisma:verify:migrations": "bun run prisma/verify-migrations.ts"
+    "prisma:verify:migrations": "bun run prisma/verify-migrations.ts",
+    "prisma:reset": "bun node_modules/prisma/build/index.js migrate reset --force",
+    "prisma:reset:seed": "bun node_modules/prisma/build/index.js migrate reset --force && bun run prisma:seed"
   },
   "repository": {
     "type": "git",

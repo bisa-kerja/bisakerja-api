@@ -558,6 +558,24 @@ type RouteResult = {
 };
 
 async function ensureSeededDatabase(prisma: PrismaClient) {
+  const counts = await countSeededDatabase(prisma);
+
+  if (
+    counts.userCount !== users.length ||
+    counts.jobCount !== jobs.length ||
+    counts.applicationCount !== applicationRecords.length
+  ) {
+    await reseedTestDatabase();
+  }
+
+  const syncedCounts = await countSeededDatabase(prisma);
+
+  expect(syncedCounts.userCount).toBe(users.length);
+  expect(syncedCounts.jobCount).toBe(jobs.length);
+  expect(syncedCounts.applicationCount).toBe(applicationRecords.length);
+}
+
+async function countSeededDatabase(prisma: PrismaClient) {
   const userCount = await prisma.user.count({
     where: {
       email: {
@@ -580,9 +598,45 @@ async function ensureSeededDatabase(prisma: PrismaClient) {
     }
   });
 
-  expect(userCount).toBe(users.length);
-  expect(jobCount).toBe(jobs.length);
-  expect(applicationCount).toBe(applicationRecords.length);
+  return {
+    userCount,
+    jobCount,
+    applicationCount
+  };
+}
+
+async function reseedTestDatabase() {
+  const child = Bun.spawn({
+    cmd: ["bun", "run", "prisma/seed.ts"],
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      DATABASE_URL: testDatabaseUrl,
+      DIRECT_DATABASE_URL: testDatabaseUrl,
+      SEED_USER_PASSWORD: seedPassword
+    },
+    stdout: "pipe",
+    stderr: "pipe"
+  });
+  const [exitCode, stdout, stderr] = await Promise.all([
+    child.exited,
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text()
+  ]);
+
+  if (exitCode === 0) {
+    return;
+  }
+
+  throw new Error(
+    [
+      "Failed to reseed integration test database.",
+      stdout.trim(),
+      stderr.trim()
+    ]
+      .filter(Boolean)
+      .join("\n")
+  );
 }
 
 async function ensureSeedUserCredential(prisma: PrismaClient) {

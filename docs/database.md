@@ -564,22 +564,25 @@ Seed rules:
 
 The seed script lives at `prisma/seed.ts` and creates deterministic normalized data for local development:
 
-- Five source platforms, five companies, and five ingestion runs.
-- Five user accounts with auth credentials, refresh tokens, verification tokens, and password reset tokens.
-- Five user profiles, five preference records, and realistic profile history through experience, education, and user skills.
-- Five product-shaped job listings with normalized requirements and job-skill links.
-- User activity data through bookmarks, application tracker records, and status histories.
+- Five source platforms, nine companies, and five ingestion runs.
+- Eight user accounts with auth credentials, refresh tokens, verification tokens, and password reset tokens.
+- Eight user profiles, eight preference records, and realistic profile history through experience, education, and user skills.
+- Ten product-shaped job listings with normalized requirements and job-skill links across active, stale, expired, and closed states.
+- User activity data through bookmarks, application tracker records, and status histories with more varied lifecycle coverage.
 - Development-only AI artifacts through fit score snapshots, skill gap snapshots, CV file metadata, CV analysis results, and AI request logs.
 
 Current seeded local accounts:
 
-| User           | Email                         | Primary focus                  |
-| -------------- | ----------------------------- | ------------------------------ |
-| Annisa Pratama | `annisa.pratama@example.test` | Backend / platform engineering |
-| Bima Saputra   | `bima.saputra@example.test`   | Full stack engineering         |
-| Citra Lestari  | `citra.lestari@example.test`  | Data analysis                  |
-| Dion Wijaya    | `dion.wijaya@example.test`    | Product / operations           |
-| Eka Novita     | `eka.novita@example.test`     | Product design                 |
+| User            | Email                          | Primary focus                  |
+| --------------- | ------------------------------ | ------------------------------ |
+| Annisa Pratama  | `annisa.pratama@example.test`  | Backend / platform engineering |
+| Bima Saputra    | `bima.saputra@example.test`    | Full stack engineering         |
+| Citra Lestari   | `citra.lestari@example.test`   | Data analysis                  |
+| Dion Wijaya     | `dion.wijaya@example.test`     | Product / operations           |
+| Eka Novita      | `eka.novita@example.test`      | Product design                 |
+| Farah Maharani  | `farah.maharani@example.test`  | Product design / discovery     |
+| Gilang Ramadhan | `gilang.ramadhan@example.test` | QA automation / API quality    |
+| Hana Putri      | `hana.putri@example.test`      | Data operations (deleted seed) |
 
 Run locally:
 
