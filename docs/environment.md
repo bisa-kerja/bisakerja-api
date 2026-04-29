@@ -1,6 +1,6 @@
 ---
 title: Backend API Environment Configuration
-description: Environment variable groups, local defaults, secret handling, and runtime separation for the Bisakerja Backend API.
+description: Environment variable groups, explicit env requirements, secret handling, and runtime separation for the Bisakerja Backend API.
 owner: backend-owner
 reviewers:
   - platform-docs-maintainer
@@ -8,14 +8,20 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/environment.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Environment Configuration
 
-This document defines the initial environment configuration model for the Bisakerja Backend API. The actual `.env.example` file should be created during project setup after package choices are pinned and the auth/session design is wired into code.
+This document defines the environment configuration model for the Bisakerja Backend API.
 
 Environment variables must be validated at startup with Zod in `src/config/env.ts`. Missing required variables or invalid values should fail fast before the server accepts requests.
+
+Environment rules are intentionally strict:
+
+- Do not rely on runtime defaults or fallback values for application configuration env vars.
+- Do not represent "not configured" as an empty string.
+- If an env var is required by the schema, every environment file must set it explicitly with either a real secret or a safe non-empty placeholder.
 
 ## Environment Groups
 
@@ -31,9 +37,9 @@ Environment variables must be validated at startup with Zod in `src/config/env.t
 
 ## Application Variables
 
-| Variable       | Required | Local default           | Notes                                                                      |
+| Variable       | Required | Example value           | Notes                                                                      |
 | -------------- | -------- | ----------------------- | -------------------------------------------------------------------------- |
-| `APP_NAME`     | No       | `bisakerja-api`         | Service name used in logs and health output                                |
+| `APP_NAME`     | Yes      | `bisakerja-api`         | Service name used in logs and health output                                |
 | `APP_ENV`      | Yes      | `local`                 | Allowed values should include `local`, `test`, `staging`, and `production` |
 | `NODE_ENV`     | Yes      | `development`           | Runtime ecosystem mode                                                     |
 | `PORT`         | Yes      | `3000`                  | HTTP server port inside the runtime container or local process             |
@@ -43,18 +49,21 @@ Environment variables must be validated at startup with Zod in `src/config/env.t
 
 ## Database Variables
 
-| Variable              | Required | Local default | Notes                                                                               |
-| --------------------- | -------- | ------------- | ----------------------------------------------------------------------------------- |
-| `DATABASE_URL`        | Yes      | None          | PostgreSQL connection string used by Prisma runtime; prefer the provider pooler URL |
-| `DIRECT_DATABASE_URL` | No       | None          | Optional direct PostgreSQL URL for Prisma migrations or long-running admin tasks    |
-| `PRISMA_LOG_LEVEL`    | No       | `warn`        | Prisma logging level for development and debugging                                  |
-| `RUN_DATABASE_TESTS`  | No       | `false`       | Test-only flag that enables repository tests against PostgreSQL                     |
+| Variable              | Required | Example value  | Notes                                                                              |
+| --------------------- | -------- | -------------- | ---------------------------------------------------------------------------------- |
+| `DATABASE_URL`        | Yes      | provider URL   | PostgreSQL connection string used by runtime app and Prisma runtime adapter        |
+| `DIRECT_DATABASE_URL` | Yes      | provider URL   | PostgreSQL direct connection used by Prisma CLI, migrations, and seed flows        |
+| `PRISMA_LOG_LEVEL`    | Yes      | `warn`         | Prisma logging level for development and debugging                                 |
+| `SEED_USER_PASSWORD`  | Yes      | `Password123!` | Seed-only login password for deterministic local/test accounts                     |
+| `RUN_DATABASE_TESTS`  | Yes      | `false`        | Test-only flag that enables repository tests against PostgreSQL when set to `true` |
 
 Rules:
 
 - Never commit real database credentials.
 - Use a separate database for tests.
-- For Neon, Supabase, or similar managed PostgreSQL, set `DATABASE_URL` to the pooled connection string and `DIRECT_DATABASE_URL` to the non-pooled direct host when the provider recommends it for migrations.
+- For Neon, Supabase, or similar managed PostgreSQL, set `DATABASE_URL` to the pooled connection string and `DIRECT_DATABASE_URL` to the non-pooled direct host.
+- The repository no longer falls back from `DIRECT_DATABASE_URL` to `DATABASE_URL` inside Prisma CLI or seed scripts. Both values must be present explicitly.
+- `SEED_USER_PASSWORD` is mandatory for seed runs so misconfigured local/test credentials fail immediately instead of silently reusing a hidden default.
 - Keep `RUN_DATABASE_TESTS=false` for ordinary local test runs unless the isolated test database is running and migrations are applied.
 - Run migrations explicitly in deployment workflows; do not rely on application startup to mutate production schema unless that deployment policy is approved.
 
@@ -107,19 +116,19 @@ Rules:
 
 ## Model API Variables
 
-| Variable                  | Required                    | Local default           | Notes                                                             |
-| ------------------------- | --------------------------- | ----------------------- | ----------------------------------------------------------------- |
-| `MODEL_API_BASE_URL`      | Yes for AI workflows        | `http://localhost:8000` | FastAPI inference service base URL                                |
-| `MODEL_API_TIMEOUT_MS`    | Yes                         | `10000`                 | Request timeout for inference calls                               |
-| `MODEL_API_SERVICE_TOKEN` | Yes outside local mock mode | None                    | Internal service credential if required                           |
-| `MODEL_API_ENABLE_MOCK`   | No                          | `false`                 | Local-only fallback for development before Model API is available |
+| Variable                  | Required | Example value                | Notes                                                           |
+| ------------------------- | -------- | ---------------------------- | --------------------------------------------------------------- |
+| `MODEL_API_BASE_URL`      | Yes      | `http://localhost:8000`      | FastAPI inference service base URL                              |
+| `MODEL_API_TIMEOUT_MS`    | Yes      | `10000`                      | Request timeout for inference calls                             |
+| `MODEL_API_SERVICE_TOKEN` | Yes      | `your-local-model-api-token` | Internal service credential; use non-empty placeholder in mocks |
+| `MODEL_API_ENABLE_MOCK`   | Yes      | `true`                       | Local/test toggle for mocked AI responses                       |
 
 Rules:
 
 - The frontend must never call Model API directly.
 - Backend should send only the minimum profile, preference, job, and CV context needed for inference.
 - Keep `MODEL_API_ENABLE_MOCK=true` only for local development and automated tests.
-- When `MODEL_API_ENABLE_MOCK=false`, `MODEL_API_SERVICE_TOKEN` must be present at startup.
+- `MODEL_API_SERVICE_TOKEN` is always required by env validation even when mock mode is enabled; local/test env files should use a safe non-empty placeholder.
 - Model API failures must map to documented 502 or 503 API responses.
 
 ## Scraper And Job Source Variables
@@ -159,17 +168,18 @@ Rules:
 
 ## Email Variables
 
-| Variable             | Required                 | Local default                       | Notes                                                                      |
+| Variable             | Required                 | Example value                       | Notes                                                                      |
 | -------------------- | ------------------------ | ----------------------------------- | -------------------------------------------------------------------------- |
 | `EMAIL_PROVIDER`     | Yes for auth email flows | `fake`                              | `fake` for local/tests, `resend` for real delivery                         |
 | `EMAIL_FROM`         | Yes                      | `Bisakerja <no-reply@example.test>` | Sender address in `email@example.com` or `Name <email@example.com>` format |
-| `RESEND_API_KEY`     | Yes for Resend           | None                                | Resend API key stored in secrets manager or env                            |
-| `RESEND_MAX_RETRIES` | No                       | `2`                                 | Additional retry attempts for transient Resend failures                    |
+| `RESEND_API_KEY`     | Yes                      | `your-local-resend-api-key`         | Real key for resend mode; non-empty placeholder for fake mode              |
+| `RESEND_MAX_RETRIES` | Yes                      | `2`                                 | Additional retry attempts for transient Resend failures                    |
 
 Rules:
 
 - Production must not use `EMAIL_PROVIDER=fake`.
-- If `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` is required and `EMAIL_FROM` should use a verified Resend sending domain.
+- If `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` must be a real provider key and `EMAIL_FROM` should use a verified Resend sending domain.
+- Even when `EMAIL_PROVIDER=fake`, `RESEND_API_KEY` should stay present as a non-empty placeholder so config drift is visible immediately.
 - Retry logic should rely on Resend idempotency keys and only retry transient failures such as rate limiting, temporary concurrency conflicts, or 5xx provider errors.
 - Test defaults should keep `EMAIL_PROVIDER=fake` so auth flows remain deterministic and offline-safe.
 
@@ -205,7 +215,7 @@ When the project scaffold is created, `.env.example` must:
 - Include every required variable with safe placeholder values.
 - Exclude real secrets.
 - Group variables using the sections in this document.
-- Mark variables that are only required when a feature is enabled.
+- Prefer safe non-empty placeholders over blank strings so validation behavior matches real runtime rules.
 - Stay in sync with `src/config/env.ts`.
 
 ## Deployment Env File Example
@@ -223,16 +233,22 @@ Rules:
 - `APP_ENV` in that file must match the target runtime environment, because the remote deploy script rejects mismatches when an explicit expectation is configured.
 - The current staging rollout expects `APP_ENV=staging` with `NODE_ENV=production`.
 - Compose-specific variables such as `APP_BIND_ADDRESS` and `APP_PORT` should stay documented in this template.
-- The deployment template no longer bootstraps a PostgreSQL container; `DATABASE_URL` and optional `DIRECT_DATABASE_URL` must point to the managed database instance directly.
+- The deployment template no longer bootstraps a PostgreSQL container; `DATABASE_URL` and `DIRECT_DATABASE_URL` must point to the managed database instance directly.
 - The current rollout still targets staging first, but it intentionally uses the same production-style env file that will later be reused when the deployment branch changes to `main`.
 
 ## `.env.test.example` Requirements
 
 The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. That isolated database may live on localhost or on a managed PostgreSQL provider, but the URL should clearly identify test-only scope such as a dedicated test database name. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
 
-Test defaults should use fake providers or local mocks for email, Model API, Scraper API, and uploads. Test logs should default to `silent` unless a failing test needs diagnostic output.
+Test defaults should use fake providers or local mocks for email, Model API, Scraper API, and uploads. Test logs should default to `silent` unless a failing test needs diagnostic output. Even in fake/mock mode, env values should stay explicit and non-empty.
 
 Repository integration tests should keep `RUN_DATABASE_TESTS=false` for ordinary full-suite runs. Set `RUN_DATABASE_TESTS=true` only when running against an isolated PostgreSQL test database with committed migrations applied. Migration verification commands may set this flag automatically after applying migrations.
+
+## Documentation Discipline
+
+- Every feature, bug fix, behavior change, env contract change, migration rule change, or operational change must update the relevant files under `docs/**` and repo-level docs such as `README.md` when applicable.
+- If a change introduces or modifies an environment variable, update `.env.example`, `.env.test.example`, `.env.production.example`, and this document in the same work item.
+- If a change affects deployment, testing, database behavior, or generated docs workflow, update the corresponding operations doc in the same work item.
 
 ## Related Docs
 

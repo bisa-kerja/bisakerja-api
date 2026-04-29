@@ -25,12 +25,18 @@ import {
   users
 } from "./seed-data";
 
-const databaseUrl =
-  process.env.DIRECT_DATABASE_URL ||
-  process.env.DATABASE_URL ||
-  "postgresql://app_user:replace-with-password@ep-local-breeze-a1b2c3d4.ap-southeast-1.aws.neon.tech/bisakerja_api?sslmode=require&channel_binding=require";
+function requireEnv(name: string) {
+  const value = process.env[name]?.trim();
 
-const seedUserPassword = process.env.SEED_USER_PASSWORD || "Password123!";
+  if (!value) {
+    throw new Error(`${name} is required.`);
+  }
+
+  return value;
+}
+
+const databaseUrl = requireEnv("DIRECT_DATABASE_URL");
+const seedUserPassword = requireEnv("SEED_USER_PASSWORD");
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({

@@ -13,7 +13,7 @@ const { listRegisteredRoutes, renderRouteInventoryMarkdown } =
 
 const config = loadEnv(process.env);
 const generatedAt = new Date().toISOString();
-const sourceCommit = process.env.SOURCE_SHA ?? "unknown";
+const sourceCommit = resolveSourceCommit();
 const outputPath = path.join(process.cwd(), "docs/generated/routes.md");
 const routes = listRegisteredRoutes(config);
 const markdown = await format(
@@ -29,3 +29,26 @@ await writeFile(outputPath, markdown, "utf8");
 console.log(
   `Generated ${String(routes.length)} routes at docs/generated/routes.md`
 );
+
+function resolveSourceCommit() {
+  const envCommit = process.env.SOURCE_SHA?.trim();
+
+  if (envCommit) {
+    return envCommit;
+  }
+
+  const result = Bun.spawnSync({
+    cmd: ["git", "rev-parse", "HEAD"],
+    stdout: "pipe",
+    stderr: "ignore"
+  });
+  const gitCommit = result.stdout.toString().trim();
+
+  if (result.exitCode === 0 && gitCommit) {
+    return gitCommit;
+  }
+
+  throw new Error(
+    "SOURCE_SHA is required when git metadata is unavailable."
+  );
+}

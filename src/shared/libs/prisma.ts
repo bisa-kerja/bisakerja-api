@@ -14,7 +14,7 @@ const prismaLogLevels =
     : ([prismaEnv.database.prismaLogLevel] as const);
 
 const adapter = new PrismaPg({
-  connectionString: prismaEnv.database.url
+  connectionString: prismaEnv.database.runtimeUrl
 });
 
 export const prisma = new PrismaClient({

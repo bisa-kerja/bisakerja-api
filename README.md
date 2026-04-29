@@ -202,6 +202,13 @@ http://localhost:3000
 
 The app validates environment variables at startup. Missing required values or invalid values should fail before the server accepts requests.
 
+Environment contract is explicit:
+
+- `DATABASE_URL` and `DIRECT_DATABASE_URL` must both be set.
+- `SEED_USER_PASSWORD` must be set before running `bun run prisma:seed`.
+- `MODEL_API_SERVICE_TOKEN` and `RESEND_API_KEY` must stay non-empty even in local fake/mock setups; use safe placeholders when the real integration is disabled.
+- The repository does not rely on env fallback values anymore.
+
 Important local files:
 
 | File                      | Purpose                                         |
@@ -213,7 +220,7 @@ Important local files:
 Important variable groups:
 
 - Application: `APP_ENV`, `NODE_ENV`, `PORT`, `API_PREFIX`, `APP_URL`, `FRONTEND_URL`
-- Database: `DATABASE_URL`, optional `DIRECT_DATABASE_URL`, `RUN_DATABASE_TESTS`
+- Database: `DATABASE_URL`, `DIRECT_DATABASE_URL`, `SEED_USER_PASSWORD`, `RUN_DATABASE_TESTS`
 - Auth: access-token secret, refresh-token secret, TTLs, cookie settings
 - Security: CORS origins, trusted proxy, body limit, rate limit settings
 - Integrations: Model API URL, scraper/job source settings, email provider
@@ -229,7 +236,7 @@ PostgreSQL is the durable source of truth. Runtime environments are expected to 
 For providers such as Neon or Supabase:
 
 - Use `DATABASE_URL` for the runtime connection, usually the provider pooler URL.
-- Use `DIRECT_DATABASE_URL` for Prisma migrations when the provider recommends a direct host.
+- Use `DIRECT_DATABASE_URL` for Prisma migrations and seed flows.
 - Use a separate database for tests.
 - Keep `RUN_DATABASE_TESTS=false` for ordinary local test runs unless an isolated test database is prepared.
 
@@ -389,6 +396,7 @@ Before changing behavior:
 - Read the relevant module doc in `docs/modules/**`.
 - Keep module boundaries aligned with `docs/project-structure.md`.
 - Update tests with the smallest coverage that proves the changed behavior.
+- Update all related documentation in the same work item when adding a feature, fixing a bug, changing an env contract, or changing runtime/ops behavior.
 - Update generated OpenAPI and route inventory when route contracts change.
 - Update environment examples and `docs/environment.md` when variables change.
 - Update database docs and migration verification when Prisma schema changes.

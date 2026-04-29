@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/documentation-sync.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Documentation Sync
@@ -257,6 +257,12 @@ Service-owned docs should be reviewed:
 - Before a release sync.
 - After API, database, auth, security, or integration behavior changes.
 - After an incident reveals a documentation gap.
+
+Documentation update discipline:
+
+- Every feature, bug fix, env contract change, migration policy change, deploy change, or test workflow change must update the affected service-owned docs in the same work item.
+- `README.md` should be updated together with `docs/**` when the change affects repository setup, local workflow, contribution flow, or operator expectations.
+- Documentation follow-up should not be deferred for "later cleanup" once behavior has already changed in code.
 
 `last_reviewed` should be updated after meaningful review, not after mechanical formatting only.
 

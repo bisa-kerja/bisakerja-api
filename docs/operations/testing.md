@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/testing.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Testing Strategy
@@ -153,11 +153,18 @@ Required test environment behavior:
 
 The final `.env.test.example` should be created during scaffold work and kept in sync with `docs/environment.md` and `src/config/env.ts`.
 
+Fail-fast env rules also apply to tests:
+
+- `DATABASE_URL`, `DIRECT_DATABASE_URL`, and `SEED_USER_PASSWORD` must be explicit when database-backed test flows or seed flows run.
+- Fake/mock integrations should still provide non-empty placeholders for env values such as `MODEL_API_SERVICE_TOKEN` and `RESEND_API_KEY`.
+- Test helpers may provide explicit fixture env objects, but they must not hide missing repository env configuration behind fallback reads from `process.env`.
+- Shared test helpers now read `DATABASE_URL`, `DIRECT_DATABASE_URL`, and `SEED_USER_PASSWORD` from the active test environment such as `.env.test` or explicit shell overrides, rather than from hardcoded repository example URLs.
+
 Test helpers must fail fast when integration tests are configured outside the test runtime. Database-backed tests should call the environment guard before connecting to PostgreSQL, reject database URLs that do not clearly point to an isolated local or test database, and skip with an explicit reason when the configured PostgreSQL target is unavailable.
 
 For database-backed verification, prefer explicit environment overrides so the active database target is obvious in terminal history. A managed test database is acceptable as long as it is isolated from development, staging, and production. Example:
 
-- `APP_ENV=test NODE_ENV=test DATABASE_URL=postgresql://app_user:password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require DIRECT_DATABASE_URL=postgresql://app_user:password@ep-test-breeze-a1b2c3d4.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require RUN_DATABASE_TESTS=true bun test`
+- `APP_ENV=test NODE_ENV=test DATABASE_URL=postgresql://app_user:password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require DIRECT_DATABASE_URL=postgresql://app_user:password@ep-test-breeze-a1b2c3d4.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require SEED_USER_PASSWORD=Password123! RUN_DATABASE_TESTS=true bun test`
 
 The seeded route sweep mutates seeded auth and application state during execution. Always point it to an isolated test database, not to the normal local development database.
 

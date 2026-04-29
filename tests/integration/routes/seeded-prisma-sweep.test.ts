@@ -19,17 +19,20 @@ import {
   verifyPassword
 } from "@/shared/utils/password";
 import { jobs, users, applicationRecords } from "../../../prisma/seed-data";
-import { testConfig } from "../../helpers/config";
+import {
+  testConfig,
+  testEnv,
+  testSeedUserPassword
+} from "../../helpers/config";
 import { modelApiFixtures } from "../../fixtures/model-api";
 import { injectRoute } from "../../helpers/route";
 import { assertIntegrationTestEnvironment } from "../../helpers/test-environment";
 
 const describeIfDatabaseTestsEnabled =
   process.env.RUN_DATABASE_TESTS === "true" ? describe : describe.skip;
-const testDatabaseUrl =
-  process.env.DATABASE_URL ??
-  "postgresql://app_user:replace-with-password@ep-test-breeze-a1b2c3d4-pooler.ap-southeast-1.aws.neon.tech/bisakerja_api_test?sslmode=require&channel_binding=require";
-const seedPassword = process.env.SEED_USER_PASSWORD ?? "Password123!";
+const testDatabaseUrl = testEnv.DATABASE_URL;
+const testDirectDatabaseUrl = testEnv.DIRECT_DATABASE_URL;
+const seedPassword = testSeedUserPassword;
 const annisa = users.find(
   (user) => user.email === "annisa.pratama@example.test"
 );
@@ -612,7 +615,7 @@ async function reseedTestDatabase() {
     env: {
       ...process.env,
       DATABASE_URL: testDatabaseUrl,
-      DIRECT_DATABASE_URL: testDatabaseUrl,
+      DIRECT_DATABASE_URL: testDirectDatabaseUrl,
       SEED_USER_PASSWORD: seedPassword
     },
     stdout: "pipe",

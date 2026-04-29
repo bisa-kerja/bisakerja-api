@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/deployment.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Deployment Operations
@@ -75,21 +75,22 @@ Deployment must provide all required variables documented in `docs/environment.m
 
 Minimum production variable groups:
 
-| Group            | Required before production                                                     |
-| ---------------- | ------------------------------------------------------------------------------ |
-| Application      | `APP_ENV`, `NODE_ENV`, `PORT`, `API_PREFIX`, `APP_URL`, `FRONTEND_URL`         |
-| Database         | `DATABASE_URL`, optional `DIRECT_DATABASE_URL` if pooling is used              |
-| Auth             | Token/session secrets, auth TTLs, reset and verification TTLs                  |
-| Security         | `CORS_ORIGINS`, request body limit, rate limit settings, trusted proxy setting |
-| Model API        | `MODEL_API_BASE_URL`, timeout, service credential if required                  |
-| Scraper/job data | Job freshness threshold and any internal scraper status credential if used     |
-| Uploads          | Storage driver, upload path or bucket, max size, MIME allowlist, retention     |
-| Email            | Provider, sender, and Resend credentials for auth email flows                  |
-| Observability    | Log level, request id header, health timeout, error reporting DSN if used      |
+| Group            | Required before production                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| Application      | `APP_ENV`, `NODE_ENV`, `PORT`, `API_PREFIX`, `APP_URL`, `FRONTEND_URL`                                  |
+| Database         | `DATABASE_URL`, `DIRECT_DATABASE_URL` if pooling is used, `SEED_USER_PASSWORD` when seed flows are used |
+| Auth             | Token/session secrets, auth TTLs, reset and verification TTLs                                           |
+| Security         | `CORS_ORIGINS`, request body limit, rate limit settings, trusted proxy setting                          |
+| Model API        | `MODEL_API_BASE_URL`, timeout, service credential if required                                           |
+| Scraper/job data | Job freshness threshold and any internal scraper status credential if used                              |
+| Uploads          | Storage driver, upload path or bucket, max size, MIME allowlist, retention                              |
+| Email            | Provider, sender, and Resend credentials for auth email flows                                           |
+| Observability    | Log level, request id header, health timeout, error reporting DSN if used                               |
 
 Rules:
 
 - Environment validation must fail fast when required values are missing.
+- Deployment env files should not depend on empty-string placeholders or runtime fallback behavior.
 - Production CORS must not allow wildcard origins.
 - Production auth secrets must be long, random, and environment-specific.
 - `MODEL_API_ENABLE_MOCK=true` is allowed for local and tests only.
@@ -113,7 +114,7 @@ For managed providers such as Neon or Supabase, prefer this split:
 - `DATABASE_URL` uses the provider pooler or standard runtime URL.
 - `DIRECT_DATABASE_URL` uses the direct host when Prisma migrations should bypass the pooler.
 
-If the provider does not require a separate direct connection, `DIRECT_DATABASE_URL` may stay empty and Prisma will reuse `DATABASE_URL`.
+If the provider does not require a separate direct connection, still write an explicit `DIRECT_DATABASE_URL` value so Prisma CLI, migrations, and seed flows use the same validated contract as runtime environments.
 
 ## Prisma Migration Execution
 
@@ -197,7 +198,7 @@ The repository provides one deployment Compose file:
 
 Current compose behavior:
 
-- the app service reads `DATABASE_URL` and optional `DIRECT_DATABASE_URL` directly from `.env.production`
+- the app service reads `DATABASE_URL` and `DIRECT_DATABASE_URL` directly from `.env.production`
 - uploaded CV files persist in a named volume mounted at `/app/storage/uploads`
 - liveness uses `GET /health/live`
 - the backend port binds to loopback by default, so it is intended to sit behind a reverse proxy or host-level tunnel

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { ZodError } from "zod";
 
 import { loadEnv } from "@/config/env";
-import { testConfig } from "../../helpers/config";
+import { testConfig, testEnv } from "../../helpers/config";
 
 describe("environment validation", () => {
   test("loads typed application, security, and observability config", () => {
@@ -39,14 +39,12 @@ describe("environment validation", () => {
 
   test("always includes app and frontend origins in allowed cors origins", () => {
     const config = loadEnv({
+      ...testEnv,
       APP_ENV: "local",
       NODE_ENV: "development",
-      PORT: "3000",
-      API_PREFIX: "/api/v1",
       APP_URL: "http://localhost:3000/docs",
       FRONTEND_URL: "http://localhost:5173/app",
       CORS_ORIGINS: "http://localhost:5174",
-      MODEL_API_ENABLE_MOCK: "true",
       MODEL_API_SERVICE_TOKEN: "test-model-token"
     });
 
@@ -60,10 +58,9 @@ describe("environment validation", () => {
   test("rejects wildcard CORS origins in production", () => {
     expect(() =>
       loadEnv({
+        ...testEnv,
         APP_ENV: "production",
         NODE_ENV: "production",
-        PORT: "3000",
-        API_PREFIX: "/api/v1",
         APP_URL: "https://api.bisakerja.example",
         FRONTEND_URL: "https://bisakerja.example",
         CORS_ORIGINS: "*",
@@ -82,10 +79,9 @@ describe("environment validation", () => {
 
     expect(() =>
       loadEnv({
+        ...testEnv,
         APP_ENV: "production",
         NODE_ENV: "production",
-        PORT: "3000",
-        API_PREFIX: "/api/v1",
         APP_URL: "https://api.bisakerja.example",
         FRONTEND_URL: "https://bisakerja.example",
         CORS_ORIGINS: "https://bisakerja.example",
@@ -113,6 +109,22 @@ describe("environment validation", () => {
       testConfig({
         MODEL_API_ENABLE_MOCK: "false",
         MODEL_API_SERVICE_TOKEN: ""
+      })
+    ).toThrow(ZodError);
+  });
+
+  test("rejects missing required env values instead of using defaults", () => {
+    expect(() =>
+      loadEnv({
+        ...testEnv,
+        APP_NAME: undefined
+      })
+    ).toThrow(ZodError);
+
+    expect(() =>
+      loadEnv({
+        ...testEnv,
+        DIRECT_DATABASE_URL: ""
       })
     ).toThrow(ZodError);
   });

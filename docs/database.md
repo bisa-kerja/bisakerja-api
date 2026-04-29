@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/database.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-04-29
 ---
 
 # Backend API Database Design
@@ -19,6 +19,7 @@ Operational note:
 
 - Runtime environments are expected to use managed or otherwise externally hosted PostgreSQL through `DATABASE_URL`.
 - If the provider exposes a pooled runtime URL and a separate direct host for migrations, configure the pooler in `DATABASE_URL` and the direct host in `DIRECT_DATABASE_URL`.
+- Prisma CLI and seed scripts now require `DIRECT_DATABASE_URL` explicitly; they do not silently reuse `DATABASE_URL`.
 - The deployment Compose file no longer provisions its own PostgreSQL container.
 
 This document defines the initial database architecture for MVP documentation. It is intentionally implementation-ready, but the final `prisma/schema.prisma` must still be reviewed during schema implementation.
@@ -588,7 +589,7 @@ Run locally:
 
 1. Apply migrations with `bun run prisma:migrate:deploy` or `bun run prisma:migrate:dev`.
 2. Run `bun run prisma:seed`.
-3. Optionally set `SEED_USER_PASSWORD` before seeding if local login accounts should use a password other than the default `Password123!`.
+3. Set `SEED_USER_PASSWORD` explicitly before seeding. The repository no longer provides a hidden default seed password.
 
 Seed expectations:
 
@@ -596,7 +597,7 @@ Seed expectations:
 - Seed values are synthetic but product-shaped, so list, detail, bookmark, application, and AI-history screens can be exercised immediately.
 - Re-running the seed replaces the same deterministic records instead of creating unbounded duplicates.
 
-Seed data must stay product-shaped but synthetic. It must not include raw external provider payloads, real user records, raw CV content, raw model payloads, production credentials, tokens, OTP values, or service credentials. A local-only default password may be documented for development convenience when the environment is disposable.
+Seed data must stay product-shaped but synthetic. It must not include raw external provider payloads, real user records, raw CV content, raw model payloads, production credentials, tokens, OTP values, or service credentials. Seed login credentials must come from explicit environment configuration so misconfigured local or test setups fail immediately.
 
 ## Data Retention
 

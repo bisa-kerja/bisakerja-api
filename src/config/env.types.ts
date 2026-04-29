@@ -64,9 +64,8 @@ export type AppConfig = {
     staleAfterHours: number;
   };
   database: {
-    url: string;
     runtimeUrl: string;
-    directUrl: string | null;
+    directUrl: string;
     prismaLogLevel: "query" | "info" | "warn" | "error";
   };
   observability: {

@@ -2,6 +2,8 @@ import { envSchema } from "@/config/env.schema";
 import type { AppConfig } from "@/config/env.types";
 export type { AppConfig, AppEnvironment } from "@/config/env.types";
 
+let cachedEnv: AppConfig | null = null;
+
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
   const parsed = envSchema.parse(source);
   const corsOrigins = Array.from(
@@ -76,9 +78,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
       staleAfterHours: parsed.JOB_STALE_AFTER_HOURS
     },
     database: {
-      url: parsed.DIRECT_DATABASE_URL || parsed.DATABASE_URL,
       runtimeUrl: parsed.DATABASE_URL,
-      directUrl: parsed.DIRECT_DATABASE_URL || null,
+      directUrl: parsed.DIRECT_DATABASE_URL,
       prismaLogLevel: parsed.PRISMA_LOG_LEVEL
     },
     observability: {
@@ -90,7 +91,20 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
   };
 }
 
-export const env = loadEnv();
+export function getEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
+  if (cachedEnv) {
+    return cachedEnv;
+  }
+
+  cachedEnv = loadEnv(source);
+  return cachedEnv;
+}
+
+export const env = new Proxy({} as AppConfig, {
+  get(_target, property: keyof AppConfig) {
+    return getEnv()[property];
+  }
+});
 
 function normalizeOrigin(value: string) {
   if (value === "*") {
