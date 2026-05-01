@@ -3,7 +3,7 @@ import type { RequestHandler } from "express";
 import type { AppConfig } from "@/config/env";
 import { successResponse } from "@/core/responses/response.formatter";
 import {
-  defaultHealthDependencyChecks,
+  createDefaultHealthDependencyChecks,
   getReadinessPayload
 } from "@/modules/health/health.service";
 import type { HealthDependencyChecks } from "@/modules/health/health.types";
@@ -15,7 +15,7 @@ type HealthController = {
 
 export function createHealthController(
   config: AppConfig,
-  checks: HealthDependencyChecks = defaultHealthDependencyChecks
+  checks: HealthDependencyChecks = createDefaultHealthDependencyChecks(config)
 ): HealthController {
   return {
     live: (_req, res) => {

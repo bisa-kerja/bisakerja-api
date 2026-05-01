@@ -31,13 +31,16 @@ export class AuthController {
     this.service = new AuthService(
       dependencies.config,
       dependencies.repository,
-      dependencies.emailProvider,
+      dependencies.jobPublisher,
       dependencies.now
     );
   }
 
   register = async (req: Request, res: Response) => {
-    const result = await this.service.register(req.body as RegisterInput);
+    const result = await this.service.register(
+      req.body as RegisterInput,
+      req.requestId
+    );
 
     emitAuditEvent({
       action: "auth.registered",
@@ -130,7 +133,10 @@ export class AuthController {
   };
 
   forgotPassword = async (req: Request, res: Response) => {
-    await this.service.forgotPassword(req.body as ForgotPasswordInput);
+    await this.service.forgotPassword(
+      req.body as ForgotPasswordInput,
+      req.requestId
+    );
 
     emitAuditEvent({
       action: "auth.password_reset_requested",

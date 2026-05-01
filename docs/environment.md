@@ -182,6 +182,26 @@ Rules:
 - Retry logic should rely on Resend idempotency keys and only retry transient failures such as rate limiting, temporary concurrency conflicts, or 5xx provider errors.
 - Test defaults should keep `EMAIL_PROVIDER=fake` so auth flows remain deterministic and offline-safe.
 
+## Async Workload Variables
+
+| Variable                           | Required | Example value            | Notes                                              |
+| ---------------------------------- | -------- | ------------------------ | -------------------------------------------------- |
+| `REDIS_URL`                        | Yes      | `redis://127.0.0.1:6379` | Redis connection for queue publisher and worker    |
+| `ASYNC_QUEUE_NAME`                 | Yes      | `bisakerja-async`        | Shared logical queue name                          |
+| `ASYNC_QUEUE_PREFIX`               | Yes      | `bisakerja`              | Redis key namespace                                |
+| `ASYNC_QUEUE_CONCURRENCY`          | Yes      | `5`                      | Worker concurrency                                 |
+| `ASYNC_QUEUE_MAX_ATTEMPTS`         | Yes      | `4`                      | Max attempts per queued job                        |
+| `ASYNC_QUEUE_BACKOFF_MS`           | Yes      | `5000`                   | Retry backoff between attempts                     |
+| `ASYNC_QUEUE_RECOVERY_BATCH_SIZE`  | Yes      | `50`                     | Pending outbox jobs republished per recovery cycle |
+| `ASYNC_QUEUE_RECOVERY_INTERVAL_MS` | Yes      | `5000`                   | Worker recovery publish interval                   |
+
+Rules:
+
+- Side effects such as auth emails and maintenance cleanup should write to PostgreSQL outbox first, then publish to Redis.
+- Redis improves latency, while PostgreSQL outbox remains the durable recovery source after crashes or transient queue failures.
+- Production should run Redis with persistence and a separate worker process.
+- Readiness depends on both PostgreSQL and Redis.
+
 ## Observability Variables
 
 | Variable                  | Required | Local default  | Notes                                |
@@ -195,7 +215,7 @@ Rules:
 
 - Logs must not include passwords, tokens, OTP values, raw CV content, or full sensitive payloads.
 - Every error response should include or correlate with a request id.
-- Current runtime readiness checks PostgreSQL explicitly. Model API failures and job-data freshness issues are surfaced through route-level errors, logs, and module-specific handling rather than a separate global health env contract.
+- Current runtime readiness checks PostgreSQL and Redis explicitly. Model API failures and job-data freshness issues are surfaced through route-level errors, logs, and module-specific handling rather than a separate global health env contract.
 
 ## Environment Separation
 

@@ -45,6 +45,16 @@ export type AppConfig = {
       maxRetries: number;
     };
   };
+  asyncWorkloads: {
+    redisUrl: string;
+    queueName: string;
+    queuePrefix: string;
+    workerConcurrency: number;
+    maxAttempts: number;
+    backoffMs: number;
+    recoveryBatchSize: number;
+    recoveryIntervalMs: number;
+  };
   integrations: {
     modelApi: {
       baseUrl: string;

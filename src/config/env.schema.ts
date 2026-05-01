@@ -117,6 +117,24 @@ export const envSchema = z
     RESEND_MAX_RETRIES: numberFromString("RESEND_MAX_RETRIES").pipe(
       z.number().int().min(0).max(5)
     ),
+    REDIS_URL: requiredUrl("REDIS_URL"),
+    ASYNC_QUEUE_NAME: requiredString("ASYNC_QUEUE_NAME"),
+    ASYNC_QUEUE_PREFIX: requiredString("ASYNC_QUEUE_PREFIX"),
+    ASYNC_QUEUE_CONCURRENCY: numberFromString("ASYNC_QUEUE_CONCURRENCY").pipe(
+      z.number().int().positive()
+    ),
+    ASYNC_QUEUE_MAX_ATTEMPTS: numberFromString("ASYNC_QUEUE_MAX_ATTEMPTS").pipe(
+      z.number().int().min(1).max(10)
+    ),
+    ASYNC_QUEUE_BACKOFF_MS: numberFromString("ASYNC_QUEUE_BACKOFF_MS").pipe(
+      z.number().int().positive()
+    ),
+    ASYNC_QUEUE_RECOVERY_BATCH_SIZE: numberFromString(
+      "ASYNC_QUEUE_RECOVERY_BATCH_SIZE"
+    ).pipe(z.number().int().positive()),
+    ASYNC_QUEUE_RECOVERY_INTERVAL_MS: numberFromString(
+      "ASYNC_QUEUE_RECOVERY_INTERVAL_MS"
+    ).pipe(z.number().int().positive()),
     MODEL_API_BASE_URL: requiredUrl("MODEL_API_BASE_URL"),
     MODEL_API_TIMEOUT_MS: numberFromString("MODEL_API_TIMEOUT_MS").pipe(
       z.number().int().positive()

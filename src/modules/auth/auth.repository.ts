@@ -1,5 +1,7 @@
 import { prisma } from "@/shared/libs/prisma";
 import type { PrismaTransaction } from "@/shared/libs/prisma";
+import type { EnqueueAsyncJobInput } from "@/shared/async-workloads/async-workloads.types";
+import { PrismaAsyncJobOutboxRepository } from "@/shared/async-workloads/async-workloads.repository";
 import type {
   AuthRepository,
   AuthUser,
@@ -82,6 +84,43 @@ export class PrismaAuthRepository implements AuthRepository {
     return mapAuthUser(user);
   }
 
+  createAccountWithEmailVerificationJob(input: {
+    account: CreateAccountInput;
+    job: EnqueueAsyncJobInput<"auth.email-verification">;
+  }): Promise<{ user: AuthUser; jobId: string }> {
+    return this.client.$transaction(async (tx) => {
+      const repository = new PrismaAsyncJobOutboxRepository(tx);
+      const user = await tx.user.create({
+        data: {
+          email: input.account.email,
+          username: input.account.username,
+          phoneNumber: input.account.phoneNumber,
+          authCredential: {
+            create: {
+              passwordHash: input.account.passwordHash,
+              passwordHashAlgorithm: input.account.passwordHashAlgorithm
+            }
+          },
+          verificationTokens: {
+            create: {
+              otpHash: input.account.verificationOtpHash,
+              expiresAt: input.account.verificationExpiresAt
+            }
+          }
+        }
+      });
+      const job = await repository.createJob({
+        ...input.job,
+        actorId: user.id
+      });
+
+      return {
+        user: mapAuthUser(user),
+        jobId: job.id
+      };
+    });
+  }
+
   async findActiveEmailVerificationToken(
     email: string,
     otpHash: string
@@ -118,6 +157,29 @@ export class PrismaAuthRepository implements AuthRepository {
   ): Promise<void> {
     await this.client.passwordResetToken.create({
       data: { userId, tokenHash, expiresAt }
+    });
+  }
+
+  createPasswordResetTokenWithJob(input: {
+    userId: string;
+    tokenHash: string;
+    expiresAt: Date;
+    job: EnqueueAsyncJobInput<"auth.password-reset">;
+  }): Promise<{ jobId: string }> {
+    return this.client.$transaction(async (tx) => {
+      const repository = new PrismaAsyncJobOutboxRepository(tx);
+
+      await tx.passwordResetToken.create({
+        data: {
+          userId: input.userId,
+          tokenHash: input.tokenHash,
+          expiresAt: input.expiresAt
+        }
+      });
+
+      const job = await repository.createJob(input.job);
+
+      return { jobId: job.id };
     });
   }
 

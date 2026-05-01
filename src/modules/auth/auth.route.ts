@@ -5,8 +5,8 @@ import { createAuthMiddleware } from "@/core/middlewares/auth.middleware";
 import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { AuthController } from "@/modules/auth/auth.controller";
-import { createAuthEmailProvider } from "@/modules/auth/auth.email";
 import { PrismaAuthRepository } from "@/modules/auth/auth.repository";
+import { createAsyncJobPublisher } from "@/shared/async-workloads/async-workloads.queue";
 import {
   emptyBodySchema,
   forgotPasswordSchema,
@@ -22,16 +22,13 @@ export function createAuthRouter(
   options: AuthRouterOptions = {}
 ): Router {
   const router = Router();
-  const { repository, emailProvider } = resolveAuthDependencies(
-    config,
-    options
-  );
+  const { repository, jobPublisher } = resolveAuthDependencies(config, options);
   const authMiddleware =
     options.authMiddleware ?? createAuthMiddleware(config, repository);
   const controller = new AuthController({
     config,
     repository,
-    emailProvider,
+    jobPublisher,
     now: options.now
   });
   const { authLimiter } = createRateLimiters(config);
@@ -90,6 +87,6 @@ function resolveAuthDependencies(
 ) {
   return {
     repository: options.repository ?? new PrismaAuthRepository(),
-    emailProvider: options.emailProvider ?? createAuthEmailProvider(config)
+    jobPublisher: options.jobPublisher ?? createAsyncJobPublisher(config)
   };
 }

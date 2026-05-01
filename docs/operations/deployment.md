@@ -25,17 +25,18 @@ Exact hosting details remain open. This document defines the requirements that a
 - Run Prisma migrations explicitly as a deployment step.
 - Keep application startup separate from destructive or schema-mutating database work.
 - Treat PostgreSQL as a critical dependency for readiness.
+- Treat Redis as a critical dependency for async delivery readiness.
 - Treat Model API degradation as AI-feature degradation, not automatic total backend failure.
 - Make rollback direction explicit before production release.
 
 ## Environment Topology
 
-| Environment | Purpose                | Deployment expectation                                                                               |
-| ----------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| Local       | Developer workflow     | Bun runtime, local or shared development database, optional mock Model API, fixture-backed job data  |
-| Test        | Automated verification | Isolated test database, deterministic fixtures, fake email provider, disposable upload path          |
-| Staging     | Pre-release validation | Production-like config, non-production secrets, migrated staging database, real or staging Model API |
-| Production  | User-facing runtime    | Managed secrets, strict CORS, monitored PostgreSQL, controlled migrations, real observability        |
+| Environment | Purpose                | Deployment expectation                                                                                  |
+| ----------- | ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| Local       | Developer workflow     | Bun runtime, local or shared development database, optional mock Model API, fixture-backed job data     |
+| Test        | Automated verification | Isolated test database, deterministic fixtures, fake email provider, disposable upload path             |
+| Staging     | Pre-release validation | Production-like config, non-production secrets, migrated staging database, real or staging Model API    |
+| Production  | User-facing runtime    | Managed secrets, strict CORS, monitored PostgreSQL and Redis, controlled migrations, real observability |
 
 Each environment must have separate secrets and database connections. Production secrets must never be reused in local, test, or staging.
 
@@ -51,6 +52,7 @@ Artifact requirements:
 - Prisma client is generated during build or deploy.
 - Static public file serving is disabled unless explicitly needed.
 - Upload storage path is configured outside the compiled application artifact.
+- Async worker process is started separately from the HTTP app and points to the same PostgreSQL outbox plus Redis queue.
 - Source maps, if enabled, are not exposed publicly.
 
 Startup sequence:
@@ -62,6 +64,7 @@ process starts
   -> initialize logger
   -> initialize Express app and middleware
   -> initialize Prisma client
+  -> initialize Redis-backed async publisher dependencies
   -> register routes
   -> expose health endpoints
   -> listen on configured port
@@ -85,6 +88,7 @@ Minimum production variable groups:
 | Scraper/job data | Job freshness threshold and any internal scraper status credential if used                              |
 | Uploads          | Storage driver, upload path or bucket, max size, MIME allowlist, retention                              |
 | Email            | Provider, sender, and Resend credentials for auth email flows                                           |
+| Async workloads  | `REDIS_URL`, queue naming, concurrency, retry, and recovery tuning                                      |
 | Observability    | Log level, request id header, health timeout, error reporting DSN if used                               |
 
 Rules:

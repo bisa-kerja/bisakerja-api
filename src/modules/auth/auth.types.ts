@@ -1,6 +1,10 @@
 import type { RequestHandler } from "express";
 
 import type { AppConfig } from "@/config/env";
+import type {
+  AsyncJobPublisher,
+  EnqueueAsyncJobInput
+} from "@/shared/async-workloads";
 
 export type AuthUser = {
   id: string;
@@ -83,6 +87,10 @@ export type AuthRepository = {
     identifier: string
   ): Promise<AuthUserWithCredential | null>;
   createAccount(input: CreateAccountInput): Promise<AuthUser>;
+  createAccountWithEmailVerificationJob(input: {
+    account: CreateAccountInput;
+    job: EnqueueAsyncJobInput<"auth.email-verification">;
+  }): Promise<{ user: AuthUser; jobId: string }>;
   findActiveEmailVerificationToken(
     email: string,
     otpHash: string
@@ -93,6 +101,12 @@ export type AuthRepository = {
     tokenHash: string,
     expiresAt: Date
   ): Promise<void>;
+  createPasswordResetTokenWithJob(input: {
+    userId: string;
+    tokenHash: string;
+    expiresAt: Date;
+    job: EnqueueAsyncJobInput<"auth.password-reset">;
+  }): Promise<{ jobId: string }>;
   findActivePasswordResetToken(
     tokenHash: string
   ): Promise<PasswordResetTokenRecord | null>;
@@ -129,7 +143,7 @@ export type EmailProvider = {
 
 export type AuthServiceDependencies = {
   repository: AuthRepository;
-  emailProvider: EmailProvider;
+  jobPublisher: AsyncJobPublisher;
   now?: () => Date;
 };
 

@@ -4,6 +4,7 @@ export type DependencyCheck = () => Promise<void>;
 
 export type HealthDependencyChecks = {
   postgresql: DependencyCheck;
+  redis: DependencyCheck;
 };
 
 export type DependencyState = "healthy" | "unhealthy";
@@ -20,6 +21,7 @@ export type ReadinessPayload = {
   env: AppConfig["app"]["env"];
   dependencies: {
     postgresql: "healthy";
+    redis: "healthy";
   };
 };
 

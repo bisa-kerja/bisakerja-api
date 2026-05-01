@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { AppConfig } from "@/config/env";
+import { logger } from "@/config/logger";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -8,17 +9,19 @@ import {
   ConflictError,
   NotImplementedError
 } from "@/core/errors/app.error";
+import type { AsyncJobPublisher } from "@/shared/async-workloads/async-workloads.types";
+import { toAsyncJobIdempotencyKey } from "@/shared/async-workloads/async-workloads.utils";
 import {
   authErrorCodes,
   genericForgotPasswordMessage
 } from "@/modules/auth/auth.constants";
+import { buildAuthEmailIdempotencyKey } from "@/modules/auth/auth.email";
 import type {
   AuthRepository,
   AuthSession,
   AuthUser,
   AuthUserWithCredential,
-  CreateRefreshTokenInput,
-  EmailProvider
+  CreateRefreshTokenInput
 } from "@/modules/auth/auth.types";
 import type {
   ForgotPasswordInput,
@@ -55,11 +58,14 @@ export class AuthService {
   constructor(
     private readonly config: AppConfig,
     private readonly repository: AuthRepository,
-    private readonly emailProvider: EmailProvider,
+    private readonly jobPublisher: AsyncJobPublisher,
     private readonly now: () => Date = () => new Date()
   ) {}
 
-  async register(input: RegisterInput): Promise<{ user: AuthUser }> {
+  async register(
+    input: RegisterInput,
+    requestId?: string
+  ): Promise<{ user: AuthUser }> {
     const existingEmail = await this.repository.findUserByEmail(input.email);
 
     if (existingEmail) {
@@ -85,23 +91,40 @@ export class AuthService {
     const verificationExpiresAt = this.futureDate(
       this.config.auth.emailVerificationOtpTtl
     );
-    const user = await this.repository.createAccount({
-      email: input.email,
-      username: input.username,
-      phoneNumber: input.phoneNumber,
-      passwordHash,
-      passwordHashAlgorithm,
-      verificationOtpHash: this.hashCredential(otp),
-      verificationExpiresAt
+    const result = await this.repository.createAccountWithEmailVerificationJob({
+      account: {
+        email: input.email,
+        username: input.username,
+        phoneNumber: input.phoneNumber,
+        passwordHash,
+        passwordHashAlgorithm,
+        verificationOtpHash: this.hashCredential(otp),
+        verificationExpiresAt
+      },
+      job: {
+        jobType: "auth.email-verification",
+        requestId: requestId ?? null,
+        actorId: null,
+        idempotencyKey: toAsyncJobIdempotencyKey(
+          "auth.email-verification",
+          buildAuthEmailIdempotencyKey(
+            "auth-email-verification",
+            input.email,
+            verificationExpiresAt
+          )
+        ),
+        payload: {
+          email: input.email,
+          otp,
+          expiresAt: verificationExpiresAt.toISOString()
+        },
+        maxAttempts: this.config.asyncWorkloads.maxAttempts
+      }
     });
 
-    await this.emailProvider.sendEmailVerification({
-      email: input.email,
-      otp,
-      expiresAt: verificationExpiresAt
-    });
+    this.triggerAsyncPublish(result.jobId, "auth.register.email-verification");
 
-    return { user };
+    return { user: result.user };
   }
 
   async login(
@@ -177,7 +200,8 @@ export class AuthService {
   }
 
   async forgotPassword(
-    input: ForgotPasswordInput
+    input: ForgotPasswordInput,
+    requestId?: string
   ): Promise<{ message: string }> {
     const user = await this.repository.findUserByEmail(input.email);
 
@@ -185,16 +209,32 @@ export class AuthService {
       const token = createOpaqueToken();
       const expiresAt = this.futureDate(this.config.auth.passwordResetTokenTtl);
 
-      await this.repository.createPasswordResetToken(
-        user.id,
-        this.hashCredential(token),
-        expiresAt
-      );
-      await this.emailProvider.sendPasswordReset({
-        email: input.email,
-        token,
-        expiresAt
+      const result = await this.repository.createPasswordResetTokenWithJob({
+        userId: user.id,
+        tokenHash: this.hashCredential(token),
+        expiresAt,
+        job: {
+          jobType: "auth.password-reset",
+          requestId: requestId ?? null,
+          actorId: user.id,
+          idempotencyKey: toAsyncJobIdempotencyKey(
+            "auth.password-reset",
+            buildAuthEmailIdempotencyKey(
+              "auth-password-reset",
+              input.email,
+              expiresAt
+            )
+          ),
+          payload: {
+            email: input.email,
+            token,
+            expiresAt: expiresAt.toISOString()
+          },
+          maxAttempts: this.config.asyncWorkloads.maxAttempts
+        }
       });
+
+      this.triggerAsyncPublish(result.jobId, "auth.forgot-password.email");
     }
 
     return { message: genericForgotPasswordMessage };
@@ -319,6 +359,19 @@ export class AuthService {
       session: issueAccessToken(this.config, toAccessTokenInput(user)),
       refreshToken
     };
+  }
+
+  private triggerAsyncPublish(jobId: string, operation: string) {
+    void this.jobPublisher.publish(jobId).catch((error: unknown) => {
+      logger.warn(
+        {
+          error,
+          jobId,
+          operation
+        },
+        "Async job publish failed; pending outbox recovery required"
+      );
+    });
   }
 }
 

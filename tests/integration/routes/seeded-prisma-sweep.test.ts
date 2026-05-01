@@ -5,13 +5,13 @@ import { createApp } from "@/app";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer";
 import { PrismaAiJobFitRepository } from "@/modules/ai-job-fit";
-import type { EmailProvider } from "@/modules/auth";
 import { PrismaAuthRepository } from "@/modules/auth";
 import { PrismaApplicationsRepository } from "@/modules/applications";
 import { PrismaBookmarksRepository } from "@/modules/bookmarks";
 import { PrismaJobsRepository } from "@/modules/jobs";
 import { PrismaPreferencesRepository } from "@/modules/preferences";
 import { PrismaUsersRepository } from "@/modules/users";
+import type { AsyncJobPublisher } from "@/shared/async-workloads";
 import { createModelApiClient } from "@/shared/integrations/model-api.client";
 import {
   hashPassword,
@@ -68,7 +68,6 @@ const seededJobForBookmark = jobForBookmark;
 const seededJobForNewApplication = jobForNewApplication;
 
 describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
-  const emailProvider = new CapturingEmailProvider();
   const config = testConfig({
     DATABASE_URL: testDatabaseUrl,
     DIRECT_DATABASE_URL: testDatabaseUrl,
@@ -77,10 +76,11 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
   const prisma = new PrismaClient({
     adapter: new PrismaPg({ connectionString: testDatabaseUrl })
   });
+  const jobPublisher = new CapturingAsyncJobPublisher(prisma);
   const app = createApp(config, {
     routes: {
       auth: {
-        emailProvider,
+        jobPublisher,
         repository: new PrismaAuthRepository(prisma)
       },
       jobs: {
@@ -200,7 +200,9 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     });
     expect(forgotPassword.status).toBe(200);
 
-    const resetToken = emailProvider.takeLatestResetToken(seededAnnisa.email);
+    const resetToken = await jobPublisher.takeLatestResetToken(
+      seededAnnisa.email
+    );
     const newSeedPassword = "Password123!Reset";
 
     const resetPassword = await request(app, requestResults, {
@@ -247,7 +249,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(register.status).toBe(201);
 
     const verificationOtp =
-      emailProvider.takeLatestVerificationOtp(registeredEmail);
+      await jobPublisher.takeLatestVerificationOtp(registeredEmail);
 
     const verifyEmail = await request(app, requestResults, {
       method: "POST",
@@ -840,45 +842,56 @@ function buildCvAnalyzerFormData(jobId: string) {
   return formData;
 }
 
-class CapturingEmailProvider implements EmailProvider {
-  private readonly verificationOtps = new Map<string, string>();
-  private readonly resetTokens = new Map<string, string>();
+class CapturingAsyncJobPublisher implements AsyncJobPublisher {
+  constructor(private readonly prisma: PrismaClient) {}
 
-  sendEmailVerification(input: {
-    email: string;
-    otp: string;
-    expiresAt: Date;
-  }): Promise<void> {
-    this.verificationOtps.set(input.email, input.otp);
+  publish(): Promise<void> {
     return Promise.resolve();
   }
 
-  sendPasswordReset(input: {
-    email: string;
-    token: string;
-    expiresAt: Date;
-  }): Promise<void> {
-    this.resetTokens.set(input.email, input.token);
+  publishPending(): Promise<number> {
+    return Promise.resolve(0);
+  }
+
+  close(): Promise<void> {
     return Promise.resolve();
   }
 
-  takeLatestVerificationOtp(email: string) {
-    const otp = this.verificationOtps.get(email);
+  async takeLatestVerificationOtp(email: string) {
+    const record = await this.prisma.asyncJobOutbox.findFirst({
+      where: { jobType: "AUTH_EMAIL_VERIFICATION" },
+      orderBy: { createdAt: "desc" }
+    });
 
-    if (!otp) {
+    if (!record) {
       throw new Error(`Expected verification OTP for ${email}.`);
     }
 
-    return otp;
+    const payload = record.payload as { email?: string; otp?: string };
+
+    if (payload.email !== email || !payload.otp) {
+      throw new Error(`Expected verification OTP for ${email}.`);
+    }
+
+    return payload.otp;
   }
 
-  takeLatestResetToken(email: string) {
-    const token = this.resetTokens.get(email);
+  async takeLatestResetToken(email: string) {
+    const record = await this.prisma.asyncJobOutbox.findFirst({
+      where: { jobType: "AUTH_PASSWORD_RESET" },
+      orderBy: { createdAt: "desc" }
+    });
 
-    if (!token) {
+    if (!record) {
       throw new Error(`Expected password reset token for ${email}.`);
     }
 
-    return token;
+    const payload = record.payload as { email?: string; token?: string };
+
+    if (payload.email !== email || !payload.token) {
+      throw new Error(`Expected password reset token for ${email}.`);
+    }
+
+    return payload.token;
   }
 }

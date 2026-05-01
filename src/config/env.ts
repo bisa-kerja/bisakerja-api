@@ -59,6 +59,16 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         maxRetries: parsed.RESEND_MAX_RETRIES
       }
     },
+    asyncWorkloads: {
+      redisUrl: parsed.REDIS_URL,
+      queueName: parsed.ASYNC_QUEUE_NAME,
+      queuePrefix: parsed.ASYNC_QUEUE_PREFIX,
+      workerConcurrency: parsed.ASYNC_QUEUE_CONCURRENCY,
+      maxAttempts: parsed.ASYNC_QUEUE_MAX_ATTEMPTS,
+      backoffMs: parsed.ASYNC_QUEUE_BACKOFF_MS,
+      recoveryBatchSize: parsed.ASYNC_QUEUE_RECOVERY_BATCH_SIZE,
+      recoveryIntervalMs: parsed.ASYNC_QUEUE_RECOVERY_INTERVAL_MS
+    },
     integrations: {
       modelApi: {
         baseUrl: parsed.MODEL_API_BASE_URL,

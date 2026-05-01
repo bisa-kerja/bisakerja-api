@@ -133,6 +133,20 @@ enum AiRequestStatus {
   FAILED
 }
 
+enum AsyncJobType {
+  AUTH_EMAIL_VERIFICATION
+  AUTH_PASSWORD_RESET
+  MAINTENANCE_CV_CLEANUP
+}
+
+enum AsyncJobStatus {
+  PENDING
+  QUEUED
+  PROCESSING
+  SUCCEEDED
+  DEAD_LETTER
+}
+
 model User {
   id                  String                     @id @default(uuid())
   email               String                     @unique(map: "users_email_unique")
@@ -633,4 +647,29 @@ model AiRequestLog {
   @@index([kind, status], map: "ai_request_logs_kind_status_idx")
   @@index([createdAt], map: "ai_request_logs_created_at_idx")
   @@map("ai_request_logs")
+}
+
+model AsyncJobOutbox {
+  id                  String         @id @default(uuid())
+  jobType             AsyncJobType   @map("job_type")
+  status              AsyncJobStatus @default(PENDING)
+  requestId           String?        @map("request_id")
+  actorId             String?        @map("actor_id")
+  idempotencyKey      String         @unique(map: "async_job_outbox_idempotency_key_unique") @map("idempotency_key")
+  payload             Json
+  attempts            Int            @default(0)
+  maxAttempts         Int            @default(3) @map("max_attempts")
+  scheduledAt         DateTime       @default(now()) @map("scheduled_at")
+  publishedAt         DateTime?      @map("published_at")
+  processingStartedAt DateTime?      @map("processing_started_at")
+  completedAt         DateTime?      @map("completed_at")
+  deadLetteredAt      DateTime?      @map("dead_lettered_at")
+  lastErrorCode       String?        @map("last_error_code")
+  lastErrorMessage    String?        @map("last_error_message")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  @@index([status, scheduledAt], map: "async_job_outbox_status_scheduled_at_idx")
+  @@index([jobType, status], map: "async_job_outbox_job_type_status_idx")
+  @@map("async_job_outbox")
 }

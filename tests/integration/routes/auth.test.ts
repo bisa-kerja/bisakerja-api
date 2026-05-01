@@ -2,12 +2,13 @@ import { describe, expect, test } from "bun:test";
 
 import { createApp } from "@/app";
 import type {
+  AsyncJobPublisher,
+  EnqueueAsyncJobInput,
   AuthRepository,
   AuthUser,
   AuthUserWithCredential,
   CreateAccountInput,
   CreateRefreshTokenInput,
-  EmailProvider,
   EmailVerificationTokenRecord,
   PasswordResetTokenRecord,
   RefreshTokenRecord
@@ -50,8 +51,15 @@ describe("auth routes", () => {
       meta: null
     });
     expect(JSON.stringify(response.body)).not.toContain("StrongPassword123!");
-    expect(context.email.verifications).toHaveLength(1);
-    expect(context.email.verifications[0]?.otp).toMatch(/^[0-9]{6}$/);
+    expect(context.repository.enqueuedJobs).toHaveLength(1);
+    expect(context.repository.enqueuedJobs[0]?.jobType).toBe(
+      "auth.email-verification"
+    );
+    expect(context.publisher.publishedJobIds).toHaveLength(1);
+    expect(getVerificationJob(context).payload).toMatchObject({
+      email: "salman@example.com"
+    });
+    expect(getVerificationJob(context).payload.otp).toMatch(/^[0-9]{6}$/);
   });
 
   test("rejects duplicate email and weak password", async () => {
@@ -282,14 +290,18 @@ describe("auth routes", () => {
     expect(known.status).toBe(200);
     expect(unknown.status).toBe(200);
     expect(known.body).toEqual(unknown.body);
-    expect(context.email.passwordResets).toHaveLength(1);
+    expect(
+      context.repository.enqueuedJobs.filter(
+        (job) => job.jobType === "auth.password-reset"
+      )
+    ).toHaveLength(1);
 
     const reset = await injectRoute(context.app, {
       method: "POST",
       url: "/api/v1/auth/reset-password",
       headers: { "x-request-id": "req_reset" },
       body: {
-        token: context.email.passwordResets[0]?.token,
+        token: getPasswordResetJob(context).payload.token,
         password: "NewStrongPassword123!",
         confirmPassword: "NewStrongPassword123!"
       }
@@ -335,7 +347,7 @@ describe("auth routes", () => {
       headers: { "x-request-id": "req_expired_verify" },
       body: {
         email: "salman@example.com",
-        otp: context.email.verifications[0]?.otp
+        otp: getVerificationJob(context).payload.otp
       }
     });
 
@@ -385,13 +397,13 @@ describe("auth routes", () => {
 
 function createAuthRouteContext(overrides: Partial<NodeJS.ProcessEnv> = {}) {
   const repository = new InMemoryAuthRepository();
-  const email = new RecordingEmailProvider();
+  const publisher = new RecordingJobPublisher();
   let now = baseDate;
   const app = createApp(testConfig(overrides), {
     routes: {
       auth: {
         repository,
-        emailProvider: email,
+        jobPublisher: publisher,
         now: () => now
       }
     }
@@ -400,7 +412,7 @@ function createAuthRouteContext(overrides: Partial<NodeJS.ProcessEnv> = {}) {
   return {
     app,
     repository,
-    email,
+    publisher,
     setNow: (date: Date) => {
       now = date;
     }
@@ -431,7 +443,7 @@ async function registerAndVerify(
     url: "/api/v1/auth/verify-email",
     body: {
       email: "salman@example.com",
-      otp: context.email.verifications[0]?.otp
+      otp: getVerificationJob(context).payload.otp
     }
   });
 
@@ -467,27 +479,51 @@ function getAccessToken(body: unknown): string {
     .accessToken;
 }
 
-class RecordingEmailProvider implements EmailProvider {
-  readonly verifications: { email: string; otp: string; expiresAt: Date }[] =
-    [];
-  readonly passwordResets: { email: string; token: string; expiresAt: Date }[] =
-    [];
+function getVerificationJob(
+  context: ReturnType<typeof createAuthRouteContext>
+) {
+  const job = context.repository.enqueuedJobs.find(
+    (entry) => entry.jobType === "auth.email-verification"
+  );
 
-  sendEmailVerification(input: {
-    email: string;
-    otp: string;
-    expiresAt: Date;
-  }): Promise<void> {
-    this.verifications.push(input);
+  if (!job) {
+    throw new Error("Expected verification async job.");
+  }
+
+  return job satisfies EnqueueAsyncJobInput<"auth.email-verification"> & {
+    jobId: string;
+  };
+}
+
+function getPasswordResetJob(
+  context: ReturnType<typeof createAuthRouteContext>
+) {
+  const job = context.repository.enqueuedJobs.find(
+    (entry) => entry.jobType === "auth.password-reset"
+  );
+
+  if (!job) {
+    throw new Error("Expected password reset async job.");
+  }
+
+  return job satisfies EnqueueAsyncJobInput<"auth.password-reset"> & {
+    jobId: string;
+  };
+}
+
+class RecordingJobPublisher implements AsyncJobPublisher {
+  readonly publishedJobIds: string[] = [];
+
+  publish(jobId: string): Promise<void> {
+    this.publishedJobIds.push(jobId);
     return Promise.resolve();
   }
 
-  sendPasswordReset(input: {
-    email: string;
-    token: string;
-    expiresAt: Date;
-  }): Promise<void> {
-    this.passwordResets.push(input);
+  publishPending(): Promise<number> {
+    return Promise.resolve(0);
+  }
+
+  close(): Promise<void> {
     return Promise.resolve();
   }
 }
@@ -503,6 +539,10 @@ class InMemoryAuthRepository implements AuthRepository {
     string,
     PasswordResetTokenRecord & { tokenHash: string }
   >();
+  readonly enqueuedJobs: ((
+    | EnqueueAsyncJobInput<"auth.email-verification">
+    | EnqueueAsyncJobInput<"auth.password-reset">
+  ) & { jobId: string })[] = [];
 
   findUserByEmail(email: string): Promise<AuthUserWithCredential | null> {
     return Promise.resolve(this.findUser((user) => user.email === email));
@@ -555,6 +595,22 @@ class InMemoryAuthRepository implements AuthRepository {
     return Promise.resolve(toSafeUser(user));
   }
 
+  createAccountWithEmailVerificationJob(input: {
+    account: CreateAccountInput;
+    job: EnqueueAsyncJobInput<"auth.email-verification">;
+  }): Promise<{ user: AuthUser; jobId: string }> {
+    return this.createAccount(input.account).then((user) => {
+      const jobId = crypto.randomUUID();
+      this.enqueuedJobs.push({
+        ...input.job,
+        actorId: user.id,
+        jobId
+      });
+
+      return { user, jobId };
+    });
+  }
+
   findActiveEmailVerificationToken(
     email: string,
     otpHash: string
@@ -593,6 +649,27 @@ class InMemoryAuthRepository implements AuthRepository {
       usedAt: null
     });
     return Promise.resolve();
+  }
+
+  createPasswordResetTokenWithJob(input: {
+    userId: string;
+    tokenHash: string;
+    expiresAt: Date;
+    job: EnqueueAsyncJobInput<"auth.password-reset">;
+  }): Promise<{ jobId: string }> {
+    return this.createPasswordResetToken(
+      input.userId,
+      input.tokenHash,
+      input.expiresAt
+    ).then(() => {
+      const jobId = crypto.randomUUID();
+      this.enqueuedJobs.push({
+        ...input.job,
+        jobId
+      });
+
+      return { jobId };
+    });
   }
 
   findActivePasswordResetToken(

@@ -8,13 +8,14 @@ import type {
   CvFileStorage
 } from "@/modules/ai-cv-analyzer";
 import type { AiJobFitRepository } from "@/modules/ai-job-fit";
-import type { AuthRepository, EmailProvider } from "@/modules/auth";
+import type { AuthRepository } from "@/modules/auth";
 import type { ApplicationsRepository } from "@/modules/applications";
 import type { BookmarksRepository } from "@/modules/bookmarks";
 import type { JobsRepository } from "@/modules/jobs";
 import type { PreferencesRepository } from "@/modules/preferences";
 import type { UsersRepository } from "@/modules/users";
 import type { ModelApiClient } from "@/shared/integrations/model-api.types";
+import type { AsyncJobPublisher } from "@/shared/async-workloads";
 import { testConfig } from "../../helpers/config";
 import { injectRoute } from "../../helpers/route";
 
@@ -173,7 +174,7 @@ function createProtectedApp(config = testConfig()) {
       auth: {
         authMiddleware,
         repository: createUnexpectedCallProxy() as AuthRepository,
-        emailProvider: fakeEmailProvider()
+        jobPublisher: fakeJobPublisher()
       },
       users: {
         authMiddleware,
@@ -210,10 +211,11 @@ function createProtectedApp(config = testConfig()) {
   });
 }
 
-function fakeEmailProvider(): EmailProvider {
+function fakeJobPublisher(): AsyncJobPublisher {
   return {
-    sendEmailVerification: () => Promise.resolve(),
-    sendPasswordReset: () => Promise.resolve()
+    publish: () => Promise.resolve(),
+    publishPending: () => Promise.resolve(0),
+    close: () => Promise.resolve()
   };
 }
 

@@ -157,6 +157,7 @@ Fail-fast env rules also apply to tests:
 
 - `DATABASE_URL`, `DIRECT_DATABASE_URL`, and `SEED_USER_PASSWORD` must be explicit when database-backed test flows or seed flows run.
 - Fake/mock integrations should still provide non-empty placeholders for env values such as `MODEL_API_SERVICE_TOKEN` and `RESEND_API_KEY`.
+- Redis-backed async flows do not require a live Redis server for ordinary unit and route tests when publishers are mocked, but database-backed verification still requires the async outbox migration to be applied.
 - Test helpers may provide explicit fixture env objects, but they must not hide missing repository env configuration behind fallback reads from `process.env`.
 - Shared test helpers now read `DATABASE_URL`, `DIRECT_DATABASE_URL`, and `SEED_USER_PASSWORD` from the active test environment such as `.env.test` or explicit shell overrides, rather than from hardcoded repository example URLs.
 

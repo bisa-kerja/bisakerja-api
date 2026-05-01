@@ -68,7 +68,7 @@ function buildPasswordResetUrl(config: AppConfig, token: string) {
   return url.toString();
 }
 
-function buildAuthEmailIdempotencyKey(
+export function buildAuthEmailIdempotencyKey(
   eventType: "auth-email-verification" | "auth-password-reset",
   email: string,
   expiresAt: Date

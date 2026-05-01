@@ -19,3 +19,7 @@ export type {
   PasswordResetTokenRecord,
   RefreshTokenRecord
 } from "@/modules/auth/auth.types";
+export type {
+  AsyncJobPublisher,
+  EnqueueAsyncJobInput
+} from "@/shared/async-workloads";

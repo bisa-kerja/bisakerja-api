@@ -2,6 +2,7 @@ import { logger } from "@/config/logger";
 import type { AppConfig } from "@/config/env";
 import { ServiceUnavailableError } from "@/core/errors/app.error";
 import { prisma } from "@/shared/libs/prisma";
+import { createRedisHealthClient } from "@/shared/libs/redis";
 import type {
   DependencyCheck,
   DependencyResult,
@@ -9,16 +10,23 @@ import type {
   ReadinessPayload
 } from "@/modules/health/health.types";
 
-export const defaultHealthDependencyChecks: HealthDependencyChecks = {
-  postgresql: async () => {
-    await prisma.$queryRaw`SELECT 1`;
-  }
-};
+export function createDefaultHealthDependencyChecks(
+  config: AppConfig
+): HealthDependencyChecks {
+  return {
+    postgresql: async () => {
+      await prisma.$queryRaw`SELECT 1`;
+    },
+    redis: async () => {
+      await createRedisHealthClient(config).ping();
+    }
+  };
+}
 
 export async function getReadinessPayload(
   config: AppConfig,
   requestId: string,
-  checks: HealthDependencyChecks = defaultHealthDependencyChecks
+  checks: HealthDependencyChecks = createDefaultHealthDependencyChecks(config)
 ): Promise<ReadinessPayload> {
   const postgresql = await checkDependency(
     "postgresql",
@@ -27,14 +35,22 @@ export async function getReadinessPayload(
     config.observability.healthCheckTimeoutMs,
     requestId
   );
+  const redis = await checkDependency(
+    "redis",
+    "readiness",
+    checks.redis,
+    config.observability.healthCheckTimeoutMs,
+    requestId
+  );
 
-  if (postgresql.status !== "healthy") {
+  if (postgresql.status !== "healthy" || redis.status !== "healthy") {
     throw new ServiceUnavailableError(
       "Service is not ready",
       "SERVICE_UNAVAILABLE",
       {
         dependencies: {
-          postgresql: postgresql.status
+          postgresql: postgresql.status,
+          redis: redis.status
         }
       }
     );
@@ -45,7 +61,8 @@ export async function getReadinessPayload(
     status: "ready",
     env: config.app.env,
     dependencies: {
-      postgresql: "healthy"
+      postgresql: "healthy",
+      redis: "healthy"
     }
   };
 }

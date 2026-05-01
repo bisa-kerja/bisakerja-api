@@ -10,7 +10,8 @@ describe("health smoke checks", () => {
       routes: {
         health: {
           checks: {
-            postgresql: () => Promise.resolve()
+            postgresql: () => Promise.resolve(),
+            redis: () => Promise.resolve()
           }
         }
       }

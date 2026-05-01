@@ -11,7 +11,8 @@ describe("health routes", () => {
         routes: {
           health: {
             checks: {
-              postgresql: () => Promise.resolve()
+              postgresql: () => Promise.resolve(),
+              redis: () => Promise.resolve()
             }
           }
         }
@@ -33,7 +34,8 @@ describe("health routes", () => {
         status: "ready",
         env: "test",
         dependencies: {
-          postgresql: "healthy"
+          postgresql: "healthy",
+          redis: "healthy"
         }
       },
       meta: null
@@ -46,7 +48,8 @@ describe("health routes", () => {
         routes: {
           health: {
             checks: {
-              postgresql: () => Promise.reject(new Error("connection refused"))
+              postgresql: () => Promise.reject(new Error("connection refused")),
+              redis: () => Promise.resolve()
             }
           }
         }
@@ -68,7 +71,8 @@ describe("health routes", () => {
         code: "SERVICE_UNAVAILABLE",
         details: {
           dependencies: {
-            postgresql: "unhealthy"
+            postgresql: "unhealthy",
+            redis: "healthy"
           }
         },
         requestId: "req_ready_unhealthy"

@@ -141,6 +141,7 @@ Use this reading order when onboarding or reviewing changes:
 | Logging        | Pino                       |
 | Security       | Helmet, CORS, rate limits  |
 | Auth           | JWT, refresh-token cookies |
+| Async jobs     | Redis + BullMQ + DB outbox |
 | Email          | Fake provider or Resend    |
 | API docs       | OpenAPI and Scalar         |
 | Testing        | `bun test`                 |
@@ -192,6 +193,12 @@ Start the API without watch mode:
 bun run start
 ```
 
+Start the async worker:
+
+```bash
+bun run worker:async
+```
+
 The default local API runs at:
 
 ```text
@@ -223,6 +230,7 @@ Important variable groups:
 - Database: `DATABASE_URL`, `DIRECT_DATABASE_URL`, `SEED_USER_PASSWORD`, `RUN_DATABASE_TESTS`
 - Auth: access-token secret, refresh-token secret, TTLs, cookie settings
 - Security: CORS origins, trusted proxy, body limit, rate limit settings
+- Async workloads: `REDIS_URL`, queue name/prefix, concurrency, retry/backoff, recovery interval
 - Integrations: Model API URL/token, Scraper API service token, email provider, job freshness threshold
 - Uploads: storage driver, upload path, CV limits, retention
 - Observability: log level, request id header, health timeout
@@ -253,27 +261,28 @@ bun run prisma:verify:migrations
 
 ## Available Scripts
 
-| Script                                 | Purpose                                                    |
-| -------------------------------------- | ---------------------------------------------------------- |
-| `bun run dev`                          | Start the API in watch mode                                |
-| `bun run start`                        | Start the API                                              |
-| `bun run typecheck`                    | Run TypeScript contract checks                             |
-| `bun run lint`                         | Run ESLint                                                 |
-| `bun run format`                       | Format files with Prettier                                 |
-| `bun run format:check`                 | Check formatting without writing                           |
-| `bun test`                             | Run the default test suite                                 |
-| `bun run test:unit`                    | Run unit tests                                             |
-| `bun run test:routes`                  | Run route/API contract tests                               |
-| `bun run test:integration`             | Run integration tests                                      |
-| `bun run test:contracts`               | Run downstream contract tests                              |
-| `bun run test:smoke`                   | Run smoke tests                                            |
-| `bun run docs:generate:openapi`        | Regenerate OpenAPI artifact                                |
-| `bun run docs:generate:routes`         | Regenerate route inventory                                 |
-| `bun run docs:generate:sync-readiness` | Regenerate sync-readiness inventory                        |
-| `bun run docs:check`                   | Verify documentation metadata and examples                 |
-| `bun run docs:scalar:check-config`     | Validate Scalar Docs configuration                         |
-| `bun run docs:scalar:preview`          | Preview repo documentation through Scalar Docs             |
-| `bun run cleanup:cv-uploads`           | Remove expired temporary CV uploads according to retention |
+| Script                                 | Purpose                                        |
+| -------------------------------------- | ---------------------------------------------- |
+| `bun run dev`                          | Start the API in watch mode                    |
+| `bun run start`                        | Start the API                                  |
+| `bun run typecheck`                    | Run TypeScript contract checks                 |
+| `bun run lint`                         | Run ESLint                                     |
+| `bun run format`                       | Format files with Prettier                     |
+| `bun run format:check`                 | Check formatting without writing               |
+| `bun test`                             | Run the default test suite                     |
+| `bun run test:unit`                    | Run unit tests                                 |
+| `bun run test:routes`                  | Run route/API contract tests                   |
+| `bun run test:integration`             | Run integration tests                          |
+| `bun run test:contracts`               | Run downstream contract tests                  |
+| `bun run test:smoke`                   | Run smoke tests                                |
+| `bun run docs:generate:openapi`        | Regenerate OpenAPI artifact                    |
+| `bun run docs:generate:routes`         | Regenerate route inventory                     |
+| `bun run docs:generate:sync-readiness` | Regenerate sync-readiness inventory            |
+| `bun run docs:check`                   | Verify documentation metadata and examples     |
+| `bun run docs:scalar:check-config`     | Validate Scalar Docs configuration             |
+| `bun run docs:scalar:preview`          | Preview repo documentation through Scalar Docs |
+| `bun run cleanup:cv-uploads`           | Enqueue expired temporary CV cleanup job       |
+| `bun run worker:async`                 | Start Redis-backed async worker                |
 
 ## Testing And Verification
 
@@ -288,6 +297,7 @@ bun run docs:check
 ```
 
 Database-backed tests require an isolated test database and `RUN_DATABASE_TESTS=true`. Do not point these tests at development, staging, or production data.
+Schema changes that affect async jobs also require applying Prisma migrations to the test database before DB-backed verification.
 
 Documentation or route changes may also require:
 
@@ -371,13 +381,15 @@ Routes define the HTTP shape, controllers coordinate input/output, services own 
 
 ## Deployment Notes
 
-The repository includes Docker and Compose support for running the application container. The active Compose file runs the app only and expects PostgreSQL to be provided externally.
+The repository includes Docker and Compose support for running the application container. The active Compose file runs `app`, `worker`, and `redis`; PostgreSQL is still expected to be provided externally.
 
 Deployment expectations:
 
 - Build a reproducible image from committed source and `bun.lock`.
 - Provide runtime secrets through environment variables or a deployment env file.
 - Run Prisma migrations explicitly before serving production traffic.
+- Keep the async worker deployed as a separate long-running process from the HTTP app.
+- Keep Redis durable enough for queue availability and let PostgreSQL outbox remain the source of truth for missed publishes.
 - Keep upload storage outside the application artifact.
 - Use `/health/live` for process liveness and `/health/ready` for dependency readiness.
 - Keep staging and production databases, secrets, and CORS origins separate.

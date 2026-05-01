@@ -342,6 +342,7 @@ Use generic messages for login and password reset discovery paths to avoid accou
 - Use secure refresh cookies.
 - Rotate refresh tokens on every refresh.
 - Invalidate refresh tokens after password reset.
+- Register and forgot-password flows should commit domain state plus async email outbox atomically, then let the worker deliver email outside the request path.
 
 ## Observability
 
