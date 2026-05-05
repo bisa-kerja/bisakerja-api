@@ -65,6 +65,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         timeoutMs: parsed.MODEL_API_TIMEOUT_MS,
         serviceToken: parsed.MODEL_API_SERVICE_TOKEN,
         enableMock: parsed.MODEL_API_ENABLE_MOCK
+      },
+      scraperApi: {
+        serviceToken: parsed.SCRAPER_API_SERVICE_TOKEN
       }
     },
     uploads: {

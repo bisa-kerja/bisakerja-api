@@ -8,6 +8,7 @@ import { createAuthRouter } from "@/modules/auth";
 import { createApplicationsRouter } from "@/modules/applications";
 import { createBookmarksRouter } from "@/modules/bookmarks";
 import { createHealthRouter } from "@/modules/health";
+import { createInternalRouter } from "@/modules/internal";
 import { createJobsRouter } from "@/modules/jobs";
 import { createPreferencesRouter } from "@/modules/preferences";
 import { createUsersRouter } from "@/modules/users";
@@ -39,6 +40,11 @@ export function getMountedRouters(
       id: "jobs",
       mountPath: `${config.app.apiPrefix}/jobs`,
       router: createJobsRouter(config, options.jobs)
+    },
+    {
+      id: "internal",
+      mountPath: `${config.app.apiPrefix}/internal`,
+      router: createInternalRouter(config, options.internal)
     },
     {
       id: "preferences",

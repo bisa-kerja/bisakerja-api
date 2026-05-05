@@ -195,6 +195,75 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     lastSeenAt: "2026-04-24T08:00:00.000Z",
     isStale: false
   };
+  const scraperJobsSyncExample = {
+    jobs: [
+      {
+        sourcePlatform: { slug: "glints", name: "Glints" },
+        company: {
+          name: "Example Tech",
+          sourceCompanyId: null,
+          sourceSlug: "example-tech",
+          logoUrl: "https://cdn.example.com/company-logo.png",
+          websiteUrl: "https://example.com",
+          industry: null
+        },
+        ingestionRun: { sourceRunId: "scheduled-20260505-scrape" },
+        jobListing: {
+          externalJobId: "glints-123",
+          title: "Backend Developer",
+          normalizedTitle: "backend developer",
+          category: "Engineering",
+          description: "Build and maintain backend APIs.",
+          requirementSummary: "TypeScript and PostgreSQL.",
+          workType: "REMOTE",
+          employmentType: "FULL_TIME",
+          experienceLevel: "ENTRY_LEVEL",
+          locationDisplay: "Jakarta Selatan, DKI Jakarta",
+          province: "DKI Jakarta",
+          city: "Jakarta Selatan",
+          salaryMin: 5000000,
+          salaryMax: 10000000,
+          salaryCurrency: "IDR",
+          salaryPeriod: "MONTHLY",
+          salaryDisplay: "Rp5.000.000 - Rp10.000.000 / bulan",
+          sourceUrl: "https://glints.example/job/123",
+          externalApplyUrl: "https://glints.example/job/123/apply",
+          sourcePostedAt: "2026-04-20T00:00:00.000Z",
+          sourceUpdatedAt: null,
+          lastSeenAt: "2026-05-05T00:00:00.000Z",
+          status: "ACTIVE"
+        },
+        requirements: [
+          {
+            type: "SKILL",
+            value: "TypeScript",
+            priority: "HIGH",
+            confidence: 0.9,
+            source: "ai"
+          }
+        ],
+        skills: [{ name: "TypeScript", confidence: 0.9, source: "ai" }]
+      }
+    ]
+  };
+  const notificationEventsExample = {
+    runId: "scheduled-20260505-sync",
+    candidates: [
+      {
+        eventId: "scheduled-20260505-sync:glints:glints-123",
+        syncEventId: "sync-event-123",
+        sourcePlatform: "glints",
+        externalJobId: "glints-123",
+        title: "Backend Developer",
+        companyName: "Example Tech",
+        sourceUrl: "https://glints.example/job/123",
+        location: { display: "Jakarta Selatan, DKI Jakarta" },
+        salary: { min_amount: 5000000, max_amount: 10000000 },
+        status: "active",
+        lastSeenAt: "2026-05-05T00:00:00.000Z"
+      }
+    ]
+  };
   const currentUserExample = {
     id: "550e8400-e29b-41d4-a716-446655440001",
     username: "salman",
@@ -402,6 +471,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
       {
         name: "Jobs",
         description: "Public normalized job listing search and detail."
+      },
+      {
+        name: "Internal",
+        description: "Service-token protected scraper sync and handoff routes."
       },
       {
         name: "Users",
@@ -816,6 +889,136 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 limit: "auth"
               }
+            )
+          }
+        }
+      },
+      "/api/v1/internal/scraper/jobs": {
+        post: {
+          tags: ["Internal"],
+          summary: "Sync scraper jobs",
+          description:
+            "Service-token protected batch upsert endpoint used by Scraper API to publish normalized jobs into backend-owned read models.",
+          security: bearerSecurity(),
+          requestBody: {
+            required: true,
+            content: jsonContent(
+              {
+                type: "object",
+                additionalProperties: false,
+                required: ["jobs"],
+                properties: {
+                  jobs: {
+                    type: "array",
+                    minItems: 1,
+                    maxItems: 100,
+                    items: { type: "object", additionalProperties: true }
+                  }
+                }
+              },
+              scraperJobsSyncExample
+            )
+          },
+          responses: {
+            "200": jsonResponse(
+              "Scraper jobs synced successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["accepted", "upserted", "jobs"],
+                  properties: {
+                    accepted: { type: "integer", minimum: 0 },
+                    upserted: { type: "integer", minimum: 0 },
+                    jobs: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        additionalProperties: false,
+                        required: [
+                          "externalJobId",
+                          "sourcePlatform",
+                          "jobId",
+                          "action"
+                        ],
+                        properties: {
+                          externalJobId: { type: "string" },
+                          sourcePlatform: { type: "string" },
+                          jobId: uuidSchema,
+                          action: {
+                            type: "string",
+                            enum: ["created", "updated"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                nullSchema
+              )
+            ),
+            "401": errorResponse(
+              "Service token is missing or invalid.",
+              "UNAUTHENTICATED",
+              "Authentication required"
+            ),
+            "422": validationErrorResponse(
+              "body.jobs",
+              "Request payload is invalid"
+            )
+          }
+        }
+      },
+      "/api/v1/internal/notification-events": {
+        post: {
+          tags: ["Internal"],
+          summary: "Accept notification handoff events",
+          description:
+            "Service-token protected handoff endpoint used by Scraper API after successful job sync.",
+          security: bearerSecurity(),
+          requestBody: {
+            required: true,
+            content: jsonContent(
+              {
+                type: "object",
+                additionalProperties: false,
+                required: ["runId", "candidates"],
+                properties: {
+                  runId: { type: "string" },
+                  candidates: {
+                    type: "array",
+                    maxItems: 1000,
+                    items: { type: "object", additionalProperties: true }
+                  }
+                }
+              },
+              notificationEventsExample
+            )
+          },
+          responses: {
+            "200": jsonResponse(
+              "Notification events accepted.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["accepted", "runId"],
+                  properties: {
+                    accepted: { type: "integer", minimum: 0 },
+                    runId: { type: "string" }
+                  }
+                },
+                nullSchema
+              )
+            ),
+            "401": errorResponse(
+              "Service token is missing or invalid.",
+              "UNAUTHENTICATED",
+              "Authentication required"
+            ),
+            "422": validationErrorResponse(
+              "body.candidates",
+              "Request payload is invalid"
             )
           }
         }

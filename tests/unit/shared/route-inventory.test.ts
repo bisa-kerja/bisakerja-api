@@ -26,6 +26,16 @@ describe("route inventory", () => {
       path: "/api/v1/jobs/:jobId"
     });
     expect(routes).toContainEqual({
+      moduleId: "internal",
+      method: "POST",
+      path: "/api/v1/internal/scraper/jobs"
+    });
+    expect(routes).toContainEqual({
+      moduleId: "internal",
+      method: "POST",
+      path: "/api/v1/internal/notification-events"
+    });
+    expect(routes).toContainEqual({
       moduleId: "users",
       method: "PUT",
       path: "/api/v1/me/skills"

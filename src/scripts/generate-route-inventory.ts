@@ -6,6 +6,7 @@ process.env.APP_ENV = "test";
 process.env.NODE_ENV = "test";
 process.env.MODEL_API_ENABLE_MOCK = "true";
 process.env.MODEL_API_SERVICE_TOKEN = "docs-generation-token";
+process.env.SCRAPER_API_SERVICE_TOKEN = "docs-generation-token";
 
 const { loadEnv } = await import("@/config/env");
 const { listRegisteredRoutes, renderRouteInventoryMarkdown } =

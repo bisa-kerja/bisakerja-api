@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/integrations/scraper-api.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-05-05
 ---
 
 # Scraper API Integration
@@ -104,9 +104,12 @@ Backend API read usage:
 - Join jobs into bookmark and application tracker lists.
 - Load job context for AI Job Fit and AI CV Analyzer.
 
-Write rule:
+Write rules:
 
-- Backend API must not write scraper-owned job rows in MVP.
+- Scraper API publishes normalized job rows through `POST /api/v1/internal/scraper/jobs` using `SCRAPER_API_SERVICE_TOKEN`.
+- Backend API upserts only normalized scraper-owned job rows received through that internal service boundary.
+- Backend API must not create or mutate scraper-owned job rows from public user-facing routes.
+- Scraper API can hand off synced recommendation candidates through `POST /api/v1/internal/notification-events`.
 - Admin correction or manual override workflows require separate documentation and authorization.
 
 ## Upsert And Deduplication

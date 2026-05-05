@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/environment.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-05
 ---
 
 # Backend API Environment Configuration
@@ -116,12 +116,13 @@ Rules:
 
 ## Model API Variables
 
-| Variable                  | Required | Example value                | Notes                                                           |
-| ------------------------- | -------- | ---------------------------- | --------------------------------------------------------------- |
-| `MODEL_API_BASE_URL`      | Yes      | `http://localhost:8000`      | FastAPI inference service base URL                              |
-| `MODEL_API_TIMEOUT_MS`    | Yes      | `10000`                      | Request timeout for inference calls                             |
-| `MODEL_API_SERVICE_TOKEN` | Yes      | `your-local-model-api-token` | Internal service credential; use non-empty placeholder in mocks |
-| `MODEL_API_ENABLE_MOCK`   | Yes      | `true`                       | Local/test toggle for mocked AI responses                       |
+| Variable                    | Required | Example value                      | Notes                                                           |
+| --------------------------- | -------- | ---------------------------------- | --------------------------------------------------------------- |
+| `MODEL_API_BASE_URL`        | Yes      | `http://localhost:8000`            | FastAPI inference service base URL                              |
+| `MODEL_API_TIMEOUT_MS`      | Yes      | `10000`                            | Request timeout for inference calls                             |
+| `MODEL_API_SERVICE_TOKEN`   | Yes      | `your-local-model-api-token`       | Internal service credential; use non-empty placeholder in mocks |
+| `MODEL_API_ENABLE_MOCK`     | Yes      | `true`                             | Local/test toggle for mocked AI responses                       |
+| `SCRAPER_API_SERVICE_TOKEN` | Yes      | `your-local-scraper-service-token` | Internal service credential for scraper sync and handoff routes |
 
 Rules:
 
@@ -129,6 +130,7 @@ Rules:
 - Backend should send only the minimum profile, preference, job, and CV context needed for inference.
 - Keep `MODEL_API_ENABLE_MOCK=true` only for local development and automated tests.
 - `MODEL_API_SERVICE_TOKEN` is always required by env validation even when mock mode is enabled; local/test env files should use a safe non-empty placeholder.
+- `SCRAPER_API_SERVICE_TOKEN` must match the scraper service `BACKEND_SYNC_SERVICE_TOKEN` value for internal sync and notification handoff calls.
 - Model API failures must map to documented 502 or 503 API responses.
 
 ## Job Catalog Freshness Variables

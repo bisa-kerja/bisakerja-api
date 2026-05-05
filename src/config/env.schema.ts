@@ -123,6 +123,7 @@ export const envSchema = z
     ),
     MODEL_API_SERVICE_TOKEN: requiredString("MODEL_API_SERVICE_TOKEN"),
     MODEL_API_ENABLE_MOCK: booleanSchema,
+    SCRAPER_API_SERVICE_TOKEN: requiredString("SCRAPER_API_SERVICE_TOKEN"),
     FILE_STORAGE_DRIVER: z.enum(["local"]),
     UPLOAD_STORAGE_PATH: requiredString("UPLOAD_STORAGE_PATH"),
     CV_UPLOAD_MAX_BYTES: numberFromString("CV_UPLOAD_MAX_BYTES").pipe(

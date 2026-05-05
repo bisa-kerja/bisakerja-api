@@ -206,7 +206,7 @@ Environment contract is explicit:
 
 - `DATABASE_URL` and `DIRECT_DATABASE_URL` must both be set.
 - `SEED_USER_PASSWORD` must be set before running `bun run prisma:seed`.
-- `MODEL_API_SERVICE_TOKEN` and `RESEND_API_KEY` must stay non-empty even in local fake/mock setups; use safe placeholders when the real integration is disabled.
+- `MODEL_API_SERVICE_TOKEN`, `SCRAPER_API_SERVICE_TOKEN`, and `RESEND_API_KEY` must stay non-empty even in local fake/mock setups; use safe placeholders when the real integration is disabled.
 - The repository does not rely on env fallback values anymore.
 
 Important local files:
@@ -223,7 +223,7 @@ Important variable groups:
 - Database: `DATABASE_URL`, `DIRECT_DATABASE_URL`, `SEED_USER_PASSWORD`, `RUN_DATABASE_TESTS`
 - Auth: access-token secret, refresh-token secret, TTLs, cookie settings
 - Security: CORS origins, trusted proxy, body limit, rate limit settings
-- Integrations: Model API URL/token, email provider, job freshness threshold
+- Integrations: Model API URL/token, Scraper API service token, email provider, job freshness threshold
 - Uploads: storage driver, upload path, CV limits, retention
 - Observability: log level, request id header, health timeout
 

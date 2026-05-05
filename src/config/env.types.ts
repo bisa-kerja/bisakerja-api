@@ -52,6 +52,9 @@ export type AppConfig = {
       serviceToken: string;
       enableMock: boolean;
     };
+    scraperApi: {
+      serviceToken: string;
+    };
   };
   uploads: {
     fileStorageDriver: "local";

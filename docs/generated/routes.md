@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/routes.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-05
 generated_by: route-inventory-script
-generated_at: 2026-04-29T14:51:03.185Z
-source_commit: 25f3c2be8ab92b7cc1e239bdd305ebc6b31992bc
+generated_at: 2026-05-05T08:14:28.788Z
+source_commit: 226d92047a3d32d92b0a6b77cd42cbe494cb412a
 ---
 
 # Backend API Route Inventory
@@ -22,9 +22,9 @@ This page is generated from the route registry used by the application runtime. 
 
 | Metric        | Value                                      |
 | ------------- | ------------------------------------------ |
-| Total routes  | 30                                         |
-| Generated at  | `2026-04-29T14:51:03.185Z`                 |
-| Source commit | `25f3c2be8ab92b7cc1e239bdd305ebc6b31992bc` |
+| Total routes  | 32                                         |
+| Generated at  | `2026-05-05T08:14:28.788Z`                 |
+| Source commit | `226d92047a3d32d92b0a6b77cd42cbe494cb412a` |
 
 ## Registered Routes
 
@@ -40,6 +40,8 @@ This page is generated from the route registry used by the application runtime. 
 | `POST`   | `/api/v1/auth/register`                         | `auth`           |
 | `POST`   | `/api/v1/auth/reset-password`                   | `auth`           |
 | `POST`   | `/api/v1/auth/verify-email`                     | `auth`           |
+| `POST`   | `/api/v1/internal/notification-events`          | `internal`       |
+| `POST`   | `/api/v1/internal/scraper/jobs`                 | `internal`       |
 | `GET`    | `/api/v1/jobs`                                  | `jobs`           |
 | `GET`    | `/api/v1/jobs/:jobId`                           | `jobs`           |
 | `GET`    | `/api/v1/me`                                    | `users`          |

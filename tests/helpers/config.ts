@@ -52,6 +52,7 @@ export const testEnv = {
   MODEL_API_TIMEOUT_MS: "10000",
   MODEL_API_SERVICE_TOKEN: "test-model-service-token",
   MODEL_API_ENABLE_MOCK: "true",
+  SCRAPER_API_SERVICE_TOKEN: "test-scraper-service-token",
   FILE_STORAGE_DRIVER: "local",
   UPLOAD_STORAGE_PATH: "/tmp/bisakerja-api-test/uploads",
   CV_UPLOAD_MAX_BYTES: "5242880",
