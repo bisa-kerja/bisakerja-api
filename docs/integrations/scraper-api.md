@@ -107,9 +107,11 @@ Backend API read usage:
 Write rules:
 
 - Scraper API publishes normalized job rows through `POST /api/v1/internal/scraper/jobs` using `SCRAPER_API_SERVICE_TOKEN`.
+- The internal scraper jobs endpoint accepts up to `100` jobs per request. Scraper API must split larger runs into repeated requests.
 - Backend API upserts only normalized scraper-owned job rows received through that internal service boundary.
 - Backend API must not create or mutate scraper-owned job rows from public user-facing routes.
 - Scraper API can hand off synced recommendation candidates through `POST /api/v1/internal/notification-events`.
+- The internal notification events endpoint accepts up to `1000` candidates per request. Scraper API must split larger handoff runs into repeated requests.
 - Admin correction or manual override workflows require separate documentation and authorization.
 
 ## Upsert And Deduplication
