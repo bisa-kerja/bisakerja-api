@@ -19,20 +19,24 @@ export class PrismaInternalRepository implements InternalRepository {
     upserted: number;
     jobs: ScraperJobSyncResult[];
   }> {
-    return this.client.$transaction(async (tx) => {
-      const jobs: ScraperJobSyncResult[] = [];
-      const ingestionRunCounts = countJobsByIngestionRun(input.jobs);
+    return this.client.$transaction(
+      async (tx) => {
+        const jobs: ScraperJobSyncResult[] = [];
+        const ingestionRunCounts = countJobsByIngestionRun(input.jobs);
+        const skillMap = await ensureSkillMap(tx, input.jobs);
 
-      for (const job of input.jobs) {
-        jobs.push(await syncOneJob(tx, job, ingestionRunCounts));
-      }
+        for (const job of input.jobs) {
+          jobs.push(await syncOneJob(tx, job, ingestionRunCounts, skillMap));
+        }
 
-      return {
-        accepted: input.jobs.length,
-        upserted: jobs.length,
-        jobs
-      };
-    });
+        return {
+          accepted: input.jobs.length,
+          upserted: jobs.length,
+          jobs
+        };
+      },
+      { timeout: 30000 }
+    );
   }
 
   acceptNotificationEvents(input: NotificationEventsInput) {
@@ -46,7 +50,8 @@ export class PrismaInternalRepository implements InternalRepository {
 async function syncOneJob(
   tx: PrismaTransaction,
   job: ScraperJobSyncInput,
-  ingestionRunCounts: Map<string, number>
+  ingestionRunCounts: Map<string, number>,
+  skillMap: Map<string, { id: string }>
 ): Promise<ScraperJobSyncResult> {
   const sourcePlatform = await tx.sourcePlatform.upsert({
     where: { slug: normalizeSlug(job.sourcePlatform.slug) },
@@ -89,7 +94,7 @@ async function syncOneJob(
         });
 
   await replaceRequirements(tx, listing.id, job);
-  await replaceSkills(tx, listing.id, job);
+  await replaceSkills(tx, listing.id, job, skillMap);
 
   return {
     externalJobId: job.jobListing.externalJobId,
@@ -222,29 +227,91 @@ async function replaceRequirements(
 async function replaceSkills(
   tx: PrismaTransaction,
   jobListingId: string,
-  job: ScraperJobSyncInput
+  job: ScraperJobSyncInput,
+  skillMap: Map<string, { id: string }>
 ) {
   await tx.jobSkill.deleteMany({ where: { jobListingId } });
 
-  for (const skillInput of uniqueSkills(job.skills)) {
-    const slug = normalizeSlug(skillInput.name);
-    const skill = await tx.skill.upsert({
-      where: { slug },
-      update: { name: skillInput.name },
-      create: {
-        slug,
-        name: skillInput.name
-      }
-    });
+  const relations = uniqueSkills(job.skills)
+    .map((skillInput) => {
+      const slug = normalizeSlug(skillInput.name);
+      const skill = skillMap.get(slug);
 
-    await tx.jobSkill.create({
-      data: {
+      if (!skill) {
+        return null;
+      }
+
+      return {
         jobListingId,
         skillId: skill.id,
-        confidence: skillInput.confidence ?? undefined
-      }
-    });
+        confidence: skillInput.confidence ?? null
+      };
+    })
+    .filter(
+      (relation): relation is NonNullable<typeof relation> => relation !== null
+    );
+
+  if (relations.length === 0) {
+    return;
   }
+
+  await tx.jobSkill.createMany({
+    data: relations
+  });
+}
+
+async function ensureSkillMap(
+  tx: PrismaTransaction,
+  jobs: ScraperJobSyncInput[]
+) {
+  const skills = collectUniqueBatchSkills(jobs);
+
+  if (skills.size === 0) {
+    return new Map<string, { id: string }>();
+  }
+
+  await tx.skill.createMany({
+    data: Array.from(skills.values()).map((skill) => ({
+      slug: skill.slug,
+      name: skill.name
+    })),
+    skipDuplicates: true
+  });
+
+  const persistedSkills = await tx.skill.findMany({
+    where: {
+      slug: {
+        in: Array.from(skills.keys())
+      }
+    },
+    select: {
+      id: true,
+      slug: true
+    }
+  });
+
+  return new Map(
+    persistedSkills.map((skill) => [skill.slug, { id: skill.id }])
+  );
+}
+
+function collectUniqueBatchSkills(jobs: ScraperJobSyncInput[]) {
+  const skills = new Map<string, { slug: string; name: string }>();
+
+  for (const job of jobs) {
+    for (const skillInput of uniqueSkills(job.skills)) {
+      const slug = normalizeSlug(skillInput.name);
+
+      if (!skills.has(slug)) {
+        skills.set(slug, {
+          slug,
+          name: skillInput.name
+        });
+      }
+    }
+  }
+
+  return skills;
 }
 
 function uniqueSkills(skills: ScraperJobSyncInput["skills"]) {
