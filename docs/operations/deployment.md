@@ -278,12 +278,12 @@ Remote host expectations:
 
 Deployment platforms should use health endpoints consistently.
 
-| Endpoint            | Deployment use                                |
-| ------------------- | --------------------------------------------- |
-| `GET /health/live`  | Container or process liveness                 |
-| `GET /health/ready` | Traffic readiness and PostgreSQL availability |
+| Endpoint            | Deployment use                           |
+| ------------------- | ---------------------------------------- |
+| `GET /health/live`  | Container or process liveness            |
+| `GET /health/ready` | Traffic readiness, PostgreSQL, and Redis |
 
-Readiness should fail for invalid environment or unavailable PostgreSQL. Model API failures should surface through route-level errors and logs; they do not currently block the global readiness endpoint.
+Readiness should fail for invalid environment, unavailable PostgreSQL, or unavailable Redis. Model API failures should surface through route-level errors and logs; they do not currently block the global readiness endpoint.
 
 ## Dependency Deployment Assumptions
 
@@ -297,6 +297,28 @@ Readiness should fail for invalid environment or unavailable PostgreSQL. Model A
 | Upload storage   | Required before AI CV Analyzer file upload is enabled                                        |
 
 Feature flags or route guards should prevent half-configured features from appearing ready.
+
+## Async Worker Delivery Operations
+
+Auth emails and maintenance jobs depend on both PostgreSQL and Redis:
+
+- PostgreSQL outbox is the durable source of truth.
+- Redis/BullMQ is the delivery accelerator.
+- The worker must run as a separate long-running process using the same image, env file, database, and Redis queue configuration as the HTTP app.
+
+Recovery behavior:
+
+- Worker startup and periodic recovery republish due non-terminal rows: `PENDING`, `QUEUED`, and `PROCESSING`.
+- Active jobs are protected by a claim step before provider side effects run.
+- Stale processing rows can be reclaimed after `JOB_STALE_AFTER_HOURS`.
+- Producer updates cannot overwrite worker-progressed or terminal states.
+
+Operational checks:
+
+- `docker compose ps worker` should show a running worker service.
+- Worker logs should include `Async worker started` and periodic recovery summaries.
+- `async_job_outbox` should not contain old `PENDING`, `QUEUED`, or `PROCESSING` rows beyond the configured recovery and stale thresholds.
+- `DEAD_LETTER` rows for auth email jobs require operator review of `last_error_code` and `last_error_message`.
 
 ## Pre-Deployment Checklist
 
@@ -373,6 +395,7 @@ Minimum checks:
 
 - Liveness endpoint returns healthy.
 - Readiness endpoint returns ready when PostgreSQL is available.
+- Redis-backed async worker is running and recovery logs are clean.
 - Public job search returns a valid envelope.
 - Auth-protected route rejects missing credentials with `401 UNAUTHENTICATED`.
 - Implemented auth flow can complete in staging with test credentials.

@@ -119,10 +119,10 @@ Health endpoints should live under the health module and remain stable for deplo
 
 Current runtime endpoints:
 
-| Endpoint            | Purpose           | Dependency behavior                                  |
-| ------------------- | ----------------- | ---------------------------------------------------- |
-| `GET /health/live`  | Process liveness  | Does not require database or downstream services     |
-| `GET /health/ready` | Runtime readiness | Checks PostgreSQL and critical startup configuration |
+| Endpoint            | Purpose           | Dependency behavior                              |
+| ------------------- | ----------------- | ------------------------------------------------ |
+| `GET /health/live`  | Process liveness  | Does not require database or downstream services |
+| `GET /health/ready` | Runtime readiness | Checks PostgreSQL and Redis connectivity         |
 
 If a future dependency-detail endpoint is introduced, it should be internal-only or return sanitized output and must be documented as a separate runtime contract.
 
@@ -137,7 +137,8 @@ Example readiness response:
     "status": "ready",
     "env": "staging",
     "dependencies": {
-      "postgresql": "healthy"
+      "postgresql": "healthy",
+      "redis": "healthy"
     }
   },
   "meta": {
@@ -146,9 +147,9 @@ Example readiness response:
 }
 ```
 
-Readiness should fail when PostgreSQL is unavailable. Model API degradation should be visible but should not necessarily make the whole backend unready if non-AI flows can still operate.
+Readiness should fail when PostgreSQL or Redis is unavailable. Model API degradation should be visible but should not necessarily make the whole backend unready if non-AI flows can still operate.
 
-The implemented readiness contract checks PostgreSQL with a lightweight query and the configured `HEALTH_CHECK_TIMEOUT_MS`. A healthy database returns `200` with `postgresql: "healthy"`. An unavailable or timed-out database returns the standard `503 SERVICE_UNAVAILABLE` error envelope with sanitized dependency status and logs a dependency failure summary containing request id, dependency name, operation, latency, and result category.
+The implemented readiness contract checks PostgreSQL with a lightweight query, checks Redis with `PING`, and applies the configured `HEALTH_CHECK_TIMEOUT_MS` to each dependency. Healthy dependencies return `200` with `postgresql: "healthy"` and `redis: "healthy"`. An unavailable or timed-out dependency returns the standard `503 SERVICE_UNAVAILABLE` error envelope with sanitized dependency status and logs a dependency failure summary containing request id, dependency name, operation, latency, and result category.
 
 ## Latency And Throughput
 
@@ -193,6 +194,36 @@ The backend should distinguish dependency states in logs and health output.
 | Upload storage   | Test write/read or configured path exists                 | CV Analyzer upload fails before model call                     |
 
 Dependency logs should include dependency name, operation, latency, result category, and request id.
+
+## Async Worker Delivery Observability
+
+Auth email and maintenance side effects use a PostgreSQL outbox plus Redis/BullMQ queue.
+
+Delivery guarantees:
+
+- Request path writes domain state and outbox row in one transaction.
+- Publisher adds the outbox id to Redis and marks only still-pending rows as queued.
+- Worker claims only queued/pending rows or stale processing rows before running provider side effects.
+- Worker terminal updates are guarded by attempt number so older attempts cannot regress newer state.
+- Recovery republishes due non-terminal outbox rows: `PENDING`, `QUEUED`, and `PROCESSING`.
+
+Operational signals:
+
+| Signal                                    | Meaning                                                 |
+| ----------------------------------------- | ------------------------------------------------------- |
+| `Async worker recovery publish completed` | Recovery ran; `recovered` shows outbox rows republished |
+| `Async worker job failed`                 | BullMQ attempt failed; inspect provider error summary   |
+| `Async worker job stalled`                | BullMQ lock stalled; job should retry or be recovered   |
+| `Async worker runtime error`              | Worker-level queue/runtime error                        |
+| `lastErrorCode` / `lastErrorMessage`      | Durable outbox failure reason for retry or dead-letter  |
+
+Incident checks for missing auth emails:
+
+1. Confirm `worker` container/process is running.
+2. Check `/health/ready` for Redis and PostgreSQL.
+3. Query `async_job_outbox` by `job_type`, `status`, `attempts`, `last_error_code`, and `updated_at`.
+4. Check worker logs for recovery count, provider rate limits, stalled jobs, or dead-letter transitions.
+5. Confirm the Resend sender domain and API key are valid for the current environment.
 
 ## Business Events
 
@@ -242,6 +273,8 @@ Initial alert conditions:
 - PostgreSQL connectivity failure.
 - Authentication failure rate spike.
 - Model API timeout or error spike.
+- Async outbox non-terminal jobs older than the recovery interval.
+- Async job dead-letter count above zero for auth email job types.
 - Job freshness exceeds documented threshold.
 - CV upload failure spike.
 - Error reporting volume spike for a new release.

@@ -78,9 +78,14 @@ export type AsyncJobOutboxRepository = {
   markProcessing(
     jobId: string,
     attempt: number,
-    startedAt: Date
+    startedAt: Date,
+    processingStaleBefore: Date
+  ): Promise<boolean>;
+  markSucceeded(
+    jobId: string,
+    attempt: number,
+    completedAt: Date
   ): Promise<void>;
-  markSucceeded(jobId: string, completedAt: Date): Promise<void>;
   markRetryableFailure(
     jobId: string,
     attempt: number,

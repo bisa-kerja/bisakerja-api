@@ -109,12 +109,31 @@ class BullMqAsyncJobWorker {
           return;
         }
 
-        const attempt = job.attemptsMade + 1;
-        await this.repository.markProcessing(record.id, attempt, new Date());
+        const attempt = Math.max(record.attempts + 1, job.attemptsMade + 1);
+        const startedAt = new Date();
+        const claimed = await this.repository.markProcessing(
+          record.id,
+          attempt,
+          startedAt,
+          processingStaleBefore(this.config, startedAt)
+        );
+
+        if (!claimed) {
+          logger.info(
+            {
+              jobId: record.id,
+              queueJobId: job.id,
+              status: record.status,
+              attempts: record.attempts
+            },
+            "Async job skipped because it is already claimed or terminal"
+          );
+          return;
+        }
 
         try {
           await this.processor.process(record);
-          await this.repository.markSucceeded(record.id, new Date());
+          await this.repository.markSucceeded(record.id, attempt, new Date());
         } catch (error) {
           const summary = summarizeAsyncJobError(error);
 
@@ -143,6 +162,23 @@ class BullMqAsyncJobWorker {
         concurrency: config.asyncWorkloads.workerConcurrency
       }
     );
+
+    this.worker.on("failed", (job, error) => {
+      logger.warn(
+        {
+          queueJobId: job?.id,
+          outboxJobId: job?.data.outboxJobId,
+          failedReason: error.message
+        },
+        "Async worker job failed"
+      );
+    });
+    this.worker.on("stalled", (jobId) => {
+      logger.warn({ queueJobId: jobId }, "Async worker job stalled");
+    });
+    this.worker.on("error", (error) => {
+      logger.error({ error }, "Async worker runtime error");
+    });
   }
 
   async start(): Promise<void> {
@@ -174,6 +210,10 @@ class BullMqAsyncJobWorker {
     await this.worker.close();
     await this.publisher.close();
   }
+}
+
+function processingStaleBefore(config: AppConfig, now: Date) {
+  return new Date(now.getTime() - config.jobs.staleAfterHours * 60 * 60 * 1000);
 }
 
 function buildQueueAddOptions(

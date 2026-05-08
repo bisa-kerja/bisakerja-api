@@ -20,7 +20,7 @@ The Health module exposes infrastructure-safe endpoints for process liveness and
 The Health module owns:
 
 - Process liveness checks.
-- PostgreSQL-backed readiness checks.
+- PostgreSQL-backed and Redis-backed readiness checks.
 - Stable infrastructure response envelopes for deploy and smoke workflows.
 
 The Health module does not own:
@@ -72,7 +72,8 @@ The Health module does not own:
     "status": "ready",
     "env": "local",
     "dependencies": {
-      "postgresql": "healthy"
+      "postgresql": "healthy",
+      "redis": "healthy"
     }
   },
   "meta": {
@@ -81,12 +82,12 @@ The Health module does not own:
 }
 ```
 
-If PostgreSQL is unavailable or readiness times out, the backend returns `503 SERVICE_UNAVAILABLE` with the standard error envelope.
+If PostgreSQL or Redis is unavailable, or readiness times out, the backend returns `503 SERVICE_UNAVAILABLE` with the standard error envelope.
 
 ## Current Dependency Model
 
 - `GET /health/live` does not touch PostgreSQL or external integrations.
-- `GET /health/ready` currently checks PostgreSQL only.
+- `GET /health/ready` currently checks PostgreSQL and Redis.
 - Model API, email, and job-freshness degradation are observed through route-level behavior and logs, not a separate health endpoint.
 
 ## Verification

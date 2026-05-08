@@ -56,8 +56,8 @@ export class PrismaAsyncJobOutboxRepository implements AsyncJobOutboxRepository 
   async listPendingJobs(limit: number, now: Date): Promise<AsyncJobRecord[]> {
     const records = await this.client.asyncJobOutbox.findMany({
       where: {
-        status: "PENDING",
-        scheduledAt: { lte: now }
+        scheduledAt: { lte: now },
+        status: { in: ["PENDING", "QUEUED", "PROCESSING"] }
       },
       orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
       take: limit
@@ -67,8 +67,8 @@ export class PrismaAsyncJobOutboxRepository implements AsyncJobOutboxRepository 
   }
 
   async markQueued(jobId: string, publishedAt: Date): Promise<void> {
-    await this.client.asyncJobOutbox.update({
-      where: { id: jobId },
+    await this.client.asyncJobOutbox.updateMany({
+      where: { id: jobId, status: "PENDING" },
       data: {
         status: "QUEUED",
         publishedAt,
@@ -81,21 +81,37 @@ export class PrismaAsyncJobOutboxRepository implements AsyncJobOutboxRepository 
   async markProcessing(
     jobId: string,
     attempt: number,
-    startedAt: Date
-  ): Promise<void> {
-    await this.client.asyncJobOutbox.update({
-      where: { id: jobId },
+    startedAt: Date,
+    processingStaleBefore: Date
+  ): Promise<boolean> {
+    const result = await this.client.asyncJobOutbox.updateMany({
+      where: {
+        id: jobId,
+        OR: [
+          { status: { in: ["PENDING", "QUEUED"] } },
+          {
+            status: "PROCESSING",
+            processingStartedAt: { lte: processingStaleBefore }
+          }
+        ]
+      },
       data: {
         status: "PROCESSING",
         attempts: attempt,
         processingStartedAt: startedAt
       }
     });
+
+    return result.count > 0;
   }
 
-  async markSucceeded(jobId: string, completedAt: Date): Promise<void> {
-    await this.client.asyncJobOutbox.update({
-      where: { id: jobId },
+  async markSucceeded(
+    jobId: string,
+    attempt: number,
+    completedAt: Date
+  ): Promise<void> {
+    await this.client.asyncJobOutbox.updateMany({
+      where: { id: jobId, status: "PROCESSING", attempts: attempt },
       data: {
         status: "SUCCEEDED",
         completedAt
@@ -109,8 +125,8 @@ export class PrismaAsyncJobOutboxRepository implements AsyncJobOutboxRepository 
     _failedAt: Date,
     error: AsyncJobErrorDetails
   ): Promise<void> {
-    await this.client.asyncJobOutbox.update({
-      where: { id: jobId },
+    await this.client.asyncJobOutbox.updateMany({
+      where: { id: jobId, status: "PROCESSING", attempts: attempt },
       data: {
         status: "QUEUED",
         attempts: attempt,
@@ -126,8 +142,8 @@ export class PrismaAsyncJobOutboxRepository implements AsyncJobOutboxRepository 
     failedAt: Date,
     error: AsyncJobErrorDetails
   ): Promise<void> {
-    await this.client.asyncJobOutbox.update({
-      where: { id: jobId },
+    await this.client.asyncJobOutbox.updateMany({
+      where: { id: jobId, status: "PROCESSING", attempts: attempt },
       data: {
         status: "DEAD_LETTER",
         attempts: attempt,
