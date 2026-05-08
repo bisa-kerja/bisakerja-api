@@ -565,7 +565,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Auth"],
           summary: "Register a new account",
           description:
-            "Creates a user account and starts the email verification flow.",
+            "Creates a user account, starts the email verification flow, and returns an access-only onboarding session. No refresh cookie is set until email verification.",
           requestBody: {
             required: true,
             content: jsonContent(ref("RegisterRequest"), registerExample)
@@ -577,9 +577,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 {
                   type: "object",
                   additionalProperties: false,
-                  required: ["user"],
+                  required: ["user", "session"],
                   properties: {
-                    user: ref("AuthUser")
+                    user: ref("AuthUser"),
+                    session: ref("AuthSession")
                   }
                 },
                 nullSchema
@@ -593,7 +594,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                     ...authUserExample,
                     emailVerified: false,
                     onboardingStatus: "PENDING"
-                  }
+                  },
+                  session: authSessionExample
                 },
                 meta: null
               }
@@ -830,7 +832,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Auth"],
           summary: "Verify email",
           description:
-            "Verifies email ownership using the OTP code sent by email.",
+            "Verifies email ownership using the OTP code sent by email, then auto-logs in the user by returning a session and setting the refresh cookie.",
           requestBody: {
             required: true,
             content: jsonContent(ref("VerifyEmailRequest"), {
@@ -839,28 +841,40 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             })
           },
           responses: {
-            "200": jsonResponse(
-              "Email verified successfully.",
-              successEnvelopeSchema(
-                {
-                  type: "object",
-                  additionalProperties: false,
-                  required: ["user"],
-                  properties: {
-                    user: ref("AuthUser")
+            "200": {
+              description: "Email verified successfully.",
+              headers: {
+                "Set-Cookie": {
+                  description: `Refresh token cookie (${config.auth.refreshCookieName}).`,
+                  schema: {
+                    type: "string"
                   }
-                },
-                nullSchema
-              ),
-              {
-                success: true,
-                message: "Email verified successfully",
-                data: {
-                  user: authUserExample
-                },
-                meta: null
-              }
-            ),
+                }
+              },
+              content: jsonContent(
+                successEnvelopeSchema(
+                  {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["user", "session"],
+                    properties: {
+                      user: ref("AuthUser"),
+                      session: ref("AuthSession")
+                    }
+                  },
+                  nullSchema
+                ),
+                {
+                  success: true,
+                  message: "Email verified successfully",
+                  data: {
+                    user: authUserExample,
+                    session: authSessionExample
+                  },
+                  meta: null
+                }
+              )
+            },
             "401": errorResponse(
               "Email verification OTP is expired or invalid.",
               "EMAIL_VERIFICATION_INVALID",
@@ -1465,7 +1479,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Preferences"],
           summary: "Get preferences",
           description:
-            "Returns the authenticated user's active career preferences.",
+            "Returns the current user's active career preferences. This route also accepts the register-issued onboarding access token before email OTP verification.",
           security: bearerSecurity(),
           responses: {
             "200": jsonResponse(
@@ -1494,7 +1508,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Preferences"],
           summary: "Replace preferences",
           description:
-            "Creates or replaces the authenticated user's active career preferences.",
+            "Creates or replaces the current user's active career preferences. This route also accepts the register-issued onboarding access token before email OTP verification.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
@@ -1544,7 +1558,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Preferences"],
           summary: "Patch preferences",
           description:
-            "Applies a partial update to the authenticated user's active career preferences.",
+            "Applies a partial update to the current user's active career preferences. This route also accepts the register-issued onboarding access token before email OTP verification.",
           security: bearerSecurity(),
           requestBody: {
             required: true,

@@ -65,7 +65,7 @@ export class AuthService {
   async register(
     input: RegisterInput,
     requestId?: string
-  ): Promise<{ user: AuthUser }> {
+  ): Promise<{ user: AuthUser; session: AuthSession }> {
     const existingEmail = await this.repository.findUserByEmail(input.email);
 
     if (existingEmail) {
@@ -124,7 +124,10 @@ export class AuthService {
 
     this.triggerAsyncPublish(result.jobId, "auth.register.email-verification");
 
-    return { user: result.user };
+    return {
+      user: result.user,
+      session: issueAccessToken(this.config, toAccessTokenInput(result.user))
+    };
   }
 
   async login(
@@ -268,7 +271,10 @@ export class AuthService {
     );
   }
 
-  async verifyEmail(input: VerifyEmailInput): Promise<{ user: AuthUser }> {
+  async verifyEmail(
+    input: VerifyEmailInput,
+    context: IssueContext = {}
+  ): Promise<AuthSessionResult> {
     const token = await this.repository.findActiveEmailVerificationToken(
       input.email,
       this.hashCredential(input.otp)
@@ -292,7 +298,7 @@ export class AuthService {
       token.userId,
       token.id
     );
-    return { user };
+    return this.issueSession(user, context);
   }
 
   googleSsoPlaceholder(): never {
@@ -397,7 +403,7 @@ function safeUser(user: AuthUserWithCredential): AuthUser {
   };
 }
 
-function toAccessTokenInput(user: AuthUserWithCredential) {
+function toAccessTokenInput(user: AuthUser) {
   return {
     userId: user.id,
     email: user.email,

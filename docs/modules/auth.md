@@ -50,13 +50,13 @@ The Auth module does not own:
 
 | Method | Path                           | Auth                     | Purpose                                                |
 | ------ | ------------------------------ | ------------------------ | ------------------------------------------------------ |
-| `POST` | `/api/v1/auth/register`        | Public                   | Create a user account and start email verification     |
+| `POST` | `/api/v1/auth/register`        | Public                   | Create account and return onboarding access session    |
 | `POST` | `/api/v1/auth/login`           | Public                   | Authenticate using email or username and password      |
 | `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate current session or refresh credential       |
 | `POST` | `/api/v1/auth/refresh`         | Refresh credential       | Issue a new access credential                          |
 | `POST` | `/api/v1/auth/forgot-password` | Public                   | Send password reset email or OTP                       |
 | `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Set a new password                                     |
-| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email ownership                                 |
+| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email ownership and auto-login                  |
 | `POST` | `/api/v1/auth/google`          | Placeholder              | Reserved for Google SSO after OAuth config is approved |
 
 Google SSO must stay a placeholder until OAuth client id, callback URL, token verification, account-linking rules, and redirect behavior are documented.
@@ -188,11 +188,18 @@ Refresh cookies use the configured `AUTH_REFRESH_COOKIE_NAME`, `HttpOnly`, expli
       "emailVerified": false,
       "onboardingStatus": "PENDING",
       "createdAt": "2026-04-22T00:00:00.000Z"
+    },
+    "session": {
+      "accessToken": "access_token_value",
+      "expiresIn": 900,
+      "tokenType": "Bearer"
     }
   },
   "meta": null
 }
 ```
+
+The register session is access-token only. It does not set a refresh cookie and is intended for first-run onboarding, including `PUT /api/v1/me/preferences`, before email OTP verification.
 
 ### Login Response
 
@@ -219,6 +226,33 @@ Refresh cookies use the configured `AUTH_REFRESH_COOKIE_NAME`, `HttpOnly`, expli
 }
 ```
 
+### Email Verification Response
+
+```json
+{
+  "success": true,
+  "message": "Email verified successfully",
+  "data": {
+    "user": {
+      "id": "user_123",
+      "username": "salman",
+      "email": "salman@example.com",
+      "emailVerified": true,
+      "onboardingStatus": "IN_PROGRESS",
+      "createdAt": "2026-04-22T00:00:00.000Z"
+    },
+    "session": {
+      "accessToken": "access_token_value",
+      "expiresIn": 900,
+      "tokenType": "Bearer"
+    }
+  },
+  "meta": null
+}
+```
+
+Email verification sets the refresh cookie and auto-logs in the user.
+
 ## Service Logic
 
 ### Register Flow
@@ -230,10 +264,11 @@ Refresh cookies use the configured `AUTH_REFRESH_COOKIE_NAME`, `HttpOnly`, expli
 5. Create `User` and `AuthCredential` in one transaction.
 6. Create email verification token or OTP.
 7. Send verification email.
-8. Return user-safe account summary.
+8. Return user-safe account summary plus onboarding access session.
 9. Emit audit event `auth.registered`.
 
-MVP registration does not issue a full authenticated session before email verification.
+MVP registration does not issue a refresh cookie before email verification.
+The current first-run flow is `register -> onboarding -> OTP -> auto login`.
 Local and test environments use a fake email provider. The provider records or logs only safe delivery metadata; raw OTP and reset token values are used for delivery and must not appear in API responses or ordinary logs.
 
 ### Login Flow

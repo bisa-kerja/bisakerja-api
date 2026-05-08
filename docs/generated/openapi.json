@@ -145,7 +145,7 @@
       "post": {
         "tags": ["Auth"],
         "summary": "Register a new account",
-        "description": "Creates a user account and starts the email verification flow.",
+        "description": "Creates a user account, starts the email verification flow, and returns an access-only onboarding session. No refresh cookie is set until email verification.",
         "requestBody": {
           "required": true,
           "content": {
@@ -176,9 +176,12 @@
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["user"],
+                      "required": ["user", "session"],
                       "properties": {
-                        "user": { "$ref": "#/components/schemas/AuthUser" }
+                        "user": { "$ref": "#/components/schemas/AuthUser" },
+                        "session": {
+                          "$ref": "#/components/schemas/AuthSession"
+                        }
                       }
                     },
                     "meta": { "type": "null" }
@@ -195,6 +198,11 @@
                       "emailVerified": false,
                       "onboardingStatus": "PENDING",
                       "createdAt": "2026-04-24T08:00:00.000Z"
+                    },
+                    "session": {
+                      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example",
+                      "expiresIn": 900,
+                      "tokenType": "Bearer"
                     }
                   },
                   "meta": null
@@ -820,7 +828,7 @@
       "post": {
         "tags": ["Auth"],
         "summary": "Verify email",
-        "description": "Verifies email ownership using the OTP code sent by email.",
+        "description": "Verifies email ownership using the OTP code sent by email, then auto-logs in the user by returning a session and setting the refresh cookie.",
         "requestBody": {
           "required": true,
           "content": {
@@ -833,6 +841,12 @@
         "responses": {
           "200": {
             "description": "Email verified successfully.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Refresh token cookie (bisakerja_refresh).",
+                "schema": { "type": "string" }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -845,9 +859,12 @@
                     "data": {
                       "type": "object",
                       "additionalProperties": false,
-                      "required": ["user"],
+                      "required": ["user", "session"],
                       "properties": {
-                        "user": { "$ref": "#/components/schemas/AuthUser" }
+                        "user": { "$ref": "#/components/schemas/AuthUser" },
+                        "session": {
+                          "$ref": "#/components/schemas/AuthSession"
+                        }
                       }
                     },
                     "meta": { "type": "null" }
@@ -864,6 +881,11 @@
                       "emailVerified": true,
                       "onboardingStatus": "COMPLETED",
                       "createdAt": "2026-04-24T08:00:00.000Z"
+                    },
+                    "session": {
+                      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example",
+                      "expiresIn": 900,
+                      "tokenType": "Bearer"
                     }
                   },
                   "meta": null
@@ -2474,7 +2496,7 @@
       "get": {
         "tags": ["Preferences"],
         "summary": "Get preferences",
-        "description": "Returns the authenticated user's active career preferences.",
+        "description": "Returns the current user's active career preferences. This route also accepts the register-issued onboarding access token before email OTP verification.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -2563,7 +2585,7 @@
       "put": {
         "tags": ["Preferences"],
         "summary": "Replace preferences",
-        "description": "Creates or replaces the authenticated user's active career preferences.",
+        "description": "Creates or replaces the current user's active career preferences. This route also accepts the register-issued onboarding access token before email OTP verification.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -2684,7 +2706,7 @@
       "patch": {
         "tags": ["Preferences"],
         "summary": "Patch preferences",
-        "description": "Applies a partial update to the authenticated user's active career preferences.",
+        "description": "Applies a partial update to the current user's active career preferences. This route also accepts the register-issued onboarding access token before email OTP verification.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,

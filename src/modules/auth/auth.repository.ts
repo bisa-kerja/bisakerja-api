@@ -137,17 +137,21 @@ export class PrismaAuthRepository implements AuthRepository {
     return token;
   }
 
-  async markEmailVerified(userId: string, tokenId: string): Promise<AuthUser> {
+  async markEmailVerified(
+    userId: string,
+    tokenId: string
+  ): Promise<AuthUserWithCredential> {
     const user = await this.client.user.update({
       where: { id: userId },
-      data: { emailVerifiedAt: new Date() }
+      data: { emailVerifiedAt: new Date() },
+      include: { authCredential: true }
     });
     await this.client.emailVerificationToken.update({
       where: { id: tokenId },
       data: { usedAt: new Date() }
     });
 
-    return mapAuthUser(user);
+    return mapUserWithCredential(user);
   }
 
   async createPasswordResetToken(

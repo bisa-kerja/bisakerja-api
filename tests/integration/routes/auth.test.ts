@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { createApp } from "@/app";
+import { createAuthMiddleware } from "@/core/middlewares/auth.middleware";
 import type {
   AsyncJobPublisher,
   EnqueueAsyncJobInput,
@@ -13,6 +14,12 @@ import type {
   PasswordResetTokenRecord,
   RefreshTokenRecord
 } from "@/modules/auth";
+import type {
+  PreferenceOnboardingState,
+  PreferenceRecord,
+  PreferencesRepository
+} from "@/modules/preferences/preferences.types";
+import type { UpsertPreferencesInput } from "@/modules/preferences/preferences.schema";
 import { passwordHashAlgorithm } from "@/shared/utils/password";
 import { testConfig } from "../../helpers/config";
 import { injectRoute } from "../../helpers/route";
@@ -32,9 +39,10 @@ describe("auth routes", () => {
     expect(response.status).toBe(201);
     expect(response.headers["set-cookie"]).toBeUndefined();
     const body = response.body as {
-      data: { user: { id: string } };
+      data: { user: { id: string }; session: { accessToken: string } };
     };
     expect(typeof body.data.user.id).toBe("string");
+    expect(typeof body.data.session.accessToken).toBe("string");
     expect(response.body).toEqual({
       success: true,
       message: "Account registered successfully. Please verify your email.",
@@ -46,7 +54,8 @@ describe("auth routes", () => {
           emailVerified: false,
           onboardingStatus: "PENDING",
           createdAt: baseDate.toISOString()
-        }
+        },
+        session: body.data.session
       },
       meta: null
     });
@@ -182,6 +191,73 @@ describe("auth routes", () => {
     });
 
     expect(afterLogout.status).toBe(401);
+  });
+
+  test("allows onboarding preferences before OTP and auto logs in after verification", async () => {
+    const context = createOnboardingRouteContext();
+
+    const register = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/auth/register",
+      headers: { "x-request-id": "req_register_onboarding" },
+      body: registerBody()
+    });
+    const onboardingAccessToken = getAccessToken(register.body);
+
+    expect(register.status).toBe(201);
+    expect(getSetCookie(register)).toBe("");
+
+    const preferences = await injectRoute(context.app, {
+      method: "PUT",
+      url: "/api/v1/me/preferences",
+      headers: {
+        Authorization: `Bearer ${onboardingAccessToken}`,
+        "x-request-id": "req_pre_otp_preferences"
+      },
+      body: validPreferenceBody()
+    });
+
+    expect(preferences.status).toBe(200);
+    expect(preferences.body).toMatchObject({
+      data: {
+        targetRoles: ["Backend Developer"],
+        workTypes: ["REMOTE"]
+      }
+    });
+
+    const strictProtected = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/auth/logout",
+      headers: {
+        Authorization: `Bearer ${onboardingAccessToken}`,
+        "x-request-id": "req_pre_otp_logout"
+      },
+      body: {}
+    });
+
+    expect(strictProtected.status).toBe(401);
+
+    const verify = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/auth/verify-email",
+      headers: { "x-request-id": "req_verify_auto_login" },
+      body: {
+        email: "salman@example.com",
+        otp: getVerificationJob(context).payload.otp
+      }
+    });
+
+    expect(verify.status).toBe(200);
+    expect(typeof getAccessToken(verify.body)).toBe("string");
+    expect(getSetCookie(verify)).toContain("bisakerja_refresh=");
+    expect(verify.body).toMatchObject({
+      data: {
+        user: {
+          emailVerified: true,
+          onboardingStatus: "IN_PROGRESS"
+        }
+      }
+    });
   });
 
   test("applies configured secure refresh cookie flags", async () => {
@@ -419,6 +495,38 @@ function createAuthRouteContext(overrides: Partial<NodeJS.ProcessEnv> = {}) {
   };
 }
 
+function createOnboardingRouteContext() {
+  const repository = new InMemoryAuthRepository();
+  const preferencesRepository = new InMemoryPreferencesRepository(repository);
+  const publisher = new RecordingJobPublisher();
+  let now = baseDate;
+  const config = testConfig();
+  const app = createApp(config, {
+    routes: {
+      auth: {
+        repository,
+        jobPublisher: publisher,
+        now: () => now
+      },
+      preferences: {
+        repository: preferencesRepository,
+        authMiddleware: createAuthMiddleware(config, repository, {
+          allowUnverifiedEmail: true
+        })
+      }
+    }
+  });
+
+  return {
+    app,
+    repository,
+    publisher,
+    setNow: (date: Date) => {
+      now = date;
+    }
+  };
+}
+
 function registerBody(overrides: Record<string, unknown> = {}) {
   return {
     username: "salman",
@@ -427,6 +535,23 @@ function registerBody(overrides: Record<string, unknown> = {}) {
     password: "StrongPassword123!",
     confirmPassword: "StrongPassword123!",
     ...overrides
+  };
+}
+
+function validPreferenceBody() {
+  return {
+    careerStatus: "FRESH_GRADUATE",
+    jobSeekingStatus: "IMMEDIATE",
+    targetRoles: ["Backend Developer"],
+    locations: [{ province: "DKI Jakarta", city: "Jakarta Selatan" }],
+    workTypes: ["REMOTE"],
+    salaryExpectation: {
+      min: 5_000_000,
+      max: 10_000_000,
+      currency: "IDR",
+      period: "MONTHLY"
+    },
+    emailNotificationsEnabled: true
   };
 }
 
@@ -623,7 +748,10 @@ class InMemoryAuthRepository implements AuthRepository {
     );
   }
 
-  markEmailVerified(userId: string, tokenId: string): Promise<AuthUser> {
+  markEmailVerified(
+    userId: string,
+    tokenId: string
+  ): Promise<AuthUserWithCredential> {
     const user = this.requireUser(userId);
     const token = this.verificationTokens.get(tokenId);
 
@@ -632,7 +760,7 @@ class InMemoryAuthRepository implements AuthRepository {
       token.usedAt = baseDate;
     }
 
-    return Promise.resolve(toSafeUser(user));
+    return Promise.resolve(user);
   }
 
   createPasswordResetToken(
@@ -757,6 +885,13 @@ class InMemoryAuthRepository implements AuthRepository {
     return Promise.resolve();
   }
 
+  setOnboardingStatus(
+    userId: string,
+    onboardingStatus: AuthUser["onboardingStatus"]
+  ): void {
+    this.requireUser(userId).onboardingStatus = onboardingStatus;
+  }
+
   private findUser(
     predicate: (user: AuthUserWithCredential) => boolean
   ): AuthUserWithCredential | null {
@@ -785,6 +920,60 @@ class InMemoryAuthRepository implements AuthRepository {
       revokedAt: null,
       user: this.requireUser(input.userId)
     };
+  }
+}
+
+class InMemoryPreferencesRepository implements PreferencesRepository {
+  private readonly preferences = new Map<string, PreferenceRecord>();
+  private readonly onboarding = new Map<string, PreferenceOnboardingState>();
+
+  constructor(private readonly authRepository: InMemoryAuthRepository) {}
+
+  findByUserId(userId: string): Promise<PreferenceRecord | null> {
+    const preference = this.preferences.get(userId);
+    return Promise.resolve(preference ? structuredClone(preference) : null);
+  }
+
+  upsertForUser(
+    userId: string,
+    input: UpsertPreferencesInput
+  ): Promise<PreferenceRecord> {
+    const existing = this.preferences.get(userId);
+    const preference: PreferenceRecord = {
+      id: existing?.id ?? `pref-${userId}`,
+      userId,
+      ...structuredClone(input),
+      createdAt: existing?.createdAt ?? baseDate,
+      updatedAt: new Date(baseDate.getTime() + 1_000)
+    };
+
+    this.preferences.set(userId, preference);
+    return Promise.resolve(structuredClone(preference));
+  }
+
+  findUserOnboardingState(
+    userId: string
+  ): Promise<PreferenceOnboardingState | null> {
+    const state = this.onboarding.get(userId) ?? {
+      emailVerified: false,
+      displayName: null,
+      phoneNumber: "+6281234567890",
+      onboardingStatus: "PENDING" as const
+    };
+    this.onboarding.set(userId, state);
+    return Promise.resolve(structuredClone(state));
+  }
+
+  updateUserOnboardingStatus(
+    userId: string,
+    onboardingStatus: PreferenceOnboardingState["onboardingStatus"]
+  ): Promise<void> {
+    const state = this.onboarding.get(userId);
+    if (state) {
+      state.onboardingStatus = onboardingStatus;
+    }
+    this.authRepository.setOnboardingStatus(userId, onboardingStatus);
+    return Promise.resolve();
   }
 }
 

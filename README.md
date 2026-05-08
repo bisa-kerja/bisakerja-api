@@ -105,7 +105,7 @@ Key route groups:
 | Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted      |
 | Auth           | `/api/v1/auth`                  | Public plus authenticated session routes |
 | Users          | `/api/v1/me`                    | Authenticated                            |
-| Preferences    | `/api/v1/me/preferences`        | Authenticated                            |
+| Preferences    | `/api/v1/me/preferences`        | Authenticated or onboarding access token |
 | Jobs           | `/api/v1/jobs`                  | Public for search and detail             |
 | Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected    |
 | Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected    |

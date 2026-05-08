@@ -6,9 +6,14 @@ import { PrismaAuthRepository } from "@/modules/auth/auth.repository";
 import type { AuthRepository } from "@/modules/auth/auth.types";
 import { verifyAccessToken } from "@/shared/utils/jwt";
 
+export type AuthMiddlewareOptions = {
+  allowUnverifiedEmail?: boolean;
+};
+
 export function createAuthMiddleware(
   config: AppConfig,
-  repository: AuthRepository = new PrismaAuthRepository()
+  repository: AuthRepository = new PrismaAuthRepository(),
+  options: AuthMiddlewareOptions = {}
 ): RequestHandler {
   return async (req, _res, next) => {
     try {
@@ -26,7 +31,10 @@ export function createAuthMiddleware(
 
       const user = await repository.findUserById(payload.sub);
 
-      if (user?.status !== "ACTIVE" || !user.emailVerified) {
+      if (
+        user?.status !== "ACTIVE" ||
+        (!options.allowUnverifiedEmail && !user.emailVerified)
+      ) {
         throw new AuthenticationError();
       }
 

@@ -17,7 +17,9 @@ export function createPreferencesRouter(
 ): Router {
   const router = Router();
   const repository = options.repository ?? new PrismaPreferencesRepository();
-  const authMiddleware = options.authMiddleware ?? createAuthMiddleware(config);
+  const authMiddleware =
+    options.authMiddleware ??
+    createAuthMiddleware(config, undefined, { allowUnverifiedEmail: true });
   const controller = new PreferencesController({ repository });
 
   router.use(authMiddleware);

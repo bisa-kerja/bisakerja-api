@@ -327,6 +327,8 @@ MVP onboarding states:
 | `IN_PROGRESS` | User has started onboarding but not completed verification or preferences |
 | `COMPLETED`   | Required profile, preference, and verification steps are complete         |
 
+Current first-run flow is `register -> onboarding -> OTP -> auto login`. The register response access token can save onboarding preferences before OTP verification; OTP verification then sets the refresh cookie and returns the normal session.
+
 Completion criteria:
 
 - Email is verified.

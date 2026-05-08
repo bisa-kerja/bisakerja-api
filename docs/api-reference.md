@@ -125,7 +125,7 @@ Rules:
 | Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed |
 | Auth           | `/api/v1/auth`                  | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, Google SSO placeholder | `docs/modules/auth.md`             |
 | Users          | `/api/v1/me`                    | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`            |
-| Preferences    | `/api/v1/me/preferences`        | Authenticated                                                        | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
+| Preferences    | `/api/v1/me/preferences`        | Authenticated or onboarding access token                             | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
 | Jobs           | `/api/v1/jobs`                  | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
 | Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
 | Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
@@ -348,29 +348,29 @@ The endpoint list below is a planning index, not final endpoint documentation.
 
 ### Auth
 
-| Method | Path                           | Auth                     | Purpose                                         |
-| ------ | ------------------------------ | ------------------------ | ----------------------------------------------- |
-| `POST` | `/api/v1/auth/register`        | Public                   | Create account                                  |
-| `POST` | `/api/v1/auth/login`           | Public                   | Issue access token and refresh cookie           |
-| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate refresh token and clear cookie       |
-| `POST` | `/api/v1/auth/refresh`         | Refresh cookie           | Rotate refresh token and issue new access token |
-| `POST` | `/api/v1/auth/forgot-password` | Public                   | Request password reset                          |
-| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Complete password reset                         |
-| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email                                    |
+| Method | Path                           | Auth                     | Purpose                                           |
+| ------ | ------------------------------ | ------------------------ | ------------------------------------------------- |
+| `POST` | `/api/v1/auth/register`        | Public                   | Create account and return onboarding access token |
+| `POST` | `/api/v1/auth/login`           | Public                   | Issue access token and refresh cookie             |
+| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate refresh token and clear cookie         |
+| `POST` | `/api/v1/auth/refresh`         | Refresh cookie           | Rotate refresh token and issue new access token   |
+| `POST` | `/api/v1/auth/forgot-password` | Public                   | Request password reset                            |
+| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Complete password reset                           |
+| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email and auto-login                       |
 
 ### Users And Preferences
 
-| Method  | Path                       | Auth          | Purpose                              |
-| ------- | -------------------------- | ------------- | ------------------------------------ |
-| `GET`   | `/api/v1/me`               | Authenticated | Get current user profile             |
-| `PATCH` | `/api/v1/me`               | Authenticated | Update current user profile          |
-| `PUT`   | `/api/v1/me/profile-photo` | Authenticated | Upsert profile photo metadata        |
-| `PUT`   | `/api/v1/me/skills`        | Authenticated | Replace user skill list              |
-| `PUT`   | `/api/v1/me/experience`    | Authenticated | Replace user experience list         |
-| `PUT`   | `/api/v1/me/education`     | Authenticated | Replace user education list          |
-| `GET`   | `/api/v1/me/preferences`   | Authenticated | Get career preferences               |
-| `PUT`   | `/api/v1/me/preferences`   | Authenticated | Replace or upsert career preferences |
-| `PATCH` | `/api/v1/me/preferences`   | Authenticated | Partially update career preferences  |
+| Method  | Path                       | Auth                                     | Purpose                              |
+| ------- | -------------------------- | ---------------------------------------- | ------------------------------------ |
+| `GET`   | `/api/v1/me`               | Authenticated                            | Get current user profile             |
+| `PATCH` | `/api/v1/me`               | Authenticated                            | Update current user profile          |
+| `PUT`   | `/api/v1/me/profile-photo` | Authenticated                            | Upsert profile photo metadata        |
+| `PUT`   | `/api/v1/me/skills`        | Authenticated                            | Replace user skill list              |
+| `PUT`   | `/api/v1/me/experience`    | Authenticated                            | Replace user experience list         |
+| `PUT`   | `/api/v1/me/education`     | Authenticated                            | Replace user education list          |
+| `GET`   | `/api/v1/me/preferences`   | Authenticated or onboarding access token | Get career preferences               |
+| `PUT`   | `/api/v1/me/preferences`   | Authenticated or onboarding access token | Replace or upsert career preferences |
+| `PATCH` | `/api/v1/me/preferences`   | Authenticated or onboarding access token | Partially update career preferences  |
 
 ### Jobs
 

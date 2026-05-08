@@ -50,17 +50,19 @@ Alternative `/api/v1/preferences` is not part of the MVP contract. Add it only i
 
 ## Endpoint Summary
 
-| Method  | Path                     | Auth          | Purpose                                                    |
-| ------- | ------------------------ | ------------- | ---------------------------------------------------------- |
-| `GET`   | `/api/v1/me/preferences` | Authenticated | Get current user's active career preferences               |
-| `PUT`   | `/api/v1/me/preferences` | Authenticated | Replace or upsert current user's active career preferences |
-| `PATCH` | `/api/v1/me/preferences` | Authenticated | Partially update current user's active career preferences  |
+| Method  | Path                     | Auth                                     | Purpose                                                    |
+| ------- | ------------------------ | ---------------------------------------- | ---------------------------------------------------------- |
+| `GET`   | `/api/v1/me/preferences` | Authenticated or onboarding access token | Get current user's active career preferences               |
+| `PUT`   | `/api/v1/me/preferences` | Authenticated or onboarding access token | Replace or upsert current user's active career preferences |
+| `PATCH` | `/api/v1/me/preferences` | Authenticated or onboarding access token | Partially update current user's active career preferences  |
 
 Use `PUT` for onboarding save flows where the frontend submits the full preference state. Use `PATCH` only after partial edit behavior is implemented and tested.
 
 ## Auth And Ownership Rules
 
 - Every route requires authenticated user identity.
+- The register response access token may be used here before email OTP verification so the website can save first-run onboarding preferences.
+- Other authenticated modules must still reject unverified users unless explicitly documented otherwise.
 - Preferences always belong to the authenticated current user.
 - The request body must not accept `userId`.
 - The backend uses persisted preferences when preparing Model API payloads.
@@ -173,14 +175,14 @@ Validation:
 
 ### Get Preferences
 
-1. Require authenticated identity.
+1. Require authenticated identity or register-issued onboarding access token.
 2. Load active `UserPreference` by current `userId`.
 3. Return `404 PREFERENCES_NOT_FOUND` if no active preferences exist.
 4. Shape response using canonical enum values.
 
 ### Upsert Preferences
 
-1. Require authenticated identity.
+1. Require authenticated identity or register-issued onboarding access token.
 2. Validate request body with Zod.
 3. Normalize target role names and location strings.
 4. Validate salary range.
@@ -191,7 +193,7 @@ Validation:
 
 ### Partial Update
 
-1. Require authenticated identity.
+1. Require authenticated identity or register-issued onboarding access token.
 2. Validate partial body.
 3. Reject empty body.
 4. Merge with existing preferences.
@@ -274,7 +276,7 @@ Unit tests:
 
 Integration tests:
 
-- `GET /api/v1/me/preferences` requires auth.
+- `GET /api/v1/me/preferences` requires authenticated identity or onboarding access token.
 - Missing preferences return documented not found behavior.
 - `PUT /api/v1/me/preferences` creates active preferences.
 - Repeated `PUT` updates the same active preference set.

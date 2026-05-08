@@ -95,7 +95,10 @@ export type AuthRepository = {
     email: string,
     otpHash: string
   ): Promise<EmailVerificationTokenRecord | null>;
-  markEmailVerified(userId: string, tokenId: string): Promise<AuthUser>;
+  markEmailVerified(
+    userId: string,
+    tokenId: string
+  ): Promise<AuthUserWithCredential>;
   createPasswordResetToken(
     userId: string,
     tokenHash: string,

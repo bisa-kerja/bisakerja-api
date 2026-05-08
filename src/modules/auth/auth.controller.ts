@@ -51,14 +51,15 @@ export class AuthController {
       result: "success"
     });
 
-    res
-      .status(201)
-      .json(
-        createdResponse(
-          { user: serializeAuthUser(result.user) },
-          "Account registered successfully. Please verify your email."
-        )
-      );
+    res.status(201).json(
+      createdResponse(
+        {
+          user: serializeAuthUser(result.user),
+          session: result.session
+        },
+        "Account registered successfully. Please verify your email."
+      )
+    );
   };
 
   login = async (req: Request, res: Response) => {
@@ -160,7 +161,11 @@ export class AuthController {
   };
 
   verifyEmail = async (req: Request, res: Response) => {
-    const result = await this.service.verifyEmail(req.body as VerifyEmailInput);
+    const result = await this.service.verifyEmail(
+      req.body as VerifyEmailInput,
+      this.getIssueContext(req)
+    );
+    setRefreshCookie(res, this.dependencies.config, result.refreshToken);
 
     emitAuditEvent({
       action: "auth.email_verified",
@@ -173,7 +178,10 @@ export class AuthController {
 
     res.json(
       successResponse(
-        { user: serializeAuthUser(result.user) },
+        {
+          user: serializeAuthUser(result.user),
+          session: result.session
+        },
         "Email verified successfully"
       )
     );
