@@ -19,6 +19,16 @@ jobs:
     name: Quality And Docs Validation
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
 
     steps:
       - name: Checkout repository
@@ -74,6 +84,7 @@ jobs:
           append_override NODE_ENV test
           append_override DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
           append_override DIRECT_DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
+          append_override REDIS_URL redis://127.0.0.1:6379
           append_override RUN_DATABASE_TESTS false
           append_override MODEL_API_ENABLE_MOCK true
           append_override LOG_LEVEL silent
@@ -154,6 +165,15 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
 
     steps:
       - name: Checkout repository
@@ -209,6 +229,7 @@ jobs:
           append_override NODE_ENV test
           append_override DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
           append_override DIRECT_DATABASE_URL postgresql://postgres:postgres@localhost:5432/bisakerja_api_test
+          append_override REDIS_URL redis://127.0.0.1:6379
           append_override RUN_DATABASE_TESTS true
           append_override MODEL_API_ENABLE_MOCK true
           append_override LOG_LEVEL silent
