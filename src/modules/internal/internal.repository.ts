@@ -19,24 +19,36 @@ export class PrismaInternalRepository implements InternalRepository {
     upserted: number;
     jobs: ScraperJobSyncResult[];
   }> {
-    return this.client.$transaction(
-      async (tx) => {
-        const jobs: ScraperJobSyncResult[] = [];
-        const ingestionRunCounts = countJobsByIngestionRun(input.jobs);
-        const skillMap = await ensureSkillMap(tx, input.jobs);
+    const jobs: ScraperJobSyncResult[] = [];
+    const ingestionRunCounts = countJobsByIngestionRun(input.jobs);
 
-        for (const job of input.jobs) {
-          jobs.push(await syncOneJob(tx, job, ingestionRunCounts, skillMap));
-        }
+    for (const chunk of chunks(
+      input.jobs,
+      INTERNAL_SYNC_TRANSACTION_CHUNK_SIZE
+    )) {
+      const chunkJobs = await this.client.$transaction(
+        async (tx) => {
+          const synced: ScraperJobSyncResult[] = [];
+          const skillMap = await ensureSkillMap(tx, chunk);
 
-        return {
-          accepted: input.jobs.length,
-          upserted: jobs.length,
-          jobs
-        };
-      },
-      { timeout: 30000 }
-    );
+          for (const job of chunk) {
+            synced.push(
+              await syncOneJob(tx, job, ingestionRunCounts, skillMap)
+            );
+          }
+
+          return synced;
+        },
+        { timeout: INTERNAL_SYNC_TRANSACTION_TIMEOUT_MS }
+      );
+      jobs.push(...chunkJobs);
+    }
+
+    return {
+      accepted: input.jobs.length,
+      upserted: jobs.length,
+      jobs
+    };
   }
 
   acceptNotificationEvents(input: NotificationEventsInput) {
@@ -362,4 +374,15 @@ function normalizeSlug(value: string) {
 
 function toDateOrNull(value: string | null | undefined) {
   return value ? new Date(value) : null;
+}
+
+const INTERNAL_SYNC_TRANSACTION_TIMEOUT_MS = 30000;
+const INTERNAL_SYNC_TRANSACTION_CHUNK_SIZE = 20;
+
+function chunks<T>(values: T[], size: number): T[][] {
+  const grouped: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    grouped.push(values.slice(index, index + size));
+  }
+  return grouped;
 }

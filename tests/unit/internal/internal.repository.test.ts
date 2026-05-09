@@ -128,6 +128,92 @@ describe("PrismaInternalRepository", () => {
       upserted: 2
     });
   });
+
+  test("splits large sync payload into transaction chunks", async () => {
+    const observed = {
+      transactionOptions: [] as { timeout?: number }[],
+      chunkSizes: [] as number[]
+    };
+    let listingCursor = 0;
+
+    const client = {
+      $transaction: async <T>(
+        callback: (transaction: {
+          sourcePlatform: { upsert: () => Promise<{ id: string }> };
+          company: {
+            findFirst: () => Promise<null>;
+            create: () => Promise<{ id: string }>;
+            update: () => Promise<{ id: string }>;
+          };
+          ingestionRun: { upsert: () => Promise<object> };
+          jobListing: {
+            findFirst: () => Promise<null>;
+            create: () => Promise<{ id: string }>;
+            update: () => Promise<{ id: string }>;
+          };
+          jobRequirement: {
+            deleteMany: () => Promise<{ count: number }>;
+            createMany: () => Promise<{ count: number }>;
+          };
+          jobSkill: {
+            deleteMany: () => Promise<{ count: number }>;
+            createMany: () => Promise<{ count: number }>;
+          };
+        }) => Promise<T>,
+        options?: { timeout?: number }
+      ) => {
+        observed.transactionOptions.push(options ?? {});
+        let chunkSize = 0;
+        const tx = {
+          sourcePlatform: {
+            upsert: () => Promise.resolve({ id: "source-1" })
+          },
+          company: {
+            findFirst: () => Promise.resolve(null),
+            create: () => Promise.resolve({ id: "company-1" }),
+            update: () => Promise.resolve({ id: "company-1" })
+          },
+          ingestionRun: {
+            upsert: () => Promise.resolve({})
+          },
+          jobListing: {
+            findFirst: () => Promise.resolve(null),
+            create: () => {
+              chunkSize += 1;
+              listingCursor += 1;
+              return Promise.resolve({ id: `job-listing-${listingCursor}` });
+            },
+            update: () => Promise.resolve({ id: "job-listing-existing" })
+          },
+          jobRequirement: {
+            deleteMany: () => Promise.resolve({ count: 0 }),
+            createMany: () => Promise.resolve({ count: 0 })
+          },
+          jobSkill: {
+            deleteMany: () => Promise.resolve({ count: 0 }),
+            createMany: () => Promise.resolve({ count: 0 })
+          }
+        };
+        const result = await callback(tx);
+        observed.chunkSizes.push(chunkSize);
+        return result;
+      }
+    };
+    const repository = new PrismaInternalRepository(client as never);
+
+    const result = await repository.syncScraperJobs(buildLargeSyncPayload(45));
+
+    expect(observed.chunkSizes).toEqual([20, 20, 5]);
+    expect(observed.transactionOptions).toEqual([
+      { timeout: 30000 },
+      { timeout: 30000 },
+      { timeout: 30000 }
+    ]);
+    expect(result).toMatchObject({
+      accepted: 45,
+      upserted: 45
+    });
+  });
 });
 
 function syncPayload(): ScraperJobsSyncInput {
@@ -219,5 +305,27 @@ function syncPayload(): ScraperJobsSyncInput {
         ]
       }
     ]
+  };
+}
+
+function buildLargeSyncPayload(total: number): ScraperJobsSyncInput {
+  const template = syncPayload().jobs[0]!;
+  return {
+    jobs: Array.from({ length: total }, (_, index) => ({
+      ...template,
+      sourcePlatform: { ...template.sourcePlatform },
+      company: { ...template.company },
+      ingestionRun: template.ingestionRun
+        ? { ...template.ingestionRun }
+        : undefined,
+      jobListing: {
+        ...template.jobListing,
+        externalJobId: `scraper-job-${index + 1}`,
+        sourceUrl: `https://glints.example/job-${index + 1}`,
+        externalApplyUrl: `https://glints.example/apply-${index + 1}`
+      },
+      requirements: [],
+      skills: []
+    }))
   };
 }
