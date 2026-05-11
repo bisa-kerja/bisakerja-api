@@ -181,7 +181,9 @@ describe("PrismaInternalRepository", () => {
             create: () => {
               chunkSize += 1;
               listingCursor += 1;
-              return Promise.resolve({ id: `job-listing-${listingCursor}` });
+              return Promise.resolve({
+                id: `job-listing-${String(listingCursor)}`
+              });
             },
             update: () => Promise.resolve({ id: "job-listing-existing" })
           },
@@ -309,23 +311,32 @@ function syncPayload(): ScraperJobsSyncInput {
 }
 
 function buildLargeSyncPayload(total: number): ScraperJobsSyncInput {
-  const template = syncPayload().jobs[0]!;
+  const [template] = syncPayload().jobs;
+
+  if (!template) {
+    throw new Error("Expected sync payload template to contain one job.");
+  }
+
   return {
-    jobs: Array.from({ length: total }, (_, index) => ({
-      ...template,
-      sourcePlatform: { ...template.sourcePlatform },
-      company: { ...template.company },
-      ingestionRun: template.ingestionRun
-        ? { ...template.ingestionRun }
-        : undefined,
-      jobListing: {
-        ...template.jobListing,
-        externalJobId: `scraper-job-${index + 1}`,
-        sourceUrl: `https://glints.example/job-${index + 1}`,
-        externalApplyUrl: `https://glints.example/apply-${index + 1}`
-      },
-      requirements: [],
-      skills: []
-    }))
+    jobs: Array.from({ length: total }, (_, index) => {
+      const jobNumber = String(index + 1);
+
+      return {
+        ...template,
+        sourcePlatform: { ...template.sourcePlatform },
+        company: { ...template.company },
+        ingestionRun: template.ingestionRun
+          ? { ...template.ingestionRun }
+          : undefined,
+        jobListing: {
+          ...template.jobListing,
+          externalJobId: `scraper-job-${jobNumber}`,
+          sourceUrl: `https://glints.example/job-${jobNumber}`,
+          externalApplyUrl: `https://glints.example/apply-${jobNumber}`
+        },
+        requirements: [],
+        skills: []
+      };
+    })
   };
 }
