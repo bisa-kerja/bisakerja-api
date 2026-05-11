@@ -146,6 +146,8 @@ If an extra helper starts being reused by multiple modules, move it to `src/shar
 
 Use `src/shared/constants/` for domain vocabulary that is referenced by multiple modules or by the shared layer itself. Use `src/shared/utils/` for generic helpers that are not owned by a single feature module.
 
+Avoid using module barrel exports as a transit path for request schemas or module-local constants in cross-module dependencies. If a value is shared by multiple modules, move it to `src/shared/constants/` first, then import it from shared.
+
 File responsibilities:
 
 | File                     | Responsibility                                                                                        |
@@ -211,6 +213,7 @@ Rules:
 - Repositories can import Prisma client, Prisma types, and module data-mapping helpers.
 - Integration clients can import config, logger, validation schemas, and HTTP helpers.
 - `app.ts` imports module routes through `src/modules/index.ts`.
+- Cross-module consumers should not depend on another module's request schemas or module-local constants through that module's `index.ts`; promote reusable vocabulary to `src/shared/constants/**`.
 
 Forbidden dependency direction:
 

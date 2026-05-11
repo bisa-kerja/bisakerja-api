@@ -2,9 +2,9 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/libs/prisma";
 import type { PrismaTransaction } from "@/shared/libs/prisma";
 import {
-  hiddenDetailStatus,
-  visibleListStatuses
-} from "@/modules/jobs/jobs.constants";
+  hiddenJobDetailStatus,
+  visibleJobListStatuses
+} from "@/shared/constants/domain-vocabulary";
 import type { ListJobsQueryInput } from "@/modules/jobs/jobs.schema";
 import type { JobRecord, JobsRepository } from "@/modules/jobs/jobs.types";
 
@@ -50,7 +50,7 @@ export class PrismaJobsRepository implements JobsRepository {
     const job = await this.client.jobListing.findFirst({
       where: {
         id: jobId,
-        NOT: { status: hiddenDetailStatus }
+        NOT: { status: hiddenJobDetailStatus }
       },
       include: jobInclude
     });
@@ -79,7 +79,7 @@ function buildListWhere(
   query: ListJobsQueryInput
 ): Prisma.JobListingWhereInput {
   const conditions: Prisma.JobListingWhereInput[] = [
-    { status: { in: [...visibleListStatuses] } }
+    { status: { in: [...visibleJobListStatuses] } }
   ];
 
   if (query.keyword) {

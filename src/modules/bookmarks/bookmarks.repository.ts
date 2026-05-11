@@ -1,5 +1,8 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { hiddenDetailStatus, visibleListStatuses } from "@/modules/jobs";
+import {
+  hiddenJobDetailStatus,
+  visibleJobListStatuses
+} from "@/shared/constants/domain-vocabulary";
 import type { JobRecord } from "@/modules/jobs";
 import type { ListBookmarksQueryInput } from "@/modules/bookmarks/bookmarks.schema";
 import type {
@@ -50,7 +53,7 @@ export class PrismaBookmarksRepository implements BookmarksRepository {
     const job = await this.client.jobListing.findFirst({
       where: {
         id: jobId,
-        status: { in: [...visibleListStatuses] }
+        status: { in: [...visibleJobListStatuses] }
       },
       include: jobInclude
     });
@@ -123,7 +126,7 @@ function buildListWhere(
     {
       userId,
       jobListing: {
-        NOT: { status: hiddenDetailStatus }
+        NOT: { status: hiddenJobDetailStatus }
       }
     }
   ];

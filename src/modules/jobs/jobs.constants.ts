@@ -1,7 +1,9 @@
 export {
   allowedEmploymentTypes,
   allowedExperienceLevels,
-  allowedWorkTypes
+  allowedWorkTypes,
+  hiddenJobDetailStatus as hiddenDetailStatus,
+  visibleJobListStatuses as visibleListStatuses
 } from "@/shared/constants/domain-vocabulary";
 
 export const allowedJobSorts = [
@@ -10,10 +12,6 @@ export const allowedJobSorts = [
   "salary_highest",
   "salary_lowest"
 ] as const;
-
-export const visibleListStatuses = ["ACTIVE", "STALE"] as const;
-
-export const hiddenDetailStatus = "HIDDEN";
 
 export const jobsErrorCodes = {
   jobNotFound: "JOB_NOT_FOUND"

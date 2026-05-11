@@ -23,3 +23,7 @@ export const allowedCareerStatuses = [
 ] as const;
 
 export const allowedSalaryPeriods = ["MONTHLY", "YEARLY"] as const;
+
+export const visibleJobListStatuses = ["ACTIVE", "STALE"] as const;
+
+export const hiddenJobDetailStatus = "HIDDEN";

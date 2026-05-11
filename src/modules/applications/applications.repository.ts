@@ -1,5 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { hiddenDetailStatus } from "@/modules/jobs";
+import { hiddenJobDetailStatus } from "@/shared/constants/domain-vocabulary";
 import type { JobRecord } from "@/modules/jobs";
 import type {
   CreateApplicationInput,
@@ -56,7 +56,7 @@ export class PrismaApplicationsRepository implements ApplicationsRepository {
     const job = await this.client.jobListing.findFirst({
       where: {
         id: jobId,
-        NOT: { status: hiddenDetailStatus }
+        NOT: { status: hiddenJobDetailStatus }
       },
       include: jobInclude
     });
@@ -224,7 +224,7 @@ function buildListWhere(
     {
       userId,
       jobListing: {
-        NOT: { status: hiddenDetailStatus }
+        NOT: { status: hiddenJobDetailStatus }
       }
     }
   ];

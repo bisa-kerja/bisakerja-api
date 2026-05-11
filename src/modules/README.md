@@ -52,6 +52,25 @@ Aturan:
 6. Vocabulary domain bersama seperti enum/allowed values yang dipakai lintas module atau oleh `src/shared/**` harus dipusatkan di `src/shared/constants/**`, bukan diduplikasi di beberapa module.
 7. Helper generik seperti normalisasi teks, filter serialization, atau presenter yang sudah dipakai lintas module harus dipusatkan di `src/shared/utils/**`.
 
+## Registry Exception Aktif
+
+Exception berikut dipertahankan secara eksplisit:
+
+- `health`
+  - Boleh tanpa `repository`, `schema`, dan `constants` selama hanya menangani health check tanpa payload domain kompleks.
+- `internal`
+  - Boleh memiliki `internal.middleware.ts` untuk boundary auth service-to-service.
+- `auth`
+  - Boleh memiliki adapter `auth.email.ts`.
+- `ai-cv-analyzer`
+  - Boleh memiliki adapter `ai-cv-analyzer.storage.ts`.
+- `jobs`
+  - Boleh memiliki `jobs.mapper.ts`.
+- `preferences`
+  - Boleh memiliki `preferences.utils.ts`.
+- `users`
+  - Boleh memiliki `users.utils.ts`.
+
 ## Peran Setiap Jenis File
 
 | File                     | Peran utama                                                           | Boleh bergantung pada                              | Tidak boleh dilakukan                                            |
@@ -185,6 +204,7 @@ Gunakan checklist ini saat review atau menambah module baru:
 9. Controller dan helper yang hanya dipakai oleh `route.ts` tetap dianggap internal module.
 10. Shared layer tidak boleh bergantung pada module constants atau module utils internal. Jika `src/shared/**` membutuhkan vocabulary domain, pindahkan vocabulary itu ke shared constants lebih dulu.
 11. Untuk module yang diuji dengan PostgreSQL nyata, test setup harus aman untuk rerun pada database seed yang sama. Normalisasi state test boleh dilakukan di helper atau preflight test, tetapi tidak boleh mengubah kontrak domain runtime.
+12. Hindari menjadikan `index.ts` module sebagai jalur ekspor default untuk `schema` dan `constants`. Jika consumer lintas module butuh vocabulary domain bersama, pindahkan dulu ke `src/shared/constants/**` lalu impor dari shared.
 
 ## Pola Implementasi yang Sudah Diterapkan (April 2026)
 
