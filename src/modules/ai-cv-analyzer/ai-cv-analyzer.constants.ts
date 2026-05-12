@@ -3,9 +3,10 @@ export const aiCvAnalyzerErrorCodes = {
 } as const;
 
 export const aiCvAnalyzerSuccessMessages = {
-  completed: "CV analysis completed successfully"
+  completed: "Analisis CV berhasil diselesaikan"
 } as const;
 
 export const defaultPersistCvAnalysisResult = false;
 export const defaultCvCompareSource = "JOB_SEARCH" as const;
-export const generatedCvUnavailableNote = "Generated CV is future scope.";
+export const generatedCvUnavailableNote =
+  "Fitur CV yang dihasilkan belum tersedia.";

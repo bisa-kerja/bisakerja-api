@@ -22,7 +22,7 @@ describe("route test harness", () => {
     expect(response.headers["x-request-id"]).toBe("req_harness_123");
     expect(response.body).toEqual({
       success: true,
-      message: "Service is live",
+      message: "Layanan aktif",
       data: {
         service: "bisakerja-api",
         status: "live",

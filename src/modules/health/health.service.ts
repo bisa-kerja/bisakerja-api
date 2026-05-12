@@ -45,7 +45,7 @@ export async function getReadinessPayload(
 
   if (postgresql.status !== "healthy" || redis.status !== "healthy") {
     throw new ServiceUnavailableError(
-      "Service is not ready",
+      "Layanan belum siap",
       "SERVICE_UNAVAILABLE",
       {
         dependencies: {

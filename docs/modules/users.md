@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/users.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-05-12
 ---
 
 # Users Module
@@ -206,7 +206,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Profile retrieved successfully",
+  "message": "Profil berhasil diambil",
   "data": {
     "id": "user_123",
     "username": "salman",

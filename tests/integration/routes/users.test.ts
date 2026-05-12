@@ -48,7 +48,7 @@ describe("users routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Profile retrieved successfully",
+      message: "Profil berhasil diambil",
       data: {
         id: "user-1",
         username: "salman",

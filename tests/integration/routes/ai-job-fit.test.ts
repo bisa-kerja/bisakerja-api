@@ -101,7 +101,7 @@ describe("ai job fit routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Job fit analysis completed successfully",
+      message: "Analisis kecocokan pekerjaan berhasil diselesaikan",
       data: {
         jobId: jobRecord().id,
         fitScore: 82,
@@ -138,7 +138,7 @@ describe("ai job fit routes", () => {
   test("isolates ai failure from jobs routes", async () => {
     const context = createAiJobFitRouteContext({
       analyzeJobFit: () =>
-        Promise.reject(new ServiceUnavailableError("Model API is unavailable"))
+        Promise.reject(new ServiceUnavailableError("Model API tidak tersedia"))
     });
 
     const aiResponse = await injectRoute(context.app, {

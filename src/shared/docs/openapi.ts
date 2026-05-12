@@ -102,9 +102,9 @@ function errorResponse(
 }
 
 function validationErrorResponse(examplePath: string, exampleMessage: string) {
-  return jsonResponse("Validation failed", ref("ErrorEnvelope"), {
+  return jsonResponse("Validasi gagal", ref("ErrorEnvelope"), {
     success: false,
-    message: "Validation failed",
+    message: "Validasi gagal",
     data: null,
     error: {
       code: "VALIDATION_ERROR",
@@ -122,11 +122,11 @@ function validationErrorResponse(examplePath: string, exampleMessage: string) {
 
 function authValidationAndRateLimitResponses() {
   return {
-    "422": validationErrorResponse("body", "Request payload is invalid"),
+    "422": validationErrorResponse("body", "Payload request tidak valid"),
     "429": errorResponse(
       "Rate limit exceeded.",
       "RATE_LIMITED",
-      "Too many requests",
+      "Terlalu banyak permintaan",
       {
         limit: "auth"
       }
@@ -511,7 +511,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("HealthLiveData"), nullSchema),
               {
                 success: true,
-                message: "Service is live",
+                message: "Layanan aktif",
                 data: {
                   service: "bisakerja-api",
                   status: "live",
@@ -535,7 +535,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("HealthReadyData"), nullSchema),
               {
                 success: true,
-                message: "Service is ready",
+                message: "Layanan siap",
                 data: {
                   service: "bisakerja-api",
                   status: "ready",
@@ -550,7 +550,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "503": errorResponse(
               "A required dependency is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Service is not ready",
+              "Layanan belum siap",
               {
                 dependencies: {
                   postgresql: "unhealthy"
@@ -588,7 +588,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 success: true,
                 message:
-                  "Account registered successfully. Please verify your email.",
+                  "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
                 data: {
                   user: {
                     ...authUserExample,
@@ -603,7 +603,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "409": errorResponse(
               "Email or username already exists.",
               "EMAIL_ALREADY_REGISTERED",
-              "Email is already registered"
+              "Email sudah terdaftar"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -645,7 +645,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Login successful",
+                  message: "Login berhasil",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -657,7 +657,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Credentials are invalid.",
               "INVALID_CREDENTIALS",
-              "Invalid credentials"
+              "Email, username, atau kata sandi tidak valid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -706,7 +706,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Session refreshed",
+                  message: "Sesi berhasil diperbarui",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -718,7 +718,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Refresh cookie is missing or invalid.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -756,7 +756,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 successEnvelopeSchema(nullSchema, nullSchema),
                 {
                   success: true,
-                  message: "Logout successful",
+                  message: "Logout berhasil",
                   data: null,
                   meta: null
                 }
@@ -785,7 +785,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 success: true,
                 message:
-                  "If the email is registered, password reset instructions will be sent.",
+                  "Jika email terdaftar, instruksi reset kata sandi akan dikirim.",
                 data: null,
                 meta: null
               }
@@ -813,7 +813,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(nullSchema, nullSchema),
               {
                 success: true,
-                message: "Password reset successful",
+                message: "Reset kata sandi berhasil",
                 data: null,
                 meta: null
               }
@@ -821,7 +821,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Reset token is expired or invalid.",
               "PASSWORD_RESET_TOKEN_INVALID",
-              "Password reset token is invalid"
+              "Token reset kata sandi tidak valid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -866,7 +866,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Email verified successfully",
+                  message: "Email berhasil diverifikasi",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -878,7 +878,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Email verification OTP is expired or invalid.",
               "EMAIL_VERIFICATION_INVALID",
-              "Email verification OTP is invalid"
+              "OTP verifikasi email tidak valid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -894,12 +894,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "501": errorResponse(
               "Google SSO is not configured.",
               "GOOGLE_SSO_NOT_CONFIGURED",
-              "Google SSO is not configured"
+              "Google SSO belum dikonfigurasi"
             ),
             "429": errorResponse(
               "Rate limit exceeded.",
               "RATE_LIMITED",
-              "Too many requests",
+              "Terlalu banyak permintaan",
               {
                 limit: "auth"
               }
@@ -974,11 +974,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Service token is missing or invalid.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "body.jobs",
-              "Request payload is invalid"
+              "Payload request tidak valid"
             )
           }
         }
@@ -1028,11 +1028,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Service token is missing or invalid.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "body.candidates",
-              "Request payload is invalid"
+              "Payload request tidak valid"
             )
           }
         }
@@ -1163,7 +1163,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Jobs retrieved successfully",
+                message: "Daftar lowongan berhasil diambil",
                 data: [jobCardExample],
                 meta: {
                   pagination: {
@@ -1184,7 +1184,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "salaryMax",
-              "salaryMax must be greater than or equal to salaryMin"
+              "salaryMax harus lebih besar atau sama dengan salaryMin"
             )
           }
         }
@@ -1209,7 +1209,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("JobDetail"), nullSchema),
               {
                 success: true,
-                message: "Job retrieved successfully",
+                message: "Lowongan berhasil diambil",
                 data: {
                   ...jobCardExample,
                   company: {
@@ -1233,9 +1233,9 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Job not found"
+              "Lowongan tidak ditemukan"
             ),
-            "422": validationErrorResponse("jobId", "Invalid UUID")
+            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
           }
         }
       },
@@ -1252,7 +1252,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profile retrieved successfully",
+                message: "Profil berhasil diambil",
                 data: currentUserExample,
                 meta: null
               }
@@ -1260,7 +1260,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             )
           }
         },
@@ -1284,7 +1284,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profile updated successfully",
+                message: "Profil berhasil diperbarui",
                 data: currentUserExample,
                 meta: null
               }
@@ -1292,16 +1292,16 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "409": errorResponse(
               "Username is already used.",
               "USERNAME_ALREADY_REGISTERED",
-              "Username is already registered"
+              "Username sudah terdaftar"
             ),
             "422": validationErrorResponse(
               "displayName",
-              "At least one field must be provided"
+              "Minimal satu field harus diisi"
             )
           }
         }
@@ -1328,7 +1328,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profile photo updated successfully",
+                message: "Foto profil berhasil diperbarui",
                 data: currentUserExample,
                 meta: null
               }
@@ -1336,9 +1336,9 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
-            "422": validationErrorResponse("mimeType", "Invalid option")
+            "422": validationErrorResponse("mimeType", "Nilai tidak didukung")
           }
         }
       },
@@ -1369,7 +1369,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Skills updated successfully",
+                message: "Keahlian berhasil diperbarui",
                 data: currentUserExample,
                 meta: null
               }
@@ -1377,11 +1377,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "skills.0.name",
-              "Duplicate skill names are not allowed"
+              "Nama keahlian tidak boleh duplikat"
             )
           }
         }
@@ -1414,7 +1414,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Experience updated successfully",
+                message: "Pengalaman berhasil diperbarui",
                 data: currentUserExample,
                 meta: null
               }
@@ -1422,11 +1422,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "experience.0.endDate",
-              "endDate must be greater than or equal to startDate"
+              "endDate harus lebih besar atau sama dengan startDate"
             )
           }
         }
@@ -1457,7 +1457,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Education updated successfully",
+                message: "Pendidikan berhasil diperbarui",
                 data: currentUserExample,
                 meta: null
               }
@@ -1465,11 +1465,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "education.0.endYear",
-              "endYear must be greater than or equal to startYear"
+              "endYear harus lebih besar atau sama dengan startYear"
             )
           }
         }
@@ -1487,7 +1487,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferences retrieved successfully",
+                message: "Preferensi berhasil diambil",
                 data: preferencesExample,
                 meta: null
               }
@@ -1495,12 +1495,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Preferences do not exist yet.",
               "PREFERENCES_NOT_FOUND",
-              "Preferences not found"
+              "Preferensi tidak ditemukan"
             )
           }
         },
@@ -1538,7 +1538,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferences saved successfully",
+                message: "Preferensi berhasil disimpan",
                 data: preferencesExample,
                 meta: null
               }
@@ -1546,11 +1546,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "salaryExpectation.max",
-              "salaryExpectation.max must be greater than or equal to salaryExpectation.min"
+              "salaryExpectation.max harus lebih besar atau sama dengan min"
             )
           }
         },
@@ -1573,7 +1573,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferences updated successfully",
+                message: "Preferensi berhasil diperbarui",
                 data: {
                   ...preferencesExample,
                   workTypes: ["REMOTE"],
@@ -1585,11 +1585,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "422": validationErrorResponse(
               "workTypes",
-              "Request payload is invalid"
+              "Payload request tidak valid"
             )
           }
         }
@@ -1644,7 +1644,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Bookmarks retrieved successfully",
+                message: "Daftar bookmark berhasil diambil",
                 data: [bookmarkExample],
                 meta: {
                   pagination: {
@@ -1665,9 +1665,9 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
-            "422": validationErrorResponse("sort", "Invalid option")
+            "422": validationErrorResponse("sort", "Nilai tidak didukung")
           }
         },
         post: {
@@ -1687,7 +1687,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("BookmarkSummary"), nullSchema),
               {
                 success: true,
-                message: "Job saved successfully",
+                message: "Lowongan berhasil disimpan",
                 data: {
                   id: "550e8400-e29b-41d4-a716-446655440040",
                   jobId: "550e8400-e29b-41d4-a716-446655440010",
@@ -1699,19 +1699,19 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Job not found"
+              "Lowongan tidak ditemukan"
             ),
             "409": errorResponse(
               "Bookmark already exists.",
               "BOOKMARK_ALREADY_EXISTS",
-              "Job is already saved"
+              "Bookmark sudah ada"
             ),
-            "422": validationErrorResponse("jobId", "Invalid UUID")
+            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
           }
         }
       },
@@ -1737,14 +1737,14 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Bookmark is not found.",
               "BOOKMARK_NOT_FOUND",
-              "Bookmark not found"
+              "Bookmark tidak ditemukan"
             ),
-            "422": validationErrorResponse("jobId", "Invalid UUID")
+            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
           }
         }
       },
@@ -1801,7 +1801,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Applications retrieved successfully",
+                message: "Daftar lamaran berhasil diambil",
                 data: [applicationExample],
                 meta: {
                   pagination: {
@@ -1822,9 +1822,9 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
-            "422": validationErrorResponse("status", "Invalid option")
+            "422": validationErrorResponse("status", "Nilai tidak didukung")
           }
         },
         post: {
@@ -1848,7 +1848,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Application created successfully",
+                message: "Lamaran berhasil dibuat",
                 data: applicationExample,
                 meta: null
               }
@@ -1856,19 +1856,19 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Job not found"
+              "Lowongan tidak ditemukan"
             ),
             "409": errorResponse(
               "Application is already tracked.",
               "APPLICATION_ALREADY_TRACKED",
-              "Application is already tracked"
+              "Lamaran sudah dilacak"
             ),
-            "422": validationErrorResponse("jobId", "Invalid UUID")
+            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
           }
         }
       },
@@ -1900,7 +1900,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Application updated successfully",
+                message: "Lamaran berhasil diperbarui",
                 data: {
                   ...applicationExample,
                   notes: "Recruiter replied and asked for availability.",
@@ -1912,16 +1912,16 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Application is not found.",
               "APPLICATION_NOT_FOUND",
-              "Application not found"
+              "Lamaran tidak ditemukan"
             ),
             "422": validationErrorResponse(
               "body",
-              "At least one field must be provided"
+              "Minimal satu field harus diisi"
             )
           }
         }
@@ -1954,7 +1954,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Application status updated successfully",
+                message: "Status lamaran berhasil diperbarui",
                 data: {
                   ...applicationExample,
                   status: "INTERVIEW",
@@ -1966,19 +1966,19 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Application is not found.",
               "APPLICATION_NOT_FOUND",
-              "Application not found"
+              "Lamaran tidak ditemukan"
             ),
             "409": errorResponse(
               "Requested status transition is not allowed.",
               "APPLICATION_STATUS_CONFLICT",
-              "Application status transition is not allowed"
+              "Perubahan status lamaran tidak valid"
             ),
-            "422": validationErrorResponse("status", "Invalid option")
+            "422": validationErrorResponse("status", "Nilai tidak didukung")
           }
         }
       },
@@ -2002,7 +2002,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("JobFitAnalysis"), nullSchema),
               {
                 success: true,
-                message: "Job fit analysis completed successfully",
+                message: "Analisis kecocokan pekerjaan berhasil diselesaikan",
                 data: jobFitExample,
                 meta: null
               }
@@ -2010,28 +2010,28 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Job not found"
+              "Lowongan tidak ditemukan"
             ),
             "409": errorResponse(
               "User profile is incomplete.",
               "PROFILE_INCOMPLETE",
-              "Profile is incomplete"
+              "Data profil belum lengkap untuk analisis kecocokan pekerjaan"
             ),
-            "422": validationErrorResponse("jobId", "Invalid UUID"),
+            "422": validationErrorResponse("jobId", "Format UUID tidak valid"),
             "502": errorResponse(
               "Downstream response is invalid.",
               "DOWNSTREAM_ERROR",
-              "Downstream dependency returned an invalid response"
+              "Model API mengembalikan data response yang tidak valid"
             ),
             "503": errorResponse(
               "Model API is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Service is unavailable"
+              "Model API tidak tersedia"
             )
           }
         }
@@ -2062,7 +2062,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CvAnalysis"), nullSchema),
               {
                 success: true,
-                message: "CV analysis completed successfully",
+                message: "Analisis CV berhasil diselesaikan",
                 data: cvAnalysisExample,
                 meta: null
               }
@@ -2070,17 +2070,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Authentication required"
+              "Autentikasi diperlukan"
             ),
             "404": errorResponse(
               "Job or bookmark is not found.",
               "BOOKMARK_NOT_FOUND",
-              "Bookmark not found"
+              "Bookmark tidak ditemukan"
             ),
             "413": errorResponse(
               "Uploaded CV exceeds the configured limit.",
               "PAYLOAD_TOO_LARGE",
-              "CV file exceeds the maximum allowed size",
+              "Ukuran file CV melebihi batas maksimum",
               {
                 path: "cvFile",
                 maxBytes: config.uploads.cvUploadMaxBytes
@@ -2088,17 +2088,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "cvFile",
-              "A PDF CV file is required for analysis"
+              "File CV PDF diperlukan untuk analisis"
             ),
             "502": errorResponse(
               "Downstream response is invalid.",
               "DOWNSTREAM_ERROR",
-              "Downstream dependency returned an invalid response"
+              "Model API mengembalikan data response yang tidak valid"
             ),
             "503": errorResponse(
               "Model API is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Service is unavailable"
+              "Model API tidak tersedia"
             )
           }
         }

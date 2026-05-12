@@ -2,12 +2,12 @@ import { z } from "zod";
 
 const passwordSchema = z
   .string()
-  .min(12, "Password must be at least 12 characters")
-  .max(128, "Password must be at most 128 characters")
-  .regex(/[a-z]/, "Password must contain a lowercase letter")
-  .regex(/[A-Z]/, "Password must contain an uppercase letter")
-  .regex(/[0-9]/, "Password must contain a number")
-  .regex(/[^A-Za-z0-9]/, "Password must contain a symbol");
+  .min(12, "Kata sandi minimal 12 karakter")
+  .max(128, "Kata sandi maksimal 128 karakter")
+  .regex(/[a-z]/, "Kata sandi harus mengandung huruf kecil")
+  .regex(/[A-Z]/, "Kata sandi harus mengandung huruf besar")
+  .regex(/[0-9]/, "Kata sandi harus mengandung angka")
+  .regex(/[^A-Za-z0-9]/, "Kata sandi harus mengandung simbol");
 
 const usernameSchema = z
   .string()
@@ -16,7 +16,7 @@ const usernameSchema = z
   .max(30)
   .regex(
     /^[a-z0-9_]+$/,
-    "Username may contain lowercase letters, numbers, and underscores"
+    "Username hanya boleh berisi huruf kecil, angka, dan underscore"
   )
   .transform((value) => value.toLowerCase());
 
@@ -31,13 +31,13 @@ export const registerSchema = z
       .trim()
       .min(8)
       .max(20)
-      .regex(/^\+?62[0-9]{7,16}$/, "Phone number must be an Indonesian number"),
+      .regex(/^\+?62[0-9]{7,16}$/, "Nomor telepon harus nomor Indonesia"),
     password: passwordSchema,
     confirmPassword: z.string()
   })
   .refine((value) => value.password === value.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Password confirmation does not match"
+    message: "Konfirmasi kata sandi tidak sesuai"
   });
 
 export const loginSchema = z.strictObject({
@@ -62,7 +62,7 @@ export const resetPasswordSchema = z
   })
   .refine((value) => value.password === value.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Password confirmation does not match"
+    message: "Konfirmasi kata sandi tidak sesuai"
   });
 
 export const verifyEmailSchema = z.strictObject({
@@ -70,7 +70,7 @@ export const verifyEmailSchema = z.strictObject({
   otp: z
     .string()
     .trim()
-    .regex(/^[0-9]{6}$/, "OTP must contain 6 digits")
+    .regex(/^[0-9]{6}$/, "OTP harus terdiri dari 6 digit")
 });
 
 export const emptyBodySchema = z.strictObject({}).optional();

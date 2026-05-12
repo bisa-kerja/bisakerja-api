@@ -30,7 +30,7 @@ describe("internal routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Scraper jobs synced successfully",
+      message: "Lowongan dari scraper berhasil disinkronkan",
       data: {
         accepted: 1,
         upserted: 1,
@@ -107,7 +107,7 @@ describe("internal routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Notification events accepted",
+      message: "Event notifikasi diterima",
       data: {
         accepted: 1,
         runId: "run-1"

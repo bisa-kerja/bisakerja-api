@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-cv-analyzer.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # AI CV Analyzer Module
@@ -155,7 +155,7 @@ Payload rules:
 ```json
 {
   "success": true,
-  "message": "CV analysis completed successfully",
+  "message": "Analisis CV berhasil diselesaikan",
   "data": {
     "jobId": "11111111-1111-4111-8111-111111111111",
     "language": "id",

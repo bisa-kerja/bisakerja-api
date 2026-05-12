@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/testing.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Backend API Testing Strategy
@@ -305,7 +305,7 @@ describe("health routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       success: true,
-      message: "Service is live",
+      message: "Layanan aktif",
       data: {
         service: "bisakerja-api",
         status: "live",

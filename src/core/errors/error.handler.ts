@@ -17,7 +17,7 @@ function normalizeError(error: unknown): AppError {
   return new AppError({
     statusCode: 500,
     code: "INTERNAL_SERVER_ERROR",
-    message: "Unexpected server error",
+    message: "Terjadi kesalahan pada server",
     details: null,
     isOperational: false
   });

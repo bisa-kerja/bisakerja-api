@@ -32,19 +32,22 @@ export class AiJobFitService {
     const job = await this.repository.findVisibleJob(input.jobId);
 
     if (!job) {
-      throw new NotFoundError("Job not found", jobsErrorCodes.jobNotFound);
+      throw new NotFoundError(
+        "Lowongan tidak ditemukan",
+        jobsErrorCodes.jobNotFound
+      );
     }
 
     if (!context || !hasRequiredProfileContext(context)) {
       throw new ConflictError(
-        "Profile data is incomplete for job fit analysis",
+        "Data profil belum lengkap untuk analisis kecocokan pekerjaan",
         aiJobFitErrorCodes.profileIncomplete
       );
     }
 
     if (!context.preference || !hasRequiredPreferenceContext(context)) {
       throw new ConflictError(
-        "Preferences are incomplete for job fit analysis",
+        "Data preferensi belum lengkap untuk analisis kecocokan pekerjaan",
         aiJobFitErrorCodes.preferencesIncomplete
       );
     }

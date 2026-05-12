@@ -67,7 +67,7 @@ describe("preferences routes", () => {
     expect(created.status).toBe(200);
     expect(created.body).toMatchObject({
       success: true,
-      message: "Preferences saved successfully",
+      message: "Preferensi berhasil disimpan",
       data: {
         careerStatus: "FRESH_GRADUATE",
         targetRoles: ["Backend Developer"],
@@ -93,7 +93,7 @@ describe("preferences routes", () => {
     expect(read.status).toBe(200);
     expect(read.body).toMatchObject({
       success: true,
-      message: "Preferences retrieved successfully",
+      message: "Preferensi berhasil diambil",
       data: {
         id: "pref-user-1",
         targetRoles: ["Backend Developer"]
@@ -156,7 +156,7 @@ describe("preferences routes", () => {
     expect(patched.status).toBe(200);
     expect(patched.body).toMatchObject({
       success: true,
-      message: "Preferences updated successfully",
+      message: "Preferensi berhasil diperbarui",
       data: {
         targetRoles: ["Backend Developer"],
         salaryExpectation: {

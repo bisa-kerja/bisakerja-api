@@ -22,7 +22,7 @@ function createLimiter(
       res.locals.errorCode = "RATE_LIMITED";
 
       res.status(429).json(
-        errorResponse("Too many requests", "RATE_LIMITED", requestId, {
+        errorResponse("Terlalu banyak permintaan", "RATE_LIMITED", requestId, {
           limit: identifier
         })
       );

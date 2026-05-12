@@ -26,7 +26,7 @@ describe("jobs routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Jobs retrieved successfully",
+      message: "Daftar lowongan berhasil diambil",
       meta: {
         pagination: {
           page: 1,
@@ -135,7 +135,7 @@ describe("jobs routes", () => {
     expect(detail.status).toBe(200);
     expect(detail.body).toMatchObject({
       success: true,
-      message: "Job retrieved successfully",
+      message: "Lowongan berhasil diambil",
       data: {
         title: "Backend Developer",
         company: {

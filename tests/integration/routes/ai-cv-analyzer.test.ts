@@ -149,7 +149,7 @@ describe("ai cv analyzer routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "CV analysis completed successfully",
+      message: "Analisis CV berhasil diselesaikan",
       data: {
         jobId: jobRecord().id,
         language: "id",
@@ -168,7 +168,7 @@ describe("ai cv analyzer routes", () => {
   test("isolates ai failure from jobs routes", async () => {
     const context = createAiCvAnalyzerRouteContext({
       analyzeCv: () =>
-        Promise.reject(new ServiceUnavailableError("Model API is unavailable"))
+        Promise.reject(new ServiceUnavailableError("Model API tidak tersedia"))
     });
 
     const aiResponse = await injectRoute(context.app, {

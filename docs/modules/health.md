@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/health.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Health Module
@@ -49,7 +49,7 @@ The Health module does not own:
 ```json
 {
   "success": true,
-  "message": "Service is live",
+  "message": "Layanan aktif",
   "data": {
     "service": "bisakerja-api",
     "status": "live",
@@ -66,7 +66,7 @@ The Health module does not own:
 ```json
 {
   "success": true,
-  "message": "Service is ready",
+  "message": "Layanan siap",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",

@@ -15,7 +15,7 @@ const usernameSchema = z
   .max(30)
   .regex(
     /^[a-z0-9_]+$/,
-    "Username may contain lowercase letters, numbers, and underscores"
+    "Username hanya boleh berisi huruf kecil, angka, dan underscore"
   )
   .transform((value) => value.toLowerCase());
 
@@ -24,7 +24,7 @@ const phoneNumberSchema = z
   .trim()
   .min(8)
   .max(20)
-  .regex(/^\+?62[0-9]{7,16}$/, "Phone number must be an Indonesian number");
+  .regex(/^\+?62[0-9]{7,16}$/, "Nomor telepon harus nomor Indonesia");
 
 const displayNameSchema = z.string().trim().min(1).max(80);
 
@@ -35,7 +35,7 @@ export const updateCurrentUserSchema = z
     displayName: displayNameSchema.optional()
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: "At least one field must be provided"
+    message: "Minimal satu field harus diisi"
   });
 
 export const upsertProfilePhotoSchema = z.strictObject({
@@ -46,7 +46,7 @@ export const upsertProfilePhotoSchema = z.strictObject({
     .max(512)
     .regex(
       /^[A-Za-z0-9/_\-.]+$/,
-      "Storage key may only contain letters, numbers, slash, underscore, dash, and dot"
+      "Storage key hanya boleh berisi huruf, angka, garis miring, underscore, dash, dan titik"
     ),
   url: z.url().max(1024).nullable().optional(),
   mimeType: z.enum(allowedProfilePhotoMimeTypes),
@@ -75,7 +75,7 @@ export const replaceSkillsSchema = z
         context.addIssue({
           code: "custom",
           path: ["skills", index, "name"],
-          message: "Duplicate skill names are not allowed"
+          message: "Nama keahlian tidak boleh duplikat"
         });
       }
       seen.add(slug);
@@ -119,7 +119,7 @@ const experienceItemSchema = z
         context.addIssue({
           code: "custom",
           path: ["endDate"],
-          message: "endDate must be greater than or equal to startDate"
+          message: "endDate harus lebih besar atau sama dengan startDate"
         });
       }
     }
@@ -128,7 +128,7 @@ const experienceItemSchema = z
       context.addIssue({
         code: "custom",
         path: ["endDate"],
-        message: "endDate must be empty when isCurrent is true"
+        message: "endDate harus kosong saat isCurrent bernilai true"
       });
     }
   });
@@ -166,7 +166,7 @@ const educationItemSchema = z
       context.addIssue({
         code: "custom",
         path: ["endYear"],
-        message: "endYear must be greater than or equal to startYear"
+        message: "endYear harus lebih besar atau sama dengan startYear"
       });
     }
   });

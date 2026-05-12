@@ -28,7 +28,7 @@ describe("health routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       success: true,
-      message: "Service is ready",
+      message: "Layanan siap",
       data: {
         service: "bisakerja-api",
         status: "ready",
@@ -65,7 +65,7 @@ describe("health routes", () => {
     expect(response.status).toBe(503);
     expect(response.body).toEqual({
       success: false,
-      message: "Service is not ready",
+      message: "Layanan belum siap",
       data: null,
       error: {
         code: "SERVICE_UNAVAILABLE",

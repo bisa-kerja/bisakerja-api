@@ -20,7 +20,7 @@ describe("runtime routes and middleware", () => {
     expect(response.headers["x-request-id"]).toStartWith("req_");
     expect(response.body).toEqual({
       success: true,
-      message: "Service is live",
+      message: "Layanan aktif",
       data: {
         service: "bisakerja-api",
         status: "live",
@@ -86,7 +86,7 @@ describe("runtime routes and middleware", () => {
     expect(response.status).toBe(404);
     expect(response.body).toEqual({
       success: false,
-      message: "Route not found",
+      message: "Route tidak ditemukan",
       data: null,
       error: {
         code: "NOT_FOUND",
@@ -178,7 +178,7 @@ describe("runtime routes and middleware", () => {
     expect(second.status).toBe(429);
     expect(second.body).toEqual({
       success: false,
-      message: "Too many requests",
+      message: "Terlalu banyak permintaan",
       data: null,
       error: {
         code: "RATE_LIMITED",

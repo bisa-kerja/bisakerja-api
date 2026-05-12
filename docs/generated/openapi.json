@@ -69,7 +69,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Service is live",
+                  "message": "Layanan aktif",
                   "data": {
                     "service": "bisakerja-api",
                     "status": "live",
@@ -106,7 +106,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Service is ready",
+                  "message": "Layanan siap",
                   "data": {
                     "service": "bisakerja-api",
                     "status": "ready",
@@ -125,7 +125,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Service is not ready",
+                  "message": "Layanan belum siap",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",
@@ -189,7 +189,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Account registered successfully. Please verify your email.",
+                  "message": "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -217,7 +217,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Email is already registered",
+                  "message": "Email sudah terdaftar",
                   "data": null,
                   "error": {
                     "code": "EMAIL_ALREADY_REGISTERED",
@@ -229,20 +229,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -259,7 +259,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -324,7 +324,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Login successful",
+                  "message": "Login berhasil",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -352,7 +352,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Invalid credentials",
+                  "message": "Email, username, atau kata sandi tidak valid",
                   "data": null,
                   "error": {
                     "code": "INVALID_CREDENTIALS",
@@ -364,20 +364,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -394,7 +394,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -457,7 +457,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Session refreshed",
+                  "message": "Sesi berhasil diperbarui",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -485,7 +485,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -497,20 +497,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -527,7 +527,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -580,7 +580,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Logout successful",
+                  "message": "Logout berhasil",
                   "data": null,
                   "meta": null
                 }
@@ -588,20 +588,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -618,7 +618,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -666,7 +666,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "If the email is registered, password reset instructions will be sent.",
+                  "message": "Jika email terdaftar, instruksi reset kata sandi akan dikirim.",
                   "data": null,
                   "meta": null
                 }
@@ -674,20 +674,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -704,7 +704,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -754,7 +754,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Password reset successful",
+                  "message": "Reset kata sandi berhasil",
                   "data": null,
                   "meta": null
                 }
@@ -768,7 +768,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Password reset token is invalid",
+                  "message": "Token reset kata sandi tidak valid",
                   "data": null,
                   "error": {
                     "code": "PASSWORD_RESET_TOKEN_INVALID",
@@ -780,20 +780,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -810,7 +810,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -872,7 +872,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Email verified successfully",
+                  "message": "Email berhasil diverifikasi",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -900,7 +900,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Email verification OTP is invalid",
+                  "message": "OTP verifikasi email tidak valid",
                   "data": null,
                   "error": {
                     "code": "EMAIL_VERIFICATION_INVALID",
@@ -912,20 +912,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -942,7 +942,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -969,7 +969,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Too many requests",
+                  "message": "Terlalu banyak permintaan",
                   "data": null,
                   "error": {
                     "code": "RATE_LIMITED",
@@ -987,7 +987,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Google SSO is not configured",
+                  "message": "Google SSO belum dikonfigurasi",
                   "data": null,
                   "error": {
                     "code": "GOOGLE_SSO_NOT_CONFIGURED",
@@ -1146,7 +1146,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -1158,20 +1158,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body.jobs",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -1262,7 +1262,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -1274,20 +1274,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body.candidates",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -1454,7 +1454,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Jobs retrieved successfully",
+                  "message": "Daftar lowongan berhasil diambil",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440010",
@@ -1506,20 +1506,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "salaryMax",
-                        "message": "salaryMax must be greater than or equal to salaryMin",
+                        "message": "salaryMax harus lebih besar atau sama dengan salaryMin",
                         "code": "invalid_type"
                       }
                     ],
@@ -1567,7 +1567,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Job retrieved successfully",
+                  "message": "Lowongan berhasil diambil",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440010",
                     "title": "Backend Developer",
@@ -1623,7 +1623,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Job not found",
+                  "message": "Lowongan tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -1635,20 +1635,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Invalid UUID",
+                        "message": "Format UUID tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -1685,7 +1685,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Profile retrieved successfully",
+                  "message": "Profil berhasil diambil",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -1748,7 +1748,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -1799,7 +1799,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Profile updated successfully",
+                  "message": "Profil berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -1862,7 +1862,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -1880,7 +1880,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Username is already registered",
+                  "message": "Username sudah terdaftar",
                   "data": null,
                   "error": {
                     "code": "USERNAME_ALREADY_REGISTERED",
@@ -1892,20 +1892,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "displayName",
-                        "message": "At least one field must be provided",
+                        "message": "Minimal satu field harus diisi",
                         "code": "invalid_type"
                       }
                     ],
@@ -1958,7 +1958,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Profile photo updated successfully",
+                  "message": "Foto profil berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2021,7 +2021,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2033,20 +2033,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "mimeType",
-                        "message": "Invalid option",
+                        "message": "Nilai tidak didukung",
                         "code": "invalid_type"
                       }
                     ],
@@ -2097,7 +2097,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Skills updated successfully",
+                  "message": "Keahlian berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2160,7 +2160,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2172,20 +2172,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "skills.0.name",
-                        "message": "Duplicate skill names are not allowed",
+                        "message": "Nama keahlian tidak boleh duplikat",
                         "code": "invalid_type"
                       }
                     ],
@@ -2245,7 +2245,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Experience updated successfully",
+                  "message": "Pengalaman berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2308,7 +2308,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2320,20 +2320,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "experience.0.endDate",
-                        "message": "endDate must be greater than or equal to startDate",
+                        "message": "endDate harus lebih besar atau sama dengan startDate",
                         "code": "invalid_type"
                       }
                     ],
@@ -2391,7 +2391,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Education updated successfully",
+                  "message": "Pendidikan berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2454,7 +2454,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2466,20 +2466,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "education.0.endYear",
-                        "message": "endYear must be greater than or equal to startYear",
+                        "message": "endYear harus lebih besar atau sama dengan startYear",
                         "code": "invalid_type"
                       }
                     ],
@@ -2516,7 +2516,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Preferences retrieved successfully",
+                  "message": "Preferensi berhasil diambil",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440030",
                     "careerStatus": "FRESH_GRADUATE",
@@ -2551,7 +2551,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2569,7 +2569,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Preferences not found",
+                  "message": "Preferensi tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "PREFERENCES_NOT_FOUND",
@@ -2631,7 +2631,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Preferences saved successfully",
+                  "message": "Preferensi berhasil disimpan",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440030",
                     "careerStatus": "FRESH_GRADUATE",
@@ -2666,7 +2666,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2678,20 +2678,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "salaryExpectation.max",
-                        "message": "salaryExpectation.max must be greater than or equal to salaryExpectation.min",
+                        "message": "salaryExpectation.max harus lebih besar atau sama dengan min",
                         "code": "invalid_type"
                       }
                     ],
@@ -2740,7 +2740,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Preferences updated successfully",
+                  "message": "Preferensi berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440030",
                     "careerStatus": "FRESH_GRADUATE",
@@ -2775,7 +2775,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2787,20 +2787,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "workTypes",
-                        "message": "Request payload is invalid",
+                        "message": "Payload request tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -2894,7 +2894,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Bookmarks retrieved successfully",
+                  "message": "Daftar bookmark berhasil diambil",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440040",
@@ -2956,7 +2956,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -2968,20 +2968,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "sort",
-                        "message": "Invalid option",
+                        "message": "Nilai tidak didukung",
                         "code": "invalid_type"
                       }
                     ],
@@ -3025,7 +3025,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Job saved successfully",
+                  "message": "Lowongan berhasil disimpan",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440040",
                     "jobId": "550e8400-e29b-41d4-a716-446655440010",
@@ -3043,7 +3043,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -3061,7 +3061,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Job not found",
+                  "message": "Lowongan tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -3079,7 +3079,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Job is already saved",
+                  "message": "Bookmark sudah ada",
                   "data": null,
                   "error": {
                     "code": "BOOKMARK_ALREADY_EXISTS",
@@ -3091,20 +3091,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Invalid UUID",
+                        "message": "Format UUID tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -3144,7 +3144,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -3162,7 +3162,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Bookmark not found",
+                  "message": "Bookmark tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "BOOKMARK_NOT_FOUND",
@@ -3174,20 +3174,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Invalid UUID",
+                        "message": "Format UUID tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -3283,7 +3283,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Applications retrieved successfully",
+                  "message": "Daftar lamaran berhasil diambil",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440050",
@@ -3349,7 +3349,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -3361,20 +3361,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "status",
-                        "message": "Invalid option",
+                        "message": "Nilai tidak didukung",
                         "code": "invalid_type"
                       }
                     ],
@@ -3427,7 +3427,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Application created successfully",
+                  "message": "Lamaran berhasil dibuat",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440050",
                     "status": "APPLIED",
@@ -3480,7 +3480,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -3498,7 +3498,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Job not found",
+                  "message": "Lowongan tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -3516,7 +3516,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Application is already tracked",
+                  "message": "Lamaran sudah dilacak",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_ALREADY_TRACKED",
@@ -3528,20 +3528,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Invalid UUID",
+                        "message": "Format UUID tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -3606,7 +3606,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Application updated successfully",
+                  "message": "Lamaran berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440050",
                     "status": "APPLIED",
@@ -3659,7 +3659,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -3677,7 +3677,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Application not found",
+                  "message": "Lamaran tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_NOT_FOUND",
@@ -3689,20 +3689,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "body",
-                        "message": "At least one field must be provided",
+                        "message": "Minimal satu field harus diisi",
                         "code": "invalid_type"
                       }
                     ],
@@ -3767,7 +3767,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Application status updated successfully",
+                  "message": "Status lamaran berhasil diperbarui",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440050",
                     "status": "INTERVIEW",
@@ -3820,7 +3820,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -3838,7 +3838,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Application not found",
+                  "message": "Lamaran tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_NOT_FOUND",
@@ -3856,7 +3856,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Application status transition is not allowed",
+                  "message": "Perubahan status lamaran tidak valid",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_STATUS_CONFLICT",
@@ -3868,20 +3868,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "status",
-                        "message": "Invalid option",
+                        "message": "Nilai tidak didukung",
                         "code": "invalid_type"
                       }
                     ],
@@ -3930,7 +3930,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Job fit analysis completed successfully",
+                  "message": "Analisis kecocokan pekerjaan berhasil diselesaikan",
                   "data": {
                     "jobId": "550e8400-e29b-41d4-a716-446655440010",
                     "fitScore": 82,
@@ -3983,7 +3983,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -4001,7 +4001,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Job not found",
+                  "message": "Lowongan tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -4019,7 +4019,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Profile is incomplete",
+                  "message": "Data profil belum lengkap untuk analisis kecocokan pekerjaan",
                   "data": null,
                   "error": {
                     "code": "PROFILE_INCOMPLETE",
@@ -4031,20 +4031,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Invalid UUID",
+                        "message": "Format UUID tidak valid",
                         "code": "invalid_type"
                       }
                     ],
@@ -4061,7 +4061,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Downstream dependency returned an invalid response",
+                  "message": "Model API mengembalikan data response yang tidak valid",
                   "data": null,
                   "error": {
                     "code": "DOWNSTREAM_ERROR",
@@ -4079,7 +4079,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Service is unavailable",
+                  "message": "Model API tidak tersedia",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",
@@ -4128,7 +4128,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "CV analysis completed successfully",
+                  "message": "Analisis CV berhasil diselesaikan",
                   "data": {
                     "jobId": "550e8400-e29b-41d4-a716-446655440010",
                     "language": "id",
@@ -4192,7 +4192,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Authentication required",
+                  "message": "Autentikasi diperlukan",
                   "data": null,
                   "error": {
                     "code": "UNAUTHENTICATED",
@@ -4210,7 +4210,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Bookmark not found",
+                  "message": "Bookmark tidak ditemukan",
                   "data": null,
                   "error": {
                     "code": "BOOKMARK_NOT_FOUND",
@@ -4228,7 +4228,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "CV file exceeds the maximum allowed size",
+                  "message": "Ukuran file CV melebihi batas maksimum",
                   "data": null,
                   "error": {
                     "code": "PAYLOAD_TOO_LARGE",
@@ -4240,20 +4240,20 @@
             }
           },
           "422": {
-            "description": "Validation failed",
+            "description": "Validasi gagal",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Validation failed",
+                  "message": "Validasi gagal",
                   "data": null,
                   "error": {
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
                         "path": "cvFile",
-                        "message": "A PDF CV file is required for analysis",
+                        "message": "File CV PDF diperlukan untuk analisis",
                         "code": "invalid_type"
                       }
                     ],
@@ -4270,7 +4270,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Downstream dependency returned an invalid response",
+                  "message": "Model API mengembalikan data response yang tidak valid",
                   "data": null,
                   "error": {
                     "code": "DOWNSTREAM_ERROR",
@@ -4288,7 +4288,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Service is unavailable",
+                  "message": "Model API tidak tersedia",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",

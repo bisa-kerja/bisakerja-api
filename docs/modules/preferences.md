@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/preferences.md
-last_reviewed: 2026-04-23
+last_reviewed: 2026-05-12
 ---
 
 # Preferences Module
@@ -144,7 +144,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Preferences retrieved successfully",
+  "message": "Preferensi berhasil diambil",
   "data": {
     "id": "pref_123",
     "careerStatus": "FRESH_GRADUATE",

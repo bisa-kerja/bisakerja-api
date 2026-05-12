@@ -60,7 +60,7 @@ describe("applications routes", () => {
     expect(created.status).toBe(201);
     expect(created.body).toMatchObject({
       success: true,
-      message: "Application created successfully",
+      message: "Lamaran berhasil dibuat",
       data: {
         status: "APPLIED",
         source: "EXTERNAL_APPLY_CLICK",
@@ -148,7 +148,7 @@ describe("applications routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Applications retrieved successfully",
+      message: "Daftar lamaran berhasil diambil",
       data: [
         {
           status: "APPLIED",
@@ -196,7 +196,7 @@ describe("applications routes", () => {
     expect(updated.status).toBe(200);
     expect(updated.body).toMatchObject({
       success: true,
-      message: "Application updated successfully",
+      message: "Lamaran berhasil diperbarui",
       data: {
         id: application.id,
         notes: null,
@@ -246,7 +246,7 @@ describe("applications routes", () => {
     expect(updated.status).toBe(200);
     expect(updated.body).toMatchObject({
       success: true,
-      message: "Application status updated successfully",
+      message: "Status lamaran berhasil diperbarui",
       data: {
         id: application.id,
         status: "INTERVIEW",

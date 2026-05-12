@@ -34,10 +34,7 @@ export class UsersController {
     });
 
     res.json(
-      successResponse(
-        serializeCurrentUser(user),
-        "Profile retrieved successfully"
-      )
+      successResponse(serializeCurrentUser(user), "Profil berhasil diambil")
     );
   };
 
@@ -57,10 +54,7 @@ export class UsersController {
     });
 
     res.json(
-      successResponse(
-        serializeCurrentUser(user),
-        "Profile updated successfully"
-      )
+      successResponse(serializeCurrentUser(user), "Profil berhasil diperbarui")
     );
   };
 
@@ -82,7 +76,7 @@ export class UsersController {
     res.json(
       successResponse(
         serializeCurrentUser(user),
-        "Profile photo updated successfully"
+        "Foto profil berhasil diperbarui"
       )
     );
   };
@@ -109,7 +103,10 @@ export class UsersController {
     });
 
     res.json(
-      successResponse(serializeCurrentUser(user), "Skills updated successfully")
+      successResponse(
+        serializeCurrentUser(user),
+        "Keahlian berhasil diperbarui"
+      )
     );
   };
 
@@ -141,7 +138,7 @@ export class UsersController {
     res.json(
       successResponse(
         serializeCurrentUser(user),
-        "Experience updated successfully"
+        "Pengalaman berhasil diperbarui"
       )
     );
   };
@@ -172,7 +169,7 @@ export class UsersController {
     res.json(
       successResponse(
         serializeCurrentUser(user),
-        "Education updated successfully"
+        "Pendidikan berhasil diperbarui"
       )
     );
   };

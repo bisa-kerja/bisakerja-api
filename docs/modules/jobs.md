@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/jobs.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Jobs Module
@@ -104,7 +104,7 @@ If `relevance` is requested without a keyword, the API falls back to newest-firs
 ```json
 {
   "success": true,
-  "message": "Jobs retrieved successfully",
+  "message": "Daftar lowongan berhasil diambil",
   "data": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -169,7 +169,7 @@ List response rules:
 ```json
 {
   "success": true,
-  "message": "Job retrieved successfully",
+  "message": "Lowongan berhasil diambil",
   "data": {
     "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",

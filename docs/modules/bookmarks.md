@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/bookmarks.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Bookmarks Module
@@ -142,7 +142,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Bookmarks retrieved successfully",
+  "message": "Daftar bookmark berhasil diambil",
   "data": [
     {
       "id": "44444444-4444-4444-8444-444444444444",
@@ -205,7 +205,7 @@ Successful creation returns HTTP `201`.
 ```json
 {
   "success": true,
-  "message": "Job saved successfully",
+  "message": "Lowongan berhasil disimpan",
   "data": {
     "id": "44444444-4444-4444-8444-444444444444",
     "jobId": "11111111-1111-4111-8111-111111111111",

@@ -70,7 +70,7 @@ export class AuthService {
 
     if (existingEmail) {
       throw new ConflictError(
-        "Email is already registered",
+        "Email sudah terdaftar",
         authErrorCodes.emailAlreadyRegistered
       );
     }
@@ -81,7 +81,7 @@ export class AuthService {
 
     if (existingUsername) {
       throw new ConflictError(
-        "Username is already registered",
+        "Username sudah terdaftar",
         authErrorCodes.usernameAlreadyRegistered
       );
     }
@@ -250,14 +250,14 @@ export class AuthService {
 
     if (!token) {
       throw new BadRequestError(
-        "Password reset token is invalid",
+        "Token reset kata sandi tidak valid",
         authErrorCodes.passwordResetTokenInvalid
       );
     }
 
     if (token.expiresAt <= this.now()) {
       throw new BadRequestError(
-        "Password reset token has expired",
+        "Token reset kata sandi sudah kedaluwarsa",
         authErrorCodes.passwordResetTokenExpired
       );
     }
@@ -282,14 +282,14 @@ export class AuthService {
 
     if (!token) {
       throw new BadRequestError(
-        "Email verification OTP is invalid",
+        "OTP verifikasi email tidak valid",
         authErrorCodes.emailVerificationInvalid
       );
     }
 
     if (token.expiresAt <= this.now()) {
       throw new BadRequestError(
-        "Email verification OTP has expired",
+        "OTP verifikasi email sudah kedaluwarsa",
         authErrorCodes.emailVerificationExpired
       );
     }
@@ -303,7 +303,7 @@ export class AuthService {
 
   googleSsoPlaceholder(): never {
     throw new NotImplementedError(
-      "Google SSO is not configured",
+      "Google SSO belum dikonfigurasi",
       authErrorCodes.googleSsoNotConfigured
     );
   }
@@ -350,7 +350,7 @@ export class AuthService {
 
     if (!user.emailVerified) {
       throw new AuthorizationError(
-        "Email verification is required",
+        "Verifikasi email diperlukan",
         authErrorCodes.emailNotVerified
       );
     }
@@ -383,13 +383,13 @@ export class AuthService {
 
 function invalidCredentials() {
   return new AuthenticationError(
-    "Invalid email, username, or password",
+    "Email, username, atau kata sandi tidak valid",
     authErrorCodes.invalidCredentials
   );
 }
 
 function unauthenticated() {
-  return new AuthenticationError("Authentication required", "UNAUTHENTICATED");
+  return new AuthenticationError("Autentikasi diperlukan", "UNAUTHENTICATED");
 }
 
 function safeUser(user: AuthUserWithCredential): AuthUser {

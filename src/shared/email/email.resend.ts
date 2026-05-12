@@ -118,7 +118,7 @@ export class ResendEmailService implements EmailService {
     }
 
     throw new ServiceUnavailableError(
-      "Email delivery is temporarily unavailable",
+      "Pengiriman email sementara tidak tersedia",
       "EMAIL_DELIVERY_UNAVAILABLE"
     );
   }
@@ -129,7 +129,7 @@ function toResendErrorDetails(
 ): ResendErrorDetails {
   return (
     error ?? {
-      message: "Unknown Resend error",
+      message: "Error Resend tidak diketahui",
       name: "application_error",
       statusCode: 500
     }
@@ -165,14 +165,14 @@ function createEmailDeliveryError(
 
   if (retryable) {
     return new ServiceUnavailableError(
-      "Email delivery is temporarily unavailable",
+      "Pengiriman email sementara tidak tersedia",
       "EMAIL_DELIVERY_UNAVAILABLE",
       details
     );
   }
 
   return new DownstreamError(
-    "Email delivery failed",
+    "Pengiriman email gagal",
     "EMAIL_DELIVERY_FAILED",
     details
   );
@@ -180,12 +180,13 @@ function createEmailDeliveryError(
 
 function createRuntimeDeliveryError(error: unknown) {
   return new ServiceUnavailableError(
-    "Email delivery is temporarily unavailable",
+    "Pengiriman email sementara tidak tersedia",
     "EMAIL_DELIVERY_UNAVAILABLE",
     {
       provider: "resend",
       retryable: true,
-      cause: error instanceof Error ? error.message : "Unknown runtime error"
+      cause:
+        error instanceof Error ? error.message : "Error runtime tidak diketahui"
     }
   );
 }

@@ -43,7 +43,7 @@ export const analyzeCvSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["cvFileId"],
-        message: "cvFileId is not supported for UPLOAD mode"
+        message: "cvFileId tidak didukung untuk mode UPLOAD"
       });
     }
   });

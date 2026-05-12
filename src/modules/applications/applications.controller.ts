@@ -50,11 +50,7 @@ export class ApplicationsController {
     });
 
     res.json(
-      listResponse(
-        result.data,
-        result.meta,
-        "Applications retrieved successfully"
-      )
+      listResponse(result.data, result.meta, "Daftar lamaran berhasil diambil")
     );
   };
 
@@ -104,7 +100,7 @@ export class ApplicationsController {
 
     res
       .status(201)
-      .json(createdResponse(application, "Application created successfully"));
+      .json(createdResponse(application, "Lamaran berhasil dibuat"));
   };
 
   updateApplication = async (req: Request, res: Response) => {
@@ -129,9 +125,7 @@ export class ApplicationsController {
       }
     });
 
-    res.json(
-      successResponse(application, "Application updated successfully", null)
-    );
+    res.json(successResponse(application, "Lamaran berhasil diperbarui", null));
   };
 
   updateApplicationStatus = async (req: Request, res: Response) => {
@@ -160,7 +154,7 @@ export class ApplicationsController {
     res.json(
       successResponse(
         result.application,
-        "Application status updated successfully",
+        "Status lamaran berhasil diperbarui",
         null
       )
     );

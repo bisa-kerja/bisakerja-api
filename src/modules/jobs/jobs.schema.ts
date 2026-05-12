@@ -44,7 +44,7 @@ export const listJobsQuerySchema = z
       context.addIssue({
         code: "custom",
         path: ["salaryMax"],
-        message: "salaryMax must be greater than or equal to salaryMin"
+        message: "salaryMax harus lebih besar atau sama dengan salaryMin"
       });
     }
   });

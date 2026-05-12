@@ -34,7 +34,7 @@ export const updateApplicationSchema = z
       context.addIssue({
         code: "custom",
         path: [],
-        message: "At least one field must be provided"
+        message: "Minimal satu field harus diisi"
       });
     }
   });

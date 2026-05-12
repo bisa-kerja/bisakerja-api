@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/applications.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Applications Module
@@ -197,7 +197,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Applications retrieved successfully",
+  "message": "Daftar lamaran berhasil diambil",
   "data": [
     {
       "id": "55555555-5555-4555-8555-555555555555",

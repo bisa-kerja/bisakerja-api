@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-job-fit.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # AI Job Fit Module
@@ -166,7 +166,7 @@ Payload rules:
 ```json
 {
   "success": true,
-  "message": "Job fit analysis completed successfully",
+  "message": "Analisis kecocokan pekerjaan berhasil diselesaikan",
   "data": {
     "jobId": "11111111-1111-4111-8111-111111111111",
     "fitScore": 82,

@@ -26,14 +26,14 @@ export function createHealthController(
             status: "live",
             env: config.app.env
           },
-          "Service is live"
+          "Layanan aktif"
         )
       );
     },
     ready: async (req, res) => {
       const payload = await getReadinessPayload(config, req.requestId, checks);
 
-      res.json(successResponse(payload, "Service is ready"));
+      res.json(successResponse(payload, "Layanan siap"));
     }
   };
 }

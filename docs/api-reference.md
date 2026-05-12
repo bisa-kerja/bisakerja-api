@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-reference.md
-last_reviewed: 2026-04-24
+last_reviewed: 2026-05-12
 ---
 
 # Backend API Reference
@@ -173,7 +173,7 @@ Successful readiness response:
 ```json
 {
   "success": true,
-  "message": "Service is ready",
+  "message": "Layanan siap",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",
@@ -191,7 +191,7 @@ Readiness failure response:
 ```json
 {
   "success": false,
-  "message": "Service is not ready",
+  "message": "Layanan belum siap",
   "data": null,
   "error": {
     "code": "SERVICE_UNAVAILABLE",

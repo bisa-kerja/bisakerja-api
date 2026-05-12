@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-response-standard.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Backend API Response Standard
@@ -44,7 +44,7 @@ Use this shape for single resource reads, mutations, and action responses that r
 ```json
 {
   "success": true,
-  "message": "Request completed successfully",
+  "message": "Permintaan berhasil diproses",
   "data": {
     "id": "11111111-1111-4111-8111-111111111111"
   },
@@ -59,7 +59,7 @@ Use HTTP `201` when a resource is created.
 ```json
 {
   "success": true,
-  "message": "Application record created successfully",
+  "message": "Lamaran berhasil dibuat",
   "data": {
     "id": "app_123",
     "status": "APPLIED"
@@ -81,7 +81,7 @@ Use this shape for paginated collection endpoints.
 ```json
 {
   "success": true,
-  "message": "Jobs retrieved successfully",
+  "message": "Daftar lowongan berhasil diambil",
   "data": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -184,14 +184,14 @@ All error responses must use this shape.
 ```json
 {
   "success": false,
-  "message": "Validation failed",
+  "message": "Validasi gagal",
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
       {
         "path": "email",
-        "message": "Invalid email address",
+        "message": "Format email tidak valid",
         "code": "invalid_string"
       }
     ],
@@ -222,14 +222,14 @@ Zod validation errors should use this detail shape:
 ```json
 {
   "success": false,
-  "message": "Validation failed",
+  "message": "Validasi gagal",
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
       {
         "path": "preferences.salaryMin",
-        "message": "Expected number, received string",
+        "message": "Tipe tidak sesuai: diharapkan angka, diterima teks",
         "code": "invalid_type"
       }
     ],
@@ -301,7 +301,7 @@ Authentication errors:
 ```json
 {
   "success": false,
-  "message": "Authentication required",
+  "message": "Autentikasi diperlukan",
   "data": null,
   "error": {
     "code": "UNAUTHENTICATED",
@@ -316,7 +316,7 @@ Authorization errors:
 ```json
 {
   "success": false,
-  "message": "You are not allowed to access this resource",
+  "message": "Anda tidak memiliki akses ke resource ini",
   "data": null,
   "error": {
     "code": "FORBIDDEN",
@@ -335,7 +335,7 @@ Model API unavailable:
 ```json
 {
   "success": false,
-  "message": "AI analysis service is temporarily unavailable",
+  "message": "Layanan analisis AI sementara tidak tersedia",
   "data": null,
   "error": {
     "code": "SERVICE_UNAVAILABLE",
@@ -352,7 +352,7 @@ Model API invalid response:
 ```json
 {
   "success": false,
-  "message": "AI analysis result could not be processed",
+  "message": "Hasil analisis AI tidak dapat diproses",
   "data": null,
   "error": {
     "code": "DOWNSTREAM_ERROR",

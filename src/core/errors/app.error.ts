@@ -19,7 +19,7 @@ export class AppError extends Error {
 
 export class BadRequestError extends AppError {
   constructor(
-    message = "Bad request",
+    message = "Permintaan tidak valid",
     code = "BAD_REQUEST",
     details: unknown = null
   ) {
@@ -29,7 +29,7 @@ export class BadRequestError extends AppError {
 
 export class AuthenticationError extends AppError {
   constructor(
-    message = "Authentication required",
+    message = "Autentikasi diperlukan",
     code = "UNAUTHENTICATED",
     details: unknown = null
   ) {
@@ -39,7 +39,7 @@ export class AuthenticationError extends AppError {
 
 export class AuthorizationError extends AppError {
   constructor(
-    message = "You are not allowed to access this resource",
+    message = "Anda tidak memiliki akses ke resource ini",
     code = "FORBIDDEN",
     details: unknown = null
   ) {
@@ -49,7 +49,7 @@ export class AuthorizationError extends AppError {
 
 export class NotFoundError extends AppError {
   constructor(
-    message = "Resource not found",
+    message = "Resource tidak ditemukan",
     code = "NOT_FOUND",
     details: unknown = null
   ) {
@@ -59,7 +59,7 @@ export class NotFoundError extends AppError {
 
 export class ConflictError extends AppError {
   constructor(
-    message = "Request conflicts with current state",
+    message = "Permintaan bertentangan dengan kondisi saat ini",
     code = "CONFLICT",
     details: unknown = null
   ) {
@@ -69,7 +69,7 @@ export class ConflictError extends AppError {
 
 export class PayloadTooLargeError extends AppError {
   constructor(
-    message = "Request body is too large",
+    message = "Payload terlalu besar",
     code = "PAYLOAD_TOO_LARGE",
     details: unknown = null
   ) {
@@ -78,14 +78,14 @@ export class PayloadTooLargeError extends AppError {
 }
 
 export class ValidationError extends AppError {
-  constructor(message = "Validation failed", details: unknown = null) {
+  constructor(message = "Validasi gagal", details: unknown = null) {
     super({ statusCode: 422, code: "VALIDATION_ERROR", message, details });
   }
 }
 
 export class RateLimitError extends AppError {
   constructor(
-    message = "Too many requests",
+    message = "Terlalu banyak permintaan",
     code = "RATE_LIMITED",
     details: unknown = null
   ) {
@@ -95,7 +95,7 @@ export class RateLimitError extends AppError {
 
 export class DownstreamError extends AppError {
   constructor(
-    message = "Downstream service failed",
+    message = "Layanan dependensi gagal",
     code = "DOWNSTREAM_ERROR",
     details: unknown = null
   ) {
@@ -105,7 +105,7 @@ export class DownstreamError extends AppError {
 
 export class ServiceUnavailableError extends AppError {
   constructor(
-    message = "Service temporarily unavailable",
+    message = "Layanan sementara tidak tersedia",
     code = "SERVICE_UNAVAILABLE",
     details: unknown = null
   ) {
@@ -115,7 +115,7 @@ export class ServiceUnavailableError extends AppError {
 
 export class NotImplementedError extends AppError {
   constructor(
-    message = "Feature is not available",
+    message = "Fitur belum tersedia",
     code = "NOT_IMPLEMENTED",
     details: unknown = null
   ) {

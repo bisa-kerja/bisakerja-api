@@ -50,7 +50,7 @@ describe("bookmarks routes", () => {
     expect(saved.status).toBe(201);
     expect(saved.body).toMatchObject({
       success: true,
-      message: "Job saved successfully",
+      message: "Lowongan berhasil disimpan",
       data: {
         jobId,
         createdAt: "2026-04-22T00:00:00.000Z"
@@ -116,7 +116,7 @@ describe("bookmarks routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Bookmarks retrieved successfully",
+      message: "Daftar bookmark berhasil diambil",
       data: [
         {
           id: "bookmark-user-1-11111111",

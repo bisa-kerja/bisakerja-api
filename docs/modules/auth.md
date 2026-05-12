@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/auth.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-05-12
 ---
 
 # Auth Module
@@ -179,7 +179,7 @@ Refresh cookies use the configured `AUTH_REFRESH_COOKIE_NAME`, `HttpOnly`, expli
 ```json
 {
   "success": true,
-  "message": "Account registered successfully. Please verify your email.",
+  "message": "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
   "data": {
     "user": {
       "id": "user_123",
@@ -206,7 +206,7 @@ The register session is access-token only. It does not set a refresh cookie and 
 ```json
 {
   "success": true,
-  "message": "Login successful",
+  "message": "Login berhasil",
   "data": {
     "user": {
       "id": "user_123",
@@ -231,7 +231,7 @@ The register session is access-token only. It does not set a refresh cookie and 
 ```json
 {
   "success": true,
-  "message": "Email verified successfully",
+  "message": "Email berhasil diverifikasi",
   "data": {
     "user": {
       "id": "user_123",

@@ -40,7 +40,7 @@ export function createModelApiClient(
 
         if (!mockResponse) {
           throw new ServiceUnavailableError(
-            "Model API mock response is not configured",
+            "Mock response Model API belum dikonfigurasi",
             "SERVICE_UNAVAILABLE",
             { dependency: "model-api", operation: "job-fit" }
           );
@@ -69,7 +69,7 @@ export function createModelApiClient(
 
         if (!mockResponse) {
           throw new ServiceUnavailableError(
-            "Model API mock response is not configured",
+            "Mock response Model API belum dikonfigurasi",
             "SERVICE_UNAVAILABLE",
             { dependency: "model-api", operation: "cv-analyzer" }
           );
@@ -148,7 +148,7 @@ async function requestModelApi<TPayload, TResponse>(
 
     if (error instanceof ZodError) {
       throw new DownstreamError(
-        "Model API returned invalid response data",
+        "Model API mengembalikan data response yang tidak valid",
         "DOWNSTREAM_ERROR",
         {
           dependency: "model-api",
@@ -165,7 +165,7 @@ async function requestModelApi<TPayload, TResponse>(
 
     if (isAbortError(error)) {
       throw new ServiceUnavailableError(
-        "Model API request timed out",
+        "Request ke Model API timeout",
         "SERVICE_UNAVAILABLE",
         {
           dependency: "model-api",
@@ -186,7 +186,7 @@ async function requestModelApi<TPayload, TResponse>(
     );
 
     throw new ServiceUnavailableError(
-      "Model API is unavailable",
+      "Model API tidak tersedia",
       "SERVICE_UNAVAILABLE",
       {
         dependency: "model-api",
@@ -204,7 +204,7 @@ function parseJsonBody(rawBody: string, operation: string): unknown {
     return rawBody ? (JSON.parse(rawBody) as unknown) : null;
   } catch {
     throw new DownstreamError(
-      "Model API returned invalid JSON",
+      "Model API mengembalikan JSON yang tidak valid",
       "DOWNSTREAM_ERROR",
       {
         dependency: "model-api",
@@ -228,14 +228,14 @@ function mapModelApiHttpError(
 
   if (statusCode >= 500) {
     return new ServiceUnavailableError(
-      "Model API is unavailable",
+      "Model API tidak tersedia",
       "SERVICE_UNAVAILABLE",
       details
     );
   }
 
   return new DownstreamError(
-    "Model API rejected the backend request",
+    "Model API menolak request dari backend",
     "DOWNSTREAM_ERROR",
     details
   );

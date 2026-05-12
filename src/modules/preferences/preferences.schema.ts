@@ -33,7 +33,7 @@ const targetRolesSchema = z
         context.addIssue({
           code: "custom",
           path: [index],
-          message: "Duplicate target roles are not allowed"
+          message: "Target role tidak boleh duplikat"
         });
       }
       seen.add(key);

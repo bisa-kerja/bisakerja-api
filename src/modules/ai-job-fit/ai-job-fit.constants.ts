@@ -4,7 +4,7 @@ export const aiJobFitErrorCodes = {
 } as const;
 
 export const aiJobFitSuccessMessages = {
-  completed: "Job fit analysis completed successfully"
+  completed: "Analisis kecocokan pekerjaan berhasil diselesaikan"
 } as const;
 
 export const defaultPersistJobFitResult = false;

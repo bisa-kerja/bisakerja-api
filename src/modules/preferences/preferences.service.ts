@@ -37,7 +37,7 @@ export class PreferencesService {
     input: PreferencePatchInput
   ): Promise<PreferenceRecord> {
     if (Object.keys(input).length === 0) {
-      throw new BadRequestError("At least one field must be provided");
+      throw new BadRequestError("Minimal satu field harus diisi");
     }
 
     const existing = await this.requirePreferences(userId);
@@ -69,7 +69,7 @@ export class PreferencesService {
 
     if (!preference) {
       throw new NotFoundError(
-        "Preferences not found",
+        "Preferensi tidak ditemukan",
         preferencesErrorCodes.preferencesNotFound
       );
     }
@@ -135,7 +135,7 @@ export function assertValidSalaryRange(input: MergedPreferenceInput): void {
     throw new AppError({
       statusCode: 422,
       code: preferencesErrorCodes.invalidSalaryRange,
-      message: "salaryExpectation.max must be greater than or equal to min"
+      message: "salaryExpectation.max harus lebih besar atau sama dengan min"
     });
   }
 }

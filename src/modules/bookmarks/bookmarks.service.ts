@@ -52,7 +52,10 @@ export class BookmarksService {
     const job = await this.repository.findVisibleJobById(input.jobId);
 
     if (!job) {
-      throw new NotFoundError("Job not found", bookmarksErrorCodes.jobNotFound);
+      throw new NotFoundError(
+        "Lowongan tidak ditemukan",
+        bookmarksErrorCodes.jobNotFound
+      );
     }
 
     const existing = await this.repository.findByUserAndJob(
@@ -62,7 +65,7 @@ export class BookmarksService {
 
     if (existing) {
       throw new ConflictError(
-        "Bookmark already exists",
+        "Bookmark sudah ada",
         bookmarksErrorCodes.bookmarkAlreadyExists
       );
     }
@@ -81,7 +84,7 @@ export class BookmarksService {
 
     if (!deleted) {
       throw new NotFoundError(
-        "Bookmark not found",
+        "Bookmark tidak ditemukan",
         bookmarksErrorCodes.bookmarkNotFound
       );
     }

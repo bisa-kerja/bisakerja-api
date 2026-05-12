@@ -38,20 +38,20 @@ export class AiCvAnalyzerService {
     uploadedFile: UploadedCvFile | null
   ): Promise<CvAnalysisResult> {
     if (input.inputMode === "REFERENCE") {
-      throw createValidationError("REFERENCE mode is not supported yet", [
+      throw createValidationError("Mode REFERENCE belum didukung", [
         {
           path: "inputMode",
-          message: "REFERENCE mode is not supported yet",
+          message: "Mode REFERENCE belum didukung",
           code: "custom"
         }
       ]);
     }
 
     if (!uploadedFile) {
-      throw createValidationError("CV file is required", [
+      throw createValidationError("File CV wajib diunggah", [
         {
           path: "cvFile",
-          message: "A PDF CV file is required for analysis",
+          message: "File CV PDF diperlukan untuk analisis",
           code: "custom"
         }
       ]);
@@ -64,12 +64,15 @@ export class AiCvAnalyzerService {
         : true;
 
     if (!job) {
-      throw new NotFoundError("Job not found", jobsErrorCodes.jobNotFound);
+      throw new NotFoundError(
+        "Lowongan tidak ditemukan",
+        jobsErrorCodes.jobNotFound
+      );
     }
 
     if (!hasOwnedBookmark) {
       throw new NotFoundError(
-        "Bookmark not found",
+        "Bookmark tidak ditemukan",
         aiCvAnalyzerErrorCodes.bookmarkNotFound
       );
     }

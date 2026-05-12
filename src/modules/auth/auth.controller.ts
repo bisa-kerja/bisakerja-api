@@ -57,7 +57,7 @@ export class AuthController {
           user: serializeAuthUser(result.user),
           session: result.session
         },
-        "Account registered successfully. Please verify your email."
+        "Akun berhasil didaftarkan. Silakan verifikasi email Anda."
       )
     );
   };
@@ -79,7 +79,7 @@ export class AuthController {
         result: "success"
       });
 
-      res.json(this.authSessionResponse(result, "Login successful"));
+      res.json(this.authSessionResponse(result, "Login berhasil"));
     } catch (error) {
       emitAuditEvent({
         action: "auth.login_failed",
@@ -111,7 +111,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(this.authSessionResponse(result, "Session refreshed"));
+    res.json(this.authSessionResponse(result, "Sesi berhasil diperbarui"));
   };
 
   logout = async (req: Request, res: Response) => {
@@ -130,7 +130,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(successResponse(null, "Logout successful"));
+    res.json(successResponse(null, "Logout berhasil"));
   };
 
   forgotPassword = async (req: Request, res: Response) => {
@@ -157,7 +157,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(successResponse(null, "Password reset successful"));
+    res.json(successResponse(null, "Reset kata sandi berhasil"));
   };
 
   verifyEmail = async (req: Request, res: Response) => {
@@ -182,7 +182,7 @@ export class AuthController {
           user: serializeAuthUser(result.user),
           session: result.session
         },
-        "Email verified successfully"
+        "Email berhasil diverifikasi"
       )
     );
   };

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/observability.md
-last_reviewed: 2026-04-29
+last_reviewed: 2026-05-12
 ---
 
 # Backend API Observability
@@ -131,7 +131,7 @@ Example readiness response:
 ```json
 {
   "success": true,
-  "message": "Service is ready",
+  "message": "Layanan siap",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",

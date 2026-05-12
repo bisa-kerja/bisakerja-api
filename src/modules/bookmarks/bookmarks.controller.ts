@@ -47,7 +47,7 @@ export class BookmarksController {
     });
 
     res.json(
-      listResponse(result.data, result.meta, "Bookmarks retrieved successfully")
+      listResponse(result.data, result.meta, "Daftar bookmark berhasil diambil")
     );
   };
 
@@ -90,7 +90,9 @@ export class BookmarksController {
       }
     });
 
-    res.status(201).json(createdResponse(bookmark, "Job saved successfully"));
+    res
+      .status(201)
+      .json(createdResponse(bookmark, "Lowongan berhasil disimpan"));
   };
 
   deleteBookmark = async (req: Request, res: Response) => {

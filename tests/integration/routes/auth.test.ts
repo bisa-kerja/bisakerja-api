@@ -45,7 +45,7 @@ describe("auth routes", () => {
     expect(typeof body.data.session.accessToken).toBe("string");
     expect(response.body).toEqual({
       success: true,
-      message: "Account registered successfully. Please verify your email.",
+      message: "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
       data: {
         user: {
           id: body.data.user.id,

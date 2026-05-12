@@ -48,7 +48,7 @@ describe("JobsService", () => {
     try {
       await service.getJobDetail("11111111-1111-4111-8111-111111111111");
     } catch (error) {
-      expect(error).toHaveProperty("message", "Job not found");
+      expect(error).toHaveProperty("message", "Lowongan tidak ditemukan");
     }
   });
 });

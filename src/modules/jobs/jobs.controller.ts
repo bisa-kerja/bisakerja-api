@@ -39,7 +39,7 @@ export class JobsController {
     });
 
     res.json(
-      listResponse(result.data, result.meta, "Jobs retrieved successfully")
+      listResponse(result.data, result.meta, "Daftar lowongan berhasil diambil")
     );
   };
 
@@ -55,6 +55,6 @@ export class JobsController {
       result: "success"
     });
 
-    res.json(successResponse(job, "Job retrieved successfully"));
+    res.json(successResponse(job, "Lowongan berhasil diambil"));
   };
 }
