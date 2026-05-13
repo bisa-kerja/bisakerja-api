@@ -275,6 +275,7 @@ bun run prisma:verify:migrations
 | `bun run test:integration`             | Run integration tests                          |
 | `bun run test:contracts`               | Run downstream contract tests                  |
 | `bun run test:smoke`                   | Run smoke tests                                |
+| `bun run test:coverage`                | Run full suite with coverage report            |
 | `bun run docs:generate:openapi`        | Regenerate OpenAPI artifact                    |
 | `bun run docs:generate:routes`         | Regenerate route inventory                     |
 | `bun run docs:generate:sync-readiness` | Regenerate sync-readiness inventory            |
@@ -293,6 +294,7 @@ bun run typecheck
 bun run lint
 bun run format:check
 bun test
+bun run test:coverage
 bun run docs:check
 ```
 

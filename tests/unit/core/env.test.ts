@@ -22,7 +22,7 @@ describe("environment validation", () => {
       "http://localhost:3001",
       "http://localhost:3000"
     ]);
-    expect(config.database.runtimeUrl).toContain("bisakerja_api_test");
+    expect(config.database.runtimeUrl).toBe(testEnv.DATABASE_URL);
     expect(config.database.prismaLogLevel).toBe("warn");
     expect(config.security.trustProxy).toBe(true);
     expect(config.observability.enableRequestLogging).toBe(true);

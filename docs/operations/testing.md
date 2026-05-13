@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/operations/testing.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-13
 ---
 
 # Backend API Testing Strategy
@@ -179,6 +179,7 @@ Reserved commands:
 | `bun run test:integration`         | Prisma-backed integration tests                       |
 | `bun run test:contracts`           | Model API and scraper fixture contracts               |
 | `bun run test:smoke`               | Startup, env, health, and basic route smoke checks    |
+| `bun run test:coverage`            | Full suite run with line and function coverage output |
 | `bun run prisma:verify:migrations` | Migration verification against an empty test database |
 | `bun run docs:check`               | Frontmatter and JSON example validation for `docs/**` |
 
@@ -265,6 +266,7 @@ Common commands:
 | `bun run test:integration`         | Prisma-backed repository and route integration suites          |
 | `bun run test:contracts`           | Model API and fixture contract verification                    |
 | `bun run test:smoke`               | Startup and environment-level checks                           |
+| `bun run test:coverage`            | Full suite run with coverage report output                     |
 | `bun run docs:check`               | Documentation validation after doc changes                     |
 | `bun run prisma:verify:migrations` | Prisma migration and repository verification before release    |
 
@@ -535,6 +537,7 @@ Initial expectations:
 - Focused branch coverage for failure mapping and downstream dependency behavior.
 - Route coverage for every public and authenticated API group.
 - Repository tests for all non-trivial Prisma queries, uniqueness constraints, and transactions.
+- No mandatory minimum percentage threshold; prioritize meaningful branch and failure-path coverage over vanity numbers.
 
 ## Related Docs
 

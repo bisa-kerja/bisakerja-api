@@ -29,7 +29,9 @@ import { injectRoute } from "../../helpers/route";
 import { assertIntegrationTestEnvironment } from "../../helpers/test-environment";
 
 const describeIfDatabaseTestsEnabled =
-  process.env.RUN_DATABASE_TESTS === "true" ? describe : describe.skip;
+  process.env.RUN_DATABASE_TESTS === "true" && isIsolatedTestDatabaseUrl()
+    ? describe
+    : describe.skip;
 const testDatabaseUrl = testEnv.DATABASE_URL;
 const testDirectDatabaseUrl = testEnv.DIRECT_DATABASE_URL;
 const seedPassword = testSeedUserPassword;
@@ -894,4 +896,16 @@ class CapturingAsyncJobPublisher implements AsyncJobPublisher {
 
     return payload.token;
   }
+}
+
+function isIsolatedTestDatabaseUrl() {
+  const databaseUrl = testEnv.DATABASE_URL.trim();
+  const isolatedPatterns = [
+    /test/i,
+    /localhost/i,
+    /127\.0\.0\.1/,
+    /0\.0\.0\.0/
+  ];
+
+  return isolatedPatterns.some((pattern) => pattern.test(databaseUrl));
 }
