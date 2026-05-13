@@ -1,0 +1,7 @@
+node_modules
+coverage
+dist
+src/generated/prisma
+references
+bun.lock
+scripts

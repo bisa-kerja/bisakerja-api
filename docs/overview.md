@@ -46,24 +46,24 @@ Technical consumers:
 
 ## MVP Scope
 
-| Module         | MVP responsibility                                                                                                                                     |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Auth           | Register, login, logout or session invalidation, token/session refresh, password reset, email verification, and Google SSO placeholder                 |
-| Users          | Account profile, onboarding state, profile photo metadata, career background, skills, experience, and education                                        |
-| Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                    |
-| Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                    |
-| Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate handling                                                                                    |
-| Applications   | Track user-specific job application state and status history                                                                                           |
-| AI Job Fit     | Prepare backend-owned inference payloads and return fit score, explanation, skill gap, and recommended next steps                                      |
-| AI CV Analyzer | Accept CV analysis input, compare against a selected job, and return CV quality, job alignment, ATS, keyword, quantification, and improvement feedback |
+| Module         | MVP responsibility                                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | Register, login, logout, short-lived access JWT, hashed refresh token cookie with rotation, password reset, OTP email verification, and Google SSO placeholder  |
+| Users          | Account profile, onboarding state, profile photo metadata, career background, skills, experience, and education                                                 |
+| Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                             |
+| Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                             |
+| Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate conflict handling                                                                                    |
+| Applications   | Track user-specific job application state and MVP status history                                                                                                |
+| AI Job Fit     | Prepare backend-owned inference payloads and return fit score, explanation, skill gap, and recommended next steps                                               |
+| AI CV Analyzer | Accept temporary PDF upload input, compare against a selected job, and return CV quality, job alignment, ATS, keyword, quantification, and improvement feedback |
 
 ## Future Scope
 
 The following capabilities are documented as future scope and must not block MVP implementation:
 
 - Mentoring onboarding, mentor profiles, availability, and mentor search.
-- Notification expansion beyond initial email preference and basic workflow notifications.
-- Product analytics and application intelligence dashboards.
+- Notification delivery expansion beyond the MVP email preference toggle and auth email flows.
+- Product analytics, application intelligence dashboards, and general analytics event pipelines.
 - Payment, subscription, or premium capability.
 - Direct ATS integration or auto-apply to external platforms.
 - Native mobile applications.
@@ -121,13 +121,13 @@ The domain model must support all four sources through a normalized `source_plat
 
 Use these local references when writing or changing backend docs:
 
-| Source                         | Purpose                                                                                                    |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| `bisakerja-product-idea.md`    | Product vision, user problem, MVP features, and value proposition                                          |
-| `bisakerja-feature-flow.md`    | User journeys, onboarding flow, job discovery, tracker, AI CV Analyzer, and future Mentoring flow          |
-| `bisakerja-project-plan.md`    | Capstone scope, service responsibilities, integration direction, milestone plan, and team responsibilities |
-| `folder-structur-reference.md` | Initial backend folder structure and module organization                                                   |
-| `references/docs/**`           | Platform architecture, service boundaries, metadata, sync, review, freshness, and documentation standards  |
+| Source                      | Purpose                                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `bisakerja-product-idea.md` | Product vision, user problem, MVP features, and value proposition                                          |
+| `bisakerja-feature-flow.md` | User journeys, onboarding flow, job discovery, tracker, AI CV Analyzer, and future Mentoring flow          |
+| `bisakerja-project-plan.md` | Capstone scope, service responsibilities, integration direction, milestone plan, and team responsibilities |
+| `docs/project-structure.md` | Current backend folder structure, module organization, and dependency boundaries                           |
+| `references/docs/**`        | Platform architecture, service boundaries, metadata, sync, review, freshness, and documentation standards  |
 
 ## Documentation Sync
 
@@ -177,7 +177,6 @@ Rules:
 
 ## Related Docs
 
-- `docs/TODOS.md`
 - `docs/tech-stack.md`
 - `docs/environment.md`
 - `references/docs/services/backend-api/index.mdx`

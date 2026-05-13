@@ -1,0 +1,73 @@
+name: ${COMPOSE_PROJECT_NAME:-bisakerja-api}
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  app:
+    image: ${APP_IMAGE:-ghcr.io/bisa-kerja/bisakerja-api:develop}
+    restart: unless-stopped
+    env_file:
+      - path: .env.production
+        required: false
+    depends_on:
+      - redis
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:${PORT:-3000}"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "const response = await fetch('http://127.0.0.1:${PORT:-3000}/health/live'); if (!response.ok) process.exit(1);"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    volumes:
+      - app-storage:/app/storage/uploads
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  worker:
+    image: ${APP_IMAGE:-ghcr.io/bisa-kerja/bisakerja-api:develop}
+    restart: unless-stopped
+    command: ["bun", "run", "worker:async"]
+    env_file:
+      - path: .env.production
+        required: false
+    depends_on:
+      - redis
+    volumes:
+      - app-storage:/app/storage/uploads
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  app-storage:
+    driver: local
+  redis-data:
+    driver: local

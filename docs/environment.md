@@ -1,6 +1,6 @@
 ---
 title: Backend API Environment Configuration
-description: Environment variable groups, local defaults, secret handling, and runtime separation for the Bisakerja Backend API.
+description: Environment variable groups, explicit env requirements, secret handling, and runtime separation for the Bisakerja Backend API.
 owner: backend-owner
 reviewers:
   - platform-docs-maintainer
@@ -8,14 +8,20 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/environment.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-05-05
 ---
 
 # Backend API Environment Configuration
 
-This document defines the initial environment configuration model for the Bisakerja Backend API. The actual `.env.example` file should be created during project setup after package choices and auth/session design are finalized.
+This document defines the environment configuration model for the Bisakerja Backend API.
 
 Environment variables must be validated at startup with Zod in `src/config/env.ts`. Missing required variables or invalid values should fail fast before the server accepts requests.
+
+Environment rules are intentionally strict:
+
+- Do not rely on runtime defaults or fallback values for application configuration env vars.
+- Do not represent "not configured" as an empty string.
+- If an env var is required by the schema, every environment file must set it explicitly with either a real secret or a safe non-empty placeholder.
 
 ## Environment Groups
 
@@ -31,50 +37,62 @@ Environment variables must be validated at startup with Zod in `src/config/env.t
 
 ## Application Variables
 
-| Variable       | Required | Local default           | Notes                                                                      |
+| Variable       | Required | Example value           | Notes                                                                      |
 | -------------- | -------- | ----------------------- | -------------------------------------------------------------------------- |
-| `APP_NAME`     | No       | `bisakerja-api`         | Service name used in logs and health output                                |
+| `APP_NAME`     | Yes      | `bisakerja-api`         | Service name used in logs and health output                                |
 | `APP_ENV`      | Yes      | `local`                 | Allowed values should include `local`, `test`, `staging`, and `production` |
 | `NODE_ENV`     | Yes      | `development`           | Runtime ecosystem mode                                                     |
-| `PORT`         | Yes      | `3000`                  | HTTP server port                                                           |
+| `PORT`         | Yes      | `3000`                  | HTTP server port inside the runtime container or local process             |
 | `API_PREFIX`   | Yes      | `/api/v1`               | Default REST route prefix                                                  |
 | `APP_URL`      | Yes      | `http://localhost:3000` | Backend base URL for callbacks or generated links                          |
 | `FRONTEND_URL` | Yes      | `http://localhost:5173` | Primary frontend origin for local development                              |
 
 ## Database Variables
 
-| Variable              | Required | Local default | Notes                                                                |
-| --------------------- | -------- | ------------- | -------------------------------------------------------------------- |
-| `DATABASE_URL`        | Yes      | None          | PostgreSQL connection string used by Prisma                          |
-| `DIRECT_DATABASE_URL` | No       | None          | Optional direct database URL for migrations if pooling is introduced |
-| `PRISMA_LOG_LEVEL`    | No       | `warn`        | Prisma logging level for development and debugging                   |
+| Variable              | Required | Example value  | Notes                                                                              |
+| --------------------- | -------- | -------------- | ---------------------------------------------------------------------------------- |
+| `DATABASE_URL`        | Yes      | provider URL   | PostgreSQL connection string used by runtime app and Prisma runtime adapter        |
+| `DIRECT_DATABASE_URL` | Yes      | provider URL   | PostgreSQL direct connection used by Prisma CLI, migrations, and seed flows        |
+| `PRISMA_LOG_LEVEL`    | Yes      | `warn`         | Prisma logging level for development and debugging                                 |
+| `SEED_USER_PASSWORD`  | Yes      | `Password123!` | Seed-only login password for deterministic local/test accounts                     |
+| `RUN_DATABASE_TESTS`  | Yes      | `false`        | Test-only flag that enables repository tests against PostgreSQL when set to `true` |
 
 Rules:
 
 - Never commit real database credentials.
 - Use a separate database for tests.
+- For Neon, Supabase, or similar managed PostgreSQL, set `DATABASE_URL` to the pooled connection string and `DIRECT_DATABASE_URL` to the non-pooled direct host.
+- The repository no longer falls back from `DIRECT_DATABASE_URL` to `DATABASE_URL` inside Prisma CLI or seed scripts. Both values must be present explicitly.
+- `SEED_USER_PASSWORD` is mandatory for seed runs so misconfigured local/test credentials fail immediately instead of silently reusing a hidden default.
+- Keep `RUN_DATABASE_TESTS=false` for ordinary local test runs unless the isolated test database is running and migrations are applied.
 - Run migrations explicitly in deployment workflows; do not rely on application startup to mutate production schema unless that deployment policy is approved.
 
 ## Auth Variables
 
-The final token/session strategy is still an open item. Reserve these variables until the auth design is finalized:
+The backend uses short-lived access JWTs plus opaque refresh tokens stored in `HttpOnly` cookies and persisted server-side as hashes.
 
-| Variable                     | Required | Local default       | Notes                                                           |
-| ---------------------------- | -------- | ------------------- | --------------------------------------------------------------- |
-| `AUTH_ACCESS_TOKEN_SECRET`   | Yes      | None                | Secret for access token signing if JWT is selected              |
-| `AUTH_REFRESH_TOKEN_SECRET`  | Yes      | None                | Secret for refresh token signing if refresh tokens are selected |
-| `AUTH_ACCESS_TOKEN_TTL`      | Yes      | `15m`               | Short-lived access token lifetime                               |
-| `AUTH_REFRESH_TOKEN_TTL`     | Yes      | `7d`                | Refresh token lifetime                                          |
-| `PASSWORD_RESET_TOKEN_TTL`   | Yes      | `30m`               | Password reset token lifetime                                   |
-| `EMAIL_VERIFICATION_OTP_TTL` | Yes      | `10m`               | Email verification OTP lifetime                                 |
-| `AUTH_COOKIE_NAME`           | No       | `bisakerja_session` | Required only if cookie-based session is selected               |
-| `AUTH_COOKIE_SECURE`         | Yes      | `false` locally     | Must be `true` in production when cookies are used              |
+| Variable                     | Required | Local default        | Notes                                                     |
+| ---------------------------- | -------- | -------------------- | --------------------------------------------------------- |
+| `AUTH_ACCESS_TOKEN_SECRET`   | Yes      | None                 | Secret for access token signing if JWT is selected        |
+| `AUTH_REFRESH_TOKEN_SECRET`  | Yes      | None                 | Secret used when deriving or signing refresh-token hashes |
+| `AUTH_ACCESS_TOKEN_TTL`      | Yes      | `15m`                | Short-lived access token lifetime                         |
+| `AUTH_REFRESH_TOKEN_TTL`     | Yes      | `7d`                 | Refresh token lifetime                                    |
+| `PASSWORD_RESET_TOKEN_TTL`   | Yes      | `30m`                | Password reset token lifetime                             |
+| `EMAIL_VERIFICATION_OTP_TTL` | Yes      | `10m`                | Email verification OTP lifetime                           |
+| `AUTH_REFRESH_COOKIE_NAME`   | Yes      | `bisakerja_refresh`  | `HttpOnly` cookie name for refresh credential             |
+| `AUTH_COOKIE_SECURE`         | Yes      | `false` locally      | Must be `true` in production                              |
+| `AUTH_COOKIE_SAME_SITE`      | Yes      | `lax`                | Use `none` only with `Secure` and CSRF protection         |
+| `AUTH_ISSUER`                | Yes      | `bisakerja-api`      | JWT issuer                                                |
+| `AUTH_AUDIENCE`              | Yes      | `bisakerja-frontend` | JWT audience                                              |
 
 Rules:
 
 - Secrets must be long, random, and environment-specific.
+- Refresh token rotation is mandatory.
+- Access tokens are short-lived and should be stored by the frontend in memory only.
+- Refresh tokens must not be returned in JSON responses or stored in browser `localStorage`.
 - Password reset and OTP flows need stricter rate limits than ordinary authenticated routes.
-- The selected auth strategy must be documented before implementation starts.
+- Email verification uses OTP for MVP; password reset uses a token link. Persist only hashed OTP/token values.
 
 ## Security Variables
 
@@ -87,79 +105,132 @@ Rules:
 | `RATE_LIMIT_MAX`        | Yes      | `120`                   | Default request count per window            |
 | `AUTH_RATE_LIMIT_MAX`   | Yes      | `10`                    | Stricter limit for auth-sensitive endpoints |
 | `UPLOAD_RATE_LIMIT_MAX` | Yes      | `10`                    | Stricter limit for CV upload endpoints      |
+| `AI_RATE_LIMIT_MAX`     | Yes      | `20`                    | Stricter limit for AI inference endpoints   |
+
+Rules:
+
+- `CORS_ORIGINS` remains the explicit allowlist for external browser origins.
+- The backend also treats the normalized origins derived from `APP_URL` and `FRONTEND_URL` as allowed automatically.
+- This behavior keeps the built-in Scalar docs at `/docs/api` usable on the same backend origin without requiring a duplicate manual CORS entry.
+- In local development, changing `APP_URL`, `FRONTEND_URL`, or `CORS_ORIGINS` requires restarting the backend process before browser tests are retried.
 
 ## Model API Variables
 
-| Variable                  | Required                    | Local default | Notes                                                             |
-| ------------------------- | --------------------------- | ------------- | ----------------------------------------------------------------- |
-| `MODEL_API_BASE_URL`      | Yes for AI workflows        | None          | FastAPI inference service base URL                                |
-| `MODEL_API_TIMEOUT_MS`    | Yes                         | `10000`       | Request timeout for inference calls                               |
-| `MODEL_API_SERVICE_TOKEN` | Yes outside local mock mode | None          | Internal service credential if required                           |
-| `MODEL_API_ENABLE_MOCK`   | No                          | `false`       | Local-only fallback for development before Model API is available |
+| Variable                    | Required | Example value                      | Notes                                                           |
+| --------------------------- | -------- | ---------------------------------- | --------------------------------------------------------------- |
+| `MODEL_API_BASE_URL`        | Yes      | `http://localhost:8000`            | FastAPI inference service base URL                              |
+| `MODEL_API_TIMEOUT_MS`      | Yes      | `10000`                            | Request timeout for inference calls                             |
+| `MODEL_API_SERVICE_TOKEN`   | Yes      | `your-local-model-api-token`       | Internal service credential; use non-empty placeholder in mocks |
+| `MODEL_API_ENABLE_MOCK`     | Yes      | `true`                             | Local/test toggle for mocked AI responses                       |
+| `SCRAPER_API_SERVICE_TOKEN` | Yes      | `your-local-scraper-service-token` | Internal service credential for scraper sync and handoff routes |
 
 Rules:
 
 - The frontend must never call Model API directly.
 - Backend should send only the minimum profile, preference, job, and CV context needed for inference.
+- Keep `MODEL_API_ENABLE_MOCK=true` only for local development and automated tests.
+- `MODEL_API_SERVICE_TOKEN` is always required by env validation even when mock mode is enabled; local/test env files should use a safe non-empty placeholder.
+- `SCRAPER_API_SERVICE_TOKEN` must match the scraper service `BACKEND_SYNC_SERVICE_TOKEN` value for internal sync and notification handoff calls.
 - Model API failures must map to documented 502 or 503 API responses.
 
-## Scraper And Job Source Variables
+## Google OAuth Variables
 
-| Variable                    | Required | Local default      | Notes                                                               |
-| --------------------------- | -------- | ------------------ | ------------------------------------------------------------------- |
-| `SCRAPER_API_BASE_URL`      | No       | None               | Required only if backend calls scraper status or internal endpoints |
-| `SCRAPER_API_SERVICE_TOKEN` | No       | None               | Internal credential if backend-scraper HTTP calls are introduced    |
-| `JOB_SOURCE_PRIORITY`       | No       | `glints,jobstreet` | Early implementation priority while domain supports four sources    |
-| `JOB_STALE_AFTER_HOURS`     | Yes      | `72`               | Threshold used by docs and future operations to flag stale listings |
+| Variable                     | Required | Example value                                | Notes                                                                 |
+| ---------------------------- | -------- | -------------------------------------------- | --------------------------------------------------------------------- |
+| `GOOGLE_OAUTH_ENABLED`       | Yes      | `false`                                      | Feature flag for Google OAuth login routes                            |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Yes      | `your-local-google-oauth-client-id`          | OAuth client id from Google Cloud Console; keep non-empty placeholder |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Yes      | `your-local-google-oauth-client-secret`      | OAuth client secret; keep non-empty placeholder in local/test         |
+| `GOOGLE_OAUTH_REDIRECT_URI`  | Yes      | `http://localhost:5173/auth/google/callback` | Must match the configured redirect URI in Google Cloud Console        |
 
 Rules:
 
-- Supported source platforms are Glints, Jobstreet, Kalibrr, and Dealls.
+- If `GOOGLE_OAUTH_ENABLED=false`, the Google OAuth routes must return `501 GOOGLE_SSO_NOT_CONFIGURED`.
+- If `GOOGLE_OAUTH_ENABLED=true`, the backend must validate the Google ID token and must not store or return raw Google OAuth tokens.
+- `GOOGLE_OAUTH_REDIRECT_URI` should point to the frontend callback page that receives `code` and `state`, then calls the backend token exchange route.
+
+## Job Catalog Freshness Variables
+
+| Variable                | Required | Local default | Notes                                                       |
+| ----------------------- | -------- | ------------- | ----------------------------------------------------------- |
+| `JOB_STALE_AFTER_HOURS` | Yes      | `72`          | Threshold used by the backend to flag stale normalized jobs |
+
+Rules:
+
+- Supported source platforms are Glints, Jobstreet, Kalibrr, and Dealls in repository docs and seed data.
 - Backend API should consume normalized job records, not raw source payloads.
-- Scraper-owned freshness and normalization behavior must be documented in integration docs before implementation.
+- Scraper-owned freshness and normalization behavior stay documented in integration docs, but the current runtime does not expose scraper-specific connection env vars.
 
 ## Upload Variables
 
-| Variable                | Required             | Local default       | Notes                                                                     |
-| ----------------------- | -------------------- | ------------------- | ------------------------------------------------------------------------- |
-| `FILE_STORAGE_DRIVER`   | Yes                  | `local`             | Expected values can start with `local`; object storage can be added later |
-| `UPLOAD_STORAGE_PATH`   | Yes for local driver | `./storage/uploads` | Local upload directory                                                    |
-| `CV_UPLOAD_MAX_BYTES`   | Yes                  | `5242880`           | Default 5 MB CV limit                                                     |
-| `CV_ALLOWED_MIME_TYPES` | Yes                  | `application/pdf`   | Start strict; expand only with documented parser support                  |
-| `CV_RETENTION_DAYS`     | Yes                  | `30`                | Retention period for uploaded CV files or metadata                        |
+| Variable                | Required             | Local default       | Notes                                                    |
+| ----------------------- | -------------------- | ------------------- | -------------------------------------------------------- |
+| `FILE_STORAGE_DRIVER`   | Yes                  | `local`             | Current runtime supports only `local`                    |
+| `UPLOAD_STORAGE_PATH`   | Yes for local driver | `./storage/uploads` | Local upload directory                                   |
+| `CV_UPLOAD_MAX_BYTES`   | Yes                  | `5242880`           | Default 5 MB CV limit                                    |
+| `CV_ALLOWED_MIME_TYPES` | Yes                  | `application/pdf`   | Start strict; expand only with documented parser support |
+| `CV_RETENTION_DAYS`     | Yes                  | `1`                 | Temporary retention for uploaded CV files or metadata    |
 
 Rules:
 
 - CV uploads are sensitive user data.
-- Store only what is needed for analysis and user value.
-- Retention and deletion behavior must be documented before AI CV Analyzer implementation.
+- MVP supports `UPLOAD` mode only. `REFERENCE` mode returns `422` until reusable CV storage is designed.
+- Runtime config maps these variables into the validated `uploads` config group in `src/config/env.ts`.
+- Store only what is needed for analysis, ownership, retention, and audit.
+- Local uploads should live in a private directory outside static assets. The default local root is `./storage/uploads`.
+- Clean expired files and metadata according to `CV_RETENTION_DAYS` with the manual command `bun run cleanup:cv-uploads` or an equivalent scheduled workflow.
+- Do not persist raw extracted CV text or raw Model API payloads by default.
 
 ## Email Variables
 
-| Variable         | Required                 | Local default | Notes                                                    |
-| ---------------- | ------------------------ | ------------- | -------------------------------------------------------- |
-| `EMAIL_PROVIDER` | Yes for auth email flows | `smtp`        | Provider abstraction for verification and password reset |
-| `EMAIL_FROM`     | Yes                      | None          | Sender address                                           |
-| `SMTP_HOST`      | Yes for SMTP             | None          | SMTP host                                                |
-| `SMTP_PORT`      | Yes for SMTP             | `587`         | SMTP port                                                |
-| `SMTP_USER`      | Yes for SMTP             | None          | SMTP username                                            |
-| `SMTP_PASSWORD`  | Yes for SMTP             | None          | SMTP password                                            |
+| Variable             | Required                 | Example value                       | Notes                                                                      |
+| -------------------- | ------------------------ | ----------------------------------- | -------------------------------------------------------------------------- |
+| `EMAIL_PROVIDER`     | Yes for auth email flows | `fake`                              | `fake` for local/tests, `resend` for real delivery                         |
+| `EMAIL_FROM`         | Yes                      | `Bisakerja <no-reply@example.test>` | Sender address in `email@example.com` or `Name <email@example.com>` format |
+| `RESEND_API_KEY`     | Yes                      | `your-local-resend-api-key`         | Real key for resend mode; non-empty placeholder for fake mode              |
+| `RESEND_MAX_RETRIES` | Yes                      | `2`                                 | Additional retry attempts for transient Resend failures                    |
+
+Rules:
+
+- Production must not use `EMAIL_PROVIDER=fake`.
+- If `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` must be a real provider key and `EMAIL_FROM` should use a verified Resend sending domain.
+- Even when `EMAIL_PROVIDER=fake`, `RESEND_API_KEY` should stay present as a non-empty placeholder so config drift is visible immediately.
+- Retry logic should rely on Resend idempotency keys and only retry transient failures such as rate limiting, temporary concurrency conflicts, or 5xx provider errors.
+- Test defaults should keep `EMAIL_PROVIDER=fake` so auth flows remain deterministic and offline-safe.
+
+## Async Workload Variables
+
+| Variable                           | Required | Example value            | Notes                                              |
+| ---------------------------------- | -------- | ------------------------ | -------------------------------------------------- |
+| `REDIS_URL`                        | Yes      | `redis://127.0.0.1:6379` | Redis connection for queue publisher and worker    |
+| `ASYNC_QUEUE_NAME`                 | Yes      | `bisakerja-async`        | Shared logical queue name                          |
+| `ASYNC_QUEUE_PREFIX`               | Yes      | `bisakerja`              | Redis key namespace                                |
+| `ASYNC_QUEUE_CONCURRENCY`          | Yes      | `5`                      | Worker concurrency                                 |
+| `ASYNC_QUEUE_MAX_ATTEMPTS`         | Yes      | `4`                      | Max attempts per queued job                        |
+| `ASYNC_QUEUE_BACKOFF_MS`           | Yes      | `5000`                   | Retry backoff between attempts                     |
+| `ASYNC_QUEUE_RECOVERY_BATCH_SIZE`  | Yes      | `50`                     | Pending outbox jobs republished per recovery cycle |
+| `ASYNC_QUEUE_RECOVERY_INTERVAL_MS` | Yes      | `5000`                   | Worker recovery publish interval                   |
+
+Rules:
+
+- Side effects such as auth emails and maintenance cleanup should write to PostgreSQL outbox first, then publish to Redis.
+- Redis improves latency, while PostgreSQL outbox remains the durable recovery source after crashes or transient queue failures.
+- Production should run Redis with persistence and a separate worker process.
+- Readiness depends on both PostgreSQL and Redis.
 
 ## Observability Variables
 
 | Variable                  | Required | Local default  | Notes                                |
 | ------------------------- | -------- | -------------- | ------------------------------------ |
 | `LOG_LEVEL`               | Yes      | `info`         | Structured logger level              |
-| `REQUEST_ID_HEADER`       | No       | `x-request-id` | Header used to propagate request id  |
-| `ENABLE_REQUEST_LOGGING`  | No       | `true`         | Log HTTP request summary             |
+| `REQUEST_ID_HEADER`       | Yes      | `x-request-id` | Header used to propagate request id  |
+| `ENABLE_REQUEST_LOGGING`  | Yes      | `true`         | Log HTTP request summary             |
 | `HEALTH_CHECK_TIMEOUT_MS` | Yes      | `2000`         | Timeout for dependency health checks |
-| `ERROR_REPORTING_DSN`     | No       | None           | Optional error reporting integration |
 
 Rules:
 
 - Logs must not include passwords, tokens, OTP values, raw CV content, or full sensitive payloads.
 - Every error response should include or correlate with a request id.
-- Dependency health should distinguish database, model service, and scraper-related issues.
+- Current runtime readiness checks PostgreSQL and Redis explicitly. Model API failures and job-data freshness issues are surfaced through route-level errors, logs, and module-specific handling rather than a separate global health env contract.
 
 ## Environment Separation
 
@@ -177,13 +248,45 @@ When the project scaffold is created, `.env.example` must:
 - Include every required variable with safe placeholder values.
 - Exclude real secrets.
 - Group variables using the sections in this document.
-- Mark variables that are only required when a feature is enabled.
+- Prefer safe non-empty placeholders over blank strings so validation behavior matches real runtime rules.
 - Stay in sync with `src/config/env.ts`.
+
+## Deployment Env File Example
+
+The repository provides one deployment-oriented example for Compose-based VPS rollout:
+
+| File                      | Intended use                                                             |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `.env.production.example` | Baseline for `docker-compose.yml` and the single VPS deployment workflow |
+
+Rules:
+
+- This file is an operator-facing template, not a committed secret.
+- The deployment workflow writes its secret payload to `.env.production`.
+- `APP_ENV` in that file must match the target runtime environment, because the remote deploy script rejects mismatches when an explicit expectation is configured.
+- The current staging rollout expects `APP_ENV=staging` with `NODE_ENV=production`.
+- Compose-specific variables such as `APP_BIND_ADDRESS` and `APP_PORT` should stay documented in this template.
+- The deployment template no longer bootstraps a PostgreSQL container; `DATABASE_URL` and `DIRECT_DATABASE_URL` must point to the managed database instance directly.
+- The current rollout still targets staging first, but it intentionally uses the same production-style env file that will later be reused when the deployment branch changes to `main`.
+
+## `.env.test.example` Requirements
+
+The test environment example must use `APP_ENV=test` and `NODE_ENV=test`. Database values must point to an isolated test database, not local development, staging, or production data. That isolated database may live on localhost or on a managed PostgreSQL provider, but the URL should clearly identify test-only scope such as a dedicated test database name. Integration test helpers should fail fast when the runtime environment is not `test` or when a provided database URL does not clearly identify a local or test-only database.
+
+Test defaults should use fake providers or local mocks for email and Model API, plus an isolated local upload path. Test logs should default to `silent` unless a failing test needs diagnostic output. Even in fake/mock mode, env values should stay explicit and non-empty.
+
+Repository integration tests should keep `RUN_DATABASE_TESTS=false` for ordinary full-suite runs. Set `RUN_DATABASE_TESTS=true` only when running against an isolated PostgreSQL test database with committed migrations applied. Migration verification commands may set this flag automatically after applying migrations.
+
+## Documentation Discipline
+
+- Every feature, bug fix, behavior change, env contract change, migration rule change, or operational change must update the relevant files under `docs/**` and repo-level docs such as `README.md` when applicable.
+- If a change introduces or modifies an environment variable, update `.env.example`, `.env.test.example`, `.env.production.example`, and this document in the same work item.
+- If a change affects deployment, testing, database behavior, or generated docs workflow, update the corresponding operations doc in the same work item.
 
 ## Related Docs
 
 - `docs/overview.md`
 - `docs/tech-stack.md`
-- `docs/TODOS.md`
+- `docs/integrations/resend.md`
 - `references/docs/overview/authentication-and-trust-boundaries.mdx`
 - `references/docs/operations/environments.mdx`
