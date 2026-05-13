@@ -957,11 +957,214 @@
       }
     },
     "/api/v1/auth/google": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Start Google OAuth login",
+        "description": "Generates a Google OAuth authorize URL and sets short-lived HttpOnly cookies for state and nonce validation.",
+        "responses": {
+          "200": {
+            "description": "Google authorize URL created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["authorizeUrl"],
+                      "properties": {
+                        "authorizeUrl": {
+                          "type": "string",
+                          "example": "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=...&redirect_uri=...&scope=openid%20email%20profile&state=...&nonce=..."
+                        }
+                      }
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "URL login Google berhasil dibuat",
+                  "data": {
+                    "authorizeUrl": "https://accounts.google.com/o/oauth2/v2/auth?..."
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Terlalu banyak permintaan",
+                  "data": null,
+                  "error": {
+                    "code": "RATE_LIMITED",
+                    "details": { "limit": "auth" },
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Google SSO is not configured.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Google SSO belum dikonfigurasi",
+                  "data": null,
+                  "error": {
+                    "code": "GOOGLE_SSO_NOT_CONFIGURED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["Auth"],
-        "summary": "Google SSO placeholder",
-        "description": "Reserved placeholder route for future Google SSO integration. It currently always returns not implemented.",
+        "summary": "Exchange Google OAuth code",
+        "description": "Exchanges the Google authorization code for an ID token, verifies it, links or creates the user account, and issues a backend session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["code", "state"],
+                "properties": {
+                  "code": { "type": "string" },
+                  "state": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
         "responses": {
+          "200": {
+            "description": "Google login succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["user", "session"],
+                      "properties": {
+                        "user": { "$ref": "#/components/schemas/AuthUser" },
+                        "session": {
+                          "$ref": "#/components/schemas/AuthSession"
+                        }
+                      }
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Login Google berhasil",
+                  "data": {
+                    "user": {
+                      "id": "550e8400-e29b-41d4-a716-446655440001",
+                      "username": "salman",
+                      "email": "salman@example.com",
+                      "emailVerified": true,
+                      "onboardingStatus": "COMPLETED",
+                      "createdAt": "2026-04-24T08:00:00.000Z"
+                    },
+                    "session": {
+                      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example",
+                      "expiresIn": 900,
+                      "tokenType": "Bearer"
+                    }
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "OAuth state mismatch.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "State Google tidak valid",
+                  "data": null,
+                  "error": {
+                    "code": "GOOGLE_OAUTH_STATE_INVALID",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google account already linked.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Akun sudah terhubung dengan akun Google lain",
+                  "data": null,
+                  "error": {
+                    "code": "GOOGLE_OAUTH_ACCOUNT_ALREADY_LINKED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validasi gagal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Validasi gagal",
+                  "data": null,
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "details": [
+                      {
+                        "path": "body",
+                        "message": "Payload request tidak valid",
+                        "code": "invalid_type"
+                      }
+                    ],
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
           "429": {
             "description": "Rate limit exceeded.",
             "content": {

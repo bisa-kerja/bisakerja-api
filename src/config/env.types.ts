@@ -65,6 +65,12 @@ export type AppConfig = {
     scraperApi: {
       serviceToken: string;
     };
+    googleOauth: {
+      enabled: boolean;
+      clientId: string;
+      clientSecret: string;
+      redirectUri: string;
+    };
   };
   uploads: {
     fileStorageDriver: "local";

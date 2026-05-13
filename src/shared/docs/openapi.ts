@@ -885,12 +885,39 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
         }
       },
       "/api/v1/auth/google": {
-        post: {
+        get: {
           tags: ["Auth"],
-          summary: "Google SSO placeholder",
+          summary: "Start Google OAuth login",
           description:
-            "Reserved placeholder route for future Google SSO integration. It currently always returns not implemented.",
+            "Generates a Google OAuth authorize URL and sets short-lived HttpOnly cookies for state and nonce validation.",
           responses: {
+            "200": jsonResponse(
+              "Google authorize URL created.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["authorizeUrl"],
+                  properties: {
+                    authorizeUrl: {
+                      type: "string",
+                      example:
+                        "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=...&redirect_uri=...&scope=openid%20email%20profile&state=...&nonce=..."
+                    }
+                  }
+                },
+                nullSchema
+              ),
+              {
+                success: true,
+                message: "URL login Google berhasil dibuat",
+                data: {
+                  authorizeUrl:
+                    "https://accounts.google.com/o/oauth2/v2/auth?..."
+                },
+                meta: null
+              }
+            ),
             "501": errorResponse(
               "Google SSO is not configured.",
               "GOOGLE_SSO_NOT_CONFIGURED",
@@ -904,6 +931,66 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 limit: "auth"
               }
             )
+          }
+        },
+        post: {
+          tags: ["Auth"],
+          summary: "Exchange Google OAuth code",
+          description:
+            "Exchanges the Google authorization code for an ID token, verifies it, links or creates the user account, and issues a backend session.",
+          requestBody: {
+            required: true,
+            content: jsonContent({
+              type: "object",
+              additionalProperties: false,
+              required: ["code", "state"],
+              properties: {
+                code: { type: "string" },
+                state: { type: "string" }
+              }
+            })
+          },
+          responses: {
+            "200": jsonResponse(
+              "Google login succeeded.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["user", "session"],
+                  properties: {
+                    user: ref("AuthUser"),
+                    session: ref("AuthSession")
+                  }
+                },
+                nullSchema
+              ),
+              {
+                success: true,
+                message: "Login Google berhasil",
+                data: {
+                  user: authUserExample,
+                  session: authSessionExample
+                },
+                meta: null
+              }
+            ),
+            "400": errorResponse(
+              "OAuth state mismatch.",
+              "GOOGLE_OAUTH_STATE_INVALID",
+              "State Google tidak valid"
+            ),
+            "409": errorResponse(
+              "Google account already linked.",
+              "GOOGLE_OAUTH_ACCOUNT_ALREADY_LINKED",
+              "Akun sudah terhubung dengan akun Google lain"
+            ),
+            "501": errorResponse(
+              "Google SSO is not configured.",
+              "GOOGLE_SSO_NOT_CONFIGURED",
+              "Google SSO belum dikonfigurasi"
+            ),
+            ...authValidationAndRateLimitResponses()
           }
         }
       },

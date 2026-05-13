@@ -1,6 +1,6 @@
 ---
 title: Auth Module
-description: Authentication, session, verification, password reset, and Google SSO placeholder contract for the Bisakerja Backend API.
+description: Authentication, session, verification, password reset, and Google OAuth login for the Bisakerja Backend API.
 owner: backend-owner
 reviewers:
   - platform-docs-maintainer
@@ -30,7 +30,7 @@ The Auth module owns:
 - Forgot password request.
 - Reset password completion.
 - Email verification with OTP or token.
-- Google SSO placeholder documentation.
+- Google OAuth login.
 - Auth-sensitive rate limiting and audit events.
 
 The Auth module does not own:
@@ -48,19 +48,49 @@ The Auth module does not own:
 
 ## Endpoint Summary
 
-| Method | Path                           | Auth                     | Purpose                                                |
-| ------ | ------------------------------ | ------------------------ | ------------------------------------------------------ |
-| `POST` | `/api/v1/auth/register`        | Public                   | Create account and return onboarding access session    |
-| `POST` | `/api/v1/auth/login`           | Public                   | Authenticate using email or username and password      |
-| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate current session or refresh credential       |
-| `POST` | `/api/v1/auth/refresh`         | Refresh credential       | Issue a new access credential                          |
-| `POST` | `/api/v1/auth/forgot-password` | Public                   | Send password reset email or OTP                       |
-| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Set a new password                                     |
-| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email ownership and auto-login                  |
-| `POST` | `/api/v1/auth/google`          | Placeholder              | Reserved for Google SSO after OAuth config is approved |
+| Method | Path                           | Auth                     | Purpose                                               |
+| ------ | ------------------------------ | ------------------------ | ----------------------------------------------------- |
+| `POST` | `/api/v1/auth/register`        | Public                   | Create account and return onboarding access session   |
+| `POST` | `/api/v1/auth/login`           | Public                   | Authenticate using email or username and password     |
+| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate current session or refresh credential      |
+| `POST` | `/api/v1/auth/refresh`         | Refresh credential       | Issue a new access credential                         |
+| `POST` | `/api/v1/auth/forgot-password` | Public                   | Send password reset email or OTP                      |
+| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Set a new password                                    |
+| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email ownership and auto-login                 |
+| `GET`  | `/api/v1/auth/google`          | Public                   | Generate Google OAuth authorize URL                   |
+| `POST` | `/api/v1/auth/google`          | Public                   | Exchange authorization code and issue backend session |
 
-Google SSO must stay a placeholder until OAuth client id, callback URL, token verification, account-linking rules, and redirect behavior are documented.
-The placeholder route returns `501 GOOGLE_SSO_NOT_CONFIGURED` and must not start an OAuth flow, create accounts, or accept provider tokens until the OAuth contract is complete.
+## Google OAuth Login
+
+The Google OAuth login flow uses an authorization code exchange and validates the Google ID token before issuing a Bisakerja backend session.
+
+High-level steps:
+
+1. `GET /api/v1/auth/google`
+   - Server generates random `state` and `nonce`.
+   - Server sets short-lived `HttpOnly` cookies for both values (TTL 10 minutes).
+   - Server returns `authorizeUrl` that includes `state`, `nonce`, and scopes `openid email profile`.
+2. Frontend redirects the browser to the returned `authorizeUrl`.
+3. After login/consent, Google redirects the browser to `GOOGLE_OAUTH_REDIRECT_URI` with `code` and `state`.
+4. Frontend sends `POST /api/v1/auth/google` with JSON body `{ "code": "...", "state": "..." }` and includes credentials so the cookies are sent.
+5. Server validates:
+   - the request `state` matches the `state` cookie
+   - the Google ID token is valid (issuer, audience, expiry, and nonce)
+   - `email_verified=true`
+6. Server links or provisions accounts:
+   - If a `GOOGLE` credential exists for the Google `sub`, issue a session for the linked user.
+   - Else if a user exists with the same email, link a new `GOOGLE` credential to that user and mark the user email as verified.
+   - Else create a new user with a username derived from the email local-part and attach a `GOOGLE` credential.
+7. Server issues:
+   - JSON response with `user` and `session` (access token)
+   - refresh token as an `HttpOnly` cookie
+
+Security rules:
+
+- Always verify `state` before exchanging or accepting tokens.
+- Always verify the ID token `iss` and `aud`.
+- Always validate `nonce` from the ID token matches the stored value.
+- Never store or return raw Google OAuth tokens in API responses, logs, audit events, or the database.
 
 ## Auth Rules
 
@@ -351,20 +381,26 @@ Do not store plaintext passwords, raw OTP values, or raw reset tokens.
 
 ## Error Cases
 
-| Case                                           | Status | Error code                     |
-| ---------------------------------------------- | ------ | ------------------------------ |
-| Invalid request body                           | 422    | `VALIDATION_ERROR`             |
-| Duplicate email                                | 409    | `EMAIL_ALREADY_REGISTERED`     |
-| Duplicate username                             | 409    | `USERNAME_ALREADY_REGISTERED`  |
-| Invalid login credential                       | 401    | `INVALID_CREDENTIALS`          |
-| Unverified email when verification is required | 403    | `EMAIL_NOT_VERIFIED`           |
-| Expired reset token                            | 400    | `PASSWORD_RESET_TOKEN_EXPIRED` |
-| Invalid reset token                            | 400    | `PASSWORD_RESET_TOKEN_INVALID` |
-| Expired email verification OTP                 | 400    | `EMAIL_VERIFICATION_EXPIRED`   |
-| Invalid email verification OTP                 | 400    | `EMAIL_VERIFICATION_INVALID`   |
-| Rate limit exceeded                            | 429    | `RATE_LIMITED`                 |
-| Email provider unavailable                     | 503    | `SERVICE_UNAVAILABLE`          |
-| Google SSO not configured                      | 501    | `GOOGLE_SSO_NOT_CONFIGURED`    |
+| Case                                           | Status | Error code                            |
+| ---------------------------------------------- | ------ | ------------------------------------- |
+| Invalid request body                           | 422    | `VALIDATION_ERROR`                    |
+| Duplicate email                                | 409    | `EMAIL_ALREADY_REGISTERED`            |
+| Duplicate username                             | 409    | `USERNAME_ALREADY_REGISTERED`         |
+| Invalid login credential                       | 401    | `INVALID_CREDENTIALS`                 |
+| Unverified email when verification is required | 403    | `EMAIL_NOT_VERIFIED`                  |
+| Expired reset token                            | 400    | `PASSWORD_RESET_TOKEN_EXPIRED`        |
+| Invalid reset token                            | 400    | `PASSWORD_RESET_TOKEN_INVALID`        |
+| Expired email verification OTP                 | 400    | `EMAIL_VERIFICATION_EXPIRED`          |
+| Invalid email verification OTP                 | 400    | `EMAIL_VERIFICATION_INVALID`          |
+| Rate limit exceeded                            | 429    | `RATE_LIMITED`                        |
+| Email provider unavailable                     | 503    | `SERVICE_UNAVAILABLE`                 |
+| Google OAuth state invalid                     | 400    | `GOOGLE_OAUTH_STATE_INVALID`          |
+| Google OAuth nonce invalid                     | 400    | `GOOGLE_OAUTH_NONCE_INVALID`          |
+| Google OAuth token invalid                     | 400    | `GOOGLE_OAUTH_TOKEN_INVALID`          |
+| Google OAuth code invalid                      | 502    | `GOOGLE_OAUTH_CODE_INVALID`           |
+| Google OAuth email not verified                | 403    | `GOOGLE_OAUTH_EMAIL_UNVERIFIED`       |
+| Google OAuth account already linked            | 409    | `GOOGLE_OAUTH_ACCOUNT_ALREADY_LINKED` |
+| Google SSO not configured                      | 501    | `GOOGLE_SSO_NOT_CONFIGURED`           |
 
 Use generic messages for login and password reset discovery paths to avoid account enumeration.
 

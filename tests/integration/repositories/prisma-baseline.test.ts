@@ -114,8 +114,10 @@ describe("Prisma database baseline", () => {
           username: `owner-${context.runId}`,
           displayName: "Owner User",
           emailVerifiedAt: new Date("2026-04-22T00:00:00.000Z"),
-          authCredential: {
+          authCredentials: {
             create: {
+              provider: "LOCAL",
+              providerAccountId: null,
               passwordHash: "hashed-password-for-test-only",
               passwordHashAlgorithm: "test"
             }

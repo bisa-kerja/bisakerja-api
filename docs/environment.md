@@ -133,6 +133,21 @@ Rules:
 - `SCRAPER_API_SERVICE_TOKEN` must match the scraper service `BACKEND_SYNC_SERVICE_TOKEN` value for internal sync and notification handoff calls.
 - Model API failures must map to documented 502 or 503 API responses.
 
+## Google OAuth Variables
+
+| Variable                     | Required | Example value                                | Notes                                                                 |
+| ---------------------------- | -------- | -------------------------------------------- | --------------------------------------------------------------------- |
+| `GOOGLE_OAUTH_ENABLED`       | Yes      | `false`                                      | Feature flag for Google OAuth login routes                            |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Yes      | `your-local-google-oauth-client-id`          | OAuth client id from Google Cloud Console; keep non-empty placeholder |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Yes      | `your-local-google-oauth-client-secret`      | OAuth client secret; keep non-empty placeholder in local/test         |
+| `GOOGLE_OAUTH_REDIRECT_URI`  | Yes      | `http://localhost:5173/auth/google/callback` | Must match the configured redirect URI in Google Cloud Console        |
+
+Rules:
+
+- If `GOOGLE_OAUTH_ENABLED=false`, the Google OAuth routes must return `501 GOOGLE_SSO_NOT_CONFIGURED`.
+- If `GOOGLE_OAUTH_ENABLED=true`, the backend must validate the Google ID token and must not store or return raw Google OAuth tokens.
+- `GOOGLE_OAUTH_REDIRECT_URI` should point to the frontend callback page that receives `code` and `state`, then calls the backend token exchange route.
+
 ## Job Catalog Freshness Variables
 
 | Variable                | Required | Local default | Notes                                                       |

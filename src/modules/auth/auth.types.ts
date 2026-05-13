@@ -5,6 +5,7 @@ import type {
   AsyncJobPublisher,
   EnqueueAsyncJobInput
 } from "@/shared/async-workloads";
+import type { GoogleOauthAdapter } from "@/modules/auth/auth.google";
 
 export type AuthUser = {
   id: string;
@@ -27,13 +28,18 @@ export type AuthSession = {
 };
 
 export type AuthCredentialRecord = {
-  passwordHash: string;
-  passwordHashAlgorithm: string;
+  id: string;
+  userId: string;
+  provider: "LOCAL" | "GOOGLE";
+  providerAccountId: string | null;
+  passwordHash: string | null;
+  passwordHashAlgorithm: string | null;
+  passwordUpdatedAt: Date | null;
 };
 
 export type AuthUserWithCredential = AuthUser & {
   status: "ACTIVE" | "DISABLED" | "DELETED";
-  credential: AuthCredentialRecord | null;
+  credentials: AuthCredentialRecord[];
 };
 
 export type RefreshTokenRecord = {
@@ -86,7 +92,21 @@ export type AuthRepository = {
   findUserByIdentifier(
     identifier: string
   ): Promise<AuthUserWithCredential | null>;
+  findUserByGoogleAccountId(
+    providerAccountId: string
+  ): Promise<AuthUserWithCredential | null>;
+  linkGoogleCredential(input: {
+    userId: string;
+    providerAccountId: string;
+  }): Promise<void>;
+  markEmailVerifiedAt(userId: string, at: Date): Promise<void>;
   createAccount(input: CreateAccountInput): Promise<AuthUser>;
+  createGoogleAccount(input: {
+    email: string;
+    username: string;
+    providerAccountId: string;
+    emailVerifiedAt: Date;
+  }): Promise<AuthUserWithCredential>;
   createAccountWithEmailVerificationJob(input: {
     account: CreateAccountInput;
     job: EnqueueAsyncJobInput<"auth.email-verification">;
@@ -148,6 +168,7 @@ export type AuthServiceDependencies = {
   repository: AuthRepository;
   jobPublisher: AsyncJobPublisher;
   now?: () => Date;
+  googleOauthAdapter?: GoogleOauthAdapter;
 };
 
 export type AuthRouterOptions = Partial<AuthServiceDependencies> & {

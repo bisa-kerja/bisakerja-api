@@ -142,6 +142,10 @@ export const envSchema = z
     MODEL_API_SERVICE_TOKEN: requiredString("MODEL_API_SERVICE_TOKEN"),
     MODEL_API_ENABLE_MOCK: booleanSchema,
     SCRAPER_API_SERVICE_TOKEN: requiredString("SCRAPER_API_SERVICE_TOKEN"),
+    GOOGLE_OAUTH_ENABLED: booleanSchema,
+    GOOGLE_OAUTH_CLIENT_ID: requiredString("GOOGLE_OAUTH_CLIENT_ID"),
+    GOOGLE_OAUTH_CLIENT_SECRET: requiredString("GOOGLE_OAUTH_CLIENT_SECRET"),
+    GOOGLE_OAUTH_REDIRECT_URI: requiredUrl("GOOGLE_OAUTH_REDIRECT_URI"),
     FILE_STORAGE_DRIVER: z.enum(["local"]),
     UPLOAD_STORAGE_PATH: requiredString("UPLOAD_STORAGE_PATH"),
     CV_UPLOAD_MAX_BYTES: numberFromString("CV_UPLOAD_MAX_BYTES").pipe(
@@ -235,5 +239,34 @@ export const envSchema = z
         path: ["CV_ALLOWED_MIME_TYPES"],
         message: "At least one allowed CV MIME type is required"
       });
+    }
+
+    if (value.GOOGLE_OAUTH_ENABLED) {
+      if (!value.GOOGLE_OAUTH_CLIENT_ID) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["GOOGLE_OAUTH_CLIENT_ID"],
+          message:
+            "GOOGLE_OAUTH_CLIENT_ID is required when GOOGLE_OAUTH_ENABLED=true"
+        });
+      }
+
+      if (!value.GOOGLE_OAUTH_CLIENT_SECRET) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["GOOGLE_OAUTH_CLIENT_SECRET"],
+          message:
+            "GOOGLE_OAUTH_CLIENT_SECRET is required when GOOGLE_OAUTH_ENABLED=true"
+        });
+      }
+
+      if (!value.GOOGLE_OAUTH_REDIRECT_URI) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["GOOGLE_OAUTH_REDIRECT_URI"],
+          message:
+            "GOOGLE_OAUTH_REDIRECT_URI is required when GOOGLE_OAUTH_ENABLED=true"
+        });
+      }
     }
   });

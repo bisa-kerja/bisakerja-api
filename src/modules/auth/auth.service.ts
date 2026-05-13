@@ -42,6 +42,7 @@ import {
 } from "@/shared/utils/token";
 import { issueAccessToken } from "@/shared/utils/jwt";
 import { parseDurationMs } from "@/shared/utils/ttl";
+import type { GoogleOauthAdapter } from "@/modules/auth/auth.google";
 
 export type IssueContext = {
   userAgent?: string;
@@ -59,7 +60,8 @@ export class AuthService {
     private readonly config: AppConfig,
     private readonly repository: AuthRepository,
     private readonly jobPublisher: AsyncJobPublisher,
-    private readonly now: () => Date = () => new Date()
+    private readonly now: () => Date = () => new Date(),
+    private readonly googleOauth?: GoogleOauthAdapter
   ) {}
 
   async register(
@@ -136,12 +138,16 @@ export class AuthService {
   ): Promise<AuthSessionResult> {
     const user = await this.repository.findUserByIdentifier(input.identifier);
 
-    if (!user?.credential) {
+    const localCredential = user?.credentials.find(
+      (credential) => credential.provider === "LOCAL"
+    );
+
+    if (!user || !localCredential?.passwordHash) {
       throw invalidCredentials();
     }
 
     const passwordMatches = await verifyPassword(
-      user.credential.passwordHash,
+      localCredential.passwordHash,
       input.password
     );
 
@@ -152,6 +158,98 @@ export class AuthService {
     this.assertLoginAllowed(user);
 
     return this.issueSession(user, context);
+  }
+
+  startGoogleLogin(input: { state: string; nonce: string }): {
+    authorizeUrl: string;
+  } {
+    const adapter = this.requireGoogleOauthAdapter();
+    return { authorizeUrl: adapter.generateAuthorizeUrl(input) };
+  }
+
+  async loginWithGoogleAuthorizationCode(
+    input: {
+      code: string;
+      expectedNonce: string;
+    },
+    context: IssueContext = {}
+  ): Promise<AuthSessionResult> {
+    const adapter = this.requireGoogleOauthAdapter();
+
+    const profile = await adapter.exchangeCodeForProfile({
+      code: input.code,
+      expectedNonce: input.expectedNonce
+    });
+
+    if (!profile.emailVerified) {
+      throw new AuthorizationError(
+        "Email Google belum terverifikasi",
+        authErrorCodes.googleOauthEmailUnverified
+      );
+    }
+
+    const existingByProvider = await this.repository.findUserByGoogleAccountId(
+      profile.providerAccountId
+    );
+
+    if (existingByProvider) {
+      this.assertLoginAllowed(existingByProvider);
+      return this.issueSession(existingByProvider, context);
+    }
+
+    const existingByEmail = await this.repository.findUserByEmail(
+      profile.email
+    );
+
+    if (existingByEmail) {
+      if (existingByEmail.status !== "ACTIVE") {
+        throw invalidCredentials();
+      }
+      const alreadyLinked = existingByEmail.credentials.find(
+        (credential) => credential.provider === "GOOGLE"
+      );
+
+      if (
+        alreadyLinked &&
+        alreadyLinked.providerAccountId !== profile.providerAccountId
+      ) {
+        throw new ConflictError(
+          "Akun sudah terhubung dengan akun Google lain",
+          authErrorCodes.googleOauthAccountAlreadyLinked
+        );
+      }
+
+      if (!alreadyLinked) {
+        await this.repository.linkGoogleCredential({
+          userId: existingByEmail.id,
+          providerAccountId: profile.providerAccountId
+        });
+      }
+
+      if (!existingByEmail.emailVerified) {
+        await this.repository.markEmailVerifiedAt(
+          existingByEmail.id,
+          this.now()
+        );
+      }
+
+      const refreshed = await this.repository.findUserById(existingByEmail.id);
+      if (!refreshed) {
+        throw unauthenticated();
+      }
+      return this.issueSession(refreshed, context);
+    }
+
+    const username = await this.buildUsernameForGoogle(profile.email);
+    const created = await this.repository.createGoogleAccount({
+      email: profile.email,
+      username,
+      providerAccountId: profile.providerAccountId,
+      emailVerifiedAt: this.now()
+    });
+
+    this.assertLoginAllowed(created);
+    return this.issueSession(created, context);
   }
 
   async refresh(
@@ -379,6 +477,63 @@ export class AuthService {
       );
     });
   }
+
+  private assertGoogleOauthReady() {
+    if (!this.config.integrations.googleOauth.enabled) {
+      this.googleSsoPlaceholder();
+    }
+
+    if (!this.googleOauth) {
+      throw new NotImplementedError(
+        "Google SSO belum dikonfigurasi",
+        authErrorCodes.googleSsoNotConfigured
+      );
+    }
+  }
+
+  private requireGoogleOauthAdapter(): GoogleOauthAdapter {
+    this.assertGoogleOauthReady();
+    if (!this.googleOauth) {
+      this.googleSsoPlaceholder();
+    }
+    return this.googleOauth;
+  }
+
+  private async buildUsernameForGoogle(email: string): Promise<string> {
+    const base = sanitizeUsername(email.split("@")[0] ?? "user");
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const suffix =
+        attempt === 0
+          ? ""
+          : `_${String(Math.floor(Math.random() * 10_000)).padStart(4, "0")}`;
+      const candidate = trimUsername(`${base}${suffix}`);
+      const existing = await this.repository.findUserByUsername(candidate);
+      if (!existing) {
+        return candidate;
+      }
+    }
+
+    return trimUsername(`user_${createNumericOtp()}`);
+  }
+}
+
+function sanitizeUsername(value: string) {
+  const normalized = value
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return normalized.length > 0 ? normalized : "user";
+}
+
+function trimUsername(value: string) {
+  const trimmed = value.slice(0, 30);
+  if (trimmed.length >= 3) {
+    return trimmed;
+  }
+  return `${trimmed}${"0".repeat(3 - trimmed.length)}`;
 }
 
 function invalidCredentials() {

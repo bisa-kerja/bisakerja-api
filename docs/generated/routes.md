@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/routes.md
-last_reviewed: 2026-05-08
+last_reviewed: 2026-05-13
 generated_by: route-inventory-script
-generated_at: 2026-05-08T15:54:08.538Z
-source_commit: 5d1fbfd1747894e43926a77e6e5bfcd0278ef260
+generated_at: 2026-05-13T01:59:32.563Z
+source_commit: 71aae12af89654086f0edb25d37612895a95abe7
 ---
 
 # Backend API Route Inventory
@@ -22,9 +22,9 @@ This page is generated from the route registry used by the application runtime. 
 
 | Metric        | Value                                      |
 | ------------- | ------------------------------------------ |
-| Total routes  | 32                                         |
-| Generated at  | `2026-05-08T15:54:08.538Z`                 |
-| Source commit | `5d1fbfd1747894e43926a77e6e5bfcd0278ef260` |
+| Total routes  | 33                                         |
+| Generated at  | `2026-05-13T01:59:32.563Z`                 |
+| Source commit | `71aae12af89654086f0edb25d37612895a95abe7` |
 
 ## Registered Routes
 
@@ -33,6 +33,7 @@ This page is generated from the route registry used by the application runtime. 
 | `POST`   | `/api/v1/ai/cv-analyzer`                        | `ai-cv-analyzer` |
 | `POST`   | `/api/v1/ai/job-fit`                            | `ai-job-fit`     |
 | `POST`   | `/api/v1/auth/forgot-password`                  | `auth`           |
+| `GET`    | `/api/v1/auth/google`                           | `auth`           |
 | `POST`   | `/api/v1/auth/google`                           | `auth`           |
 | `POST`   | `/api/v1/auth/login`                            | `auth`           |
 | `POST`   | `/api/v1/auth/logout`                           | `auth`           |

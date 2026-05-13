@@ -159,7 +159,7 @@ model User {
   createdAt           DateTime                   @default(now()) @map("created_at")
   updatedAt           DateTime                   @updatedAt @map("updated_at")
   deletedAt           DateTime?                  @map("deleted_at")
-  authCredential      AuthCredential?
+  authCredentials     AuthCredential[]
   refreshTokens       RefreshToken[]
   verificationTokens  EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
@@ -184,16 +184,17 @@ model User {
 
 model AuthCredential {
   id                    String       @id @default(uuid())
-  userId                String       @unique(map: "auth_credentials_user_id_unique") @map("user_id")
+  userId                String       @map("user_id")
   provider              AuthProvider @default(LOCAL)
   providerAccountId     String?      @map("provider_account_id")
-  passwordHash          String       @map("password_hash")
-  passwordHashAlgorithm String       @map("password_hash_algorithm")
-  passwordUpdatedAt     DateTime     @default(now()) @map("password_updated_at")
+  passwordHash          String?      @map("password_hash")
+  passwordHashAlgorithm String?      @map("password_hash_algorithm")
+  passwordUpdatedAt     DateTime?    @default(now()) @map("password_updated_at")
   createdAt             DateTime     @default(now()) @map("created_at")
   updatedAt             DateTime     @updatedAt @map("updated_at")
   user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, provider], map: "auth_credentials_user_id_provider_unique")
   @@unique([provider, providerAccountId], map: "auth_credentials_provider_account_unique")
   @@map("auth_credentials")
 }

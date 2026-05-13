@@ -650,28 +650,28 @@ async function ensureSeedUserCredential(prisma: PrismaClient) {
     select: {
       status: true,
       emailVerifiedAt: true,
-      authCredential: {
-        select: {
-          passwordHash: true
-        }
+      authCredentials: {
+        where: { provider: "LOCAL" },
+        select: { passwordHash: true }
       }
     }
   });
 
   expect(user?.status).toBe("ACTIVE");
   expect(user?.emailVerifiedAt).not.toBeNull();
-  expect(user?.authCredential).not.toBeNull();
+  expect(user?.authCredentials[0]).not.toBeUndefined();
 
-  if (!user?.authCredential) {
+  const credential = user?.authCredentials[0];
+  if (!credential?.passwordHash) {
     return;
   }
 
-  if (await verifyPassword(user.authCredential.passwordHash, seedPassword)) {
+  if (await verifyPassword(credential.passwordHash, seedPassword)) {
     return;
   }
 
   await prisma.authCredential.update({
-    where: { userId: seededAnnisa.id },
+    where: { userId_provider: { userId: seededAnnisa.id, provider: "LOCAL" } },
     data: {
       passwordHash: await hashPassword(seedPassword),
       passwordHashAlgorithm,

@@ -21,7 +21,7 @@ export class PrismaAuthRepository implements AuthRepository {
   async findUserByEmail(email: string): Promise<AuthUserWithCredential | null> {
     const user = await this.client.user.findUnique({
       where: { email },
-      include: { authCredential: true }
+      include: { authCredentials: true }
     });
 
     return user ? mapUserWithCredential(user) : null;
@@ -32,7 +32,7 @@ export class PrismaAuthRepository implements AuthRepository {
   ): Promise<AuthUserWithCredential | null> {
     const user = await this.client.user.findUnique({
       where: { username },
-      include: { authCredential: true }
+      include: { authCredentials: true }
     });
 
     return user ? mapUserWithCredential(user) : null;
@@ -41,7 +41,7 @@ export class PrismaAuthRepository implements AuthRepository {
   async findUserById(userId: string): Promise<AuthUserWithCredential | null> {
     const user = await this.client.user.findUnique({
       where: { id: userId },
-      include: { authCredential: true }
+      include: { authCredentials: true }
     });
 
     return user ? mapUserWithCredential(user) : null;
@@ -54,10 +54,49 @@ export class PrismaAuthRepository implements AuthRepository {
       where: {
         OR: [{ email: identifier }, { username: identifier }]
       },
-      include: { authCredential: true }
+      include: { authCredentials: true }
     });
 
     return user ? mapUserWithCredential(user) : null;
+  }
+
+  async findUserByGoogleAccountId(
+    providerAccountId: string
+  ): Promise<AuthUserWithCredential | null> {
+    const credential = await this.client.authCredential.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: "GOOGLE",
+          providerAccountId
+        }
+      },
+      include: { user: { include: { authCredentials: true } } }
+    });
+
+    return credential ? mapUserWithCredential(credential.user) : null;
+  }
+
+  async linkGoogleCredential(input: {
+    userId: string;
+    providerAccountId: string;
+  }): Promise<void> {
+    await this.client.authCredential.create({
+      data: {
+        userId: input.userId,
+        provider: "GOOGLE",
+        providerAccountId: input.providerAccountId,
+        passwordHash: null,
+        passwordHashAlgorithm: null,
+        passwordUpdatedAt: null
+      }
+    });
+  }
+
+  async markEmailVerifiedAt(userId: string, at: Date): Promise<void> {
+    await this.client.user.update({
+      where: { id: userId },
+      data: { emailVerifiedAt: at }
+    });
   }
 
   async createAccount(input: CreateAccountInput): Promise<AuthUser> {
@@ -66,8 +105,10 @@ export class PrismaAuthRepository implements AuthRepository {
         email: input.email,
         username: input.username,
         phoneNumber: input.phoneNumber,
-        authCredential: {
+        authCredentials: {
           create: {
+            provider: "LOCAL",
+            providerAccountId: null,
             passwordHash: input.passwordHash,
             passwordHashAlgorithm: input.passwordHashAlgorithm
           }
@@ -84,6 +125,33 @@ export class PrismaAuthRepository implements AuthRepository {
     return mapAuthUser(user);
   }
 
+  async createGoogleAccount(input: {
+    email: string;
+    username: string;
+    providerAccountId: string;
+    emailVerifiedAt: Date;
+  }): Promise<AuthUserWithCredential> {
+    const user = await this.client.user.create({
+      data: {
+        email: input.email,
+        username: input.username,
+        emailVerifiedAt: input.emailVerifiedAt,
+        authCredentials: {
+          create: {
+            provider: "GOOGLE",
+            providerAccountId: input.providerAccountId,
+            passwordHash: null,
+            passwordHashAlgorithm: null,
+            passwordUpdatedAt: null
+          }
+        }
+      },
+      include: { authCredentials: true }
+    });
+
+    return mapUserWithCredential(user);
+  }
+
   createAccountWithEmailVerificationJob(input: {
     account: CreateAccountInput;
     job: EnqueueAsyncJobInput<"auth.email-verification">;
@@ -95,8 +163,10 @@ export class PrismaAuthRepository implements AuthRepository {
           email: input.account.email,
           username: input.account.username,
           phoneNumber: input.account.phoneNumber,
-          authCredential: {
+          authCredentials: {
             create: {
+              provider: "LOCAL",
+              providerAccountId: null,
               passwordHash: input.account.passwordHash,
               passwordHashAlgorithm: input.account.passwordHashAlgorithm
             }
@@ -144,7 +214,7 @@ export class PrismaAuthRepository implements AuthRepository {
     const user = await this.client.user.update({
       where: { id: userId },
       data: { emailVerifiedAt: new Date() },
-      include: { authCredential: true }
+      include: { authCredentials: true }
     });
     await this.client.emailVerificationToken.update({
       where: { id: tokenId },
@@ -203,7 +273,7 @@ export class PrismaAuthRepository implements AuthRepository {
     passwordHashAlgorithm: string
   ): Promise<void> {
     await this.client.authCredential.update({
-      where: { userId },
+      where: { userId_provider: { userId, provider: "LOCAL" } },
       data: {
         passwordHash,
         passwordHashAlgorithm,
@@ -225,7 +295,7 @@ export class PrismaAuthRepository implements AuthRepository {
   ): Promise<RefreshTokenRecord> {
     const token = await this.client.refreshToken.create({
       data: input,
-      include: { user: { include: { authCredential: true } } }
+      include: { user: { include: { authCredentials: true } } }
     });
 
     return mapRefreshToken(token);
@@ -236,7 +306,7 @@ export class PrismaAuthRepository implements AuthRepository {
   ): Promise<RefreshTokenRecord | null> {
     const token = await this.client.refreshToken.findUnique({
       where: { tokenHash },
-      include: { user: { include: { authCredential: true } } }
+      include: { user: { include: { authCredentials: true } } }
     });
 
     if (!token || token.revokedAt) {
@@ -253,7 +323,7 @@ export class PrismaAuthRepository implements AuthRepository {
     return this.client.$transaction(async (tx) => {
       const created = await tx.refreshToken.create({
         data: input,
-        include: { user: { include: { authCredential: true } } }
+        include: { user: { include: { authCredentials: true } } }
       });
 
       await tx.refreshToken.update({
@@ -309,20 +379,28 @@ function mapUserWithCredential(user: {
   onboardingStatus: AuthUser["onboardingStatus"];
   createdAt: Date;
   status: AuthUserWithCredential["status"];
-  authCredential: {
-    passwordHash: string;
-    passwordHashAlgorithm: string;
-  } | null;
+  authCredentials: {
+    id: string;
+    userId: string;
+    provider: "LOCAL" | "GOOGLE";
+    providerAccountId: string | null;
+    passwordHash: string | null;
+    passwordHashAlgorithm: string | null;
+    passwordUpdatedAt: Date | null;
+  }[];
 }): AuthUserWithCredential {
   return {
     ...mapAuthUser(user),
     status: user.status,
-    credential: user.authCredential
-      ? {
-          passwordHash: user.authCredential.passwordHash,
-          passwordHashAlgorithm: user.authCredential.passwordHashAlgorithm
-        }
-      : null
+    credentials: user.authCredentials.map((credential) => ({
+      id: credential.id,
+      userId: credential.userId,
+      provider: credential.provider,
+      providerAccountId: credential.providerAccountId,
+      passwordHash: credential.passwordHash,
+      passwordHashAlgorithm: credential.passwordHashAlgorithm,
+      passwordUpdatedAt: credential.passwordUpdatedAt
+    }))
   };
 }
 

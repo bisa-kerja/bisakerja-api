@@ -6,10 +6,12 @@ import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { AuthController } from "@/modules/auth/auth.controller";
 import { PrismaAuthRepository } from "@/modules/auth/auth.repository";
+import { GoogleOauthClient } from "@/modules/auth/auth.google";
 import { createAsyncJobPublisher } from "@/shared/async-workloads/async-workloads.queue";
 import {
   emptyBodySchema,
   forgotPasswordSchema,
+  googleOauthExchangeSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
@@ -22,13 +24,15 @@ export function createAuthRouter(
   options: AuthRouterOptions = {}
 ): Router {
   const router = Router();
-  const { repository, jobPublisher } = resolveAuthDependencies(config, options);
+  const { repository, jobPublisher, googleOauthAdapter } =
+    resolveAuthDependencies(config, options);
   const authMiddleware =
     options.authMiddleware ?? createAuthMiddleware(config, repository);
   const controller = new AuthController({
     config,
     repository,
     jobPublisher,
+    googleOauthAdapter,
     now: options.now
   });
   const { authLimiter } = createRateLimiters(config);
@@ -76,7 +80,18 @@ export function createAuthRouter(
     validate({ body: verifyEmailSchema }),
     controller.verifyEmail
   );
-  router.post("/google", authLimiter, controller.google);
+  router.get("/google", authLimiter, controller.googleStart);
+
+  if (config.integrations.googleOauth.enabled) {
+    router.post(
+      "/google",
+      authLimiter,
+      validate({ body: googleOauthExchangeSchema }),
+      controller.googleExchange
+    );
+  } else {
+    router.post("/google", authLimiter, controller.googleExchange);
+  }
 
   return router;
 }
@@ -87,6 +102,11 @@ function resolveAuthDependencies(
 ) {
   return {
     repository: options.repository ?? new PrismaAuthRepository(),
-    jobPublisher: options.jobPublisher ?? createAsyncJobPublisher(config)
+    jobPublisher: options.jobPublisher ?? createAsyncJobPublisher(config),
+    googleOauthAdapter:
+      options.googleOauthAdapter ??
+      (config.integrations.googleOauth.enabled
+        ? new GoogleOauthClient(config)
+        : undefined)
   };
 }

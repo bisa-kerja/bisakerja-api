@@ -12,7 +12,9 @@ import type {
   CreateRefreshTokenInput,
   EmailVerificationTokenRecord,
   PasswordResetTokenRecord,
-  RefreshTokenRecord
+  RefreshTokenRecord,
+  GoogleOauthAdapter,
+  GoogleOauthProfile
 } from "@/modules/auth";
 import type {
   PreferenceOnboardingState,
@@ -439,7 +441,7 @@ describe("auth routes", () => {
   test("keeps Google SSO unavailable and rate limits auth routes", async () => {
     const context = createAuthRouteContext();
     const google = await injectRoute(context.app, {
-      method: "POST",
+      method: "GET",
       url: "/api/v1/auth/google",
       headers: { "x-request-id": "req_google" }
     });
@@ -469,9 +471,135 @@ describe("auth routes", () => {
     expect(first.status).toBe(401);
     expect(second.status).toBe(429);
   });
+
+  test("starts Google OAuth and exchanges code for a new session", async () => {
+    const adapter = new FakeGoogleOauthAdapter({
+      good_code: {
+        providerAccountId: "google_sub_123",
+        email: "google.user@example.com",
+        emailVerified: true,
+        displayName: "Google User"
+      }
+    });
+    const context = createAuthRouteContext(
+      { GOOGLE_OAUTH_ENABLED: "true" },
+      { googleOauthAdapter: adapter }
+    );
+
+    const start = await injectRoute(context.app, {
+      method: "GET",
+      url: "/api/v1/auth/google",
+      headers: { "x-request-id": "req_google_start" }
+    });
+
+    expect(start.status).toBe(200);
+    expect(start.body).toMatchObject({ success: true });
+    const authorizeUrl = (start.body as { data: { authorizeUrl: string } }).data
+      .authorizeUrl;
+    expect(typeof authorizeUrl).toBe("string");
+
+    const cookies = getSetCookieHeaders(start);
+    const stateCookie = cookies.find((cookie) =>
+      cookie.includes("_state_google_oauth=")
+    );
+    const nonceCookie = cookies.find((cookie) =>
+      cookie.includes("_nonce_google_oauth=")
+    );
+
+    expect(stateCookie).toBeTruthy();
+    expect(nonceCookie).toBeTruthy();
+
+    const stateValue = extractCookieValue(stateCookie ?? "");
+    const nonceValue = extractCookieValue(nonceCookie ?? "");
+
+    const exchange = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/auth/google",
+      headers: {
+        Cookie: `${extractCookiePair(stateCookie ?? "")}; ${extractCookiePair(
+          nonceCookie ?? ""
+        )}`,
+        "x-request-id": "req_google_exchange"
+      },
+      body: { code: "good_code", state: stateValue }
+    });
+
+    expect(exchange.status).toBe(200);
+    const exchangeCookies = getSetCookieHeaders(exchange);
+    expect(exchangeCookies.some((cookie) => cookie.includes("HttpOnly"))).toBe(
+      true
+    );
+    expect(
+      exchangeCookies.some((cookie) => cookie.includes("bisakerja_refresh="))
+    ).toBe(true);
+    expect(exchange.body).toMatchObject({
+      success: true,
+      message: "Login Google berhasil",
+      data: {
+        user: {
+          email: "google.user@example.com",
+          emailVerified: true
+        }
+      }
+    });
+    expect(typeof getAccessToken(exchange.body)).toBe("string");
+    expect(JSON.stringify(exchange.body)).not.toContain(nonceValue);
+  });
+
+  test("rejects Google OAuth exchange when state mismatches", async () => {
+    const adapter = new FakeGoogleOauthAdapter({
+      good_code: {
+        providerAccountId: "google_sub_123",
+        email: "google.user@example.com",
+        emailVerified: true,
+        displayName: "Google User"
+      }
+    });
+    const context = createAuthRouteContext(
+      { GOOGLE_OAUTH_ENABLED: "true" },
+      { googleOauthAdapter: adapter }
+    );
+
+    const start = await injectRoute(context.app, {
+      method: "GET",
+      url: "/api/v1/auth/google",
+      headers: { "x-request-id": "req_google_start2" }
+    });
+    const cookies = getSetCookieHeaders(start);
+    const stateCookie = cookies.find((cookie) =>
+      cookie.includes("_state_google_oauth=")
+    );
+    const nonceCookie = cookies.find((cookie) =>
+      cookie.includes("_nonce_google_oauth=")
+    );
+
+    const exchange = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/auth/google",
+      headers: {
+        Cookie: `${extractCookiePair(stateCookie ?? "")}; ${extractCookiePair(
+          nonceCookie ?? ""
+        )}`,
+        "x-request-id": "req_google_bad_state"
+      },
+      body: { code: "good_code", state: "wrong_state_value" }
+    });
+
+    expect(exchange.status).toBe(400);
+    expect(exchange.body).toMatchObject({
+      success: false,
+      error: {
+        code: "GOOGLE_OAUTH_STATE_INVALID",
+        requestId: "req_google_bad_state"
+      }
+    });
+  });
 });
 
-function createAuthRouteContext(overrides: Partial<NodeJS.ProcessEnv> = {}) {
+function createAuthRouteContext(
+  overrides: Partial<NodeJS.ProcessEnv> = {},
+  options: { googleOauthAdapter?: GoogleOauthAdapter } = {}
+) {
   const repository = new InMemoryAuthRepository();
   const publisher = new RecordingJobPublisher();
   let now = baseDate;
@@ -480,7 +608,8 @@ function createAuthRouteContext(overrides: Partial<NodeJS.ProcessEnv> = {}) {
       auth: {
         repository,
         jobPublisher: publisher,
-        now: () => now
+        now: () => now,
+        googleOauthAdapter: options.googleOauthAdapter
       }
     }
   });
@@ -599,6 +728,32 @@ function getSetCookie(response: Awaited<ReturnType<typeof injectRoute>>) {
   return value ?? "";
 }
 
+function getSetCookieHeaders(
+  response: Awaited<ReturnType<typeof injectRoute>>
+) {
+  const value =
+    response.headers["set-cookie"] ?? response.headers["Set-Cookie"];
+
+  if (!value) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+}
+
+function extractCookiePair(cookieHeader: string) {
+  return cookieHeader.split(";")[0] ?? "";
+}
+
+function extractCookieValue(cookieHeader: string) {
+  const pair = extractCookiePair(cookieHeader);
+  const index = pair.indexOf("=");
+  if (index < 0) {
+    return "";
+  }
+  return pair.slice(index + 1);
+}
+
 function getAccessToken(body: unknown): string {
   return (body as { data: { session: { accessToken: string } } }).data.session
     .accessToken;
@@ -653,6 +808,29 @@ class RecordingJobPublisher implements AsyncJobPublisher {
   }
 }
 
+class FakeGoogleOauthAdapter implements GoogleOauthAdapter {
+  constructor(private readonly profiles: Record<string, GoogleOauthProfile>) {}
+
+  generateAuthorizeUrl(input: { state: string; nonce: string }): string {
+    const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    url.searchParams.set("state", input.state);
+    url.searchParams.set("nonce", input.nonce);
+    return url.toString();
+  }
+
+  exchangeCodeForProfile(input: {
+    code: string;
+    expectedNonce: string;
+  }): Promise<GoogleOauthProfile> {
+    const profile = this.profiles[input.code];
+    if (!profile) {
+      throw new Error(`Missing fake Google profile for code ${input.code}`);
+    }
+
+    return Promise.resolve(structuredClone(profile));
+  }
+}
+
 class InMemoryAuthRepository implements AuthRepository {
   private readonly users = new Map<string, AuthUserWithCredential>();
   private readonly refreshTokens = new Map<string, RefreshTokenRecord>();
@@ -691,19 +869,69 @@ class InMemoryAuthRepository implements AuthRepository {
     );
   }
 
+  findUserByGoogleAccountId(
+    providerAccountId: string
+  ): Promise<AuthUserWithCredential | null> {
+    return Promise.resolve(
+      this.findUser((user) =>
+        user.credentials.some(
+          (credential) =>
+            credential.provider === "GOOGLE" &&
+            credential.providerAccountId === providerAccountId
+        )
+      )
+    );
+  }
+
+  linkGoogleCredential(input: {
+    userId: string;
+    providerAccountId: string;
+  }): Promise<void> {
+    const user = this.requireUser(input.userId);
+    const existing = user.credentials.find(
+      (credential) => credential.provider === "GOOGLE"
+    );
+    if (!existing) {
+      user.credentials.push({
+        id: crypto.randomUUID(),
+        userId: user.id,
+        provider: "GOOGLE",
+        providerAccountId: input.providerAccountId,
+        passwordHash: null,
+        passwordHashAlgorithm: null,
+        passwordUpdatedAt: null
+      });
+    }
+    return Promise.resolve();
+  }
+
+  markEmailVerifiedAt(userId: string, _at: Date): Promise<void> {
+    const user = this.requireUser(userId);
+    user.emailVerified = true;
+    return Promise.resolve();
+  }
+
   createAccount(input: CreateAccountInput): Promise<AuthUser> {
+    const userId = crypto.randomUUID();
     const user: AuthUserWithCredential = {
-      id: crypto.randomUUID(),
+      id: userId,
       email: input.email,
       username: input.username,
       emailVerified: false,
       onboardingStatus: "PENDING",
       createdAt: baseDate,
       status: "ACTIVE",
-      credential: {
-        passwordHash: input.passwordHash,
-        passwordHashAlgorithm: input.passwordHashAlgorithm
-      }
+      credentials: [
+        {
+          id: crypto.randomUUID(),
+          userId,
+          provider: "LOCAL",
+          providerAccountId: null,
+          passwordHash: input.passwordHash,
+          passwordHashAlgorithm: input.passwordHashAlgorithm,
+          passwordUpdatedAt: baseDate
+        }
+      ]
     };
     const tokenId = crypto.randomUUID();
 
@@ -718,6 +946,37 @@ class InMemoryAuthRepository implements AuthRepository {
     });
 
     return Promise.resolve(toSafeUser(user));
+  }
+
+  createGoogleAccount(input: {
+    email: string;
+    username: string;
+    providerAccountId: string;
+    emailVerifiedAt: Date;
+  }): Promise<AuthUserWithCredential> {
+    const userId = crypto.randomUUID();
+    const user: AuthUserWithCredential = {
+      id: userId,
+      email: input.email,
+      username: input.username,
+      emailVerified: true,
+      onboardingStatus: "PENDING",
+      createdAt: baseDate,
+      status: "ACTIVE",
+      credentials: [
+        {
+          id: crypto.randomUUID(),
+          userId,
+          provider: "GOOGLE",
+          providerAccountId: input.providerAccountId,
+          passwordHash: null,
+          passwordHashAlgorithm: null,
+          passwordUpdatedAt: null
+        }
+      ]
+    };
+    this.users.set(user.id, user);
+    return Promise.resolve(user);
   }
 
   createAccountWithEmailVerificationJob(input: {
@@ -819,10 +1078,14 @@ class InMemoryAuthRepository implements AuthRepository {
     const user = this.requireUser(userId);
     const token = this.passwordResetTokens.get(tokenId);
 
-    user.credential = {
-      passwordHash,
-      passwordHashAlgorithm
-    };
+    const local = user.credentials.find(
+      (credential) => credential.provider === "LOCAL"
+    );
+    if (local) {
+      local.passwordHash = passwordHash;
+      local.passwordHashAlgorithm = passwordHashAlgorithm;
+      local.passwordUpdatedAt = baseDate;
+    }
     if (token) {
       token.usedAt = baseDate;
     }

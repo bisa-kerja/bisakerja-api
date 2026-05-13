@@ -78,6 +78,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
       },
       scraperApi: {
         serviceToken: parsed.SCRAPER_API_SERVICE_TOKEN
+      },
+      googleOauth: {
+        enabled: parsed.GOOGLE_OAUTH_ENABLED,
+        clientId: parsed.GOOGLE_OAUTH_CLIENT_ID,
+        clientSecret: parsed.GOOGLE_OAUTH_CLIENT_SECRET,
+        redirectUri: parsed.GOOGLE_OAUTH_REDIRECT_URI
       }
     },
     uploads: {

@@ -75,8 +75,16 @@ export const verifyEmailSchema = z.strictObject({
 
 export const emptyBodySchema = z.strictObject({}).optional();
 
+export const googleOauthExchangeSchema = z.strictObject({
+  code: z.string().trim().min(1).max(4096),
+  state: z.string().trim().min(16).max(512)
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type GoogleOauthExchangeInput = z.infer<
+  typeof googleOauthExchangeSchema
+>;

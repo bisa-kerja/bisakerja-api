@@ -49,6 +49,7 @@ Required behavior:
 - Normalize email before lookup and persistence.
 - Hash passwords before storing credentials.
 - Never store or log plaintext passwords.
+- For OAuth-based login, validate `state` and `nonce`, verify provider-issued ID tokens (issuer, audience, expiry, and email verification), and do not store or return raw provider tokens.
 - Do not reveal whether an email exists during login, forgot password, or reset password failures.
 - Rate limit register, login, forgot password, reset password, and email verification routes more strictly than general routes.
 - Require verified email before enabling sensitive account actions if the product decision requires verification.
