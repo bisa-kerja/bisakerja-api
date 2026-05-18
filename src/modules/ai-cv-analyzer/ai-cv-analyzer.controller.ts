@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { successResponse } from "@/core/responses/response.formatter";
 import { aiCvAnalyzerSuccessMessages } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.constants";
 import type { AnalyzeCvInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import type { UploadCvFileInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import { AiCvAnalyzerService } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";
 import type { AiCvAnalyzerControllerDependencies } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 import { emitAuditEvent } from "@/shared/observability/audit-event";
@@ -111,5 +112,60 @@ export class AiCvAnalyzerController {
 
       throw error;
     }
+  };
+
+  uploadCvFile = async (req: Request, res: Response) => {
+    const input = req.body as UploadCvFileInput;
+    const userId = req.auth?.userId ?? "";
+
+    const cvFile = await this.service.uploadCvFile(
+      userId,
+      input,
+      req.file
+        ? {
+            originalName: req.file.originalname,
+            mimeType: req.file.mimetype,
+            sizeBytes: req.file.size,
+            buffer: req.file.buffer
+          }
+        : null
+    );
+
+    emitAuditEvent({
+      action: "ai_cv_analyzer.cv_file_uploaded",
+      requestId: req.requestId,
+      actorId: userId,
+      resourceType: "cv-file",
+      resourceId: cvFile.id,
+      result: "success",
+      metadata: {
+        isActive: cvFile.isActive,
+        sizeBytes: cvFile.sizeBytes,
+        mimeType: cvFile.mimeType
+      }
+    });
+
+    res
+      .status(201)
+      .json(
+        successResponse(
+          { cvFile },
+          aiCvAnalyzerSuccessMessages.cvFileUploaded,
+          null
+        )
+      );
+  };
+
+  getActiveCvFile = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const cvFile = await this.service.getActiveCvFile(userId);
+
+    res.json(
+      successResponse(
+        { cvFile },
+        aiCvAnalyzerSuccessMessages.activeCvFileRetrieved,
+        null
+      )
+    );
   };
 }

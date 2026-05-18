@@ -451,6 +451,15 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     },
     analyzedAt: "2026-04-24T08:00:00.000Z"
   };
+  const cvFileExample = {
+    id: "550e8400-e29b-41d4-a716-446655440030",
+    originalFileName: "resume.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 284321,
+    uploadedAt: "2026-05-18T10:00:00.000Z",
+    expiresAt: "2026-05-19T10:00:00.000Z",
+    isActive: true
+  };
 
   return {
     openapi: "3.1.0",
@@ -2165,12 +2174,117 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           }
         }
       },
+      "/api/v1/me/cv-files": {
+        post: {
+          tags: ["AI CV Analyzer"],
+          summary: "Upload current user's CV",
+          description:
+            "Stores a PDF CV file for the authenticated current user. This endpoint can be used during onboarding before email verification and can mark the uploaded CV as the user's active CV.",
+          security: bearerSecurity(),
+          requestBody: {
+            required: true,
+            content: {
+              "multipart/form-data": {
+                schema: ref("UploadCvFileMultipartRequest"),
+                encoding: {
+                  cvFile: {
+                    contentType: "application/pdf"
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            "201": jsonResponse(
+              "CV file uploaded successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["cvFile"],
+                  properties: {
+                    cvFile: ref("CvFile")
+                  }
+                },
+                nullSchema
+              ),
+              {
+                success: true,
+                message: "CV berhasil diunggah",
+                data: { cvFile: cvFileExample },
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "413": errorResponse(
+              "Uploaded CV exceeds the configured limit.",
+              "PAYLOAD_TOO_LARGE",
+              "Ukuran file CV melebihi batas maksimum",
+              {
+                path: "cvFile",
+                maxBytes: config.uploads.cvUploadMaxBytes
+              }
+            ),
+            "422": validationErrorResponse("cvFile", "File CV wajib diunggah"),
+            "503": errorResponse(
+              "CV storage is unavailable.",
+              "SERVICE_UNAVAILABLE",
+              "Layanan sementara tidak tersedia"
+            )
+          }
+        }
+      },
+      "/api/v1/me/cv-files/active": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "Get active CV file",
+          description:
+            "Returns the authenticated current user's active non-expired CV metadata without exposing the internal storage key.",
+          security: bearerSecurity(),
+          responses: {
+            "200": jsonResponse(
+              "Active CV file retrieved successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["cvFile"],
+                  properties: {
+                    cvFile: ref("CvFile")
+                  }
+                },
+                nullSchema
+              ),
+              {
+                success: true,
+                message: "CV aktif berhasil diambil",
+                data: { cvFile: cvFileExample },
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "Active CV file is not found.",
+              "CV_FILE_NOT_FOUND",
+              "CV aktif tidak ditemukan"
+            )
+          }
+        }
+      },
       "/api/v1/ai/cv-analyzer": {
         post: {
           tags: ["AI CV Analyzer"],
           summary: "Analyze CV",
           description:
-            "Accepts a multipart PDF upload and compares the CV against a selected job using Model API.",
+            "Compares a CV against a selected job using Model API. The CV source priority is direct PDF upload, explicit cvFileId, then the user's active CV.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
@@ -2201,11 +2315,53 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "UNAUTHENTICATED",
               "Autentikasi diperlukan"
             ),
-            "404": errorResponse(
-              "Job or bookmark is not found.",
-              "BOOKMARK_NOT_FOUND",
-              "Bookmark tidak ditemukan"
-            ),
+            "404": {
+              description:
+                "Job, bookmark, or CV file is not found for the current user.",
+              content: {
+                "application/json": {
+                  schema: ref("ErrorEnvelope"),
+                  examples: {
+                    jobNotFound: {
+                      value: {
+                        success: false,
+                        message: "Lowongan tidak ditemukan",
+                        data: null,
+                        error: {
+                          code: "JOB_NOT_FOUND",
+                          details: null,
+                          requestId: "req_1234567890"
+                        }
+                      }
+                    },
+                    bookmarkNotFound: {
+                      value: {
+                        success: false,
+                        message: "Bookmark tidak ditemukan",
+                        data: null,
+                        error: {
+                          code: "BOOKMARK_NOT_FOUND",
+                          details: null,
+                          requestId: "req_1234567890"
+                        }
+                      }
+                    },
+                    cvFileNotFound: {
+                      value: {
+                        success: false,
+                        message: "CV tidak ditemukan",
+                        data: null,
+                        error: {
+                          code: "CV_FILE_NOT_FOUND",
+                          details: null,
+                          requestId: "req_1234567890"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "413": errorResponse(
               "Uploaded CV exceeds the configured limit.",
               "PAYLOAD_TOO_LARGE",
@@ -3248,7 +3404,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
         AnalyzeCvMultipartRequest: {
           type: "object",
           additionalProperties: false,
-          required: ["jobId", "language", "inputMode", "cvFile"],
+          required: ["jobId", "language", "inputMode"],
           properties: {
             jobId: uuidSchema,
             language: { type: "string", enum: ["id", "en"] },
@@ -3270,6 +3426,46 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               type: "string",
               format: "binary"
             }
+          }
+        },
+        UploadCvFileMultipartRequest: {
+          type: "object",
+          additionalProperties: false,
+          required: ["cvFile"],
+          properties: {
+            setAsActive: {
+              oneOf: [
+                { type: "boolean" },
+                { type: "string", enum: ["true", "false"] }
+              ],
+              default: true
+            },
+            cvFile: {
+              type: "string",
+              format: "binary"
+            }
+          }
+        },
+        CvFile: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "originalFileName",
+            "mimeType",
+            "sizeBytes",
+            "uploadedAt",
+            "expiresAt",
+            "isActive"
+          ],
+          properties: {
+            id: uuidSchema,
+            originalFileName: { type: "string", example: "resume.pdf" },
+            mimeType: { type: "string", const: "application/pdf" },
+            sizeBytes: { type: "integer", minimum: 1, example: 284321 },
+            uploadedAt: isoDateTimeSchema,
+            expiresAt: isoDateTimeSchema,
+            isActive: { type: "boolean" }
           }
         },
         CvAnalysis: {

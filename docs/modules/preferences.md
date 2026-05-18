@@ -37,6 +37,7 @@ The Preferences module does not own:
 - Job listing filters persisted outside the user's active preference set.
 - Notification delivery infrastructure.
 - Mentoring preferences.
+- Uploaded CV files, CV metadata, or active CV selection.
 
 ## Route Prefix
 

@@ -447,9 +447,18 @@ Suggested CV metadata fields:
 - `sizeBytes`
 - `storageDriver`
 - `storageKey`
+- `isActive`
 - `uploadedAt`
 - `expiresAt`
 - `deletedAt`
+
+CV metadata rules:
+
+- `cv_file_metadata` is the source of truth for reusable user CV metadata.
+- `user_preference` does not store CV file fields or pointers.
+- `is_active` marks the current default CV for analyzer fallback and onboarding prefill.
+- A partial unique index enforces at most one non-deleted active CV per user.
+- `deleted_at` disables active status during retention cleanup.
 
 ## Prisma Schema Conventions
 

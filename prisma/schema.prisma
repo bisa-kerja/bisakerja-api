@@ -587,6 +587,7 @@ model CvFileMetadata {
   sizeBytes         Int                @map("size_bytes")
   storageDriver     StorageDriver      @default(LOCAL) @map("storage_driver")
   storageKey        String             @map("storage_key")
+  isActive          Boolean            @default(false) @map("is_active")
   uploadedAt        DateTime           @default(now()) @map("uploaded_at")
   expiresAt         DateTime           @map("expires_at")
   deletedAt         DateTime?          @map("deleted_at")
@@ -596,6 +597,7 @@ model CvFileMetadata {
   cvAnalysisResults CvAnalysisResult[]
 
   @@index([userId], map: "cv_file_metadata_user_id_idx")
+  @@index([userId, isActive], map: "cv_file_metadata_user_active_idx")
   @@index([expiresAt], map: "cv_file_metadata_expires_at_idx")
   @@map("cv_file_metadata")
 }

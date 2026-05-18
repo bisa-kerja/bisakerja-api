@@ -78,7 +78,7 @@ describe("ai cv analyzer routes", () => {
     });
   });
 
-  test("rejects unsupported mime type, oversized files, unsupported reference mode, and unsafe bookmark access", async () => {
+  test("rejects unsupported mime type, oversized files, missing reference CV, and unsafe bookmark access", async () => {
     const invalidMimeContext = createAiCvAnalyzerRouteContext();
     const invalidMimeResponse = await injectRoute(invalidMimeContext.app, {
       method: "POST",
@@ -105,19 +105,21 @@ describe("ai cv analyzer routes", () => {
       })
     });
 
-    const referenceContext = createAiCvAnalyzerRouteContext();
-    const referenceResponse = await injectRoute(referenceContext.app, {
-      method: "POST",
-      url: "/api/v1/ai/cv-analyzer",
-      headers: authHeaders("user-1", "req_ai_cv_reference"),
-      formData: buildCvFormData({
-        includeFile: false,
-        overrides: {
-          inputMode: "REFERENCE",
-          cvFileId: "22222222-2222-4222-8222-222222222222"
-        }
-      })
-    });
+    const missingReferenceContext = createAiCvAnalyzerRouteContext();
+    const missingReferenceResponse = await injectRoute(
+      missingReferenceContext.app,
+      {
+        method: "POST",
+        url: "/api/v1/ai/cv-analyzer",
+        headers: authHeaders("user-1", "req_ai_cv_reference"),
+        formData: buildCvFormData({
+          includeFile: false,
+          overrides: {
+            inputMode: "REFERENCE"
+          }
+        })
+      }
+    );
 
     const bookmarkContext = createAiCvAnalyzerRouteContext({
       hasBookmark: false
@@ -135,7 +137,7 @@ describe("ai cv analyzer routes", () => {
 
     expect(invalidMimeResponse.status).toBe(422);
     expect(oversizedResponse.status).toBe(413);
-    expect(referenceResponse.status).toBe(422);
+    expect(missingReferenceResponse.status).toBe(422);
     expect(bookmarkResponse.status).toBe(404);
     expect(invalidMimeResponse.body).toMatchObject({
       error: {
@@ -147,12 +149,12 @@ describe("ai cv analyzer routes", () => {
         ]
       }
     });
-    expect(referenceResponse.body).toMatchObject({
+    expect(missingReferenceResponse.body).toMatchObject({
       error: {
         details: [
           expect.objectContaining({
-            path: "inputMode",
-            message: "Mode REFERENCE belum didukung"
+            path: "cvFileId",
+            message: "Unggah CV atau kirim ID file CV yang valid"
           })
         ]
       }
@@ -193,6 +195,98 @@ describe("ai cv analyzer routes", () => {
     expect(context.storage.savedFiles).toHaveLength(1);
     expect(JSON.stringify(response.body)).not.toContain("storageKey");
     expect(JSON.stringify(response.body)).not.toContain("requestId");
+  });
+
+  test("uploads onboarding CV, exposes active CV, and reuses it for analyzer fallback", async () => {
+    const context = createAiCvAnalyzerRouteContext();
+
+    const uploadResponse = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/me/cv-files",
+      headers: authHeaders("user-1", "req_cv_upload"),
+      formData: buildCvUploadFormData()
+    });
+    const activeResponse = await injectRoute(context.app, {
+      method: "GET",
+      url: "/api/v1/me/cv-files/active",
+      headers: authHeaders("user-1", "req_cv_active")
+    });
+    const analyzerResponse = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_active_fallback"),
+      formData: buildCvFormData({
+        includeFile: false,
+        overrides: {
+          inputMode: "REFERENCE",
+          persistResult: "true"
+        }
+      })
+    });
+
+    expect(uploadResponse.status).toBe(201);
+    expect(uploadResponse.body).toMatchObject({
+      success: true,
+      message: "CV berhasil diunggah",
+      data: {
+        cvFile: {
+          originalFileName: "cv.pdf",
+          mimeType: "application/pdf",
+          isActive: true
+        }
+      },
+      meta: null
+    });
+    expect(JSON.stringify(uploadResponse.body)).not.toContain("storageKey");
+    expect(activeResponse.status).toBe(200);
+    expect(activeResponse.body).toMatchObject({
+      success: true,
+      data: {
+        cvFile: {
+          id: context.repository.fileMetadata[0]?.id,
+          isActive: true
+        }
+      }
+    });
+    expect(analyzerResponse.status).toBe(200);
+    expect(context.repository.snapshots).toHaveLength(1);
+    expect(context.repository.snapshots[0]).toMatchObject({
+      cvFileMetadataId: context.repository.fileMetadata[0]?.id,
+      inputMode: "REFERENCE"
+    });
+  });
+
+  test("blocks analyzer access to another user's stored CV", async () => {
+    const context = createAiCvAnalyzerRouteContext({
+      fileMetadata: [
+        cvFileMetadataRecord({
+          id: "22222222-2222-4222-8222-222222222222",
+          userId: "user-2",
+          isActive: true
+        })
+      ]
+    });
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_cross_user"),
+      formData: buildCvFormData({
+        includeFile: false,
+        overrides: {
+          inputMode: "REFERENCE",
+          cvFileId: "22222222-2222-4222-8222-222222222222"
+        }
+      })
+    });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      error: {
+        code: "CV_FILE_NOT_FOUND",
+        requestId: "req_ai_cv_cross_user"
+      }
+    });
   });
 
   test("isolates ai failure from jobs routes", async () => {
@@ -239,11 +333,13 @@ function createAiCvAnalyzerRouteContext(
     job?: JobRecord | null;
     analyzeCv?: () => Promise<typeof modelApiFixtures.validCvAnalyzerResponse>;
     config?: ReturnType<typeof testConfig>;
+    fileMetadata?: CvFileMetadataRecord[];
   } = {}
 ) {
   const repository = new InMemoryAiCvAnalyzerRepository(
     overrides.job ?? jobRecord(),
-    overrides.hasBookmark ?? true
+    overrides.hasBookmark ?? true,
+    overrides.fileMetadata
   );
   const storage = new InMemoryCvFileStorage();
   const jobsRepository = new StaticJobsRepository(
@@ -287,8 +383,11 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
 
   constructor(
     private readonly job: JobRecord | null,
-    private readonly hasBookmark: boolean
-  ) {}
+    private readonly hasBookmark: boolean,
+    fileMetadata: CvFileMetadataRecord[] = []
+  ) {
+    this.fileMetadata.push(...fileMetadata);
+  }
 
   findVisibleJob(): Promise<JobRecord | null> {
     return Promise.resolve(this.job);
@@ -304,12 +403,50 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     const record: CvFileMetadataRecord = {
       ...input,
       storageDriver: "LOCAL",
+      isActive: input.isActive ?? false,
       uploadedAt: new Date("2026-04-23T00:00:00.000Z"),
       deletedAt: null
     };
 
+    if (record.isActive) {
+      for (const file of this.fileMetadata) {
+        if (file.userId === record.userId && file.deletedAt === null) {
+          file.isActive = false;
+        }
+      }
+    }
+
     this.fileMetadata.push(record);
     return Promise.resolve(record);
+  }
+
+  findActiveCvFileMetadata(
+    userId: string,
+    now: Date
+  ): Promise<CvFileMetadataRecord | null> {
+    return Promise.resolve(
+      this.fileMetadata.find(
+        (file) =>
+          file.userId === userId &&
+          file.isActive &&
+          file.deletedAt === null &&
+          file.expiresAt > now
+      ) ?? null
+    );
+  }
+
+  findCvFileMetadataById(
+    cvFileId: string,
+    now: Date
+  ): Promise<CvFileMetadataRecord | null> {
+    return Promise.resolve(
+      this.fileMetadata.find(
+        (file) =>
+          file.id === cvFileId &&
+          file.deletedAt === null &&
+          file.expiresAt > now
+      ) ?? null
+    );
   }
 
   markCvFileDeleted(): Promise<void> {
@@ -440,6 +577,52 @@ function buildCvFormData(
   }
 
   return formData;
+}
+
+function buildCvUploadFormData(
+  options: {
+    includeFile?: boolean;
+    setAsActive?: string;
+    file?: File;
+  } = {}
+) {
+  const formData = new FormData();
+  const includeFile = options.includeFile ?? true;
+
+  if (options.setAsActive) {
+    formData.set("setAsActive", options.setAsActive);
+  }
+
+  if (includeFile) {
+    formData.set(
+      "cvFile",
+      options.file ??
+        new File([Buffer.from("%PDF-1.4 onboarding cv")], "cv.pdf", {
+          type: "application/pdf"
+        })
+    );
+  }
+
+  return formData;
+}
+
+function cvFileMetadataRecord(
+  overrides: Partial<CvFileMetadataRecord> = {}
+): CvFileMetadataRecord {
+  return {
+    id: "cv-file-1",
+    userId: "user-1",
+    originalFileName: "cv.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 16,
+    storageDriver: "LOCAL",
+    storageKey: "cv/user-1/cv-file-1.pdf",
+    isActive: false,
+    uploadedAt: new Date("2026-04-23T00:00:00.000Z"),
+    expiresAt: new Date("2026-04-24T00:00:00.000Z"),
+    deletedAt: null,
+    ...overrides
+  };
 }
 
 function jobRecord(): JobRecord {

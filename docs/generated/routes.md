@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/routes.md
-last_reviewed: 2026-05-13
+last_reviewed: 2026-05-18
 generated_by: route-inventory-script
-generated_at: 2026-05-13T01:59:32.563Z
-source_commit: 71aae12af89654086f0edb25d37612895a95abe7
+generated_at: 2026-05-18T07:25:02.093Z
+source_commit: 5230a76ea7c9f64d3617fe822069ea81a791dfe4
 ---
 
 # Backend API Route Inventory
@@ -22,9 +22,9 @@ This page is generated from the route registry used by the application runtime. 
 
 | Metric        | Value                                      |
 | ------------- | ------------------------------------------ |
-| Total routes  | 33                                         |
-| Generated at  | `2026-05-13T01:59:32.563Z`                 |
-| Source commit | `71aae12af89654086f0edb25d37612895a95abe7` |
+| Total routes  | 35                                         |
+| Generated at  | `2026-05-18T07:25:02.093Z`                 |
+| Source commit | `5230a76ea7c9f64d3617fe822069ea81a791dfe4` |
 
 ## Registered Routes
 
@@ -54,6 +54,8 @@ This page is generated from the route registry used by the application runtime. 
 | `GET`    | `/api/v1/me/bookmarks`                          | `bookmarks`      |
 | `POST`   | `/api/v1/me/bookmarks`                          | `bookmarks`      |
 | `DELETE` | `/api/v1/me/bookmarks/:jobId`                   | `bookmarks`      |
+| `POST`   | `/api/v1/me/cv-files`                           | `cv-files`       |
+| `GET`    | `/api/v1/me/cv-files/active`                    | `cv-files`       |
 | `PUT`    | `/api/v1/me/education`                          | `users`          |
 | `PUT`    | `/api/v1/me/experience`                         | `users`          |
 | `GET`    | `/api/v1/me/preferences`                        | `preferences`    |

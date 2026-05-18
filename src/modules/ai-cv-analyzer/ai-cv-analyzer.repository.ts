@@ -56,32 +56,57 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     storageDriver: "LOCAL";
     storageKey: string;
     expiresAt: Date;
+    isActive?: boolean;
   }): Promise<CvFileMetadataRecord> {
-    const record = await this.client.cvFileMetadata.create({
-      data: {
-        id: input.id,
-        userId: input.userId,
-        originalFileName: input.originalFileName,
-        mimeType: input.mimeType,
-        sizeBytes: input.sizeBytes,
-        storageDriver: input.storageDriver,
-        storageKey: input.storageKey,
-        expiresAt: input.expiresAt
+    if (input.isActive && hasTransaction(this.client)) {
+      const record = await this.client.$transaction((transaction) =>
+        createCvFileMetadataRecord(transaction, input)
+      );
+
+      return mapCvFileMetadata(record);
+    }
+
+    const record = await createCvFileMetadataRecord(this.client, input);
+
+    return mapCvFileMetadata(record);
+  }
+
+  async findActiveCvFileMetadata(
+    userId: string,
+    now: Date
+  ): Promise<CvFileMetadataRecord | null> {
+    const record = await this.client.cvFileMetadata.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        deletedAt: null,
+        expiresAt: {
+          gt: now
+        }
+      },
+      orderBy: {
+        uploadedAt: "desc"
       }
     });
 
-    return {
-      id: record.id,
-      userId: record.userId,
-      originalFileName: record.originalFileName,
-      mimeType: record.mimeType,
-      sizeBytes: record.sizeBytes,
-      storageDriver: record.storageDriver,
-      storageKey: record.storageKey,
-      uploadedAt: record.uploadedAt,
-      expiresAt: record.expiresAt,
-      deletedAt: record.deletedAt
-    };
+    return record ? mapCvFileMetadata(record) : null;
+  }
+
+  async findCvFileMetadataById(
+    cvFileId: string,
+    now: Date
+  ): Promise<CvFileMetadataRecord | null> {
+    const record = await this.client.cvFileMetadata.findFirst({
+      where: {
+        id: cvFileId,
+        deletedAt: null,
+        expiresAt: {
+          gt: now
+        }
+      }
+    });
+
+    return record ? mapCvFileMetadata(record) : null;
   }
 
   async markCvFileDeleted(fileId: string, deletedAt: Date): Promise<void> {
@@ -91,7 +116,8 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
         deletedAt: null
       },
       data: {
-        deletedAt
+        deletedAt,
+        isActive: false
       }
     });
   }
@@ -155,12 +181,91 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
         deletedAt: null
       },
       data: {
-        deletedAt
+        deletedAt,
+        isActive: false
       }
     });
 
     return result.count;
   }
+}
+
+async function createCvFileMetadataRecord(
+  client: PrismaClientLike,
+  input: {
+    id: string;
+    userId: string;
+    originalFileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storageDriver: "LOCAL";
+    storageKey: string;
+    expiresAt: Date;
+    isActive?: boolean;
+  }
+) {
+  if (input.isActive) {
+    await client.cvFileMetadata.updateMany({
+      where: {
+        userId: input.userId,
+        deletedAt: null,
+        isActive: true
+      },
+      data: {
+        isActive: false
+      }
+    });
+  }
+
+  return client.cvFileMetadata.create({
+    data: {
+      id: input.id,
+      userId: input.userId,
+      originalFileName: input.originalFileName,
+      mimeType: input.mimeType,
+      sizeBytes: input.sizeBytes,
+      storageDriver: input.storageDriver,
+      storageKey: input.storageKey,
+      expiresAt: input.expiresAt,
+      isActive: input.isActive ?? false
+    }
+  });
+}
+
+function hasTransaction(client: PrismaClientLike): client is typeof prisma & {
+  $transaction: <T>(
+    fn: (transaction: PrismaTransaction) => Promise<T>
+  ) => Promise<T>;
+} {
+  return "$transaction" in client;
+}
+
+function mapCvFileMetadata(record: {
+  id: string;
+  userId: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageDriver: "LOCAL";
+  storageKey: string;
+  isActive: boolean;
+  uploadedAt: Date;
+  expiresAt: Date;
+  deletedAt: Date | null;
+}): CvFileMetadataRecord {
+  return {
+    id: record.id,
+    userId: record.userId,
+    originalFileName: record.originalFileName,
+    mimeType: record.mimeType,
+    sizeBytes: record.sizeBytes,
+    storageDriver: record.storageDriver,
+    storageKey: record.storageKey,
+    isActive: record.isActive,
+    uploadedAt: record.uploadedAt,
+    expiresAt: record.expiresAt,
+    deletedAt: record.deletedAt
+  };
 }
 
 const jobInclude = {

@@ -13,9 +13,9 @@ last_reviewed: 2026-05-12
 
 # AI CV Analyzer Module
 
-The AI CV Analyzer module analyzes a user's CV against a selected job listing. It validates CV input, loads normalized job context, calls Model API, returns product-safe analysis output, and optionally stores sanitized analysis snapshots.
+The AI CV Analyzer module analyzes a user's CV against a selected job listing. It validates CV input, stores reusable CV metadata when requested, loads normalized job context, calls Model API, returns product-safe analysis output, and optionally stores sanitized analysis snapshots.
 
-This module is in MVP scope with temporary PDF `UPLOAD` mode only. `REFERENCE` mode and generated improved CV output are future scope unless explicitly approved.
+Generated improved CV output remains outside the current contract.
 
 ## Responsibility
 
@@ -42,26 +42,31 @@ The AI CV Analyzer module does not own:
 - Model training or model artifact management.
 - Raw CV content exposure to frontend logs or backend logs.
 
-## Route Prefix
+## Route Prefixes
 
 ```text
 /api/v1/ai/cv-analyzer
+/api/v1/me/cv-files
 ```
 
 ## Endpoint Summary
 
-| Method | Path                     | Auth          | Purpose                                        |
-| ------ | ------------------------ | ------------- | ---------------------------------------------- |
-| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded PDF CV against a selected job |
+| Method | Path                         | Auth                                     | Purpose                                                  |
+| ------ | ---------------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| `POST` | `/api/v1/me/cv-files`        | Authenticated or onboarding access token | Upload a current user's reusable PDF CV                  |
+| `GET`  | `/api/v1/me/cv-files/active` | Authenticated or onboarding access token | Read the current user's active CV metadata               |
+| `POST` | `/api/v1/ai/cv-analyzer`     | Authenticated                            | Analyze uploaded or stored PDF CV against a selected job |
 
 Future endpoints for analysis history or generated CV download require separate documentation.
 
 ## Auth And Ownership Rules
 
 - Route requires authenticated user identity.
+- Current-user CV upload and active CV lookup may be used before email verification so onboarding can save an optional CV.
 - Selected job must exist in normalized job data.
 - If the job is selected from bookmarks, the bookmark must belong to current user.
 - If the CV is referenced by stored file id, the file metadata must belong to current user.
+- Cross-user CV references are concealed as `404 CV_FILE_NOT_FOUND`.
 - Request body must not include trusted profile or preference data.
 - Backend must not log raw CV content.
 
@@ -69,12 +74,52 @@ Future endpoints for analysis history or generated CV download require separate 
 
 MVP supports one of these modes:
 
-| Mode        | Description                                             |
-| ----------- | ------------------------------------------------------- |
-| `UPLOAD`    | MVP. User uploads a PDF CV file in the request          |
-| `REFERENCE` | Deferred. User references a previously uploaded CV file |
+| Mode        | Description                                        |
+| ----------- | -------------------------------------------------- |
+| `UPLOAD`    | User uploads a PDF CV file in the analyzer request |
+| `REFERENCE` | User references a previously uploaded CV file      |
 
-`REFERENCE` returns `422 VALIDATION_ERROR` until reusable CV storage is designed and implemented.
+Analyzer CV source priority:
+
+1. A new `cvFile` upload in the analyzer request.
+2. An explicit `cvFileId` owned by the current user.
+3. The current user's active CV file.
+
+If no upload, no valid `cvFileId`, and no active CV are available, the analyzer returns `422 VALIDATION_ERROR`.
+
+## Current-User CV Upload
+
+`POST /api/v1/me/cv-files` accepts `multipart/form-data`.
+
+Multipart fields:
+
+| Field         | Rule                                                      |
+| ------------- | --------------------------------------------------------- |
+| `cvFile`      | Required PDF file using the configured CV upload limits   |
+| `setAsActive` | Optional boolean string `true` or `false`, default `true` |
+
+Successful response:
+
+```json
+{
+  "success": true,
+  "message": "CV berhasil diunggah",
+  "data": {
+    "cvFile": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "originalFileName": "resume.pdf",
+      "mimeType": "application/pdf",
+      "sizeBytes": 284321,
+      "uploadedAt": "2026-05-18T10:00:00.000Z",
+      "expiresAt": "2026-05-19T10:00:00.000Z",
+      "isActive": true
+    }
+  },
+  "meta": null
+}
+```
+
+`GET /api/v1/me/cv-files/active` returns the same safe `cvFile` metadata shape. It does not expose `storageKey`.
 
 ## Request Schema
 
@@ -92,15 +137,15 @@ For multipart upload, metadata fields are sent alongside file part.
 
 Validation:
 
-| Field           | Rule                                                                                 |
-| --------------- | ------------------------------------------------------------------------------------ |
-| `jobId`         | Required internal job listing id                                                     |
-| `language`      | Required enum: `id` or `en`                                                          |
-| `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                               |
-| `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`                         |
-| `persistResult` | Optional boolean, default based on product policy                                    |
-| `cvFile`        | Required for `UPLOAD` mode                                                           |
-| `cvFileId`      | Optional request field for future `REFERENCE` support; ignored for MVP `UPLOAD` mode |
+| Field           | Rule                                                                  |
+| --------------- | --------------------------------------------------------------------- |
+| `jobId`         | Required internal job listing id                                      |
+| `language`      | Required enum: `id` or `en`                                           |
+| `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                |
+| `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`          |
+| `persistResult` | Optional boolean, default based on product policy                     |
+| `cvFile`        | Required for `UPLOAD` mode                                            |
+| `cvFileId`      | Optional for `REFERENCE`; when omitted the active CV fallback is used |
 
 CV file validation:
 
@@ -249,6 +294,8 @@ Persistence rules:
 
 - Persist sanitized analysis snapshots only when `persistResult=true`.
 - Store CV file metadata separately from raw analysis result.
+- `cv_file_metadata.isActive` marks the user's active CV.
+- At most one non-deleted active CV may exist per user.
 - Store `expiresAt` for uploaded CV files.
 - Store `deletedAt` after deletion.
 - Do not store raw extracted CV text unless explicit retention policy is approved.
@@ -277,6 +324,7 @@ Suggested metadata:
 - `sizeBytes`
 - `storageDriver`
 - `storageKey`
+- `isActive`
 - `uploadedAt`
 - `expiresAt`
 - `deletedAt`
@@ -303,7 +351,9 @@ Suggested metadata:
 | Invalid CV file                     | 422        | `VALIDATION_ERROR`                               |
 | CV file too large                   | 413        | `PAYLOAD_TOO_LARGE`                              |
 | Job not found                       | 404        | `JOB_NOT_FOUND`                                  |
-| Unsupported `REFERENCE` mode        | 422        | `VALIDATION_ERROR`                               |
+| Referenced CV not owned             | 404        | `CV_FILE_NOT_FOUND`                              |
+| Referenced CV not found             | 404        | `CV_FILE_NOT_FOUND`                              |
+| No active CV fallback               | 422        | `VALIDATION_ERROR`                               |
 | Bookmark not found for current user | 404        | `BOOKMARK_NOT_FOUND`                             |
 | Storage unavailable                 | 500 or 503 | `INTERNAL_SERVER_ERROR` or `SERVICE_UNAVAILABLE` |
 | Model unavailable                   | 503        | `SERVICE_UNAVAILABLE`                            |
@@ -314,7 +364,7 @@ Validation detail examples for `422 VALIDATION_ERROR`:
 - `body`: `Request harus multipart/form-data`
 - `cvFile`: `Tipe file CV tidak didukung. Gunakan application/pdf`
 - `cvFile`: `File CV PDF diperlukan untuk analisis`
-- `inputMode`: `Mode REFERENCE belum didukung`
+- `cvFileId`: `Unggah CV atau kirim ID file CV yang valid`
 
 ## Observability
 

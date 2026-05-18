@@ -51,3 +51,9 @@ export const analyzeCvSchema = z
   });
 
 export type AnalyzeCvInput = z.infer<typeof analyzeCvSchema>;
+
+export const uploadCvFileSchema = z.strictObject({
+  setAsActive: multipartBooleanSchema.default(true)
+});
+
+export type UploadCvFileInput = z.infer<typeof uploadCvFileSchema>;

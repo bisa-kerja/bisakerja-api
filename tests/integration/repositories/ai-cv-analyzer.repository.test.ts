@@ -77,7 +77,19 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         sizeBytes: 1024,
         storageDriver: "LOCAL",
         storageKey: `cv/${user.id}/cv-file-${context.runId}.pdf`,
-        expiresAt: new Date("2026-04-24T00:00:00.000Z")
+        expiresAt: new Date("2026-04-24T00:00:00.000Z"),
+        isActive: true
+      });
+      const replacementMetadata = await repository.createCvFileMetadata({
+        id: `cv-file-active-${context.runId}`,
+        userId: user.id,
+        originalFileName: "cv-active.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 2048,
+        storageDriver: "LOCAL",
+        storageKey: `cv/${user.id}/cv-file-active-${context.runId}.pdf`,
+        expiresAt: new Date("2026-04-24T00:00:00.000Z"),
+        isActive: true
       });
 
       await repository.createSnapshot({
@@ -156,11 +168,19 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         otherUser.id,
         job.id
       );
+      const activeMetadata = await repository.findActiveCvFileMetadata(
+        user.id,
+        new Date("2026-04-23T00:00:00.000Z")
+      );
+      const explicitMetadata = await repository.findCvFileMetadataById(
+        replacementMetadata.id,
+        new Date("2026-04-23T00:00:00.000Z")
+      );
       const expiredBeforeDelete = await repository.findExpiredActiveCvFiles(
         new Date("2026-04-25T00:00:00.000Z")
       );
       const markedDeleted = await repository.markCvFilesDeleted(
-        [metadata.id],
+        [metadata.id, replacementMetadata.id],
         new Date("2026-04-25T00:00:00.000Z")
       );
       const expiredAfterDelete = await repository.findExpiredActiveCvFiles(
@@ -175,13 +195,25 @@ describe("PrismaAiCvAnalyzerRepository", () => {
       expect(visibleJob).toMatchObject({ id: job.id, title: job.title });
       expect(hasBookmark).toBe(true);
       expect(otherUserHasBookmark).toBe(false);
+      expect(activeMetadata).toMatchObject({
+        id: replacementMetadata.id,
+        isActive: true
+      });
+      expect(explicitMetadata).toMatchObject({
+        id: replacementMetadata.id,
+        userId: user.id
+      });
       expect(expiredBeforeDelete).toEqual([
         {
           id: metadata.id,
           storageKey: metadata.storageKey
+        },
+        {
+          id: replacementMetadata.id,
+          storageKey: replacementMetadata.storageKey
         }
       ]);
-      expect(markedDeleted).toBe(1);
+      expect(markedDeleted).toBe(2);
       expect(expiredAfterDelete).toEqual([]);
       expect(snapshots).toHaveLength(1);
       expect(snapshots[0]).toMatchObject({

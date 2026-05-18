@@ -38,6 +38,7 @@ export type CvFileMetadataRecord = {
   sizeBytes: number;
   storageDriver: "LOCAL";
   storageKey: string;
+  isActive: boolean;
   uploadedAt: Date;
   expiresAt: Date;
   deletedAt: Date | null;
@@ -71,11 +72,30 @@ export type AiCvAnalyzerRepository = {
     storageDriver: "LOCAL";
     storageKey: string;
     expiresAt: Date;
+    isActive?: boolean;
   }): Promise<CvFileMetadataRecord>;
+  findActiveCvFileMetadata(
+    userId: string,
+    now: Date
+  ): Promise<CvFileMetadataRecord | null>;
+  findCvFileMetadataById(
+    cvFileId: string,
+    now: Date
+  ): Promise<CvFileMetadataRecord | null>;
   markCvFileDeleted(fileId: string, deletedAt: Date): Promise<void>;
   createSnapshot(input: CvAnalysisSnapshotInput): Promise<void>;
   findExpiredActiveCvFiles(now: Date): Promise<ExpiredCvFileRecord[]>;
   markCvFilesDeleted(fileIds: string[], deletedAt: Date): Promise<number>;
+};
+
+export type CvFileResource = {
+  id: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  expiresAt: string;
+  isActive: boolean;
 };
 
 export type CvAnalysisResource = {

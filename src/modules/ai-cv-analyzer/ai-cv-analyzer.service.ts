@@ -4,12 +4,14 @@ import {
   generatedCvUnavailableNote
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.constants";
 import type { AnalyzeCvInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import type { UploadCvFileInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import type {
   AiCvAnalyzerRepository,
   AiCvAnalyzerServiceOptions,
   CleanupExpiredCvFilesResult,
   CvAnalysisResource,
   CvAnalysisResult,
+  CvFileResource,
   CvFileMetadataRecord,
   CvFileStorage,
   UploadedCvFile
@@ -37,26 +39,6 @@ export class AiCvAnalyzerService {
     input: AnalyzeCvInput,
     uploadedFile: UploadedCvFile | null
   ): Promise<CvAnalysisResult> {
-    if (input.inputMode === "REFERENCE") {
-      throw createValidationError("Mode REFERENCE belum didukung", [
-        {
-          path: "inputMode",
-          message: "Mode REFERENCE belum didukung",
-          code: "custom"
-        }
-      ]);
-    }
-
-    if (!uploadedFile) {
-      throw createValidationError("File CV wajib diunggah", [
-        {
-          path: "cvFile",
-          message: "File CV PDF diperlukan untuk analisis",
-          code: "custom"
-        }
-      ]);
-    }
-
     const job = await this.repository.findVisibleJob(input.jobId);
     const hasOwnedBookmark =
       input.compareSource === "BOOKMARK"
@@ -77,28 +59,18 @@ export class AiCvAnalyzerService {
       );
     }
 
-    const fileId = crypto.randomUUID();
-    const storedFile = await this.options.storage.saveFile({
-      userId,
-      fileId,
-      mimeType: uploadedFile.mimeType,
-      buffer: uploadedFile.buffer
-    });
-    let metadata: CvFileMetadataRecord | null = null;
+    let cleanupTarget: { fileId: string; storageKey: string } | null = null;
 
     try {
-      metadata = await this.repository.createCvFileMetadata({
-        id: fileId,
-        userId,
-        originalFileName: sanitizeOriginalFileName(uploadedFile.originalName),
-        mimeType: uploadedFile.mimeType,
-        sizeBytes: uploadedFile.sizeBytes,
-        storageDriver: storedFile.storageDriver,
-        storageKey: storedFile.storageKey,
-        expiresAt: createCvExpiryDate(this.now(), this.options.cvRetentionDays)
-      });
+      const cvSource = await this.resolveCvSource(userId, input, uploadedFile);
+      cleanupTarget = cvSource.cleanupTarget;
 
-      const payload = buildCvAnalyzerPayload(requestId, input, metadata, job);
+      const payload = buildCvAnalyzerPayload(
+        requestId,
+        cvSource.input,
+        cvSource.metadata,
+        job
+      );
       const response = await this.options.modelApiClient.analyzeCv(payload);
       const persisted = input.persistResult;
 
@@ -106,9 +78,9 @@ export class AiCvAnalyzerService {
         await this.repository.createSnapshot({
           userId,
           jobId: job.id,
-          cvFileMetadataId: metadata.id,
-          language: toModelLanguage(input.language),
-          inputMode: input.inputMode,
+          cvFileMetadataId: cvSource.metadata.id,
+          language: toModelLanguage(cvSource.input.language),
+          inputMode: cvSource.input.inputMode,
           compareSource: input.compareSource,
           payload,
           response
@@ -116,20 +88,199 @@ export class AiCvAnalyzerService {
       }
 
       return {
-        resource: mapCvAnalysisResource(job.id, input.language, response),
+        resource: mapCvAnalysisResource(
+          job.id,
+          cvSource.input.language,
+          response
+        ),
         persisted,
-        cvFileMetadataId: metadata.id
+        cvFileMetadataId: cvSource.metadata.id
       };
+    } catch (error) {
+      if (cleanupTarget) {
+        await cleanupUploadedFile(
+          this.repository,
+          this.options.storage,
+          cleanupTarget.fileId,
+          cleanupTarget.storageKey,
+          this.now()
+        );
+      }
+      throw error;
+    }
+  }
+
+  async uploadCvFile(
+    userId: string,
+    input: UploadCvFileInput,
+    uploadedFile: UploadedCvFile | null
+  ): Promise<CvFileResource> {
+    if (!uploadedFile) {
+      throw createValidationError("File CV wajib diunggah", [
+        {
+          path: "cvFile",
+          message: "File CV wajib diunggah",
+          code: "custom"
+        }
+      ]);
+    }
+
+    const fileId = crypto.randomUUID();
+    const storedFile = await this.options.storage.saveFile({
+      userId,
+      fileId,
+      mimeType: uploadedFile.mimeType,
+      buffer: uploadedFile.buffer
+    });
+
+    try {
+      const metadata = await this.repository.createCvFileMetadata({
+        id: fileId,
+        userId,
+        originalFileName: sanitizeOriginalFileName(uploadedFile.originalName),
+        mimeType: uploadedFile.mimeType,
+        sizeBytes: uploadedFile.sizeBytes,
+        storageDriver: storedFile.storageDriver,
+        storageKey: storedFile.storageKey,
+        expiresAt: createCvExpiryDate(this.now(), this.options.cvRetentionDays),
+        isActive: input.setAsActive
+      });
+
+      return mapCvFileResource(metadata);
     } catch (error) {
       await cleanupUploadedFile(
         this.repository,
         this.options.storage,
-        metadata?.id ?? fileId,
+        fileId,
         storedFile.storageKey,
         this.now()
       );
       throw error;
     }
+  }
+
+  async getActiveCvFile(userId: string): Promise<CvFileResource> {
+    const metadata = await this.repository.findActiveCvFileMetadata(
+      userId,
+      this.now()
+    );
+
+    if (!metadata) {
+      throw new NotFoundError(
+        "CV aktif tidak ditemukan",
+        aiCvAnalyzerErrorCodes.cvFileNotFound
+      );
+    }
+
+    return mapCvFileResource(metadata);
+  }
+
+  private async resolveCvSource(
+    userId: string,
+    input: AnalyzeCvInput,
+    uploadedFile: UploadedCvFile | null
+  ): Promise<{
+    input: AnalyzeCvInput;
+    metadata: CvFileMetadataRecord;
+    cleanupTarget: { fileId: string; storageKey: string } | null;
+  }> {
+    if (uploadedFile) {
+      const fileId = crypto.randomUUID();
+      const storedFile = await this.options.storage.saveFile({
+        userId,
+        fileId,
+        mimeType: uploadedFile.mimeType,
+        buffer: uploadedFile.buffer
+      });
+      const metadata = await this.repository.createCvFileMetadata({
+        id: fileId,
+        userId,
+        originalFileName: sanitizeOriginalFileName(uploadedFile.originalName),
+        mimeType: uploadedFile.mimeType,
+        sizeBytes: uploadedFile.sizeBytes,
+        storageDriver: storedFile.storageDriver,
+        storageKey: storedFile.storageKey,
+        expiresAt: createCvExpiryDate(this.now(), this.options.cvRetentionDays),
+        isActive: false
+      });
+
+      return {
+        input: {
+          ...input,
+          inputMode: "UPLOAD",
+          cvFileId: undefined
+        },
+        metadata,
+        cleanupTarget: {
+          fileId,
+          storageKey: storedFile.storageKey
+        }
+      };
+    }
+
+    if (input.cvFileId) {
+      const metadata = await this.repository.findCvFileMetadataById(
+        input.cvFileId,
+        this.now()
+      );
+
+      if (!metadata) {
+        throw new NotFoundError(
+          "CV tidak ditemukan",
+          aiCvAnalyzerErrorCodes.cvFileNotFound
+        );
+      }
+
+      if (metadata.userId !== userId) {
+        throw new NotFoundError(
+          "CV tidak ditemukan",
+          aiCvAnalyzerErrorCodes.cvFileNotFound
+        );
+      }
+
+      return {
+        input: {
+          ...input,
+          inputMode: "REFERENCE"
+        },
+        metadata,
+        cleanupTarget: null
+      };
+    }
+
+    if (input.inputMode === "REFERENCE") {
+      const metadata = await this.repository.findActiveCvFileMetadata(
+        userId,
+        this.now()
+      );
+
+      if (!metadata) {
+        throw createValidationError("CV aktif belum tersedia", [
+          {
+            path: "cvFileId",
+            message: "Unggah CV atau kirim ID file CV yang valid",
+            code: "custom"
+          }
+        ]);
+      }
+
+      return {
+        input: {
+          ...input,
+          inputMode: "REFERENCE"
+        },
+        metadata,
+        cleanupTarget: null
+      };
+    }
+
+    throw createValidationError("File CV wajib diunggah", [
+      {
+        path: "cvFile",
+        message: "File CV PDF diperlukan untuk analisis",
+        code: "custom"
+      }
+    ]);
   }
 }
 
@@ -213,6 +364,20 @@ export function mapCvAnalysisResource(
     },
     model: response.model,
     analyzedAt: response.analyzedAt
+  };
+}
+
+export function mapCvFileResource(
+  metadata: CvFileMetadataRecord
+): CvFileResource {
+  return {
+    id: metadata.id,
+    originalFileName: metadata.originalFileName,
+    mimeType: metadata.mimeType,
+    sizeBytes: metadata.sizeBytes,
+    uploadedAt: metadata.uploadedAt.toISOString(),
+    expiresAt: metadata.expiresAt.toISOString(),
+    isActive: metadata.isActive
   };
 }
 

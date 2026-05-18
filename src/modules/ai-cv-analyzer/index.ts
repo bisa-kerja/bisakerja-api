@@ -1,4 +1,7 @@
-export { createAiCvAnalyzerRouter } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.route";
+export {
+  createAiCvAnalyzerRouter,
+  createCurrentUserCvFilesRouter
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.route";
 export {
   AiCvAnalyzerService,
   cleanupExpiredCvFiles
@@ -6,6 +9,7 @@ export {
 export {
   buildCvAnalyzerPayload,
   mapCvAnalysisResource,
+  mapCvFileResource,
   sanitizeOriginalFileName,
   createCvExpiryDate
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";
@@ -18,6 +22,7 @@ export type {
   CvAnalysisSnapshotInput,
   CvAnalysisResource,
   CvAnalysisResult,
+  CvFileResource,
   CvFileMetadataRecord,
   CvFileStorage,
   ExpiredCvFileRecord,

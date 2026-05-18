@@ -129,8 +129,9 @@ Rules:
 | Jobs           | `/api/v1/jobs`                  | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
 | Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
 | Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
+| CV Files       | `/api/v1/me/cv-files`           | Authenticated or onboarding access token                             | Upload and read safe current-user CV metadata                                                        | `docs/modules/ai-cv-analyzer.md`   |
 | AI Job Fit     | `/api/v1/ai/job-fit`            | Authenticated                                                        | Fit score, explanation, skill gap, and recommendation                                                | `docs/modules/ai-job-fit.md`       |
-| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against selected job                                                                     | `docs/modules/ai-cv-analyzer.md`   |
+| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against selected job using uploaded or stored CV input                                   | `docs/modules/ai-cv-analyzer.md`   |
 
 Route naming defaults:
 
@@ -307,7 +308,7 @@ Job search falls back to newest-first ordering when `sort=relevance` is requeste
 | `Cookie`        | Request               | Refresh/logout flows | Refresh credential is sent as an `HttpOnly` cookie     |
 | `Set-Cookie`    | Response              | Login/refresh/logout | Backend sets or clears the refresh cookie              |
 
-Upload routes for AI CV Analyzer will require multipart handling details in the module doc.
+CV upload routes use `multipart/form-data`; field names, file constraints, and safe metadata responses are documented in `docs/modules/ai-cv-analyzer.md`.
 
 ## Standard Response Usage
 
@@ -400,14 +401,14 @@ Application tracker endpoints use the standard response envelope. List responses
 
 ### AI
 
-| Method | Path                     | Auth          | Purpose                                        |
-| ------ | ------------------------ | ------------- | ---------------------------------------------- |
-| `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job            |
-| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded PDF CV against a selected job |
+| Method | Path                     | Auth          | Purpose                                                  |
+| ------ | ------------------------ | ------------- | -------------------------------------------------------- |
+| `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job                      |
+| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded or stored PDF CV against a selected job |
 
 AI analysis endpoints use the standard response envelope. `POST /api/v1/ai/job-fit` accepts only `jobId` plus optional `persistResult`, returns `409 PROFILE_INCOMPLETE` or `409 PREFERENCES_INCOMPLETE` when required persisted context is missing, and stores sanitized snapshots only when `persistResult=true`.
 
-`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` with metadata fields plus a single `cvFile` upload for `UPLOAD` mode. The endpoint accepts only PDF uploads, rejects oversized files with `413 PAYLOAD_TOO_LARGE`, returns `404 BOOKMARK_NOT_FOUND` when `compareSource=BOOKMARK` points to another user's bookmark, and returns `422 VALIDATION_ERROR` for unsupported `REFERENCE` mode until reusable CV references are enabled.
+`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` metadata. The endpoint accepts one PDF `cvFile` for `UPLOAD` mode, or uses `REFERENCE` mode with `cvFileId` or active CV fallback. Not-found ownership checks use `404` codes (`JOB_NOT_FOUND`, `BOOKMARK_NOT_FOUND`, `CV_FILE_NOT_FOUND`), and oversized uploads return `413 PAYLOAD_TOO_LARGE`.
 
 ## Contract Stability Rules
 

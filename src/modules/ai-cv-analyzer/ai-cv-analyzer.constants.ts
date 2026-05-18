@@ -1,9 +1,12 @@
 export const aiCvAnalyzerErrorCodes = {
-  bookmarkNotFound: "BOOKMARK_NOT_FOUND"
+  bookmarkNotFound: "BOOKMARK_NOT_FOUND",
+  cvFileNotFound: "CV_FILE_NOT_FOUND"
 } as const;
 
 export const aiCvAnalyzerSuccessMessages = {
-  completed: "Analisis CV berhasil diselesaikan"
+  activeCvFileRetrieved: "CV aktif berhasil diambil",
+  completed: "Analisis CV berhasil diselesaikan",
+  cvFileUploaded: "CV berhasil diunggah"
 } as const;
 
 export const defaultPersistCvAnalysisResult = false;

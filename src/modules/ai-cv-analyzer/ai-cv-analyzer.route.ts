@@ -9,7 +9,10 @@ import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { AiCvAnalyzerController } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.controller";
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.repository";
-import { analyzeCvSchema } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import {
+  analyzeCvSchema,
+  uploadCvFileSchema
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import { LocalCvFileStorage } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.storage";
 import type { AiCvAnalyzerRouterOptions } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 import { createModelApiClient } from "@/shared/integrations/model-api.client";
@@ -44,6 +47,42 @@ export function createAiCvAnalyzerRouter(
     validateUploadPresence(),
     controller.analyzeCv
   );
+
+  return router;
+}
+
+export function createCurrentUserCvFilesRouter(
+  config: AppConfig,
+  options: AiCvAnalyzerRouterOptions = {}
+): Router {
+  const router = createRouter();
+  const repository = options.repository ?? new PrismaAiCvAnalyzerRepository();
+  const authMiddleware =
+    options.authMiddleware ??
+    createAuthMiddleware(config, undefined, { allowUnverifiedEmail: true });
+  const modelApiClient = options.modelApiClient ?? createModelApiClient(config);
+  const storage =
+    options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
+  const controller = new AiCvAnalyzerController({
+    repository,
+    config,
+    modelApiClient,
+    storage,
+    now: options.now
+  });
+  const { uploadLimiter } = createRateLimiters(config);
+
+  router.use(authMiddleware);
+  router.post(
+    "/",
+    uploadLimiter,
+    requireMultipartFormData(),
+    createCvUploadMiddleware(config),
+    validate({ body: uploadCvFileSchema }),
+    validateCvFilePresence(),
+    controller.uploadCvFile
+  );
+  router.get("/active", controller.getActiveCvFile);
 
   return router;
 }
@@ -124,6 +163,25 @@ export function validateUploadPresence(): RequestHandler {
           {
             path: "cvFile",
             message: "File CV PDF diperlukan untuk analisis",
+            code: "custom"
+          }
+        ])
+      );
+      return;
+    }
+
+    next();
+  };
+}
+
+export function validateCvFilePresence(): RequestHandler {
+  return (req, _res, next) => {
+    if (!req.file) {
+      next(
+        new ValidationError("File CV wajib diunggah", [
+          {
+            path: "cvFile",
+            message: "File CV wajib diunggah",
             code: "custom"
           }
         ])

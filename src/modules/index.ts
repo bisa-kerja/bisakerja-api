@@ -2,7 +2,10 @@ import type { Express } from "express";
 import type { Router } from "express";
 
 import type { AppConfig } from "@/config/env";
-import { createAiCvAnalyzerRouter } from "@/modules/ai-cv-analyzer";
+import {
+  createAiCvAnalyzerRouter,
+  createCurrentUserCvFilesRouter
+} from "@/modules/ai-cv-analyzer";
 import { createAiJobFitRouter } from "@/modules/ai-job-fit";
 import { createAuthRouter } from "@/modules/auth";
 import { createApplicationsRouter } from "@/modules/applications";
@@ -60,6 +63,11 @@ export function getMountedRouters(
       id: "applications",
       mountPath: `${config.app.apiPrefix}/me/applications`,
       router: createApplicationsRouter(config, options.applications)
+    },
+    {
+      id: "cv-files",
+      mountPath: `${config.app.apiPrefix}/me/cv-files`,
+      router: createCurrentUserCvFilesRouter(config, options.aiCvAnalyzer)
     },
     {
       id: "ai-job-fit",
