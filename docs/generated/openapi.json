@@ -41,6 +41,10 @@
       "description": "Authenticated AI-based job fit analysis."
     },
     {
+      "name": "AI Job Recommendations",
+      "description": "Authenticated AI-based job recommendation list."
+    },
+    {
       "name": "AI CV Analyzer",
       "description": "Authenticated CV analysis against a selected job."
     }
@@ -4296,6 +4300,576 @@
         }
       }
     },
+    "/api/v1/ai/job-recommendations": {
+      "post": {
+        "tags": ["AI Job Recommendations"],
+        "summary": "Generate job recommendations",
+        "description": "Generates a bounded list of job recommendations from an owned CV analysis result and backend candidate jobs.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateJobRecommendationsRequest"
+              },
+              "example": {
+                "cvAnalysisResultId": "550e8400-e29b-41d4-a716-446655440030",
+                "limit": 10,
+                "filters": {
+                  "location": "Jakarta",
+                  "workType": "REMOTE",
+                  "experienceLevel": "ENTRY_LEVEL",
+                  "excludeAppliedJobs": true,
+                  "includeBookmarkedStatus": true
+                },
+                "idempotencyKey": "recommendation-2026-05-18T10:00:00Z"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Existing idempotent recommendation run returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "$ref": "#/components/schemas/JobRecommendationsData"
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Rekomendasi pekerjaan berhasil dibuat",
+                  "data": {
+                    "recommendationRun": {
+                      "id": "660e8400-e29b-41d4-a716-446655440099",
+                      "cvAnalysisResultId": "550e8400-e29b-41d4-a716-446655440030",
+                      "generatedAt": "2026-05-18T10:00:00.000Z",
+                      "modelName": "job-recommendation-model",
+                      "modelVersion": "2026-05-18",
+                      "candidateCount": 42,
+                      "recommendationCount": 2
+                    },
+                    "recommendations": [
+                      {
+                        "job": {
+                          "id": "550e8400-e29b-41d4-a716-446655440010",
+                          "title": "Backend Developer",
+                          "companyName": "Example Tech",
+                          "location": "Jakarta Selatan, DKI Jakarta",
+                          "workType": "REMOTE",
+                          "experienceLevel": "ENTRY_LEVEL"
+                        },
+                        "matchScore": 86,
+                        "matchLevel": "strong",
+                        "reasons": [
+                          "Skill REST API dan PostgreSQL pada CV cocok dengan kebutuhan utama role ini."
+                        ],
+                        "matchedSkills": [
+                          "REST API",
+                          "PostgreSQL",
+                          "TypeScript"
+                        ],
+                        "missingSkills": ["Docker"],
+                        "nextSteps": [
+                          "Tambahkan pengalaman deploy atau Docker di CV sebelum melamar."
+                        ],
+                        "isBookmarked": false,
+                        "hasApplied": false
+                      }
+                    ]
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Job recommendations generated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "$ref": "#/components/schemas/JobRecommendationsData"
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Rekomendasi pekerjaan berhasil dibuat",
+                  "data": {
+                    "recommendationRun": {
+                      "id": "660e8400-e29b-41d4-a716-446655440099",
+                      "cvAnalysisResultId": "550e8400-e29b-41d4-a716-446655440030",
+                      "generatedAt": "2026-05-18T10:00:00.000Z",
+                      "modelName": "job-recommendation-model",
+                      "modelVersion": "2026-05-18",
+                      "candidateCount": 42,
+                      "recommendationCount": 2
+                    },
+                    "recommendations": [
+                      {
+                        "job": {
+                          "id": "550e8400-e29b-41d4-a716-446655440010",
+                          "title": "Backend Developer",
+                          "companyName": "Example Tech",
+                          "location": "Jakarta Selatan, DKI Jakarta",
+                          "workType": "REMOTE",
+                          "experienceLevel": "ENTRY_LEVEL"
+                        },
+                        "matchScore": 86,
+                        "matchLevel": "strong",
+                        "reasons": [
+                          "Skill REST API dan PostgreSQL pada CV cocok dengan kebutuhan utama role ini."
+                        ],
+                        "matchedSkills": [
+                          "REST API",
+                          "PostgreSQL",
+                          "TypeScript"
+                        ],
+                        "missingSkills": ["Docker"],
+                        "nextSteps": [
+                          "Tambahkan pengalaman deploy atau Docker di CV sebelum melamar."
+                        ],
+                        "isBookmarked": false,
+                        "hasApplied": false
+                      }
+                    ]
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Autentikasi diperlukan",
+                  "data": null,
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CV analysis result is not found for current user.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Hasil analisis CV tidak ditemukan",
+                  "data": null,
+                  "error": {
+                    "code": "CV_ANALYSIS_RESULT_NOT_FOUND",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "CV analysis is required before recommendation generation.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Hasil analisis CV belum tersedia",
+                  "data": null,
+                  "error": {
+                    "code": "CV_ANALYSIS_REQUIRED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "AI request rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Terlalu banyak permintaan",
+                  "data": null,
+                  "error": {
+                    "code": "RATE_LIMITED",
+                    "details": { "limit": "ai" },
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Recommendation model response is invalid.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Response model rekomendasi pekerjaan tidak valid",
+                  "data": null,
+                  "error": {
+                    "code": "MODEL_RESPONSE_INVALID",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Recommendation model service is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Layanan model rekomendasi pekerjaan sementara tidak tersedia",
+                  "data": null,
+                  "error": {
+                    "code": "MODEL_SERVICE_UNAVAILABLE",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/job-recommendations/latest": {
+      "get": {
+        "tags": ["AI Job Recommendations"],
+        "summary": "Get latest recommendation run",
+        "description": "Returns current user's latest recommendation run and visible recommendations.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest recommendation run retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "$ref": "#/components/schemas/JobRecommendationsData"
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Rekomendasi pekerjaan terbaru berhasil diambil",
+                  "data": {
+                    "recommendationRun": {
+                      "id": "660e8400-e29b-41d4-a716-446655440099",
+                      "cvAnalysisResultId": "550e8400-e29b-41d4-a716-446655440030",
+                      "generatedAt": "2026-05-18T10:00:00.000Z",
+                      "modelName": "job-recommendation-model",
+                      "modelVersion": "2026-05-18",
+                      "candidateCount": 42,
+                      "recommendationCount": 2
+                    },
+                    "recommendations": [
+                      {
+                        "job": {
+                          "id": "550e8400-e29b-41d4-a716-446655440010",
+                          "title": "Backend Developer",
+                          "companyName": "Example Tech",
+                          "location": "Jakarta Selatan, DKI Jakarta",
+                          "workType": "REMOTE",
+                          "experienceLevel": "ENTRY_LEVEL"
+                        },
+                        "matchScore": 86,
+                        "matchLevel": "strong",
+                        "reasons": [
+                          "Skill REST API dan PostgreSQL pada CV cocok dengan kebutuhan utama role ini."
+                        ],
+                        "matchedSkills": [
+                          "REST API",
+                          "PostgreSQL",
+                          "TypeScript"
+                        ],
+                        "missingSkills": ["Docker"],
+                        "nextSteps": [
+                          "Tambahkan pengalaman deploy atau Docker di CV sebelum melamar."
+                        ],
+                        "isBookmarked": false,
+                        "hasApplied": false
+                      }
+                    ]
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Autentikasi diperlukan",
+                  "data": null,
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recommendation run is not found.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Rekomendasi pekerjaan belum tersedia",
+                  "data": null,
+                  "error": {
+                    "code": "JOB_RECOMMENDATION_NOT_FOUND",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validasi gagal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Validasi gagal",
+                  "data": null,
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "details": [
+                      {
+                        "path": "limit",
+                        "message": "Nilai limit harus antara 1 sampai 20",
+                        "code": "invalid_format"
+                      }
+                    ],
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/job-recommendations/{recommendationRunId}": {
+      "get": {
+        "tags": ["AI Job Recommendations"],
+        "summary": "Get recommendation run detail",
+        "description": "Returns a specific recommendation run detail for current user. Ownership is concealed with 404.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "recommendationRunId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recommendation run detail retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "$ref": "#/components/schemas/JobRecommendationsData"
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Detail rekomendasi pekerjaan berhasil diambil",
+                  "data": {
+                    "recommendationRun": {
+                      "id": "660e8400-e29b-41d4-a716-446655440099",
+                      "cvAnalysisResultId": "550e8400-e29b-41d4-a716-446655440030",
+                      "generatedAt": "2026-05-18T10:00:00.000Z",
+                      "modelName": "job-recommendation-model",
+                      "modelVersion": "2026-05-18",
+                      "candidateCount": 42,
+                      "recommendationCount": 2
+                    },
+                    "recommendations": [
+                      {
+                        "job": {
+                          "id": "550e8400-e29b-41d4-a716-446655440010",
+                          "title": "Backend Developer",
+                          "companyName": "Example Tech",
+                          "location": "Jakarta Selatan, DKI Jakarta",
+                          "workType": "REMOTE",
+                          "experienceLevel": "ENTRY_LEVEL"
+                        },
+                        "matchScore": 86,
+                        "matchLevel": "strong",
+                        "reasons": [
+                          "Skill REST API dan PostgreSQL pada CV cocok dengan kebutuhan utama role ini."
+                        ],
+                        "matchedSkills": [
+                          "REST API",
+                          "PostgreSQL",
+                          "TypeScript"
+                        ],
+                        "missingSkills": ["Docker"],
+                        "nextSteps": [
+                          "Tambahkan pengalaman deploy atau Docker di CV sebelum melamar."
+                        ],
+                        "isBookmarked": false,
+                        "hasApplied": false
+                      }
+                    ]
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Autentikasi diperlukan",
+                  "data": null,
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recommendation run is not found.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Rekomendasi pekerjaan tidak ditemukan",
+                  "data": null,
+                  "error": {
+                    "code": "JOB_RECOMMENDATION_NOT_FOUND",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validasi gagal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Validasi gagal",
+                  "data": null,
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "details": [
+                      {
+                        "path": "recommendationRunId",
+                        "message": "ID run rekomendasi pekerjaan tidak valid. Gunakan UUID yang benar",
+                        "code": "invalid_format"
+                      }
+                    ],
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me/cv-files": {
       "post": {
         "tags": ["AI CV Analyzer"],
@@ -6002,6 +6576,170 @@
             "type": "string",
             "format": "date-time",
             "example": "2026-04-24T08:00:00.000Z"
+          }
+        }
+      },
+      "GenerateJobRecommendationsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cvAnalysisResultId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 10
+          },
+          "filters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "workType": {
+                "type": "string",
+                "enum": ["REMOTE", "HYBRID", "ONSITE"]
+              },
+              "experienceLevel": {
+                "type": "string",
+                "enum": ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
+              },
+              "excludeAppliedJobs": { "type": "boolean", "default": true },
+              "includeBookmarkedStatus": { "type": "boolean", "default": true }
+            }
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        }
+      },
+      "JobRecommendationRun": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "cvAnalysisResultId",
+          "generatedAt",
+          "modelName",
+          "modelVersion",
+          "candidateCount",
+          "recommendationCount"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "cvAnalysisResultId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-24T08:00:00.000Z"
+          },
+          "modelName": { "type": "string" },
+          "modelVersion": { "type": "string" },
+          "candidateCount": { "type": "integer", "minimum": 0 },
+          "recommendationCount": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "JobRecommendationItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "job",
+          "matchScore",
+          "matchLevel",
+          "reasons",
+          "matchedSkills",
+          "missingSkills",
+          "nextSteps",
+          "isBookmarked",
+          "hasApplied"
+        ],
+        "properties": {
+          "job": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "companyName",
+              "location",
+              "workType",
+              "experienceLevel"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "example": "550e8400-e29b-41d4-a716-446655440000"
+              },
+              "title": { "type": "string" },
+              "companyName": { "type": "string" },
+              "location": {
+                "anyOf": [{ "type": "string" }, { "type": "null" }]
+              },
+              "workType": {
+                "anyOf": [
+                  { "type": "string", "enum": ["REMOTE", "HYBRID", "ONSITE"] },
+                  { "type": "null" }
+                ]
+              },
+              "experienceLevel": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "ENTRY_LEVEL",
+                      "JUNIOR",
+                      "MID_LEVEL",
+                      "SENIOR",
+                      "LEAD"
+                    ]
+                  },
+                  { "type": "null" }
+                ]
+              }
+            }
+          },
+          "matchScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "matchLevel": {
+            "type": "string",
+            "enum": ["strong", "good", "stretch"]
+          },
+          "reasons": { "type": "array", "items": { "type": "string" } },
+          "matchedSkills": { "type": "array", "items": { "type": "string" } },
+          "missingSkills": { "type": "array", "items": { "type": "string" } },
+          "nextSteps": { "type": "array", "items": { "type": "string" } },
+          "isBookmarked": { "type": "boolean" },
+          "hasApplied": { "type": "boolean" }
+        }
+      },
+      "JobRecommendationsData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["recommendationRun", "recommendations"],
+        "properties": {
+          "recommendationRun": {
+            "$ref": "#/components/schemas/JobRecommendationRun"
+          },
+          "recommendations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/JobRecommendationItem" }
           }
         }
       },

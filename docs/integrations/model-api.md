@@ -50,16 +50,18 @@ Current backend default endpoint assumptions:
 
 - `POST /job-fit`
 - `POST /cv-analyzer`
+- `POST /job-recommendations`
 
 These paths are treated as the current internal contract until the Model API publishes a final route inventory.
 
 ## Supported Workflows
 
-| Workflow           | Backend module   | Model output                                                                                                               |
-| ------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Job fit analysis   | `ai-job-fit`     | Fit score, explanation breakdown, skill match, experience match, preference match, skill gaps, recommendation              |
-| Skill gap analysis | `ai-job-fit`     | Missing skills, priority, reason, and improvement direction                                                                |
-| AI CV Analyzer     | `ai-cv-analyzer` | Overall impression, job fit alignment, ATS score, keyword optimization, experience quantification, actionable improvements |
+| Workflow            | Backend module           | Model output                                                                                                                 |
+| ------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Job fit analysis    | `ai-job-fit`             | Fit score, explanation breakdown, skill match, experience match, preference match, skill gaps, recommendation                |
+| Skill gap analysis  | `ai-job-fit`             | Missing skills, priority, reason, and improvement direction                                                                  |
+| AI CV Analyzer      | `ai-cv-analyzer`         | Overall impression, job fit alignment, ATS score, keyword optimization, experience quantification, actionable improvements   |
+| Job recommendations | `ai-job-recommendations` | Ranked job recommendations selected from backend-provided candidate job IDs with match score, level, reasons, and next steps |
 
 ## Request Ownership
 
@@ -202,6 +204,81 @@ Model API should return enough structured output for Backend API to produce:
 - Experience quantification score and suggestions.
 - Actionable improvements.
 - Model name and version.
+
+## Job Recommendation Payload Contract
+
+Backend-prepared payload shape:
+
+```json
+{
+  "requestId": "req_789",
+  "inputVersion": "job-recommendations-v1",
+  "talentProfile": {
+    "targetRole": "Backend Developer",
+    "seniorityLevel": "ENTRY_LEVEL",
+    "hardSkills": ["TypeScript"],
+    "softSkills": [],
+    "domainSignals": ["Engineering"],
+    "toolsAndTechnologies": ["REST API"],
+    "educationSignals": [],
+    "experienceYearsEstimate": null,
+    "locationPreferences": [
+      { "province": "DKI Jakarta", "city": "Jakarta Selatan" }
+    ],
+    "workTypePreferences": ["REMOTE"],
+    "salaryExpectation": {
+      "min": 5000000,
+      "max": 9000000,
+      "currency": "IDR",
+      "period": "MONTHLY"
+    },
+    "redFlags": ["Docker"]
+  },
+  "rankingPolicy": {
+    "maxRecommendations": 10,
+    "requireCandidateJobIds": true,
+    "deduplicateByJobId": true
+  },
+  "jobCandidates": [
+    {
+      "jobId": "11111111-1111-4111-8111-111111111111",
+      "title": "Backend Developer",
+      "companyName": "Nusantara Tech",
+      "location": {
+        "display": "Jakarta Selatan, DKI Jakarta",
+        "province": "DKI Jakarta",
+        "city": "Jakarta Selatan"
+      },
+      "workType": "REMOTE",
+      "experienceLevel": "ENTRY_LEVEL",
+      "descriptionSummary": "Build backend APIs",
+      "requiredSkills": ["TypeScript"],
+      "postedAt": "2026-05-18T00:00:00.000Z",
+      "sourceUpdatedAt": null
+    }
+  ]
+}
+```
+
+Rules:
+
+- Backend owns candidate retrieval and candidate list boundaries.
+- Model must only rank candidate `jobId` values supplied by backend.
+- Backend validates output and rejects unknown or duplicate `jobId`.
+
+## Job Recommendation Response Expectations
+
+Model API should return enough structured output for Backend API to produce:
+
+- `recommendations[].jobId` from backend candidate set.
+- `recommendations[].matchScore` in score range.
+- `recommendations[].matchLevel` enum.
+- `recommendations[].reasons`.
+- `recommendations[].matchedSkills`.
+- `recommendations[].missingSkills`.
+- `recommendations[].nextSteps`.
+- `model.name`.
+- `model.version`.
 
 Generated CV output is future scope unless explicitly approved.
 

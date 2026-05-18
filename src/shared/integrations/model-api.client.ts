@@ -9,10 +9,14 @@ import {
 import {
   cvAnalyzerModelPayloadSchema,
   cvAnalyzerModelResponseSchema,
+  jobRecommendationModelPayloadSchema,
+  jobRecommendationModelResponseSchema,
   jobFitModelPayloadSchema,
   jobFitModelResponseSchema,
   type CvAnalyzerModelPayload,
   type CvAnalyzerModelResponse,
+  type JobRecommendationModelPayload,
+  type JobRecommendationModelResponse,
   type JobFitModelPayload,
   type JobFitModelResponse
 } from "@/shared/integrations/model-api.schema";
@@ -24,6 +28,7 @@ import type {
 
 const defaultJobFitPath = "/job-fit";
 const defaultCvAnalyzerPath = "/cv-analyzer";
+const defaultJobRecommendationsPath = "/job-recommendations";
 
 export function createModelApiClient(
   config: AppConfig,
@@ -88,6 +93,39 @@ export function createModelApiClient(
         serviceToken: config.integrations.modelApi.serviceToken,
         requestIdHeader: config.observability.requestIdHeader,
         operation: "cv-analyzer"
+      });
+    },
+    recommendJobs: async (payload) => {
+      const parsedPayload = jobRecommendationModelPayloadSchema.parse(payload);
+
+      if (config.integrations.modelApi.enableMock) {
+        const mockResponse = options.mockResponses?.jobRecommendations;
+
+        if (!mockResponse) {
+          throw new ServiceUnavailableError(
+            "Mock response Model API belum dikonfigurasi",
+            "SERVICE_UNAVAILABLE",
+            { dependency: "model-api", operation: "job-recommendations" }
+          );
+        }
+
+        return jobRecommendationModelResponseSchema.parse(mockResponse);
+      }
+
+      return requestModelApi<
+        JobRecommendationModelPayload,
+        JobRecommendationModelResponse
+      >({
+        fetchImpl,
+        baseUrl: config.integrations.modelApi.baseUrl,
+        endpointPath:
+          options.jobRecommendationsPath ?? defaultJobRecommendationsPath,
+        payload: parsedPayload,
+        responseSchema: jobRecommendationModelResponseSchema,
+        timeoutMs: config.integrations.modelApi.timeoutMs,
+        serviceToken: config.integrations.modelApi.serviceToken,
+        requestIdHeader: config.observability.requestIdHeader,
+        operation: "job-recommendations"
       });
     }
   };

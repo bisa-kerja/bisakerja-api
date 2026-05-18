@@ -119,12 +119,14 @@ Backend API repositories must not write scraper-owned normalized job records unl
 
 ### AI Outputs
 
-| Entity             | Purpose                                                    | Owner                                   |
-| ------------------ | ---------------------------------------------------------- | --------------------------------------- |
-| `FitScoreResult`   | Persisted fit score and explanation snapshot               | Backend API stores, Model API generates |
-| `SkillGapResult`   | Persisted skill gap snapshot                               | Backend API stores, Model API generates |
-| `CvAnalysisResult` | Persisted CV analysis snapshot                             | Backend API stores, Model API generates |
-| `AiRequestLog`     | Optional sanitized request/response metadata for debugging | Backend API                             |
+| Entity                  | Purpose                                                    | Owner                                   |
+| ----------------------- | ---------------------------------------------------------- | --------------------------------------- |
+| `FitScoreResult`        | Persisted fit score and explanation snapshot               | Backend API stores, Model API generates |
+| `SkillGapResult`        | Persisted skill gap snapshot                               | Backend API stores, Model API generates |
+| `CvAnalysisResult`      | Persisted CV analysis snapshot                             | Backend API stores, Model API generates |
+| `JobRecommendationRun`  | Persisted recommendation run metadata and request summary  | Backend API stores, Model API generates |
+| `JobRecommendationItem` | Persisted ranked recommendation items per run              | Backend API stores, Model API generates |
+| `AiRequestLog`          | Optional sanitized request/response metadata for debugging | Backend API                             |
 
 ## ERD-Level Relationships
 
@@ -140,6 +142,8 @@ User
   -> FitScoreResult -> JobListing
   -> SkillGapResult -> JobListing
   -> CvAnalysisResult -> JobListing
+  -> JobRecommendationRun -> CvAnalysisResult
+  -> JobRecommendationRun -> JobRecommendationItem -> JobListing
 
 SourcePlatform
   -> JobListing
@@ -155,6 +159,7 @@ JobListing
   -> FitScoreResult
   -> SkillGapResult
   -> CvAnalysisResult
+  -> JobRecommendationItem
 
 IngestionRun
   -> JobListing
@@ -199,21 +204,24 @@ Relationship rules:
 | `FitScoreResult`           | `fit_score_results`            | Backend API stores derived output | Job fit history if persisted        |
 | `SkillGapResult`           | `skill_gap_results`            | Backend API stores derived output | Skill gap history if persisted      |
 | `CvAnalysisResult`         | `cv_analysis_results`          | Backend API stores derived output | AI CV Analyzer history if persisted |
+| `JobRecommendationRun`     | `job_recommendation_runs`      | Backend API stores derived output | Recommendation run history          |
+| `JobRecommendationItem`    | `job_recommendation_items`     | Backend API stores derived output | Ranked recommendation snapshots     |
 | `AiRequestLog`             | `ai_request_logs`              | Backend API                       | Sanitized debugging if needed       |
 
 ## MVP Module Persistence Map
 
-| Module         | Persistence model                                                                                                          |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Auth           | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                               |
-| Users          | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                             |
-| Preferences    | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                          |
-| Jobs           | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows |
-| Bookmarks      | `Bookmark`, with read joins to `JobListing` and `Company`                                                                  |
-| Applications   | `ApplicationRecord` and `ApplicationStatusHistory`                                                                         |
-| AI Job Fit     | Read user/profile/preference/job context; optionally store `FitScoreResult` and `SkillGapResult` snapshots                 |
-| AI CV Analyzer | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot                           |
-| Health         | No business persistence; may check PostgreSQL connectivity                                                                 |
+| Module                 | Persistence model                                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Auth                   | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                               |
+| Users                  | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                             |
+| Preferences            | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                          |
+| Jobs                   | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows |
+| Bookmarks              | `Bookmark`, with read joins to `JobListing` and `Company`                                                                  |
+| Applications           | `ApplicationRecord` and `ApplicationStatusHistory`                                                                         |
+| AI Job Fit             | Read user/profile/preference/job context; optionally store `FitScoreResult` and `SkillGapResult` snapshots                 |
+| AI CV Analyzer         | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot                           |
+| AI Job Recommendations | Read owned CV analysis and candidate job catalog; store `JobRecommendationRun` and `JobRecommendationItem` snapshots       |
+| Health                 | No business persistence; may check PostgreSQL connectivity                                                                 |
 
 ## ID Strategy
 
@@ -301,6 +309,9 @@ Soft delete policy:
 - Index `(userId, jobListingId)` on `fit_score_results`.
 - Index `(userId, jobListingId)` on `skill_gap_results`.
 - Index `(userId, jobListingId)` on `cv_analysis_results` when tied to a job.
+- Index `(userId, createdAt)` on `job_recommendation_runs`.
+- Unique `(userId, idempotencyKey)` on `job_recommendation_runs` when key is present.
+- Unique `(runId, rank)` and `(runId, jobListingId)` on `job_recommendation_items`.
 - Index `analyzedAt` for cleanup and history sorting.
 - Avoid indexing large JSON payload fields unless a specific query requires it.
 

@@ -74,6 +74,23 @@ export type CvAnalyzerModelResponseFixture = {
   analyzedAt: string;
 };
 
+export type JobRecommendationModelResponseFixture = {
+  recommendations: {
+    jobId: string;
+    matchScore: number;
+    matchLevel: "strong" | "good" | "stretch";
+    reasons: string[];
+    matchedSkills: string[];
+    missingSkills: string[];
+    nextSteps: string[];
+  }[];
+  model: {
+    name: string;
+    version: string;
+  };
+  analyzedAt: string;
+};
+
 export const modelApiFixtures = {
   validJobFitResponse: {
     fitScore: 82,
@@ -174,9 +191,37 @@ export const modelApiFixtures = {
       version: "test-2026-01"
     },
     analyzedAt: "2026-04-23T00:00:00.000Z"
+  },
+  validJobRecommendationsResponse: {
+    recommendations: [
+      {
+        jobId: "11111111-1111-4111-8111-111111111111",
+        matchScore: 86,
+        matchLevel: "strong",
+        reasons: ["Kecocokan skill backend utama sudah kuat."],
+        matchedSkills: ["TypeScript", "PostgreSQL"],
+        missingSkills: ["Docker"],
+        nextSteps: ["Tambahkan pengalaman deployment di CV."]
+      },
+      {
+        jobId: "22222222-2222-4222-8222-222222222222",
+        matchScore: 74,
+        matchLevel: "good",
+        reasons: ["Role sejalan dengan target karier."],
+        matchedSkills: ["TypeScript"],
+        missingSkills: ["System Design"],
+        nextSteps: ["Perkuat contoh arsitektur layanan."]
+      }
+    ],
+    model: {
+      name: "fixture-job-recommendations-model",
+      version: "test-2026-01"
+    },
+    analyzedAt: "2026-04-23T00:00:00.000Z"
   }
 } satisfies {
   validJobFitResponse: JobFitModelResponseFixture;
   degradedJobFitResponse: JobFitModelResponseFixture;
   validCvAnalyzerResponse: CvAnalyzerModelResponseFixture;
+  validJobRecommendationsResponse: JobRecommendationModelResponseFixture;
 };

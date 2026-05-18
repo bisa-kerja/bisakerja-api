@@ -1,6 +1,7 @@
 export const modelApiInputVersions = {
   jobFit: "job-fit-v1",
-  cvAnalyzer: "cv-analyzer-v1"
+  cvAnalyzer: "cv-analyzer-v1",
+  jobRecommendations: "job-recommendations-v1"
 } as const;
 
 export const allowedJobFitReadinessLevels = [
@@ -37,4 +38,10 @@ export const allowedCvCompareSources = [
   "BOOKMARK",
   "JOB_SEARCH",
   "DIRECT_JOB_DETAIL"
+] as const;
+
+export const allowedJobRecommendationMatchLevels = [
+  "strong",
+  "good",
+  "stretch"
 ] as const;

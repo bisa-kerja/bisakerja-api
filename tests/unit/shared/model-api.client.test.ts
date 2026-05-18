@@ -7,6 +7,7 @@ import {
 import { createModelApiClient } from "@/shared/integrations/model-api.client";
 import type {
   CvAnalyzerModelPayload,
+  JobRecommendationModelPayload,
   JobFitModelPayload
 } from "@/shared/integrations/model-api.schema";
 import { testConfig } from "../../helpers/config";
@@ -71,20 +72,75 @@ const cvPayload: CvAnalyzerModelPayload = {
   }
 };
 
+const recommendationPayload: JobRecommendationModelPayload = {
+  requestId: "req_recommend_client",
+  inputVersion: "job-recommendations-v1",
+  talentProfile: {
+    targetRole: "Backend Developer",
+    seniorityLevel: "ENTRY_LEVEL",
+    hardSkills: ["TypeScript"],
+    softSkills: [],
+    domainSignals: ["Engineering"],
+    toolsAndTechnologies: ["REST API"],
+    educationSignals: [],
+    experienceYearsEstimate: null,
+    locationPreferences: [{ province: "DKI Jakarta", city: "Jakarta Selatan" }],
+    workTypePreferences: ["REMOTE"],
+    salaryExpectation: {
+      min: 5000000,
+      max: 9000000,
+      currency: "IDR",
+      period: "MONTHLY"
+    },
+    redFlags: ["Docker"]
+  },
+  rankingPolicy: {
+    maxRecommendations: 10,
+    requireCandidateJobIds: true,
+    deduplicateByJobId: true
+  },
+  jobCandidates: [
+    {
+      jobId: "job-1",
+      title: "Backend Developer",
+      companyName: "Nusantara Tech",
+      location: {
+        display: "Jakarta Selatan, DKI Jakarta",
+        province: "DKI Jakarta",
+        city: "Jakarta Selatan"
+      },
+      workType: "REMOTE",
+      experienceLevel: "ENTRY_LEVEL",
+      descriptionSummary: "Build APIs",
+      requiredSkills: ["TypeScript"],
+      postedAt: "2026-05-18T00:00:00.000Z",
+      sourceUpdatedAt: null
+    }
+  ]
+};
+
 describe("model api client", () => {
   test("returns validated mock responses when mock mode is enabled", async () => {
     const client = createModelApiClient(testConfig(), {
       mockResponses: {
         jobFit: modelApiFixtures.validJobFitResponse,
-        cvAnalyzer: modelApiFixtures.validCvAnalyzerResponse
+        cvAnalyzer: modelApiFixtures.validCvAnalyzerResponse,
+        jobRecommendations: modelApiFixtures.validJobRecommendationsResponse
       }
     });
 
     const jobFitResponse = await client.analyzeJobFit(jobFitPayload);
     const cvResponse = await client.analyzeCv(cvPayload);
+    if (!client.recommendJobs) {
+      throw new Error("Expected recommendJobs method to be available");
+    }
+    const recommendResponse = await client.recommendJobs(recommendationPayload);
 
     expect(jobFitResponse).toEqual(modelApiFixtures.validJobFitResponse);
     expect(cvResponse).toEqual(modelApiFixtures.validCvAnalyzerResponse);
+    expect(recommendResponse).toEqual(
+      modelApiFixtures.validJobRecommendationsResponse
+    );
   });
 
   test("sends request id and service token to model api", async () => {
@@ -228,6 +284,48 @@ describe("model api client", () => {
     );
 
     await expectRejects(client.analyzeJobFit(jobFitPayload), DownstreamError);
+  });
+
+  test("calls recommendation endpoint with request id and token", async () => {
+    const fetchMock = mock(
+      (_url: string | URL | Request, _init?: RequestInit) =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify(modelApiFixtures.validJobRecommendationsResponse),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" }
+            }
+          )
+        )
+    );
+    const client = createModelApiClient(
+      testConfig({
+        MODEL_API_ENABLE_MOCK: "false",
+        MODEL_API_SERVICE_TOKEN: "live-model-token"
+      }),
+      { fetch: asFetch(fetchMock) }
+    );
+
+    if (!client.recommendJobs) {
+      throw new Error("Expected recommendJobs method to be available");
+    }
+    await client.recommendJobs(recommendationPayload);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const call = fetchMock.mock.calls.at(0);
+    expect(call).toBeDefined();
+
+    if (!call) {
+      throw new Error("Expected fetch to be called");
+    }
+
+    const [url, init] = call;
+    expect(toRequestUrl(url)).toBe("http://localhost:8000/job-recommendations");
+    expect(init?.headers).toMatchObject({
+      authorization: "Bearer live-model-token",
+      "x-request-id": "req_recommend_client"
+    });
   });
 });
 

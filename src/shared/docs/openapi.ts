@@ -402,6 +402,41 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     },
     analyzedAt: "2026-04-24T08:00:00.000Z"
   };
+  const jobRecommendationsExample = {
+    recommendationRun: {
+      id: "660e8400-e29b-41d4-a716-446655440099",
+      cvAnalysisResultId: "550e8400-e29b-41d4-a716-446655440030",
+      generatedAt: "2026-05-18T10:00:00.000Z",
+      modelName: "job-recommendation-model",
+      modelVersion: "2026-05-18",
+      candidateCount: 42,
+      recommendationCount: 2
+    },
+    recommendations: [
+      {
+        job: {
+          id: "550e8400-e29b-41d4-a716-446655440010",
+          title: "Backend Developer",
+          companyName: "Example Tech",
+          location: "Jakarta Selatan, DKI Jakarta",
+          workType: "REMOTE",
+          experienceLevel: "ENTRY_LEVEL"
+        },
+        matchScore: 86,
+        matchLevel: "strong",
+        reasons: [
+          "Skill REST API dan PostgreSQL pada CV cocok dengan kebutuhan utama role ini."
+        ],
+        matchedSkills: ["REST API", "PostgreSQL", "TypeScript"],
+        missingSkills: ["Docker"],
+        nextSteps: [
+          "Tambahkan pengalaman deploy atau Docker di CV sebelum melamar."
+        ],
+        isBookmarked: false,
+        hasApplied: false
+      }
+    ]
+  };
   const cvAnalysisExample = {
     jobId: "550e8400-e29b-41d4-a716-446655440010",
     language: "id",
@@ -508,6 +543,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
       {
         name: "AI Job Fit",
         description: "Authenticated AI-based job fit analysis."
+      },
+      {
+        name: "AI Job Recommendations",
+        description: "Authenticated AI-based job recommendation list."
       },
       {
         name: "AI CV Analyzer",
@@ -2174,6 +2213,173 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           }
         }
       },
+      "/api/v1/ai/job-recommendations": {
+        post: {
+          tags: ["AI Job Recommendations"],
+          summary: "Generate job recommendations",
+          description:
+            "Generates a bounded list of job recommendations from an owned CV analysis result and backend candidate jobs.",
+          security: bearerSecurity(),
+          requestBody: {
+            required: true,
+            content: jsonContent(ref("GenerateJobRecommendationsRequest"), {
+              cvAnalysisResultId: "550e8400-e29b-41d4-a716-446655440030",
+              limit: 10,
+              filters: {
+                location: "Jakarta",
+                workType: "REMOTE",
+                experienceLevel: "ENTRY_LEVEL",
+                excludeAppliedJobs: true,
+                includeBookmarkedStatus: true
+              },
+              idempotencyKey: "recommendation-2026-05-18T10:00:00Z"
+            })
+          },
+          responses: {
+            "201": jsonResponse(
+              "Job recommendations generated successfully.",
+              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
+              {
+                success: true,
+                message: "Rekomendasi pekerjaan berhasil dibuat",
+                data: jobRecommendationsExample,
+                meta: null
+              }
+            ),
+            "200": jsonResponse(
+              "Existing idempotent recommendation run returned.",
+              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
+              {
+                success: true,
+                message: "Rekomendasi pekerjaan berhasil dibuat",
+                data: jobRecommendationsExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "CV analysis result is not found for current user.",
+              "CV_ANALYSIS_RESULT_NOT_FOUND",
+              "Hasil analisis CV tidak ditemukan"
+            ),
+            "422": errorResponse(
+              "CV analysis is required before recommendation generation.",
+              "CV_ANALYSIS_REQUIRED",
+              "Hasil analisis CV belum tersedia"
+            ),
+            "429": errorResponse(
+              "AI request rate limit exceeded.",
+              "RATE_LIMITED",
+              "Terlalu banyak permintaan",
+              { limit: "ai" }
+            ),
+            "502": errorResponse(
+              "Recommendation model response is invalid.",
+              "MODEL_RESPONSE_INVALID",
+              "Response model rekomendasi pekerjaan tidak valid"
+            ),
+            "503": errorResponse(
+              "Recommendation model service is unavailable.",
+              "MODEL_SERVICE_UNAVAILABLE",
+              "Layanan model rekomendasi pekerjaan sementara tidak tersedia"
+            )
+          }
+        }
+      },
+      "/api/v1/ai/job-recommendations/latest": {
+        get: {
+          tags: ["AI Job Recommendations"],
+          summary: "Get latest recommendation run",
+          description:
+            "Returns current user's latest recommendation run and visible recommendations.",
+          security: bearerSecurity(),
+          parameters: [
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", minimum: 1, maximum: 20, default: 10 }
+            }
+          ],
+          responses: {
+            "200": jsonResponse(
+              "Latest recommendation run retrieved.",
+              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
+              {
+                success: true,
+                message: "Rekomendasi pekerjaan terbaru berhasil diambil",
+                data: jobRecommendationsExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "Recommendation run is not found.",
+              "JOB_RECOMMENDATION_NOT_FOUND",
+              "Rekomendasi pekerjaan belum tersedia"
+            ),
+            "422": validationErrorResponse(
+              "limit",
+              "Nilai limit harus antara 1 sampai 20"
+            )
+          }
+        }
+      },
+      "/api/v1/ai/job-recommendations/{recommendationRunId}": {
+        get: {
+          tags: ["AI Job Recommendations"],
+          summary: "Get recommendation run detail",
+          description:
+            "Returns a specific recommendation run detail for current user. Ownership is concealed with 404.",
+          security: bearerSecurity(),
+          parameters: [
+            {
+              name: "recommendationRunId",
+              in: "path",
+              required: true,
+              schema: uuidSchema
+            },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", minimum: 1, maximum: 20, default: 10 }
+            }
+          ],
+          responses: {
+            "200": jsonResponse(
+              "Recommendation run detail retrieved.",
+              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
+              {
+                success: true,
+                message: "Detail rekomendasi pekerjaan berhasil diambil",
+                data: jobRecommendationsExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "Recommendation run is not found.",
+              "JOB_RECOMMENDATION_NOT_FOUND",
+              "Rekomendasi pekerjaan tidak ditemukan"
+            ),
+            "422": validationErrorResponse(
+              "recommendationRunId",
+              "ID run rekomendasi pekerjaan tidak valid. Gunakan UUID yang benar"
+            )
+          }
+        }
+      },
       "/api/v1/me/cv-files": {
         post: {
           tags: ["AI CV Analyzer"],
@@ -3399,6 +3605,133 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               }
             },
             analyzedAt: isoDateTimeSchema
+          }
+        },
+        GenerateJobRecommendationsRequest: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            cvAnalysisResultId: uuidSchema,
+            limit: { type: "integer", minimum: 1, maximum: 20, default: 10 },
+            filters: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                location: { type: "string", minLength: 1, maxLength: 120 },
+                workType: {
+                  type: "string",
+                  enum: ["REMOTE", "HYBRID", "ONSITE"]
+                },
+                experienceLevel: {
+                  type: "string",
+                  enum: ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
+                },
+                excludeAppliedJobs: { type: "boolean", default: true },
+                includeBookmarkedStatus: { type: "boolean", default: true }
+              }
+            },
+            idempotencyKey: { type: "string", minLength: 1, maxLength: 120 }
+          }
+        },
+        JobRecommendationRun: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "cvAnalysisResultId",
+            "generatedAt",
+            "modelName",
+            "modelVersion",
+            "candidateCount",
+            "recommendationCount"
+          ],
+          properties: {
+            id: uuidSchema,
+            cvAnalysisResultId: uuidSchema,
+            generatedAt: isoDateTimeSchema,
+            modelName: { type: "string" },
+            modelVersion: { type: "string" },
+            candidateCount: { type: "integer", minimum: 0 },
+            recommendationCount: { type: "integer", minimum: 0 }
+          }
+        },
+        JobRecommendationItem: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "job",
+            "matchScore",
+            "matchLevel",
+            "reasons",
+            "matchedSkills",
+            "missingSkills",
+            "nextSteps",
+            "isBookmarked",
+            "hasApplied"
+          ],
+          properties: {
+            job: {
+              type: "object",
+              additionalProperties: false,
+              required: [
+                "id",
+                "title",
+                "companyName",
+                "location",
+                "workType",
+                "experienceLevel"
+              ],
+              properties: {
+                id: uuidSchema,
+                title: { type: "string" },
+                companyName: { type: "string" },
+                location: { anyOf: [{ type: "string" }, nullSchema] },
+                workType: {
+                  anyOf: [
+                    {
+                      type: "string",
+                      enum: ["REMOTE", "HYBRID", "ONSITE"]
+                    },
+                    nullSchema
+                  ]
+                },
+                experienceLevel: {
+                  anyOf: [
+                    {
+                      type: "string",
+                      enum: [
+                        "ENTRY_LEVEL",
+                        "JUNIOR",
+                        "MID_LEVEL",
+                        "SENIOR",
+                        "LEAD"
+                      ]
+                    },
+                    nullSchema
+                  ]
+                }
+              }
+            },
+            matchScore: { type: "integer", minimum: 0, maximum: 100 },
+            matchLevel: { type: "string", enum: ["strong", "good", "stretch"] },
+            reasons: { type: "array", items: { type: "string" } },
+            matchedSkills: { type: "array", items: { type: "string" } },
+            missingSkills: { type: "array", items: { type: "string" } },
+            nextSteps: { type: "array", items: { type: "string" } },
+            isBookmarked: { type: "boolean" },
+            hasApplied: { type: "boolean" }
+          }
+        },
+        JobRecommendationsData: {
+          type: "object",
+          additionalProperties: false,
+          required: ["recommendationRun", "recommendations"],
+          properties: {
+            recommendationRun: ref("JobRecommendationRun"),
+            recommendations: {
+              type: "array",
+              items: ref("JobRecommendationItem")
+            }
           }
         },
         AnalyzeCvMultipartRequest: {
