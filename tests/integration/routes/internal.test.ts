@@ -88,6 +88,11 @@ describe("internal routes", () => {
         requestId: "req_internal_bad_payload"
       }
     });
+    expect(response.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "jobs" })]
+      }
+    });
     expect(context.repository.syncInput).toBeNull();
   });
 

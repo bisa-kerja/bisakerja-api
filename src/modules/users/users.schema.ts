@@ -11,22 +11,29 @@ import { normalizeWhitespace } from "@/shared/utils/text";
 const usernameSchema = z
   .string()
   .trim()
-  .min(3)
-  .max(30)
+  .min(3, "Username minimal 3 karakter")
+  .max(30, "Username maksimal 30 karakter")
   .regex(
     /^[a-z0-9_]+$/,
-    "Username hanya boleh berisi huruf kecil, angka, dan underscore"
+    "Username hanya boleh berisi huruf kecil, angka, dan underscore, contoh salman_123"
   )
   .transform((value) => value.toLowerCase());
 
 const phoneNumberSchema = z
   .string()
   .trim()
-  .min(8)
-  .max(20)
-  .regex(/^\+?62[0-9]{7,16}$/, "Nomor telepon harus nomor Indonesia");
+  .min(8, "Nomor telepon minimal 8 digit")
+  .max(20, "Nomor telepon maksimal 20 digit")
+  .regex(
+    /^\+?62[0-9]{7,16}$/,
+    "Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789"
+  );
 
-const displayNameSchema = z.string().trim().min(1).max(80);
+const displayNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Nama tampilan wajib diisi")
+  .max(80, "Nama tampilan maksimal 80 karakter");
 
 export const updateCurrentUserSchema = z
   .strictObject({
@@ -35,29 +42,43 @@ export const updateCurrentUserSchema = z
     displayName: displayNameSchema.optional()
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: "Minimal satu field harus diisi"
+    message: "Minimal satu data profil harus diisi"
   });
 
 export const upsertProfilePhotoSchema = z.strictObject({
   storageKey: z
     .string()
     .trim()
-    .min(1)
-    .max(512)
+    .min(1, "Storage key wajib diisi")
+    .max(512, "Storage key maksimal 512 karakter")
     .regex(
       /^[A-Za-z0-9/_\-.]+$/,
       "Storage key hanya boleh berisi huruf, angka, garis miring, underscore, dash, dan titik"
     ),
-  url: z.url().max(1024).nullable().optional(),
+  url: z
+    .preprocess(
+      (value) => (typeof value === "string" ? value.trim() : value),
+      z
+        .url("URL foto profil tidak valid")
+        .max(1024, "URL foto profil maksimal 1024 karakter")
+    )
+    .nullable()
+    .optional(),
   mimeType: z.enum(allowedProfilePhotoMimeTypes),
-  sizeBytes: z.int().positive().max(maxProfilePhotoBytes)
+  sizeBytes: z
+    .int("Ukuran file harus berupa angka")
+    .positive("Ukuran file harus lebih dari 0")
+    .max(
+      maxProfilePhotoBytes,
+      `Ukuran file melebihi batas ${String(maxProfilePhotoBytes)} byte`
+    )
 });
 
 const skillItemSchema = z.strictObject({
   name: z
     .string()
-    .min(1)
-    .max(80)
+    .min(1, "Nama keahlian wajib diisi")
+    .max(80, "Nama keahlian maksimal 80 karakter")
     .transform((value) => normalizeWhitespace(value)),
   level: z.enum(["BASIC", "INTERMEDIATE", "ADVANCED"]).optional()
 });
@@ -75,7 +96,7 @@ export const replaceSkillsSchema = z
         context.addIssue({
           code: "custom",
           path: ["skills", index, "name"],
-          message: "Nama keahlian tidak boleh duplikat"
+          message: "Nama keahlian tidak boleh duplikat dalam daftar yang sama"
         });
       }
       seen.add(slug);
@@ -86,14 +107,14 @@ const experienceItemSchema = z
   .strictObject({
     title: z
       .string()
-      .min(1)
-      .max(120)
+      .min(1, "Jabatan pengalaman wajib diisi")
+      .max(120, "Jabatan pengalaman maksimal 120 karakter")
       .transform((value) => normalizeWhitespace(value)),
     company: z
       .string()
       .trim()
-      .min(1)
-      .max(120)
+      .min(1, "Nama perusahaan wajib diisi bila field ini dikirim")
+      .max(120, "Nama perusahaan maksimal 120 karakter")
       .optional()
       .nullable()
       .transform((value) => (value ? normalizeWhitespace(value) : null)),
@@ -107,7 +128,10 @@ const experienceItemSchema = z
     description: z
       .string()
       .trim()
-      .max(maxExperienceDescriptionLength)
+      .max(
+        maxExperienceDescriptionLength,
+        `Deskripsi pengalaman maksimal ${String(maxExperienceDescriptionLength)} karakter`
+      )
       .optional()
       .transform((value) => value ?? null)
   })
@@ -119,7 +143,8 @@ const experienceItemSchema = z
         context.addIssue({
           code: "custom",
           path: ["endDate"],
-          message: "endDate harus lebih besar atau sama dengan startDate"
+          message:
+            "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai"
         });
       }
     }
@@ -128,7 +153,8 @@ const experienceItemSchema = z
       context.addIssue({
         code: "custom",
         path: ["endDate"],
-        message: "endDate harus kosong saat isCurrent bernilai true"
+        message:
+          "Tanggal selesai harus kosong saat status pengalaman masih aktif"
       });
     }
   });
@@ -141,21 +167,31 @@ const educationItemSchema = z
   .strictObject({
     institution: z
       .string()
-      .min(1)
-      .max(160)
+      .min(1, "Nama institusi wajib diisi")
+      .max(160, "Nama institusi maksimal 160 karakter")
       .transform((value) => normalizeWhitespace(value)),
     degree: z
       .string()
-      .min(1)
-      .max(120)
+      .min(1, "Gelar wajib diisi")
+      .max(120, "Gelar maksimal 120 karakter")
       .transform((value) => normalizeWhitespace(value)),
     fieldOfStudy: z
       .string()
-      .min(1)
-      .max(160)
+      .min(1, "Bidang studi wajib diisi")
+      .max(160, "Bidang studi maksimal 160 karakter")
       .transform((value) => normalizeWhitespace(value)),
-    startYear: z.int().min(1900).max(2100).optional().nullable(),
-    endYear: z.int().min(1900).max(2100).optional().nullable()
+    startYear: z
+      .int("Tahun mulai harus berupa angka")
+      .min(1900, "Tahun mulai minimal 1900")
+      .max(2100, "Tahun mulai maksimal 2100")
+      .optional()
+      .nullable(),
+    endYear: z
+      .int("Tahun selesai harus berupa angka")
+      .min(1900, "Tahun selesai minimal 1900")
+      .max(2100, "Tahun selesai maksimal 2100")
+      .optional()
+      .nullable()
   })
   .superRefine((value, context) => {
     if (
@@ -166,7 +202,7 @@ const educationItemSchema = z
       context.addIssue({
         code: "custom",
         path: ["endYear"],
-        message: "endYear harus lebih besar atau sama dengan startYear"
+        message: "Tahun selesai harus lebih besar atau sama dengan tahun mulai"
       });
     }
   });

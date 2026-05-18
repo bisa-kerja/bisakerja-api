@@ -40,7 +40,18 @@ describe("bookmarks schemas", () => {
         userId: "user-1"
       })
     ).toThrow();
-    expect(() => saveBookmarkSchema.parse({ jobId: "job_123" })).toThrow();
-    expect(() => bookmarkParamsSchema.parse({ jobId: "job_123" })).toThrow();
+    const invalidBodyJobId = saveBookmarkSchema.safeParse({ jobId: "job_123" });
+    expect(invalidBodyJobId.success).toBe(false);
+    expect(invalidBodyJobId.error?.issues[0]?.message).toBe(
+      "ID lowongan tidak valid. Gunakan UUID yang benar"
+    );
+
+    const invalidParamJobId = bookmarkParamsSchema.safeParse({
+      jobId: "job_123"
+    });
+    expect(invalidParamJobId.success).toBe(false);
+    expect(invalidParamJobId.error?.issues[0]?.message).toBe(
+      "ID lowongan tidak valid. Gunakan UUID yang benar"
+    );
   });
 });

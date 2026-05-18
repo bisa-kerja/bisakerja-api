@@ -241,9 +241,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -376,9 +376,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -509,9 +509,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -600,9 +600,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -686,9 +686,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -792,9 +792,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -924,9 +924,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -1154,9 +1154,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "path": "email",
+                        "message": "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -1374,8 +1374,8 @@
                     "details": [
                       {
                         "path": "body.jobs",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "message": "Daftar lowongan wajib berisi minimal 1 item",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -1490,8 +1490,8 @@
                     "details": [
                       {
                         "path": "body.candidates",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "message": "Daftar kandidat notifikasi wajib diisi",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -1722,8 +1722,8 @@
                     "details": [
                       {
                         "path": "salaryMax",
-                        "message": "salaryMax harus lebih besar atau sama dengan salaryMin",
-                        "code": "invalid_type"
+                        "message": "Gaji maksimum harus lebih besar atau sama dengan gaji minimum",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -1851,8 +1851,8 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Format UUID tidak valid",
-                        "code": "invalid_type"
+                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -2107,9 +2107,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "displayName",
-                        "message": "Minimal satu field harus diisi",
-                        "code": "invalid_type"
+                        "path": "",
+                        "message": "Minimal satu data profil harus diisi",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -2249,8 +2249,8 @@
                     "details": [
                       {
                         "path": "mimeType",
-                        "message": "Nilai tidak didukung",
-                        "code": "invalid_type"
+                        "message": "Tipe file tidak didukung. Gunakan image/jpeg, image/png, atau image/webp",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -2388,8 +2388,8 @@
                     "details": [
                       {
                         "path": "skills.0.name",
-                        "message": "Nama keahlian tidak boleh duplikat",
-                        "code": "invalid_type"
+                        "message": "Nama keahlian tidak boleh duplikat dalam daftar yang sama",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -2536,8 +2536,8 @@
                     "details": [
                       {
                         "path": "experience.0.endDate",
-                        "message": "endDate harus lebih besar atau sama dengan startDate",
-                        "code": "invalid_type"
+                        "message": "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -2682,8 +2682,8 @@
                     "details": [
                       {
                         "path": "education.0.endYear",
-                        "message": "endYear harus lebih besar atau sama dengan startYear",
-                        "code": "invalid_type"
+                        "message": "Tahun selesai harus lebih besar atau sama dengan tahun mulai",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -2894,8 +2894,8 @@
                     "details": [
                       {
                         "path": "salaryExpectation.max",
-                        "message": "salaryExpectation.max harus lebih besar atau sama dengan min",
-                        "code": "invalid_type"
+                        "message": "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3003,8 +3003,8 @@
                     "details": [
                       {
                         "path": "workTypes",
-                        "message": "Payload request tidak valid",
-                        "code": "invalid_type"
+                        "message": "Minimal satu tipe kerja wajib diisi",
+                        "code": "too_small"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3184,8 +3184,8 @@
                     "details": [
                       {
                         "path": "sort",
-                        "message": "Nilai tidak didukung",
-                        "code": "invalid_type"
+                        "message": "Urutan tidak didukung. Gunakan nilai urutan yang tersedia",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3307,8 +3307,8 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Format UUID tidak valid",
-                        "code": "invalid_type"
+                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3390,8 +3390,8 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Format UUID tidak valid",
-                        "code": "invalid_type"
+                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3577,8 +3577,8 @@
                     "details": [
                       {
                         "path": "status",
-                        "message": "Nilai tidak didukung",
-                        "code": "invalid_type"
+                        "message": "Status lamaran tidak didukung. Gunakan status yang tersedia",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3744,8 +3744,8 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Format UUID tidak valid",
-                        "code": "invalid_type"
+                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -3904,9 +3904,9 @@
                     "code": "VALIDATION_ERROR",
                     "details": [
                       {
-                        "path": "body",
-                        "message": "Minimal satu field harus diisi",
-                        "code": "invalid_type"
+                        "path": "",
+                        "message": "Minimal satu field pembaruan harus diisi",
+                        "code": "custom"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -4084,8 +4084,8 @@
                     "details": [
                       {
                         "path": "status",
-                        "message": "Nilai tidak didukung",
-                        "code": "invalid_type"
+                        "message": "Status lamaran tidak didukung. Gunakan status yang tersedia",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -4247,8 +4247,8 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "Format UUID tidak valid",
-                        "code": "invalid_type"
+                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"
@@ -4457,7 +4457,7 @@
                       {
                         "path": "cvFile",
                         "message": "File CV PDF diperlukan untuk analisis",
-                        "code": "invalid_type"
+                        "code": "invalid_format"
                       }
                     ],
                     "requestId": "req_1234567890"

@@ -183,6 +183,16 @@ describe("preferences routes", () => {
       }
     });
     expect(invalidEnum.status).toBe(422);
+    expect(invalidEnum.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "careerStatus"
+          })
+        ]
+      }
+    });
 
     const invalidSalary = await injectRoute(context.app, {
       method: "PUT",
@@ -195,7 +205,16 @@ describe("preferences routes", () => {
     });
     expect(invalidSalary.status).toBe(422);
     expect(invalidSalary.body).toMatchObject({
-      error: { code: "INVALID_SALARY_RANGE" }
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "salaryExpectation.max",
+            message:
+              "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum"
+          })
+        ]
+      }
     });
 
     const userIdInjection = await injectRoute(context.app, {
@@ -208,6 +227,11 @@ describe("preferences routes", () => {
       }
     });
     expect(userIdInjection.status).toBe(422);
+    expect(userIdInjection.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "userId" })]
+      }
+    });
 
     const emptyPatch = await injectRoute(context.app, {
       method: "PATCH",

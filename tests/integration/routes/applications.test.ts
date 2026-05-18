@@ -118,6 +118,11 @@ describe("applications routes", () => {
     });
 
     expect(userIdInjection.status).toBe(422);
+    expect(userIdInjection.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "userId" })]
+      }
+    });
   });
 
   test("lists only current user's applications with status filter and safe job fields", async () => {
@@ -227,6 +232,17 @@ describe("applications routes", () => {
     });
 
     expect(emptyPatch.status).toBe(422);
+    expect(emptyPatch.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "",
+            message: "Minimal satu field pembaruan harus diisi",
+            code: "custom"
+          })
+        ]
+      }
+    });
   });
 
   test("updates status, appends history, and rejects invalid transition", async () => {

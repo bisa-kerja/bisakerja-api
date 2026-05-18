@@ -52,6 +52,12 @@ describe("ai job fit routes", () => {
     });
 
     expect(response.status).toBe(422);
+    expect(response.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [expect.objectContaining({ path: "profile" })]
+      }
+    });
   });
 
   test("returns separated conflict codes for incomplete profile and preferences", async () => {

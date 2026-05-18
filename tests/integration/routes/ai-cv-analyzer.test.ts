@@ -63,6 +63,16 @@ describe("ai cv analyzer routes", () => {
 
     expect(nonMultipartResponse.status).toBe(422);
     expect(missingFileResponse.status).toBe(422);
+    expect(nonMultipartResponse.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "body",
+            message: "Request harus multipart/form-data"
+          })
+        ]
+      }
+    });
     expect(missingFileResponse.body).toMatchObject({
       error: { code: "VALIDATION_ERROR" }
     });
@@ -127,6 +137,26 @@ describe("ai cv analyzer routes", () => {
     expect(oversizedResponse.status).toBe(413);
     expect(referenceResponse.status).toBe(422);
     expect(bookmarkResponse.status).toBe(404);
+    expect(invalidMimeResponse.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "cvFile",
+            message: "Tipe file CV tidak didukung. Gunakan application/pdf"
+          })
+        ]
+      }
+    });
+    expect(referenceResponse.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "inputMode",
+            message: "Mode REFERENCE belum didukung"
+          })
+        ]
+      }
+    });
     expect(bookmarkResponse.body).toMatchObject({
       error: { code: "BOOKMARK_NOT_FOUND" }
     });

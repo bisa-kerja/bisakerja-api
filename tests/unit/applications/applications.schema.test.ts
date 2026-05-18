@@ -56,7 +56,11 @@ describe("applications schemas", () => {
   });
 
   test("requires at least one metadata update field", () => {
-    expect(updateApplicationSchema.safeParse({}).success).toBe(false);
+    const empty = updateApplicationSchema.safeParse({});
+    expect(empty.success).toBe(false);
+    expect(empty.error?.issues[0]?.message).toBe(
+      "Minimal satu field pembaruan harus diisi"
+    );
     expect(updateApplicationSchema.parse({ notes: null })).toEqual({
       notes: null
     });

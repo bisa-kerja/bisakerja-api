@@ -121,6 +121,18 @@ describe("users routes", () => {
     });
 
     expect(emptyBody.status).toBe(422);
+    expect(emptyBody.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "",
+            message: "Minimal satu data profil harus diisi",
+            code: "custom"
+          })
+        ]
+      }
+    });
   });
 
   test("upserts profile photo metadata and rejects invalid payload", async () => {
@@ -164,6 +176,17 @@ describe("users routes", () => {
       }
     });
     expect(invalidUrl.status).toBe(422);
+    expect(invalidUrl.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "url",
+            message: "URL foto profil tidak valid"
+          })
+        ]
+      }
+    });
 
     const success = await injectRoute(context.app, {
       method: "PUT",
@@ -206,6 +229,16 @@ describe("users routes", () => {
     });
 
     expect(duplicate.status).toBe(422);
+    expect(duplicate.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "skills.1.name",
+            message: "Nama keahlian tidak boleh duplikat dalam daftar yang sama"
+          })
+        ]
+      }
+    });
 
     const firstReplace = await injectRoute(context.app, {
       method: "PUT",
@@ -272,6 +305,17 @@ describe("users routes", () => {
       }
     });
     expect(invalidExperience.status).toBe(422);
+    expect(invalidExperience.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "experience.0.endDate",
+            message:
+              "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai"
+          })
+        ]
+      }
+    });
 
     const validExperience = await injectRoute(context.app, {
       method: "PUT",
@@ -311,6 +355,16 @@ describe("users routes", () => {
       }
     });
     expect(invalidEducation.status).toBe(422);
+    expect(invalidEducation.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "education.0.degree",
+            message: "Gelar wajib diisi"
+          })
+        ]
+      }
+    });
 
     const validEducation = await injectRoute(context.app, {
       method: "PUT",

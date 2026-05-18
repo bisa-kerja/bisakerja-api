@@ -113,6 +113,11 @@ describe("jobs routes", () => {
         requestId: "req_jobs_bad_query"
       }
     });
+    expect(invalidQuery.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "workType" })]
+      }
+    });
 
     const invalidParam = await injectRoute(context.app, {
       method: "GET",
@@ -121,6 +126,16 @@ describe("jobs routes", () => {
     });
 
     expect(invalidParam.status).toBe(422);
+    expect(invalidParam.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "jobId",
+            message: "ID lowongan tidak valid. Gunakan UUID yang benar"
+          })
+        ]
+      }
+    });
   });
 
   test("returns job detail and maps missing jobs to JOB_NOT_FOUND", async () => {

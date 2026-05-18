@@ -288,6 +288,11 @@ Database rules:
 | Duplicate bookmark    | 409    | `BOOKMARK_ALREADY_EXISTS` |
 | Database unavailable  | 503    | `SERVICE_UNAVAILABLE`     |
 
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
+- `sort`: `Urutan tidak didukung. Gunakan nilai urutan yang tersedia`
+
 ## Observability
 
 Log safe structured events:

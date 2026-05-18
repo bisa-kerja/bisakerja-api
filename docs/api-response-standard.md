@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-response-standard.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-18
 ---
 
 # Backend API Response Standard
@@ -245,6 +245,71 @@ Validation detail fields:
 | `path`    | string | Yes      | Dot-notated path to invalid field |
 | `message` | string | Yes      | Safe validation message           |
 | `code`    | string | Yes      | Zod or app-level validation code  |
+
+## Validation Message Quality Contract
+
+Validation message quality must improve without changing the public detail shape.
+
+Required compatibility rules:
+
+- Keep HTTP status `422`.
+- Keep envelope `error.code` as `VALIDATION_ERROR`.
+- Keep each detail item with `path`, `message`, and `code`.
+- Keep `path` machine-friendly (dot-notated technical field path).
+
+Required message quality rules:
+
+- `message` should mention a user-facing field label.
+- `message` should explain why validation failed in specific terms.
+- `message` should include a short correction hint when safe.
+- `message` must not expose raw sensitive inputs such as passwords, OTP values, access tokens, refresh tokens, CV content, or service credentials.
+- Field labels should be resolved from a maintained dictionary first, then fall back to a path-derived label when no dictionary entry exists.
+- Nested paths should remain machine-readable in `path` while `message` uses the best available user-facing label.
+
+When multiple issues exist for the same field:
+
+- Prioritize the most actionable message.
+- Avoid repetitive low-value duplicates.
+- Keep distinct issues only when each item adds useful information.
+- For password validation with multiple failed rules, prefer one concise combined message over many repetitive details.
+
+Example target detail quality for auth registration:
+
+```json
+{
+  "path": "phoneNumber",
+  "message": "Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789",
+  "code": "invalid_format"
+}
+```
+
+Example for password rules in one field:
+
+```json
+{
+  "path": "password",
+  "message": "Kata sandi tidak memenuhi syarat: minimal 12 karakter; harus mengandung huruf besar; harus mengandung angka; harus mengandung simbol",
+  "code": "custom"
+}
+```
+
+Before and after example for register validation quality:
+
+- Before (not acceptable): `Format tidak valid`, `Nilai terlalu kecil`.
+- After (required): `Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com`.
+- After (required): `Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789`.
+- After (required): `Kata sandi tidak memenuhi syarat: ...`.
+
+### Optional Metadata For Future Extension
+
+Future versions may add optional metadata keys inside each detail item, for example:
+
+- `fieldLabel`
+- `reason`
+- `hint`
+- `rule`
+
+If introduced, these keys must be added as non-breaking optional fields and documented in module contracts plus OpenAPI examples before rollout.
 
 ## Error Code Catalog
 

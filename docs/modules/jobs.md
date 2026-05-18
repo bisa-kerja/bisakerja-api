@@ -352,6 +352,10 @@ Rules:
 | Hidden job detail     | 404    | `JOB_NOT_FOUND`       |
 | Database unavailable  | 503    | `SERVICE_UNAVAILABLE` |
 
+Validation detail example for invalid route param:
+
+- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
+
 ## Observability
 
 Log safe structured events:

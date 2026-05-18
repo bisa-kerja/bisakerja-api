@@ -404,6 +404,14 @@ Do not store plaintext passwords, raw OTP values, or raw reset tokens.
 
 Use generic messages for login and password reset discovery paths to avoid account enumeration.
 
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `username`: `Username hanya boleh berisi huruf kecil, angka, dan underscore, contoh salman_123`
+- `email`: `Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com`
+- `phoneNumber`: `Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789`
+- `password`: `Kata sandi tidak memenuhi syarat: ...`
+- `confirmPassword`: `Konfirmasi kata sandi tidak sesuai. Samakan dengan kata sandi`
+
 ## Security Requirements
 
 - Hash passwords with Argon2id through `argon2` unless scaffold compatibility testing blocks it.

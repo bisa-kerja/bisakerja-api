@@ -310,6 +310,10 @@ Persistence rules:
 | Model unavailable      | 503    | `SERVICE_UNAVAILABLE`    |
 | Model invalid response | 502    | `DOWNSTREAM_ERROR`       |
 
+Validation detail example for `422 VALIDATION_ERROR`:
+
+- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
+
 ## Observability
 
 Log safe structured events:

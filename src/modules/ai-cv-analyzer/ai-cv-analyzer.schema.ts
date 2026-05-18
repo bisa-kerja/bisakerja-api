@@ -23,11 +23,11 @@ const multipartBooleanSchema = z.preprocess((value) => {
   }
 
   return value;
-}, z.boolean());
+}, z.boolean("Flag persistResult harus bernilai true atau false"));
 
 export const analyzeCvSchema = z
   .strictObject({
-    jobId: z.uuid(),
+    jobId: z.uuid("ID lowongan tidak valid. Gunakan UUID yang benar"),
     language: z.enum(["id", "en"]),
     inputMode: z.enum(["UPLOAD", "REFERENCE"]),
     compareSource: z
@@ -36,14 +36,16 @@ export const analyzeCvSchema = z
     persistResult: multipartBooleanSchema.default(
       defaultPersistCvAnalysisResult
     ),
-    cvFileId: z.uuid().optional()
+    cvFileId: z
+      .uuid("ID file CV tidak valid. Gunakan UUID yang benar")
+      .optional()
   })
   .superRefine((value, ctx) => {
     if (value.inputMode === "UPLOAD" && value.cvFileId) {
       ctx.addIssue({
         code: "custom",
         path: ["cvFileId"],
-        message: "cvFileId tidak didukung untuk mode UPLOAD"
+        message: "ID file CV tidak boleh dikirim saat mode UPLOAD"
       });
     }
   });

@@ -309,6 +309,13 @@ Suggested metadata:
 | Model unavailable                   | 503        | `SERVICE_UNAVAILABLE`                            |
 | Model invalid response              | 502        | `DOWNSTREAM_ERROR`                               |
 
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `body`: `Request harus multipart/form-data`
+- `cvFile`: `Tipe file CV tidak didukung. Gunakan application/pdf`
+- `cvFile`: `File CV PDF diperlukan untuk analisis`
+- `inputMode`: `Mode REFERENCE belum didukung`
+
 ## Observability
 
 Log safe structured events:

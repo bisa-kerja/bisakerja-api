@@ -352,6 +352,12 @@ Database rules:
 | Invalid status transition | 409    | `APPLICATION_STATUS_CONFLICT` |
 | Database unavailable      | 503    | `SERVICE_UNAVAILABLE`         |
 
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
+- `status`: `Status lamaran tidak didukung. Gunakan status yang tersedia`
+- `""`: `Minimal satu field pembaruan harus diisi`
+
 ## Observability
 
 Log safe structured events:

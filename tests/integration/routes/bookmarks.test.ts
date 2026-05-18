@@ -93,6 +93,11 @@ describe("bookmarks routes", () => {
     });
 
     expect(userIdInjection.status).toBe(422);
+    expect(userIdInjection.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "userId" })]
+      }
+    });
   });
 
   test("lists only current user's bookmarks with pagination metadata and safe job card fields", async () => {
@@ -186,6 +191,16 @@ describe("bookmarks routes", () => {
     });
 
     expect(invalidParam.status).toBe(422);
+    expect(invalidParam.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "jobId",
+            message: "ID lowongan tidak valid. Gunakan UUID yang benar"
+          })
+        ]
+      }
+    });
   });
 });
 

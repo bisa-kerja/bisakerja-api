@@ -49,13 +49,19 @@ describe("async workloads schema", () => {
   });
 
   test("rejects invalid payload shape", () => {
-    expect(() =>
+    try {
       parseAsyncJobPayload("auth.email-verification", {
         email: "user@example.com",
         otp: "12",
         expiresAt: "2026-05-13T10:00:00.000Z"
-      })
-    ).toThrow(ZodError);
+      });
+      throw new Error("expected error");
+    } catch (error) {
+      expect(error).toBeInstanceOf(ZodError);
+      if (error instanceof ZodError) {
+        expect(error.issues[0]?.message).toBe("OTP harus 6 digit angka");
+      }
+    }
 
     expect(() =>
       parseAsyncJobPayload("maintenance.cv-cleanup", {

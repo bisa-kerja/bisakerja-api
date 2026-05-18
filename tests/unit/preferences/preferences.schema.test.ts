@@ -53,16 +53,33 @@ describe("preferences schemas", () => {
   });
 
   test("rejects duplicate target roles after normalization", () => {
-    expect(() =>
-      upsertPreferencesSchema.parse({
-        careerStatus: "EARLY_CAREER",
-        jobSeekingStatus: "ONE_MONTH",
-        targetRoles: ["Backend Developer", " backend   developer "],
-        locations: [{ province: "DKI Jakarta" }],
-        workTypes: ["HYBRID"],
-        salaryExpectation: {},
-        emailNotificationsEnabled: false
-      })
-    ).toThrow();
+    const duplicate = upsertPreferencesSchema.safeParse({
+      careerStatus: "EARLY_CAREER",
+      jobSeekingStatus: "ONE_MONTH",
+      targetRoles: ["Backend Developer", " backend   developer "],
+      locations: [{ province: "DKI Jakarta" }],
+      workTypes: ["HYBRID"],
+      salaryExpectation: {},
+      emailNotificationsEnabled: false
+    });
+
+    expect(duplicate.success).toBe(false);
+    expect(duplicate.error?.issues[0]?.message).toBe(
+      "Target peran tidak boleh duplikat"
+    );
+  });
+
+  test("rejects salary expectation max below min with friendly message", () => {
+    const invalid = patchPreferencesSchema.safeParse({
+      salaryExpectation: { min: 10_000_000, max: 5_000_000 }
+    });
+
+    expect(invalid.success).toBe(false);
+    expect(invalid.error?.issues[0]?.path.join(".")).toBe(
+      "salaryExpectation.max"
+    );
+    expect(invalid.error?.issues[0]?.message).toBe(
+      "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum"
+    );
   });
 });

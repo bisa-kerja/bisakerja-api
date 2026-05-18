@@ -83,7 +83,7 @@ export function createCvUploadMiddleware(config: AppConfig): RequestHandler {
           new ValidationError("Tipe file CV tidak didukung", [
             {
               path: "cvFile",
-              message: `MIME type yang didukung: ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
+              message: `Tipe file CV tidak didukung. Gunakan ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
               code: "custom"
             }
           ])
@@ -160,7 +160,8 @@ function mapMulterError(error: multer.MulterError, config: AppConfig) {
   return new ValidationError("Payload upload multipart tidak valid", [
     {
       path: "cvFile",
-      message: error.message,
+      message:
+        "Payload upload CV tidak valid. Periksa kembali field multipart dan kirim ulang file CV.",
       code: error.code
     }
   ]);

@@ -101,7 +101,11 @@ function errorResponse(
   });
 }
 
-function validationErrorResponse(examplePath: string, exampleMessage: string) {
+function validationErrorResponse(
+  examplePath: string,
+  exampleMessage: string,
+  exampleCode = "invalid_format"
+) {
   return jsonResponse("Validasi gagal", ref("ErrorEnvelope"), {
     success: false,
     message: "Validasi gagal",
@@ -112,7 +116,7 @@ function validationErrorResponse(examplePath: string, exampleMessage: string) {
         {
           path: examplePath,
           message: exampleMessage,
-          code: "invalid_type"
+          code: exampleCode
         }
       ],
       requestId: "req_1234567890"
@@ -122,7 +126,10 @@ function validationErrorResponse(examplePath: string, exampleMessage: string) {
 
 function authValidationAndRateLimitResponses() {
   return {
-    "422": validationErrorResponse("body", "Payload request tidak valid"),
+    "422": validationErrorResponse(
+      "email",
+      "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com"
+    ),
     "429": errorResponse(
       "Rate limit exceeded.",
       "RATE_LIMITED",
@@ -1065,7 +1072,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "body.jobs",
-              "Payload request tidak valid"
+              "Daftar lowongan wajib berisi minimal 1 item"
             )
           }
         }
@@ -1119,7 +1126,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "body.candidates",
-              "Payload request tidak valid"
+              "Daftar kandidat notifikasi wajib diisi"
             )
           }
         }
@@ -1271,7 +1278,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "salaryMax",
-              "salaryMax harus lebih besar atau sama dengan salaryMin"
+              "Gaji maksimum harus lebih besar atau sama dengan gaji minimum",
+              "custom"
             )
           }
         }
@@ -1322,7 +1330,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "JOB_NOT_FOUND",
               "Lowongan tidak ditemukan"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "ID lowongan tidak valid. Gunakan UUID yang benar"
+            )
           }
         }
       },
@@ -1387,8 +1398,9 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "Username sudah terdaftar"
             ),
             "422": validationErrorResponse(
-              "displayName",
-              "Minimal satu field harus diisi"
+              "",
+              "Minimal satu data profil harus diisi",
+              "custom"
             )
           }
         }
@@ -1425,7 +1437,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "UNAUTHENTICATED",
               "Autentikasi diperlukan"
             ),
-            "422": validationErrorResponse("mimeType", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "mimeType",
+              "Tipe file tidak didukung. Gunakan image/jpeg, image/png, atau image/webp"
+            )
           }
         }
       },
@@ -1468,7 +1483,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "skills.0.name",
-              "Nama keahlian tidak boleh duplikat"
+              "Nama keahlian tidak boleh duplikat dalam daftar yang sama",
+              "custom"
             )
           }
         }
@@ -1513,7 +1529,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "experience.0.endDate",
-              "endDate harus lebih besar atau sama dengan startDate"
+              "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai",
+              "custom"
             )
           }
         }
@@ -1556,7 +1573,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "education.0.endYear",
-              "endYear harus lebih besar atau sama dengan startYear"
+              "Tahun selesai harus lebih besar atau sama dengan tahun mulai",
+              "custom"
             )
           }
         }
@@ -1637,7 +1655,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "salaryExpectation.max",
-              "salaryExpectation.max harus lebih besar atau sama dengan min"
+              "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum",
+              "custom"
             )
           }
         },
@@ -1676,7 +1695,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "workTypes",
-              "Payload request tidak valid"
+              "Minimal satu tipe kerja wajib diisi",
+              "too_small"
             )
           }
         }
@@ -1754,7 +1774,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "UNAUTHENTICATED",
               "Autentikasi diperlukan"
             ),
-            "422": validationErrorResponse("sort", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "sort",
+              "Urutan tidak didukung. Gunakan nilai urutan yang tersedia"
+            )
           }
         },
         post: {
@@ -1798,7 +1821,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "BOOKMARK_ALREADY_EXISTS",
               "Bookmark sudah ada"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "ID lowongan tidak valid. Gunakan UUID yang benar"
+            )
           }
         }
       },
@@ -1831,7 +1857,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "BOOKMARK_NOT_FOUND",
               "Bookmark tidak ditemukan"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "ID lowongan tidak valid. Gunakan UUID yang benar"
+            )
           }
         }
       },
@@ -1911,7 +1940,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "UNAUTHENTICATED",
               "Autentikasi diperlukan"
             ),
-            "422": validationErrorResponse("status", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "status",
+              "Status lamaran tidak didukung. Gunakan status yang tersedia"
+            )
           }
         },
         post: {
@@ -1955,7 +1987,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "APPLICATION_ALREADY_TRACKED",
               "Lamaran sudah dilacak"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "ID lowongan tidak valid. Gunakan UUID yang benar"
+            )
           }
         }
       },
@@ -2007,8 +2042,9 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "Lamaran tidak ditemukan"
             ),
             "422": validationErrorResponse(
-              "body",
-              "Minimal satu field harus diisi"
+              "",
+              "Minimal satu field pembaruan harus diisi",
+              "custom"
             )
           }
         }
@@ -2065,7 +2101,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "APPLICATION_STATUS_CONFLICT",
               "Perubahan status lamaran tidak valid"
             ),
-            "422": validationErrorResponse("status", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "status",
+              "Status lamaran tidak didukung. Gunakan status yang tersedia"
+            )
           }
         }
       },
@@ -2109,7 +2148,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "PROFILE_INCOMPLETE",
               "Data profil belum lengkap untuk analisis kecocokan pekerjaan"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid"),
+            "422": validationErrorResponse(
+              "jobId",
+              "ID lowongan tidak valid. Gunakan UUID yang benar"
+            ),
             "502": errorResponse(
               "Downstream response is invalid.",
               "DOWNSTREAM_ERROR",

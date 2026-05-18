@@ -236,7 +236,7 @@ describe("runtime routes and middleware", () => {
           code: "invalid_format"
         }),
         expect.objectContaining({
-          path: "",
+          path: "extra",
           code: "unrecognized_keys"
         })
       ])

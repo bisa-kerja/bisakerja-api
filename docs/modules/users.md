@@ -356,6 +356,14 @@ The final status computation should be centralized so Auth, Users, and Preferenc
 | Invalid skill level            | 422    | `VALIDATION_ERROR`            |
 | Invalid experience date range  | 422    | `VALIDATION_ERROR`            |
 
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `""`: `Minimal satu data profil harus diisi`
+- `url`: `URL foto profil tidak valid`
+- `skills.1.name`: `Nama keahlian tidak boleh duplikat dalam daftar yang sama`
+- `experience.0.endDate`: `Tanggal selesai harus lebih besar atau sama dengan tanggal mulai`
+- `education.0.degree`: `Gelar wajib diisi`
+
 ## Observability
 
 Log safe structured events:

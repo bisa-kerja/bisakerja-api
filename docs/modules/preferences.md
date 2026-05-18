@@ -243,8 +243,12 @@ Consumers must read persisted preferences from Backend API persistence, not trus
 | Preferences not found                               | 404    | `PREFERENCES_NOT_FOUND` |
 | Invalid enum value                                  | 422    | `VALIDATION_ERROR`      |
 | Empty target role list during onboarding completion | 422    | `VALIDATION_ERROR`      |
-| Invalid salary range                                | 422    | `INVALID_SALARY_RANGE`  |
+| Invalid salary range                                | 422    | `VALIDATION_ERROR`      |
 | Empty patch body                                    | 400    | `BAD_REQUEST`           |
+
+Validation detail example for salary range:
+
+- `salaryExpectation.max`: `Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum`
 
 ## Observability
 
