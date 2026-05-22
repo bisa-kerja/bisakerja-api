@@ -583,7 +583,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Health"],
           summary: "Readiness check",
           description:
-            "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL.",
+            "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL and Redis.",
           responses: {
             "200": jsonResponse(
               "Service is ready.",
@@ -596,7 +596,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                   status: "ready",
                   env: config.app.env,
                   dependencies: {
-                    postgresql: "healthy"
+                    postgresql: "healthy",
+                    redis: "healthy"
                   }
                 },
                 meta: null
@@ -608,7 +609,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "Layanan belum siap",
               {
                 dependencies: {
-                  postgresql: "unhealthy"
+                  postgresql: "unhealthy",
+                  redis: "healthy"
                 }
               }
             )
@@ -3921,9 +3923,13 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             dependencies: {
               type: "object",
               additionalProperties: false,
-              required: ["postgresql"],
+              required: ["postgresql", "redis"],
               properties: {
                 postgresql: {
+                  type: "string",
+                  enum: ["healthy", "unhealthy"]
+                },
+                redis: {
                   type: "string",
                   enum: ["healthy", "unhealthy"]
                 }

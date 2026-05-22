@@ -308,8 +308,8 @@ export function renderSyncReadinessMarkdown(
           .join("\n");
   const openApiNote =
     report.openApiStatus === "available"
-      ? "A generated OpenAPI artifact is present under `docs/generated/`."
-      : "No generated OpenAPI artifact is published yet. The machine-readable API source is still pending final selection, and interactive documentation can be attached later once that source is adopted.";
+      ? "Generated OpenAPI artifact is present under `docs/generated/`, served at runtime from `/openapi.json`, and rendered interactively through Scalar at `/docs/api`."
+      : "No generated OpenAPI artifact is published yet. Machine-readable API source still pending final selection.";
 
   return `---
 title: Backend API Sync Readiness
@@ -344,7 +344,7 @@ This page is generated from the current service-owned docs tree and the document
 
 ${openApiNote}
 
-An interactive API portal can be introduced later from the same machine-readable source, including a Scalar-based presentation if that becomes the chosen documentation surface.
+Scalar repo config remains in \`scalar.config.json\` for docs preview and sync review.
 
 ## Path Mapping
 

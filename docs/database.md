@@ -82,7 +82,7 @@ Backend API repositories must not write scraper-owned normalized job records unl
 | `User`                   | Account identity and basic state                           | Backend API |
 | `AuthCredential`         | Local auth credential and password hash metadata           | Backend API |
 | `RefreshToken`           | Hashed opaque refresh credential and token-family metadata | Backend API |
-| `EmailVerificationToken` | Email verification OTP or token state                      | Backend API |
+| `EmailVerificationToken` | Email verification OTP state                               | Backend API |
 | `PasswordResetToken`     | Password reset token state                                 | Backend API |
 
 ### Profile And Preferences

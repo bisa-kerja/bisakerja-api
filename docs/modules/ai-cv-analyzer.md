@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-cv-analyzer.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # AI CV Analyzer Module
@@ -119,7 +119,7 @@ Successful response:
 }
 ```
 
-`GET /api/v1/me/cv-files/active` returns the same safe `cvFile` metadata shape. It does not expose `storageKey`.
+`GET /api/v1/me/cv-files/active` returns envelope shape `{ "cvFile": ... }` with the same safe metadata fields. It does not expose `storageKey`.
 
 ## Request Schema
 
@@ -137,15 +137,15 @@ For multipart upload, metadata fields are sent alongside file part.
 
 Validation:
 
-| Field           | Rule                                                                  |
-| --------------- | --------------------------------------------------------------------- |
-| `jobId`         | Required internal job listing id                                      |
-| `language`      | Required enum: `id` or `en`                                           |
-| `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                |
-| `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`          |
-| `persistResult` | Optional boolean, default based on product policy                     |
-| `cvFile`        | Required for `UPLOAD` mode                                            |
-| `cvFileId`      | Optional for `REFERENCE`; when omitted the active CV fallback is used |
+| Field           | Rule                                                                               |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `jobId`         | Required internal job listing id                                                   |
+| `language`      | Required enum: `id` or `en`                                                        |
+| `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                             |
+| `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`; default `JOB_SEARCH` |
+| `persistResult` | Optional boolean, default `false`                                                  |
+| `cvFile`        | Required for `UPLOAD` mode                                                         |
+| `cvFileId`      | Optional for `REFERENCE`; when omitted the active CV fallback is used              |
 
 CV file validation:
 

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/health.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Health Module
@@ -55,9 +55,7 @@ The Health module does not own:
     "status": "live",
     "env": "local"
   },
-  "meta": {
-    "requestId": "req_123"
-  }
+  "meta": null
 }
 ```
 
@@ -76,9 +74,7 @@ The Health module does not own:
       "redis": "healthy"
     }
   },
-  "meta": {
-    "requestId": "req_123"
-  }
+  "meta": null
 }
 ```
 

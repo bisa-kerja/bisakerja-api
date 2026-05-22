@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/routes.md
-last_reviewed: 2026-05-18
+last_reviewed: 2026-05-22
 generated_by: route-inventory-script
-generated_at: 2026-05-18T08:53:24.071Z
-source_commit: eb9710893b332b13458393943ec3ab3a8f9d40dc
+generated_at: 2026-05-22T06:52:06.070Z
+source_commit: dd57cd8d9855e2879df71b4dfe8df339b255eb6d
 ---
 
 # Backend API Route Inventory
@@ -23,8 +23,8 @@ This page is generated from the route registry used by the application runtime. 
 | Metric        | Value                                      |
 | ------------- | ------------------------------------------ |
 | Total routes  | 38                                         |
-| Generated at  | `2026-05-18T08:53:24.071Z`                 |
-| Source commit | `eb9710893b332b13458393943ec3ab3a8f9d40dc` |
+| Generated at  | `2026-05-22T06:52:06.070Z`                 |
+| Source commit | `dd57cd8d9855e2879df71b4dfe8df339b255eb6d` |
 
 ## Registered Routes
 

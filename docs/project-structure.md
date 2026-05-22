@@ -175,18 +175,19 @@ This rule keeps codebase ergonomics predictable:
 
 ## MVP Modules
 
-| Module directory          | Purpose                                                                                                                             |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `auth/`                   | Register, login, logout/session invalidation, token/session refresh, password reset, email verification, and Google SSO placeholder |
-| `users/`                  | Profile, onboarding state, career background, skills, experience, education, and account settings                                   |
-| `preferences/`            | Career status, job seeking timeline, target roles, locations, work types, salary range, and email notification preference           |
-| `jobs/`                   | Search, filter, sort, list, detail, company data, job requirements, source metadata, and external apply link                        |
-| `bookmarks/`              | Save job, remove saved job, list saved jobs, duplicate handling, and ownership checks                                               |
-| `applications/`           | Application tracker records, status changes, notes, and ownership checks                                                            |
-| `ai-job-fit/`             | Fit score, explanation breakdown, skill gap, readiness, and recommendation output                                                   |
-| `ai-cv-analyzer/`         | CV upload analysis, job comparison, ATS score, keyword optimization, quantification, and improvements                               |
-| `ai-job-recommendations/` | Candidate-job reranking from owned CV analysis with persisted recommendation runs and item snapshots                                |
-| `health/`                 | Liveness and readiness endpoints                                                                                                    |
+| Module directory          | Purpose                                                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `auth/`                   | Register, login, logout/session invalidation, token/session refresh, password reset, email verification, and Google OAuth login  |
+| `users/`                  | Profile, onboarding state, career background, skills, experience, education, and account settings                                |
+| `preferences/`            | Career status, job seeking timeline, target roles, locations, work types, salary range, and email notification preference        |
+| `jobs/`                   | Search, filter, sort, list, detail, company data, job requirements, source metadata, and external apply link                     |
+| `bookmarks/`              | Save job, remove saved job, list saved jobs, duplicate handling, and ownership checks                                            |
+| `applications/`           | Application tracker records, status changes, notes, and ownership checks                                                         |
+| `ai-job-fit/`             | Fit score, explanation breakdown, skill gap, readiness, and recommendation output                                                |
+| `ai-cv-analyzer/`         | CV upload analysis, active CV metadata lookup, job comparison, ATS score, keyword optimization, quantification, and improvements |
+| `ai-job-recommendations/` | Candidate-job reranking from owned CV analysis with persisted recommendation runs and item snapshots                             |
+| `internal/`               | Service-token protected scraper sync and notification handoff routes                                                             |
+| `health/`                 | Liveness and readiness endpoints                                                                                                 |
 
 Future modules such as `mentoring/`, `notifications/`, and `analytics/` should not be added until their documentation and scope are approved.
 

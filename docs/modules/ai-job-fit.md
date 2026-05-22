@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-job-fit.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # AI Job Fit Module
@@ -162,6 +162,8 @@ Payload rules:
 - Validate Model API response before sending data to frontend.
 
 ## Response Schema
+
+Successful analysis returns message `Analisis kecocokan pekerjaan berhasil diselesaikan`.
 
 ```json
 {

@@ -29,10 +29,11 @@ The Bisakerja Backend API is the main application backend for Bisakerja. It prov
 
 This repository is responsible for:
 
-- Auth, session, email verification, and password reset workflows
-- User profile, preference, bookmark, and application tracker workflows
+- Auth, session, email verification, password reset, and Google OAuth workflows
+- User profile, preference, bookmark, CV file, and application tracker workflows
 - Job search and job detail access over normalized job records
-- AI job fit and AI CV analyzer orchestration through the Model API boundary
+- AI job fit, AI CV analyzer, and AI job recommendation orchestration through the Model API boundary
+- Internal scraper sync and notification handoff endpoints protected by service credentials
 - Prisma schema, migrations, seed data, and repository-level persistence logic
 - Service-owned technical documentation and generated API artifacts
 - Docker-based runtime deployment support for a VPS-style environment
@@ -76,17 +77,20 @@ The Backend API does not own:
 
 ## MVP Modules
 
-| Module         | Responsibility                                                                 |
-| -------------- | ------------------------------------------------------------------------------ |
-| Auth           | Register, login, logout, refresh/session, password reset, email verification   |
-| Users          | Account profile, onboarding state, career background, skills, and education    |
-| Preferences    | Career status, target roles, locations, work types, salary, and notifications  |
-| Jobs           | Search, filter, sort, list, detail, company data, source data, and apply links |
-| Bookmarks      | Save, remove, list saved jobs, duplicate handling, and ownership checks        |
-| Applications   | Track user-specific applications, status changes, and status history           |
-| AI Job Fit     | Prepare inference context and return fit score, skill gap, and next steps      |
-| AI CV Analyzer | Analyze uploaded CV PDFs against a selected job and return improvement signals |
-| Health         | Liveness and readiness endpoints                                               |
+| Module                 | Responsibility                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| Auth                   | Register, login, logout, refresh/session, password reset, email verification, and Google OAuth    |
+| Users                  | Account profile, onboarding state, career background, skills, and education                       |
+| Preferences            | Career status, target roles, locations, work types, salary, and notifications                     |
+| Jobs                   | Search, filter, sort, list, detail, company data, source data, and apply links                    |
+| Bookmarks              | Save, remove, list saved jobs, duplicate handling, and ownership checks                           |
+| Applications           | Track user-specific applications, status changes, and status history                              |
+| CV Files               | Upload reusable user CV PDFs and expose safe active-file metadata                                 |
+| AI Job Fit             | Prepare inference context and return fit score, skill gap, and next steps                         |
+| AI CV Analyzer         | Analyze uploaded or stored CV PDFs against a selected job and return improvement signals          |
+| AI Job Recommendations | Generate persisted recommendation runs from owned CV analysis and backend-selected candidate jobs |
+| Internal               | Accept scraper job sync payloads and notification handoff events through service-token auth       |
+| Health                 | Liveness and readiness endpoints                                                                  |
 
 Future modules such as mentoring, notification expansion, analytics, payments, and direct ATS integration are documented as future scope and should not block MVP behavior.
 
@@ -100,17 +104,20 @@ http://localhost:3000/api/v1
 
 Key route groups:
 
-| Route group    | Prefix                          | Auth class                               |
-| -------------- | ------------------------------- | ---------------------------------------- |
-| Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted      |
-| Auth           | `/api/v1/auth`                  | Public plus authenticated session routes |
-| Users          | `/api/v1/me`                    | Authenticated                            |
-| Preferences    | `/api/v1/me/preferences`        | Authenticated or onboarding access token |
-| Jobs           | `/api/v1/jobs`                  | Public for search and detail             |
-| Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected    |
-| Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected    |
-| AI Job Fit     | `/api/v1/ai/job-fit`            | Authenticated                            |
-| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                            |
+| Route group            | Prefix                           | Auth class                               |
+| ---------------------- | -------------------------------- | ---------------------------------------- |
+| Health                 | `/health/live`, `/health/ready`  | Public or infrastructure-restricted      |
+| Auth                   | `/api/v1/auth`                   | Public plus authenticated session routes |
+| Users                  | `/api/v1/me`                     | Authenticated                            |
+| Preferences            | `/api/v1/me/preferences`         | Authenticated or onboarding access token |
+| Jobs                   | `/api/v1/jobs`                   | Public for search and detail             |
+| Bookmarks              | `/api/v1/me/bookmarks`           | Authenticated and ownership-protected    |
+| Applications           | `/api/v1/me/applications`        | Authenticated and ownership-protected    |
+| CV Files               | `/api/v1/me/cv-files`            | Authenticated or onboarding access token |
+| AI Job Fit             | `/api/v1/ai/job-fit`             | Authenticated                            |
+| AI CV Analyzer         | `/api/v1/ai/cv-analyzer`         | Authenticated                            |
+| AI Job Recommendations | `/api/v1/ai/job-recommendations` | Authenticated                            |
+| Internal               | `/api/v1/internal`               | Service-token protected                  |
 
 JSON responses use a consistent envelope with `success`, `message`, `data`, `meta`, and `error` fields. See `docs/api-response-standard.md` for the full response contract.
 
@@ -261,29 +268,32 @@ bun run prisma:verify:migrations
 
 ## Available Scripts
 
-| Script                                 | Purpose                                        |
-| -------------------------------------- | ---------------------------------------------- |
-| `bun run dev`                          | Start the API in watch mode                    |
-| `bun run start`                        | Start the API                                  |
-| `bun run typecheck`                    | Run TypeScript contract checks                 |
-| `bun run lint`                         | Run ESLint                                     |
-| `bun run format`                       | Format files with Prettier                     |
-| `bun run format:check`                 | Check formatting without writing               |
-| `bun test`                             | Run the default test suite                     |
-| `bun run test:unit`                    | Run unit tests                                 |
-| `bun run test:routes`                  | Run route/API contract tests                   |
-| `bun run test:integration`             | Run integration tests                          |
-| `bun run test:contracts`               | Run downstream contract tests                  |
-| `bun run test:smoke`                   | Run smoke tests                                |
-| `bun run test:coverage`                | Run full suite with coverage report            |
-| `bun run docs:generate:openapi`        | Regenerate OpenAPI artifact                    |
-| `bun run docs:generate:routes`         | Regenerate route inventory                     |
-| `bun run docs:generate:sync-readiness` | Regenerate sync-readiness inventory            |
-| `bun run docs:check`                   | Verify documentation metadata and examples     |
-| `bun run docs:scalar:check-config`     | Validate Scalar Docs configuration             |
-| `bun run docs:scalar:preview`          | Preview repo documentation through Scalar Docs |
-| `bun run cleanup:cv-uploads`           | Enqueue expired temporary CV cleanup job       |
-| `bun run worker:async`                 | Start Redis-backed async worker                |
+| Script                                 | Purpose                                            |
+| -------------------------------------- | -------------------------------------------------- |
+| `bun run dev`                          | Start the API in watch mode                        |
+| `bun run start`                        | Start the API                                      |
+| `bun run typecheck`                    | Run TypeScript contract checks                     |
+| `bun run lint`                         | Run ESLint                                         |
+| `bun run format`                       | Format files with Prettier                         |
+| `bun run format:check`                 | Check formatting without writing                   |
+| `bun test`                             | Run the default test suite                         |
+| `bun run test:unit`                    | Run unit tests                                     |
+| `bun run test:routes`                  | Run route/API contract tests                       |
+| `bun run test:integration`             | Run integration tests                              |
+| `bun run test:contracts`               | Run downstream contract tests                      |
+| `bun run test:smoke`                   | Run smoke tests                                    |
+| `bun run test:coverage`                | Run full suite with coverage report                |
+| `bun run docs:generate:openapi`        | Regenerate OpenAPI artifact                        |
+| `bun run docs:generate:routes`         | Regenerate route inventory                         |
+| `bun run docs:generate:sync-readiness` | Regenerate sync-readiness inventory                |
+| `bun run docs:prepare:sync-bundle`     | Prepare documentation sync bundle                  |
+| `bun run docs:check`                   | Verify documentation metadata and examples         |
+| `bun run docs:scalar:check-config`     | Validate Scalar Docs configuration                 |
+| `bun run docs:scalar:preview`          | Preview repo documentation through Scalar Docs     |
+| `bun run cleanup:cv-uploads`           | Enqueue expired temporary CV cleanup job           |
+| `bun run worker:async`                 | Start Redis-backed async worker                    |
+| `bun run prisma:reset`                 | Reset local database without reseeding             |
+| `bun run prisma:reset:seed`            | Reset local database and reseed deterministic data |
 
 ## Testing And Verification
 
@@ -318,14 +328,15 @@ bun run prisma:verify:migrations
 
 ## API Documentation
 
-The backend exposes generated API documentation in two forms:
+The backend exposes generated API documentation in repo and at runtime:
 
-| Surface                  | Path                          |
-| ------------------------ | ----------------------------- |
-| Generated OpenAPI file   | `docs/generated/openapi.json` |
-| Runtime OpenAPI endpoint | `/openapi.json`               |
-| Runtime Scalar viewer    | `/docs/api`                   |
-| Scalar Docs config       | `scalar.config.json`          |
+| Surface                   | Path                          |
+| ------------------------- | ----------------------------- |
+| Generated OpenAPI file    | `docs/generated/openapi.json` |
+| Generated route inventory | `docs/generated/routes.md`    |
+| Runtime OpenAPI endpoint  | `/openapi.json`               |
+| Runtime Scalar viewer     | `/docs/api`                   |
+| Scalar Docs config        | `scalar.config.json`          |
 
 Recommended local workflow:
 

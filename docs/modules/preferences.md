@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/preferences.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Preferences Module
@@ -141,6 +141,10 @@ Validation:
 | `emailNotificationsEnabled`  | Required boolean                                      |
 
 ## Response Schema
+
+`GET /api/v1/me/preferences` returns message `Preferensi berhasil diambil`.
+`PUT /api/v1/me/preferences` returns message `Preferensi berhasil disimpan`.
+`PATCH /api/v1/me/preferences` returns message `Preferensi berhasil diperbarui`.
 
 ```json
 {

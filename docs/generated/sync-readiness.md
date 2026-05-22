@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/sync-readiness.md
-last_reviewed: 2026-05-18
+last_reviewed: 2026-05-22
 generated_by: sync-readiness-script
-generated_at: 2026-05-18T08:53:26.948Z
-source_commit: eb9710893b332b13458393943ec3ab3a8f9d40dc
+generated_at: 2026-05-22T06:56:53.831Z
+source_commit: dd57cd8d9855e2879df71b4dfe8df339b255eb6d
 ---
 
 # Backend API Sync Readiness
@@ -24,14 +24,14 @@ This page is generated from the current service-owned docs tree and the document
 | -------------- | ------------------------------------------ |
 | Total docs     | 33                                         |
 | Generated docs | 3                                          |
-| Generated at   | `2026-05-18T08:53:26.948Z`                 |
-| Source commit  | `eb9710893b332b13458393943ec3ab3a8f9d40dc` |
+| Generated at   | `2026-05-22T06:56:53.831Z`                 |
+| Source commit  | `dd57cd8d9855e2879df71b4dfe8df339b255eb6d` |
 
 ## OpenAPI Status
 
-A generated OpenAPI artifact is present under `docs/generated/`.
+Generated OpenAPI artifact is present under `docs/generated/`, served at runtime from `/openapi.json`, and rendered interactively through Scalar at `/docs/api`.
 
-An interactive API portal can be introduced later from the same machine-readable source, including a Scalar-based presentation if that becomes the chosen documentation surface.
+Scalar repo config remains in `scalar.config.json` for docs preview and sync review.
 
 ## Path Mapping
 

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/bookmarks.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Bookmarks Module
@@ -216,6 +216,7 @@ Successful creation returns HTTP `201`.
 ```
 
 Delete returns `204` with no response body for MVP.
+List response message is `Daftar bookmark berhasil diambil`.
 
 ## Service Logic
 

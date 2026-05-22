@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/applications.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Applications Module
@@ -146,6 +146,11 @@ Validation:
 ```
 
 ## Response Schema
+
+`GET /api/v1/me/applications` returns message `Daftar lamaran berhasil diambil`.
+`POST /api/v1/me/applications` returns message `Lamaran berhasil dibuat`.
+`PATCH /api/v1/me/applications/:applicationId` returns message `Lamaran berhasil diperbarui`.
+`PATCH /api/v1/me/applications/:applicationId/status` returns message `Status lamaran berhasil diperbarui`.
 
 ### Application Resource
 

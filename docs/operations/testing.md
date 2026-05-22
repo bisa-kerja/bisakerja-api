@@ -418,7 +418,7 @@ Every route group must verify:
 - Error responses include `error.requestId`.
 - Sensitive fields are not returned.
 
-Authentication route tests must verify registration, duplicate handling, weak password validation, email verification, login failures, access-token auth middleware behavior, refresh-token rotation, logout invalidation, password reset, Google SSO placeholder behavior, sensitive response safety, and strict auth route rate limits.
+Authentication route tests must verify registration, duplicate handling, weak password validation, email verification, login failures, access-token auth middleware behavior, refresh-token rotation, logout invalidation, password reset, Google OAuth success and not-configured behavior, sensitive response safety, and strict auth route rate limits.
 
 Bound-port smoke tests should be added for startup and health behavior when the pinned Bun runtime is available in CI.
 

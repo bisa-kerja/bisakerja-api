@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-job-recommendations.md
-last_reviewed: 2026-05-18
+last_reviewed: 2026-05-22
 ---
 
 # AI Job Recommendations Module
@@ -81,16 +81,16 @@ The module does not own:
 
 Validation:
 
-| Field                             | Rule                                   |
-| --------------------------------- | -------------------------------------- | ------ | ------- |
-| `cvAnalysisResultId`              | Optional UUID                          |
-| `limit`                           | Optional integer `1..20`, default `10` |
-| `idempotencyKey`                  | Optional non-empty string              |
-| `filters.location`                | Optional string                        |
-| `filters.workType`                | Optional enum `REMOTE                  | HYBRID | ONSITE` |
-| `filters.experienceLevel`         | Optional experience enum               |
-| `filters.excludeAppliedJobs`      | Optional boolean, default `true`       |
-| `filters.includeBookmarkedStatus` | Optional boolean, default `true`       |
+| Field                             | Rule                                       |
+| --------------------------------- | ------------------------------------------ |
+| `cvAnalysisResultId`              | Optional UUID                              |
+| `limit`                           | Optional integer `1..20`, default `10`     |
+| `idempotencyKey`                  | Optional non-empty string                  |
+| `filters.location`                | Optional string                            |
+| `filters.workType`                | Optional enum `REMOTE`, `HYBRID`, `ONSITE` |
+| `filters.experienceLevel`         | Optional experience enum                   |
+| `filters.excludeAppliedJobs`      | Optional boolean, default `true`           |
+| `filters.includeBookmarkedStatus` | Optional boolean, default `true`           |
 
 ## Candidate Selection Rules
 
@@ -174,6 +174,10 @@ Backend validates response schema and business constraints:
 - Service downtime maps to `503 MODEL_SERVICE_UNAVAILABLE`.
 
 ## Response Shape
+
+`POST /api/v1/ai/job-recommendations` returns HTTP `201` with message `Rekomendasi pekerjaan berhasil dibuat`.
+`GET /api/v1/ai/job-recommendations/latest` returns message `Rekomendasi pekerjaan terbaru berhasil diambil`.
+`GET /api/v1/ai/job-recommendations/:recommendationRunId` returns message `Detail rekomendasi pekerjaan berhasil diambil`.
 
 Successful response envelope:
 

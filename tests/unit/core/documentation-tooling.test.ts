@@ -120,7 +120,12 @@ last_reviewed: 2026-04-23
     );
 
     expect(markdown).toContain("source_path: docs/generated/sync-readiness.md");
-    expect(markdown).toContain("Scalar-based presentation");
+    expect(markdown).toContain(
+      "Machine-readable API source still pending final selection"
+    );
+    expect(markdown).toContain(
+      "Scalar repo config remains in `scalar.config.json` for docs preview and sync review."
+    );
     expect(markdown).toContain(
       "| `docs/api-reference.md` | `docs/services/backend-api/synced/api-reference.md` |"
     );

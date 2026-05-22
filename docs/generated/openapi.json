@@ -91,7 +91,7 @@
       "get": {
         "tags": ["Health"],
         "summary": "Readiness check",
-        "description": "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL.",
+        "description": "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL and Redis.",
         "responses": {
           "200": {
             "description": "Service is ready.",
@@ -115,7 +115,10 @@
                     "service": "bisakerja-api",
                     "status": "ready",
                     "env": "test",
-                    "dependencies": { "postgresql": "healthy" }
+                    "dependencies": {
+                      "postgresql": "healthy",
+                      "redis": "healthy"
+                    }
                   },
                   "meta": null
                 }
@@ -134,7 +137,10 @@
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",
                     "details": {
-                      "dependencies": { "postgresql": "unhealthy" }
+                      "dependencies": {
+                        "postgresql": "unhealthy",
+                        "redis": "healthy"
+                      }
                     },
                     "requestId": "req_1234567890"
                   }
@@ -6958,12 +6964,13 @@
           "dependencies": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["postgresql"],
+            "required": ["postgresql", "redis"],
             "properties": {
               "postgresql": {
                 "type": "string",
                 "enum": ["healthy", "unhealthy"]
-              }
+              },
+              "redis": { "type": "string", "enum": ["healthy", "unhealthy"] }
             }
           }
         }

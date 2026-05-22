@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/auth.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Auth Module
@@ -29,7 +29,7 @@ The Auth module owns:
 - Refresh token or session refresh.
 - Forgot password request.
 - Reset password completion.
-- Email verification with OTP or token.
+- Email verification with OTP.
 - Google OAuth login.
 - Auth-sensitive rate limiting and audit events.
 
@@ -48,17 +48,17 @@ The Auth module does not own:
 
 ## Endpoint Summary
 
-| Method | Path                           | Auth                     | Purpose                                               |
-| ------ | ------------------------------ | ------------------------ | ----------------------------------------------------- |
-| `POST` | `/api/v1/auth/register`        | Public                   | Create account and return onboarding access session   |
-| `POST` | `/api/v1/auth/login`           | Public                   | Authenticate using email or username and password     |
-| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate current session or refresh credential      |
-| `POST` | `/api/v1/auth/refresh`         | Refresh credential       | Issue a new access credential                         |
-| `POST` | `/api/v1/auth/forgot-password` | Public                   | Send password reset email or OTP                      |
-| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Set a new password                                    |
-| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email ownership and auto-login                 |
-| `GET`  | `/api/v1/auth/google`          | Public                   | Generate Google OAuth authorize URL                   |
-| `POST` | `/api/v1/auth/google`          | Public                   | Exchange authorization code and issue backend session |
+| Method | Path                           | Auth               | Purpose                                               |
+| ------ | ------------------------------ | ------------------ | ----------------------------------------------------- |
+| `POST` | `/api/v1/auth/register`        | Public             | Create account and return onboarding access session   |
+| `POST` | `/api/v1/auth/login`           | Public             | Authenticate using email or username and password     |
+| `POST` | `/api/v1/auth/logout`          | Authenticated      | Invalidate current session or refresh credential      |
+| `POST` | `/api/v1/auth/refresh`         | Refresh credential | Issue a new access credential                         |
+| `POST` | `/api/v1/auth/forgot-password` | Public             | Send password reset email with reset token link       |
+| `POST` | `/api/v1/auth/reset-password`  | Public with token  | Set a new password                                    |
+| `POST` | `/api/v1/auth/verify-email`    | Public with OTP    | Verify email ownership and auto-login                 |
+| `GET`  | `/api/v1/auth/google`          | Public             | Generate Google OAuth authorize URL                   |
+| `POST` | `/api/v1/auth/google`          | Public             | Exchange authorization code and issue backend session |
 
 ## Google OAuth Login
 
@@ -159,7 +159,7 @@ Security rule: response must be identical whether the email exists or not.
 
 ```json
 {
-  "token": "reset_token_or_otp",
+  "token": "reset_token_1234567890abcdef1234567890abcd",
   "password": "NewStrongPassword123!",
   "confirmPassword": "NewStrongPassword123!"
 }
@@ -292,7 +292,7 @@ Email verification sets the refresh cookie and auto-logs in the user.
 3. Check duplicate email and username.
 4. Hash password with approved password hashing package.
 5. Create `User` and `AuthCredential` in one transaction.
-6. Create email verification token or OTP.
+6. Create email verification OTP.
 7. Send verification email.
 8. Return user-safe account summary plus onboarding access session.
 9. Emit audit event `auth.registered`.
@@ -335,17 +335,17 @@ Local and test environments use a fake email provider. The provider records or l
 
 1. Validate email.
 2. Always return safe generic response.
-3. If user exists, create short-lived reset token or OTP.
+3. If user exists, create short-lived reset token.
 4. Send password reset email.
 5. Rate limit aggressively.
 6. Emit audit event `auth.password_reset_requested`.
 
 ### Reset Password Flow
 
-1. Validate reset token or OTP.
+1. Validate reset token.
 2. Validate and hash new password.
 3. Update credential hash.
-4. Invalidate used reset token or OTP.
+4. Invalidate used reset token.
 5. Invalidate all active refresh credentials for the user.
 6. Emit audit event `auth.password_reset_completed`.
 
