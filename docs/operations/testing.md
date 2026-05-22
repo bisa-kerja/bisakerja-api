@@ -223,8 +223,8 @@ Current deployment workflow expectations:
 - SSH into the target VPS with the configured VPS private key through one deploy action step
 - write the runtime `.env.production` file from GitHub environment secrets
 - reject rollout when the runtime env file does not declare `APP_ENV=staging` for the current staging target
-- authenticate the VPS to GHCR, pull the latest image, run `prisma migrate deploy`, and start the app through app-only `docker compose`
-- verify `GET /health/live` and `GET /health/ready` from the VPS after deployment
+- authenticate the VPS to GHCR, pull the runtime service images, run `prisma migrate deploy`, and start `redis`, `app`, and `worker` through `docker compose`
+- verify `GET /health/live` and `GET /health/ready` from the VPS after deployment, then confirm `worker` is running, healthy, and logs `Async worker started`
 
 When the staging rollout is considered stable, the deploy trigger can be moved from `develop` to `main` without introducing a second deployment topology.
 

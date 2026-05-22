@@ -215,7 +215,8 @@ Compose-only variables:
 - `APP_IMAGE` overrides the image tag or digest to pull
 - `APP_BIND_ADDRESS` controls the host bind address for the backend port
 - `APP_PORT` overrides the published backend port
-- `PORT` controls the HTTP port inside the app container and must match the internal Compose target and healthcheck
+- `PORT` controls the HTTP port inside the app container and must match the internal Compose target and app HTTP healthcheck
+- the worker uses a process healthcheck based on the running Bun worker command and must not reuse the app HTTP endpoint healthcheck because the worker does not serve HTTP traffic
 
 The current rollout still targets staging first, but it intentionally uses the same production-style Compose topology that will later be reused when the deployment branch changes to `main`.
 
@@ -230,10 +231,11 @@ Its scope is intentionally narrow:
 - connect to the VPS through SSH
 - write the runtime `.env.production` file from GitHub Actions secrets
 - authenticate the VPS to GHCR
-- pull the latest app image
+- pull the runtime service images used by Compose
 - run `prisma migrate deploy`
-- start or recreate the backend container
+- start or recreate `redis`, `app`, and `worker`
 - run `GET /health/live` and `GET /health/ready` smoke checks from the host
+- fail rollout when the worker is not running or the worker startup log is missing
 
 The workflow uses one reusable shell entrypoint:
 
@@ -315,7 +317,7 @@ Recovery behavior:
 
 Operational checks:
 
-- `docker compose ps worker` should show a running worker service.
+- `docker compose ps worker` should show a running and healthy worker service.
 - Worker logs should include `Async worker started` and periodic recovery summaries.
 - `async_job_outbox` should not contain old `PENDING`, `QUEUED`, or `PROCESSING` rows beyond the configured recovery and stale thresholds.
 - `DEAD_LETTER` rows for auth email jobs require operator review of `last_error_code` and `last_error_message`.
@@ -362,7 +364,7 @@ Current delivery behavior:
 - synchronize service-owned docs into the central `bisakerja-docs` repository through the final CI job
 - in the deployment workflow, build and push the repository Docker image, then SSH once into the VPS to write `.env.production`, log in to GHCR, and run the remote deploy script
 - keep the deploy logic auditable by storing the remote steps in `scripts/deploy/remote-deploy.sh`
-- the workflow writes `.env.production` and deploys through `docker-compose.yml`
+- the workflow writes `.env.production`, deploys through `docker-compose.yml`, checks `app` HTTP health, verifies `worker` stays running, and captures `app`, `worker`, and `redis` diagnostics on failure
 
 Because the server topology intentionally reuses one simple production-style Compose model, the current deployment automation should be treated as a safe baseline for staging-first VPS rollout, not as a full blue-green or rollback-automated release system.
 
@@ -394,8 +396,10 @@ Run smoke checks after every staging or production deploy.
 Minimum checks:
 
 - Liveness endpoint returns healthy.
-- Readiness endpoint returns ready when PostgreSQL is available.
-- Redis-backed async worker is running and recovery logs are clean.
+- Readiness endpoint returns ready when PostgreSQL and Redis are available.
+- `docker compose ps worker` shows a running worker service.
+- Worker logs contain `Async worker started` and do not show repeated startup failures.
+- Redis-backed async worker recovery logs are clean.
 - Public job search returns a valid envelope.
 - Auth-protected route rejects missing credentials with `401 UNAUTHENTICATED`.
 - Implemented auth flow can complete in staging with test credentials.
