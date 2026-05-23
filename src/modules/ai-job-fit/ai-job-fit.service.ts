@@ -11,7 +11,6 @@ import type {
   JobFitResource
 } from "@/modules/ai-job-fit/ai-job-fit.types";
 import type { JobRecord } from "@/modules/jobs";
-import { jobsErrorCodes } from "@/modules/jobs/jobs.constants";
 import type {
   JobFitModelPayload,
   JobFitModelResponse
@@ -34,7 +33,7 @@ export class AiJobFitService {
     if (!job) {
       throw new NotFoundError(
         "Lowongan tidak ditemukan",
-        jobsErrorCodes.jobNotFound
+        aiJobFitErrorCodes.jobNotFound
       );
     }
 

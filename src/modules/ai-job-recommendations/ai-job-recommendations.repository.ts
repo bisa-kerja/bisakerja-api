@@ -8,7 +8,7 @@ import type {
   JobRecommendationRunSnapshotInput,
   RecommendationCandidateRecord
 } from "@/modules/ai-job-recommendations/ai-job-recommendations.types";
-import type { PreferenceContext } from "@/modules/preferences/preferences.types";
+import type { PreferenceContext } from "@/modules/preferences";
 import type { JobRecord } from "@/modules/jobs";
 
 type PrismaClientLike = typeof prisma | PrismaTransaction;

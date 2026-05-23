@@ -61,7 +61,7 @@ Exception berikut dipertahankan secara eksplisit:
 - `internal`
   - Boleh memiliki `internal.middleware.ts` untuk boundary auth service-to-service.
 - `auth`
-  - Boleh memiliki adapter `auth.email.ts`.
+  - Boleh memiliki adapter `auth.email.ts` dan `auth.google.ts`.
 - `ai-cv-analyzer`
   - Boleh memiliki adapter `ai-cv-analyzer.storage.ts`.
 - `jobs`

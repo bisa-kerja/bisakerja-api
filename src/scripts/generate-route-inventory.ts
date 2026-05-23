@@ -75,11 +75,6 @@ function createDocumentationRouteOptions(): RouteOptions {
       repository,
       storage
     },
-    aiJobFit: {
-      authMiddleware,
-      modelApiClient,
-      repository
-    },
     applications: {
       authMiddleware,
       repository

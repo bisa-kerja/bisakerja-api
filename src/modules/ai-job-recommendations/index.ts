@@ -1,4 +1,3 @@
-export { createAiJobRecommendationsRouter } from "@/modules/ai-job-recommendations/ai-job-recommendations.route";
 export {
   AiJobRecommendationsService,
   buildRecommendationPayload,
@@ -7,7 +6,6 @@ export {
 export { PrismaAiJobRecommendationsRepository } from "@/modules/ai-job-recommendations/ai-job-recommendations.repository";
 export type {
   AiJobRecommendationsRepository,
-  AiJobRecommendationsRouterOptions,
   CvAnalysisResolverRecord,
   JobRecommendationRunSnapshotInput,
   JobRecommendationResource,

@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 
 import type { AppConfig } from "@/config/env";
 import type { JobRecord } from "@/modules/jobs";
-import type { PreferenceContext } from "@/modules/preferences/preferences.types";
+import type { PreferenceContext } from "@/modules/preferences";
 import type {
   GenerateJobRecommendationsInput,
   GetJobRecommendationsQueryInput

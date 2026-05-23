@@ -6,7 +6,7 @@ import type {
   PreferenceContext,
   PreferenceSalaryExpectation,
   PreferenceWorkType
-} from "@/modules/preferences/preferences.types";
+} from "@/modules/preferences";
 import type {
   CurrentUserExperience,
   CurrentUserProfileRecord,
