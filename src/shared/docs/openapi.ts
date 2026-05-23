@@ -425,6 +425,105 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     expiresAt: "2026-05-19T10:00:00.000Z",
     isActive: true
   };
+  const cvAnalysisResultSummaryExample = {
+    id: "550e8400-e29b-41d4-a716-446655440099",
+    schemaVersion: "cv-analysis-v2",
+    analyzedAt: "2026-04-24T08:00:00.000Z",
+    inputMode: "UPLOAD",
+    compareSource: "JOB_SEARCH",
+    jobFitAlignment: { score: 78 },
+    atsFriendliness: { score: 84 },
+    overallImpressionPreview:
+      "CV menunjukkan fondasi backend kuat, perlu penguatan bukti dampak kerja.",
+    topActionablesPreview: [
+      "Tambahkan bullet terukur pada pengalaman backend.",
+      "Kelompokkan skill teknis per kategori.",
+      "Perkuat ringkasan profil sesuai role target."
+    ],
+    model: {
+      name: "cv-analyzer-model",
+      version: "v1"
+    },
+    cvFile: {
+      id: "550e8400-e29b-41d4-a716-446655440030",
+      originalFileName: "resume.pdf",
+      uploadedAt: "2026-05-18T10:00:00.000Z"
+    }
+  };
+  const cvAnalysisResultDetailExample = {
+    analysisResult: {
+      id: "550e8400-e29b-41d4-a716-446655440099",
+      schemaVersion: "cv-analysis-v2",
+      jobFitAlignment: {
+        score: 78,
+        summary:
+          "CV cukup selaras dengan role Backend Developer, perlu perjelas pengalaman deployment."
+      },
+      atsFriendliness: {
+        score: 84,
+        summary:
+          "Struktur sudah cukup ATS-friendly, keyword utama perlu dipertegas pada section skill."
+      },
+      overallImpression:
+        "Fondasi backend kuat untuk level junior-mid dengan ruang peningkatan pada dampak terukur.",
+      topActionables: [
+        "Tambahkan 2-3 bullet terukur pada pengalaman backend.",
+        "Kelompokkan skill menjadi Backend, Database, Testing, Deployment.",
+        "Sesuaikan ringkasan profil dengan keyword role Backend Developer."
+      ],
+      sectionReviews: [
+        {
+          sectionName: "Relevant Skills",
+          analysis:
+            "Skill relevan sudah ada, namun belum terstruktur untuk screening cepat recruiter.",
+          actionPoints: [
+            "Urutkan skill berdasarkan relevansi role target.",
+            "Pisahkan skill inti backend dari tools pendukung."
+          ],
+          whyItsImportantForYou:
+            "Recruiter dan ATS biasanya menilai keyword skill sebelum detail pengalaman."
+        }
+      ],
+      jobRecommendations: [
+        {
+          jobId: "550e8400-e29b-41d4-a716-446655440010",
+          title: "Backend Developer",
+          companyName: "Example Tech",
+          matchScore: 82,
+          reason:
+            "Cocok karena ada sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
+          nextStep:
+            "Perjelas pengalaman deployment dan testing sebelum melamar."
+        }
+      ],
+      generatedCv: {
+        available: false,
+        note: "Fitur CV yang dihasilkan belum tersedia."
+      },
+      model: {
+        name: "cv-analyzer-model",
+        version: "v1"
+      },
+      analyzedAt: "2026-04-24T08:00:00.000Z"
+    },
+    context: {
+      language: "id",
+      inputMode: "UPLOAD",
+      compareSource: "JOB_SEARCH",
+      cvFile: {
+        id: "550e8400-e29b-41d4-a716-446655440030",
+        originalFileName: "resume.pdf",
+        uploadedAt: "2026-05-18T10:00:00.000Z"
+      },
+      inputSummary: {
+        jobRoles: ["Backend Developer", "Software Engineer"],
+        file: {
+          mimeType: "application/pdf",
+          sizeBytes: 284321
+        }
+      }
+    }
+  };
 
   return {
     openapi: "3.1.0",
@@ -2294,6 +2393,169 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           }
         }
       },
+      "/api/v1/ai/cv-analyzer/results": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "List CV analysis results",
+          description:
+            "Lists sanitized stored CV analysis results owned by the current user. This endpoint reads snapshots only and does not call Model API.",
+          security: bearerSecurity(),
+          parameters: [
+            {
+              in: "query",
+              name: "page",
+              schema: { type: "integer", minimum: 1, default: 1 }
+            },
+            {
+              in: "query",
+              name: "limit",
+              schema: { type: "integer", minimum: 1, maximum: 50, default: 10 }
+            },
+            {
+              in: "query",
+              name: "sortBy",
+              schema: {
+                type: "string",
+                enum: ["analyzedAt"],
+                default: "analyzedAt"
+              }
+            },
+            {
+              in: "query",
+              name: "sortOrder",
+              schema: { type: "string", enum: ["asc", "desc"], default: "desc" }
+            },
+            { in: "query", name: "cvFileId", schema: uuidSchema },
+            {
+              in: "query",
+              name: "schemaVersion",
+              schema: { type: "string", maxLength: 80 }
+            },
+            {
+              in: "query",
+              name: "inputMode",
+              schema: { type: "string", enum: ["UPLOAD", "REFERENCE"] }
+            },
+            {
+              in: "query",
+              name: "compareSource",
+              schema: {
+                type: "string",
+                enum: ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"]
+              }
+            }
+          ],
+          responses: {
+            "200": jsonResponse(
+              "CV analysis results retrieved successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "array",
+                  items: ref("CvAnalysisResultSummary")
+                },
+                listMetaSchema({}, "analyzedAt:desc")
+              ),
+              {
+                success: true,
+                message: "Daftar hasil analisis CV berhasil diambil",
+                data: [cvAnalysisResultSummaryExample],
+                meta: {
+                  pagination: {
+                    page: 1,
+                    limit: 10,
+                    total: 1,
+                    totalPages: 1,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                  },
+                  filters: {},
+                  sort: "analyzedAt:desc"
+                }
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "422": validationErrorResponse("page", "Halaman minimal 1")
+          }
+        }
+      },
+      "/api/v1/ai/cv-analyzer/results/latest": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "Get latest CV analysis result",
+          description:
+            "Returns the latest sanitized stored CV analysis result owned by the current user.",
+          security: bearerSecurity(),
+          responses: {
+            "200": jsonResponse(
+              "Latest CV analysis result retrieved successfully.",
+              successEnvelopeSchema(ref("CvAnalysisResultDetail"), nullSchema),
+              {
+                success: true,
+                message: "Hasil analisis CV terbaru berhasil diambil",
+                data: cvAnalysisResultDetailExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "CV analysis result is not found.",
+              "CV_ANALYSIS_RESULT_NOT_FOUND",
+              "Hasil analisis CV tidak ditemukan"
+            )
+          }
+        }
+      },
+      "/api/v1/ai/cv-analyzer/results/{analysisResultId}": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "Get CV analysis result detail",
+          description:
+            "Returns one sanitized stored CV analysis result owned by the current user. Cross-user ids are concealed as not found.",
+          security: bearerSecurity(),
+          parameters: [
+            {
+              in: "path",
+              name: "analysisResultId",
+              required: true,
+              schema: uuidSchema
+            }
+          ],
+          responses: {
+            "200": jsonResponse(
+              "CV analysis result detail retrieved successfully.",
+              successEnvelopeSchema(ref("CvAnalysisResultDetail"), nullSchema),
+              {
+                success: true,
+                message: "Detail hasil analisis CV berhasil diambil",
+                data: cvAnalysisResultDetailExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "CV analysis result is not found.",
+              "CV_ANALYSIS_RESULT_NOT_FOUND",
+              "Hasil analisis CV tidak ditemukan"
+            ),
+            "422": validationErrorResponse(
+              "analysisResultId",
+              "ID hasil analisis CV tidak valid. Gunakan UUID yang benar"
+            )
+          }
+        }
+      },
       "/api/v1/ai/cv-generate": {
         post: {
           tags: ["AI CV Generate"],
@@ -3727,6 +3989,215 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 analyzedAt: isoDateTimeSchema
               }
             }
+          }
+        },
+        CvAnalysisResultSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "schemaVersion",
+            "analyzedAt",
+            "inputMode",
+            "compareSource",
+            "jobFitAlignment",
+            "atsFriendliness",
+            "overallImpressionPreview",
+            "topActionablesPreview",
+            "model",
+            "cvFile"
+          ],
+          properties: {
+            id: uuidSchema,
+            schemaVersion: { type: "string" },
+            analyzedAt: isoDateTimeSchema,
+            inputMode: { type: "string", enum: ["UPLOAD", "REFERENCE"] },
+            compareSource: {
+              type: "string",
+              enum: ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"]
+            },
+            jobFitAlignment: ref("CvAnalysisScoreSummary"),
+            atsFriendliness: ref("CvAnalysisScoreSummary"),
+            overallImpressionPreview: { type: "string" },
+            topActionablesPreview: {
+              type: "array",
+              maxItems: 3,
+              items: { type: "string" }
+            },
+            model: ref("CvAnalysisModelMetadata"),
+            cvFile: { oneOf: [ref("CvAnalysisSafeCvFile"), nullSchema] }
+          }
+        },
+        CvAnalysisResultDetail: {
+          type: "object",
+          additionalProperties: false,
+          required: ["analysisResult", "context"],
+          properties: {
+            analysisResult: ref("CvAnalysisStoredResult"),
+            context: ref("CvAnalysisResultContext")
+          }
+        },
+        CvAnalysisScoreSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: ["score"],
+          properties: {
+            score: {
+              oneOf: [{ type: "integer", minimum: 0, maximum: 100 }, nullSchema]
+            }
+          }
+        },
+        CvAnalysisModelMetadata: {
+          type: "object",
+          additionalProperties: false,
+          required: ["name", "version"],
+          properties: {
+            name: { oneOf: [{ type: "string" }, nullSchema] },
+            version: { oneOf: [{ type: "string" }, nullSchema] }
+          }
+        },
+        CvAnalysisStoredResult: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "schemaVersion",
+            "jobFitAlignment",
+            "atsFriendliness",
+            "overallImpression",
+            "topActionables",
+            "sectionReviews",
+            "jobRecommendations",
+            "generatedCv",
+            "model",
+            "analyzedAt"
+          ],
+          properties: {
+            id: uuidSchema,
+            schemaVersion: { type: "string" },
+            jobFitAlignment: ref("CvAnalysisScoreWithSummary"),
+            atsFriendliness: ref("CvAnalysisScoreWithSummary"),
+            overallImpression: { type: "string" },
+            topActionables: { type: "array", items: { type: "string" } },
+            sectionReviews: {
+              type: "array",
+              items: ref("CvAnalysisSectionReview")
+            },
+            jobRecommendations: {
+              type: "array",
+              items: ref("CvAnalysisJobRecommendation")
+            },
+            generatedCv: {
+              type: "object",
+              additionalProperties: false,
+              required: ["available", "note"],
+              properties: {
+                available: { type: "boolean" },
+                note: { type: "string" }
+              }
+            },
+            model: ref("CvAnalysisModelMetadata"),
+            analyzedAt: isoDateTimeSchema
+          }
+        },
+        CvAnalysisResultContext: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "language",
+            "inputMode",
+            "compareSource",
+            "cvFile",
+            "inputSummary"
+          ],
+          properties: {
+            language: { type: "string", enum: ["id", "en"] },
+            inputMode: { type: "string", enum: ["UPLOAD", "REFERENCE"] },
+            compareSource: {
+              type: "string",
+              enum: ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"]
+            },
+            cvFile: { oneOf: [ref("CvAnalysisSafeCvFile"), nullSchema] },
+            inputSummary: {
+              oneOf: [ref("CvAnalysisSafeInputSummary"), nullSchema]
+            }
+          }
+        },
+        CvAnalysisSafeInputSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: ["jobRoles", "file"],
+          properties: {
+            jobRoles: { type: "array", items: { type: "string" } },
+            file: { oneOf: [ref("CvAnalysisSafeInputFile"), nullSchema] }
+          }
+        },
+        CvAnalysisSafeInputFile: {
+          type: "object",
+          additionalProperties: false,
+          required: ["mimeType", "sizeBytes"],
+          properties: {
+            mimeType: { type: "string" },
+            sizeBytes: { type: "integer", minimum: 1 }
+          }
+        },
+        CvAnalysisScoreWithSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: ["score", "summary"],
+          properties: {
+            score: { type: "integer", minimum: 0, maximum: 100 },
+            summary: { type: "string" }
+          }
+        },
+        CvAnalysisSectionReview: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "sectionName",
+            "analysis",
+            "actionPoints",
+            "whyItsImportantForYou"
+          ],
+          properties: {
+            sectionName: { type: "string" },
+            analysis: { type: "string" },
+            actionPoints: {
+              type: "array",
+              minItems: 1,
+              items: { type: "string" }
+            },
+            whyItsImportantForYou: { type: "string" }
+          }
+        },
+        CvAnalysisJobRecommendation: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "jobId",
+            "title",
+            "companyName",
+            "matchScore",
+            "reason",
+            "nextStep"
+          ],
+          properties: {
+            jobId: { oneOf: [uuidSchema, nullSchema] },
+            title: { type: "string" },
+            companyName: { oneOf: [{ type: "string" }, nullSchema] },
+            matchScore: { type: "integer", minimum: 0, maximum: 100 },
+            reason: { type: "string" },
+            nextStep: { type: "string" }
+          }
+        },
+        CvAnalysisSafeCvFile: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "originalFileName", "uploadedAt"],
+          properties: {
+            id: uuidSchema,
+            originalFileName: { type: "string" },
+            uploadedAt: isoDateTimeSchema
           }
         },
         HealthLiveData: {

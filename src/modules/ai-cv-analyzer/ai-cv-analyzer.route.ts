@@ -11,6 +11,8 @@ import { AiCvAnalyzerController } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.repository";
 import {
   analyzeCvSchema,
+  cvAnalysisResultParamsSchema,
+  listCvAnalysisResultsQuerySchema,
   uploadCvFileSchema
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import { LocalCvFileStorage } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.storage";
@@ -37,6 +39,17 @@ export function createAiCvAnalyzerRouter(
   const { aiLimiter, uploadLimiter } = createRateLimiters(config);
 
   router.use(authMiddleware);
+  router.get(
+    "/results",
+    validate({ query: listCvAnalysisResultsQuerySchema }),
+    controller.listAnalysisResults
+  );
+  router.get("/results/latest", controller.getLatestAnalysisResult);
+  router.get(
+    "/results/:analysisResultId",
+    validate({ params: cvAnalysisResultParamsSchema }),
+    controller.getAnalysisResultDetail
+  );
   router.post(
     "/",
     uploadLimiter,

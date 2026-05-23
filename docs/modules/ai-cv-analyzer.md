@@ -50,13 +50,16 @@ The AI CV Analyzer module does not own:
 
 ## Endpoint Summary
 
-| Method | Path                         | Auth                                     | Purpose                                                    |
-| ------ | ---------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| `POST` | `/api/v1/me/cv-files`        | Authenticated or onboarding access token | Upload a current user's reusable PDF CV                    |
-| `GET`  | `/api/v1/me/cv-files/active` | Authenticated or onboarding access token | Read the current user's active CV metadata                 |
-| `POST` | `/api/v1/ai/cv-analyzer`     | Authenticated                            | Analyze uploaded or stored PDF CV against target job roles |
+| Method | Path                                               | Auth                                     | Purpose                                                    |
+| ------ | -------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| `POST` | `/api/v1/me/cv-files`                              | Authenticated or onboarding access token | Upload a current user's reusable PDF CV                    |
+| `GET`  | `/api/v1/me/cv-files/active`                       | Authenticated or onboarding access token | Read the current user's active CV metadata                 |
+| `POST` | `/api/v1/ai/cv-analyzer`                           | Authenticated                            | Analyze uploaded or stored PDF CV against target job roles |
+| `GET`  | `/api/v1/ai/cv-analyzer/results`                   | Authenticated and ownership-protected    | List current user's stored CV analysis results             |
+| `GET`  | `/api/v1/ai/cv-analyzer/results/latest`            | Authenticated and ownership-protected    | Read current user's latest stored CV analysis result       |
+| `GET`  | `/api/v1/ai/cv-analyzer/results/:analysisResultId` | Authenticated and ownership-protected    | Read one stored CV analysis result owned by current user   |
 
-Future endpoints for analysis history or generated CV download require separate documentation.
+Generated CV download requires separate documentation.
 
 ## Auth And Ownership Rules
 
@@ -254,6 +257,36 @@ Response rules:
 - Do not return raw Model API internals.
 - Do not return raw full CV text by default.
 - Keep generated CV explicitly unavailable in current contract.
+
+## Stored Analysis Results
+
+Stored result endpoints read sanitized snapshots from `cv_analysis_results`. They do not call Model API and do not re-run analysis.
+
+List query supports:
+
+| Field           | Rule                                                      |
+| --------------- | --------------------------------------------------------- |
+| `page`          | integer, default `1`, minimum `1`                         |
+| `limit`         | integer, default `10`, maximum `50`                       |
+| `sortBy`        | only `analyzedAt`                                         |
+| `sortOrder`     | `desc` default, or `asc`                                  |
+| `cvFileId`      | optional UUID filter                                      |
+| `schemaVersion` | optional stored schema version filter                     |
+| `inputMode`     | optional `UPLOAD` or `REFERENCE`                          |
+| `compareSource` | optional `BOOKMARK`, `JOB_SEARCH`, or `DIRECT_JOB_DETAIL` |
+
+List response follows existing paginated endpoint pattern: `data` is an array and `meta.pagination` contains pagination metadata. Each item contains safe summary fields only: id, schema version, analysis time, input mode, compare source, score-only job fit and ATS summaries, overall impression preview, up to three actionables, safe model metadata, and safe CV file metadata when available.
+
+Detail and latest response use `{ analysisResult, context }`. `analysisResult` follows the stored CV analysis schema, including job fit alignment, ATS friendliness, overall impression, actionables, section reviews, job recommendations, generated CV availability note, model metadata, and analyzed time. `context` contains safe language/input metadata, safe CV file metadata, and a redacted input summary.
+
+Privacy rules:
+
+- Results are always scoped by current `userId` in repository queries.
+- Cross-user ids are concealed as `404 CV_ANALYSIS_RESULT_NOT_FOUND`.
+- `latest` route is registered before `:analysisResultId` to avoid route-param collision.
+- Responses never expose raw CV text, storage key, prompt, tokens, email, phone, address, or full Model API payload.
+- Deleted or expired CV file metadata is returned as `null`.
+- Unsupported legacy snapshots should fail closed with `409 CV_ANALYSIS_RESULT_UNSUPPORTED` when compatibility adapters are introduced.
 
 ## Service Logic
 

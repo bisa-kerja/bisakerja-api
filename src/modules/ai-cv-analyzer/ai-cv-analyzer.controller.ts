@@ -2,8 +2,12 @@ import type { Request, Response } from "express";
 
 import { successResponse } from "@/core/responses/response.formatter";
 import { aiCvAnalyzerSuccessMessages } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.constants";
-import type { AnalyzeCvInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
-import type { UploadCvFileInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import type {
+  AnalyzeCvInput,
+  CvAnalysisResultParamsInput,
+  ListCvAnalysisResultsQueryInput,
+  UploadCvFileInput
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import { AiCvAnalyzerService } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";
 import type { AiCvAnalyzerControllerDependencies } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 import { emitAuditEvent } from "@/shared/observability/audit-event";
@@ -113,6 +117,50 @@ export class AiCvAnalyzerController {
 
       throw error;
     }
+  };
+
+  listAnalysisResults = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const query = req.query as unknown as ListCvAnalysisResultsQueryInput;
+    const result = await this.service.listAnalysisResults(userId, query);
+
+    res.json(
+      successResponse(
+        result.data,
+        aiCvAnalyzerSuccessMessages.cvAnalysisResultsRetrieved,
+        result.meta
+      )
+    );
+  };
+
+  getAnalysisResultDetail = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const params = req.params as CvAnalysisResultParamsInput;
+    const result = await this.service.getAnalysisResultDetail(
+      userId,
+      params.analysisResultId
+    );
+
+    res.json(
+      successResponse(
+        result,
+        aiCvAnalyzerSuccessMessages.cvAnalysisResultDetailRetrieved,
+        null
+      )
+    );
+  };
+
+  getLatestAnalysisResult = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const result = await this.service.getLatestAnalysisResult(userId);
+
+    res.json(
+      successResponse(
+        result,
+        aiCvAnalyzerSuccessMessages.cvAnalysisResultLatestRetrieved,
+        null
+      )
+    );
   };
 
   uploadCvFile = async (req: Request, res: Response) => {

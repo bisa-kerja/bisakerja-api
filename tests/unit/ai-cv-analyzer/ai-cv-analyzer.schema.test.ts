@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { analyzeCvSchema } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import {
+  analyzeCvSchema,
+  cvAnalysisResultParamsSchema,
+  listCvAnalysisResultsQuerySchema
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 
 describe("ai cv analyzer schema", () => {
   test("parses multipart metadata and defaults optional fields", () => {
@@ -64,5 +68,41 @@ describe("ai cv analyzer schema", () => {
     expect(invalidPersistResult.error?.issues[0]?.message).toBe(
       "Flag persistResult harus bernilai true atau false"
     );
+  });
+
+  test("parses analysis result list query with bounded pagination", () => {
+    const result = listCvAnalysisResultsQuerySchema.parse({
+      page: "2",
+      limit: "50",
+      sortOrder: "asc",
+      cvFileId: "22222222-2222-4222-8222-222222222222",
+      inputMode: "REFERENCE",
+      compareSource: "JOB_SEARCH"
+    });
+
+    expect(result).toEqual({
+      page: 2,
+      limit: 50,
+      sortBy: "analyzedAt",
+      sortOrder: "asc",
+      cvFileId: "22222222-2222-4222-8222-222222222222",
+      inputMode: "REFERENCE",
+      compareSource: "JOB_SEARCH"
+    });
+    expect(
+      listCvAnalysisResultsQuerySchema.safeParse({ limit: "51" }).success
+    ).toBe(false);
+  });
+
+  test("validates analysis result params", () => {
+    expect(
+      cvAnalysisResultParamsSchema.parse({
+        analysisResultId: "11111111-1111-4111-8111-111111111111"
+      })
+    ).toEqual({ analysisResultId: "11111111-1111-4111-8111-111111111111" });
+    expect(
+      cvAnalysisResultParamsSchema.safeParse({ analysisResultId: "latest" })
+        .success
+    ).toBe(false);
   });
 });

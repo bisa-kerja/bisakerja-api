@@ -3,6 +3,8 @@ import { prisma } from "@/shared/libs/prisma";
 import type { PrismaTransaction } from "@/shared/libs/prisma";
 import type {
   AiCvAnalyzerRepository,
+  CvAnalysisResultListQuery,
+  CvAnalysisResultRecord,
   CvAnalysisSnapshotInput,
   CvFileMetadataRecord,
   ExpiredCvFileRecord
@@ -112,6 +114,50 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     };
 
     await this.client.cvAnalysisResult.create({ data });
+  }
+
+  async listAnalysisResults(userId: string, query: CvAnalysisResultListQuery) {
+    const where = createAnalysisResultWhere(userId, query);
+    const skip = (query.page - 1) * query.limit;
+    const orderBy = [
+      { analyzedAt: query.sortOrder },
+      { id: query.sortOrder }
+    ] satisfies Prisma.CvAnalysisResultOrderByWithRelationInput[];
+
+    const items = await this.client.cvAnalysisResult.findMany({
+      where,
+      include: { cvFileMetadata: true },
+      orderBy,
+      skip,
+      take: query.limit
+    });
+    const total = await this.client.cvAnalysisResult.count({ where });
+
+    return { items: items.map(mapCvAnalysisResult), total };
+  }
+
+  async findAnalysisResultByIdForUser(
+    userId: string,
+    analysisResultId: string
+  ): Promise<CvAnalysisResultRecord | null> {
+    const record = await this.client.cvAnalysisResult.findFirst({
+      where: { id: analysisResultId, userId },
+      include: { cvFileMetadata: true }
+    });
+
+    return record ? mapCvAnalysisResult(record) : null;
+  }
+
+  async findLatestAnalysisResultForUser(
+    userId: string
+  ): Promise<CvAnalysisResultRecord | null> {
+    const record = await this.client.cvAnalysisResult.findFirst({
+      where: { userId },
+      include: { cvFileMetadata: true },
+      orderBy: [{ analyzedAt: "desc" }, { id: "desc" }]
+    });
+
+    return record ? mapCvAnalysisResult(record) : null;
   }
 
   async findExpiredActiveCvFiles(now: Date): Promise<ExpiredCvFileRecord[]> {
@@ -234,6 +280,59 @@ function mapCvFileMetadata(record: {
     uploadedAt: record.uploadedAt,
     expiresAt: record.expiresAt,
     deletedAt: record.deletedAt
+  };
+}
+
+function createAnalysisResultWhere(
+  userId: string,
+  query: CvAnalysisResultListQuery
+): Prisma.CvAnalysisResultWhereInput {
+  return {
+    userId,
+    cvFileMetadataId: query.cvFileId,
+    schemaVersion: query.schemaVersion,
+    inputMode: query.inputMode,
+    compareSource: query.compareSource
+  };
+}
+
+function mapCvAnalysisResult(record: {
+  id: string;
+  userId: string;
+  cvFileMetadataId: string | null;
+  language: "ID" | "EN";
+  inputMode: "UPLOAD" | "REFERENCE";
+  compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+  schemaVersion: string;
+  overallImpression: string;
+  jobFitAlignment: unknown;
+  atsFriendliness: unknown;
+  topActionables: unknown;
+  sectionReviews: unknown;
+  jobRecommendations: unknown;
+  modelName: string | null;
+  modelVersion: string | null;
+  inputSummary: unknown;
+  analyzedAt: Date;
+  cvFileMetadata: {
+    id: string;
+    userId: string;
+    originalFileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storageDriver: "LOCAL";
+    storageKey: string;
+    isActive: boolean;
+    uploadedAt: Date;
+    expiresAt: Date;
+    deletedAt: Date | null;
+  } | null;
+}): CvAnalysisResultRecord {
+  return {
+    ...record,
+    cvFileMetadata: record.cvFileMetadata
+      ? mapCvFileMetadata(record.cvFileMetadata)
+      : null
   };
 }
 

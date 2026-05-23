@@ -3,8 +3,11 @@ import {
   aiCvAnalyzerErrorCodes,
   generatedCvUnavailableNote
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.constants";
-import type { AnalyzeCvInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
-import type { UploadCvFileInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import type {
+  AnalyzeCvInput,
+  ListCvAnalysisResultsQueryInput,
+  UploadCvFileInput
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import type {
   AiCvAnalyzerRepository,
   AiCvAnalyzerServiceOptions,
@@ -135,6 +138,77 @@ export class AiCvAnalyzerService {
       );
       throw error;
     }
+  }
+
+  async listAnalysisResults(
+    userId: string,
+    query: ListCvAnalysisResultsQueryInput
+  ) {
+    if (!this.repository.listAnalysisResults) {
+      throw new Error("CV analysis result listing is not supported");
+    }
+
+    const result = await this.repository.listAnalysisResults(userId, query);
+    const totalPages = Math.ceil(result.total / query.limit);
+
+    return {
+      data: result.items.map(mapCvAnalysisResultSummary),
+      meta: {
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total: result.total,
+          totalPages,
+          hasNextPage: query.page < totalPages,
+          hasPrevPage: query.page > 1
+        },
+        filters: {
+          cvFileId: query.cvFileId,
+          schemaVersion: query.schemaVersion,
+          inputMode: query.inputMode,
+          compareSource: query.compareSource
+        },
+        sort: `${query.sortBy}:${query.sortOrder}`
+      }
+    };
+  }
+
+  async getAnalysisResultDetail(userId: string, analysisResultId: string) {
+    if (!this.repository.findAnalysisResultByIdForUser) {
+      throw new Error("CV analysis result detail is not supported");
+    }
+
+    const record = await this.repository.findAnalysisResultByIdForUser(
+      userId,
+      analysisResultId
+    );
+
+    if (!record) {
+      throw new NotFoundError(
+        "Hasil analisis CV tidak ditemukan",
+        aiCvAnalyzerErrorCodes.cvAnalysisResultNotFound
+      );
+    }
+
+    return mapCvAnalysisResultDetail(record);
+  }
+
+  async getLatestAnalysisResult(userId: string) {
+    if (!this.repository.findLatestAnalysisResultForUser) {
+      throw new Error("CV analysis result latest is not supported");
+    }
+
+    const record =
+      await this.repository.findLatestAnalysisResultForUser(userId);
+
+    if (!record) {
+      throw new NotFoundError(
+        "Hasil analisis CV tidak ditemukan",
+        aiCvAnalyzerErrorCodes.cvAnalysisResultNotFound
+      );
+    }
+
+    return mapCvAnalysisResultDetail(record);
   }
 
   async getActiveCvFile(userId: string): Promise<CvFileResource> {
@@ -375,6 +449,121 @@ export async function cleanupUploadedFile(
   } finally {
     await repository.markCvFileDeleted(fileId, now);
   }
+}
+
+function mapCvAnalysisResultSummary(record: {
+  id: string;
+  schemaVersion: string;
+  inputMode: "UPLOAD" | "REFERENCE";
+  compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+  analyzedAt: Date;
+  overallImpression: string;
+  jobFitAlignment: unknown;
+  atsFriendliness: unknown;
+  topActionables: unknown;
+  modelName: string | null;
+  modelVersion: string | null;
+  cvFileMetadata: CvFileMetadataRecord | null;
+}) {
+  return {
+    id: record.id,
+    schemaVersion: record.schemaVersion,
+    analyzedAt: record.analyzedAt.toISOString(),
+    inputMode: record.inputMode,
+    compareSource: record.compareSource,
+    jobFitAlignment: { score: getScore(record.jobFitAlignment) },
+    atsFriendliness: { score: getScore(record.atsFriendliness) },
+    overallImpressionPreview: record.overallImpression,
+    topActionablesPreview: Array.isArray(record.topActionables)
+      ? record.topActionables.slice(0, 3)
+      : [],
+    model: {
+      name: record.modelName,
+      version: record.modelVersion
+    },
+    cvFile: mapSafeCvFile(record.cvFileMetadata)
+  };
+}
+
+function mapCvAnalysisResultDetail(record: {
+  id: string;
+  schemaVersion: string;
+  inputMode: "UPLOAD" | "REFERENCE";
+  compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+  language: "ID" | "EN";
+  overallImpression: string;
+  jobFitAlignment: unknown;
+  atsFriendliness: unknown;
+  topActionables: unknown;
+  sectionReviews: unknown;
+  jobRecommendations: unknown;
+  modelName: string | null;
+  modelVersion: string | null;
+  inputSummary: unknown;
+  analyzedAt: Date;
+  cvFileMetadata: CvFileMetadataRecord | null;
+}) {
+  return {
+    analysisResult: {
+      id: record.id,
+      schemaVersion: record.schemaVersion,
+      jobFitAlignment: record.jobFitAlignment,
+      atsFriendliness: record.atsFriendliness,
+      overallImpression: record.overallImpression,
+      topActionables: record.topActionables,
+      sectionReviews: record.sectionReviews,
+      jobRecommendations: record.jobRecommendations,
+      generatedCv: {
+        available: false,
+        note: generatedCvUnavailableNote
+      },
+      model: {
+        name: record.modelName,
+        version: record.modelVersion
+      },
+      analyzedAt: record.analyzedAt.toISOString()
+    },
+    context: {
+      language: record.language === "ID" ? "id" : "en",
+      inputMode: record.inputMode,
+      compareSource: record.compareSource,
+      cvFile: mapSafeCvFile(record.cvFileMetadata),
+      inputSummary: sanitizeInputSummary(record.inputSummary)
+    }
+  };
+}
+
+function mapSafeCvFile(metadata: CvFileMetadataRecord | null) {
+  if (!metadata || metadata.deletedAt || metadata.expiresAt <= new Date()) {
+    return null;
+  }
+
+  return {
+    id: metadata.id,
+    originalFileName: metadata.originalFileName,
+    uploadedAt: metadata.uploadedAt.toISOString()
+  };
+}
+
+function getScore(value: unknown) {
+  if (value && typeof value === "object" && "score" in value) {
+    const score = (value as { score?: unknown }).score;
+    return typeof score === "number" ? score : null;
+  }
+
+  return null;
+}
+
+function sanitizeInputSummary(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const summary = value as { jobRoles?: unknown; file?: unknown };
+  return {
+    jobRoles: Array.isArray(summary.jobRoles) ? summary.jobRoles : [],
+    file: summary.file ?? null
+  };
 }
 
 function createValidationError(

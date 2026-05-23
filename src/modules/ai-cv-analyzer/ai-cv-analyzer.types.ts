@@ -48,6 +48,42 @@ export type ExpiredCvFileRecord = {
   storageKey: string;
 };
 
+export type CvAnalysisResultListQuery = {
+  page: number;
+  limit: number;
+  sortOrder: "asc" | "desc";
+  cvFileId?: string;
+  schemaVersion?: string;
+  inputMode?: "UPLOAD" | "REFERENCE";
+  compareSource?: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+};
+
+export type CvAnalysisResultRecord = {
+  id: string;
+  userId: string;
+  cvFileMetadataId: string | null;
+  language: "ID" | "EN";
+  inputMode: "UPLOAD" | "REFERENCE";
+  compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+  schemaVersion: string;
+  overallImpression: string;
+  jobFitAlignment: unknown;
+  atsFriendliness: unknown;
+  topActionables: unknown;
+  sectionReviews: unknown;
+  jobRecommendations: unknown;
+  modelName: string | null;
+  modelVersion: string | null;
+  inputSummary: unknown;
+  analyzedAt: Date;
+  cvFileMetadata: CvFileMetadataRecord | null;
+};
+
+export type CvAnalysisResultListResult = {
+  items: CvAnalysisResultRecord[];
+  total: number;
+};
+
 export type CvAnalysisSnapshotInput = {
   userId: string;
   jobRoles: string[];
@@ -81,6 +117,17 @@ export type AiCvAnalyzerRepository = {
   ): Promise<CvFileMetadataRecord | null>;
   markCvFileDeleted(fileId: string, deletedAt: Date): Promise<void>;
   createSnapshot(input: CvAnalysisSnapshotInput): Promise<void>;
+  listAnalysisResults?(
+    userId: string,
+    query: CvAnalysisResultListQuery
+  ): Promise<CvAnalysisResultListResult>;
+  findAnalysisResultByIdForUser?(
+    userId: string,
+    analysisResultId: string
+  ): Promise<CvAnalysisResultRecord | null>;
+  findLatestAnalysisResultForUser?(
+    userId: string
+  ): Promise<CvAnalysisResultRecord | null>;
   findExpiredActiveCvFiles(now: Date): Promise<ExpiredCvFileRecord[]>;
   markCvFilesDeleted(fileIds: string[], deletedAt: Date): Promise<number>;
 };

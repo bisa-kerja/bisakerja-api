@@ -73,3 +73,40 @@ export const uploadCvFileSchema = z.strictObject({
 });
 
 export type UploadCvFileInput = z.infer<typeof uploadCvFileSchema>;
+
+export const listCvAnalysisResultsQuerySchema = z.strictObject({
+  page: z.coerce
+    .number()
+    .int("Halaman harus berupa bilangan bulat")
+    .min(1, "Halaman minimal 1")
+    .default(1),
+  limit: z.coerce
+    .number()
+    .int("Batas data harus berupa bilangan bulat")
+    .min(1, "Batas data minimal 1")
+    .max(50, "Batas data maksimal 50")
+    .default(10),
+  sortBy: z.literal("analyzedAt").default("analyzedAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  cvFileId: z
+    .uuid("ID file CV tidak valid. Gunakan UUID yang benar")
+    .optional(),
+  schemaVersion: z.string().trim().min(1).max(80).optional(),
+  inputMode: z.enum(["UPLOAD", "REFERENCE"]).optional(),
+  compareSource: z
+    .enum(["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"])
+    .optional()
+});
+
+export const cvAnalysisResultParamsSchema = z.strictObject({
+  analysisResultId: z.uuid(
+    "ID hasil analisis CV tidak valid. Gunakan UUID yang benar"
+  )
+});
+
+export type ListCvAnalysisResultsQueryInput = z.infer<
+  typeof listCvAnalysisResultsQuerySchema
+>;
+export type CvAnalysisResultParamsInput = z.infer<
+  typeof cvAnalysisResultParamsSchema
+>;
