@@ -1,7 +1,8 @@
 export const modelApiInputVersions = {
   jobFit: "job-fit-v1",
   cvAnalyzer: "cv-analyzer-v1",
-  jobRecommendations: "job-recommendations-v1"
+  jobRecommendations: "job-recommendations-v1",
+  cvGenerate: "cv-generate-v1"
 } as const;
 
 export const allowedJobFitReadinessLevels = [

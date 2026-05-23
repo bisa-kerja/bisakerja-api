@@ -9,12 +9,16 @@ import {
 import {
   cvAnalyzerModelPayloadSchema,
   cvAnalyzerModelResponseSchema,
+  cvGenerateModelPayloadSchema,
+  cvGenerateModelResponseSchema,
   jobRecommendationModelPayloadSchema,
   jobRecommendationModelResponseSchema,
   jobFitModelPayloadSchema,
   jobFitModelResponseSchema,
   type CvAnalyzerModelPayload,
   type CvAnalyzerModelResponse,
+  type CvGenerateModelPayload,
+  type CvGenerateModelResponse,
   type JobRecommendationModelPayload,
   type JobRecommendationModelResponse,
   type JobFitModelPayload,
@@ -28,6 +32,7 @@ import type {
 
 const defaultJobFitPath = "/job-fit";
 const defaultCvAnalyzerPath = "/cv-analyzer";
+const defaultCvGeneratePath = "/cv-generate";
 const defaultJobRecommendationsPath = "/job-recommendations";
 
 export function createModelApiClient(
@@ -93,6 +98,35 @@ export function createModelApiClient(
         serviceToken: config.integrations.modelApi.serviceToken,
         requestIdHeader: config.observability.requestIdHeader,
         operation: "cv-analyzer"
+      });
+    },
+    generateCvMarkdown: async (payload) => {
+      const parsedPayload = cvGenerateModelPayloadSchema.parse(payload);
+
+      if (config.integrations.modelApi.enableMock) {
+        const mockResponse = options.mockResponses?.cvGenerate;
+
+        if (!mockResponse) {
+          throw new ServiceUnavailableError(
+            "Mock response Model API belum dikonfigurasi",
+            "SERVICE_UNAVAILABLE",
+            { dependency: "model-api", operation: "cv-generate" }
+          );
+        }
+
+        return cvGenerateModelResponseSchema.parse(mockResponse);
+      }
+
+      return requestModelApi<CvGenerateModelPayload, CvGenerateModelResponse>({
+        fetchImpl,
+        baseUrl: config.integrations.modelApi.baseUrl,
+        endpointPath: options.cvGeneratePath ?? defaultCvGeneratePath,
+        payload: parsedPayload,
+        responseSchema: cvGenerateModelResponseSchema,
+        timeoutMs: config.integrations.modelApi.timeoutMs,
+        serviceToken: config.integrations.modelApi.serviceToken,
+        requestIdHeader: config.observability.requestIdHeader,
+        operation: "cv-generate"
       });
     },
     recommendJobs: async (payload) => {

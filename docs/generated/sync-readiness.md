@@ -10,8 +10,8 @@ source_repo: backend-api
 source_path: docs/generated/sync-readiness.md
 last_reviewed: 2026-05-23
 generated_by: sync-readiness-script
-generated_at: 2026-05-23T08:55:41.523Z
-source_commit: afe77d30b1e43b2b797fbb283164dfa7c506205a
+generated_at: 2026-05-23T10:53:58.748Z
+source_commit: ea85f64852edfaa99fa9c55811a7d9aebf3bd169
 ---
 
 # Backend API Sync Readiness
@@ -22,10 +22,10 @@ This page is generated from the current service-owned docs tree and the document
 
 | Metric         | Value                                      |
 | -------------- | ------------------------------------------ |
-| Total docs     | 33                                         |
+| Total docs     | 34                                         |
 | Generated docs | 3                                          |
-| Generated at   | `2026-05-23T08:55:41.523Z`                 |
-| Source commit  | `afe77d30b1e43b2b797fbb283164dfa7c506205a` |
+| Generated at   | `2026-05-23T10:53:58.748Z`                 |
+| Source commit  | `ea85f64852edfaa99fa9c55811a7d9aebf3bd169` |
 
 ## OpenAPI Status
 
@@ -52,6 +52,7 @@ Scalar repo config remains in `scalar.config.json` for docs preview and sync rev
 | `docs/integrations/resend.md`            | `docs/services/backend-api/synced/integrations/resend.md`            |
 | `docs/integrations/scraper-api.md`       | `docs/services/backend-api/synced/integrations/scraper-api.md`       |
 | `docs/modules/ai-cv-analyzer.md`         | `docs/services/backend-api/synced/modules/ai-cv-analyzer.md`         |
+| `docs/modules/ai-cv-generate.md`         | `docs/services/backend-api/synced/modules/ai-cv-generate.md`         |
 | `docs/modules/ai-job-fit.md`             | `docs/services/backend-api/synced/modules/ai-job-fit.md`             |
 | `docs/modules/ai-job-recommendations.md` | `docs/services/backend-api/synced/modules/ai-job-recommendations.md` |
 | `docs/modules/applications.md`           | `docs/services/backend-api/synced/modules/applications.md`           |

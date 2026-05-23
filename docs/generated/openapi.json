@@ -4560,6 +4560,173 @@
           }
         }
       }
+    },
+    "/api/v1/ai/cv-generate": {
+      "post": {
+        "tags": ["AI CV Generate"],
+        "summary": "Generate markdown HTML CV",
+        "description": "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and HTML template input.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateCvMarkdownRequest"
+              },
+              "example": {
+                "cvFileId": "11111111-1111-4111-8111-111111111111",
+                "summary": "Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.",
+                "templateHtml": "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Markdown HTML CV generated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["success", "message", "data", "meta"],
+                  "properties": {
+                    "success": { "type": "boolean", "const": true },
+                    "message": { "type": "string" },
+                    "data": {
+                      "$ref": "#/components/schemas/GeneratedCvMarkdown"
+                    },
+                    "meta": { "type": "null" }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Markdown CV berhasil dibuat",
+                  "data": {
+                    "markdown": "<section><h1>Nama Kandidat</h1><h2>Ringkasan</h2><p>Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.</p></section>"
+                  },
+                  "meta": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Autentikasi diperlukan",
+                  "data": null,
+                  "error": {
+                    "code": "UNAUTHENTICATED",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CV file is not found for the current user.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "CV tidak ditemukan",
+                  "data": null,
+                  "error": {
+                    "code": "CV_FILE_NOT_FOUND",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload exceeds configured limit.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Payload terlalu besar",
+                  "data": null,
+                  "error": {
+                    "code": "PAYLOAD_TOO_LARGE",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validasi gagal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Validasi gagal",
+                  "data": null,
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "details": [
+                      {
+                        "path": "templateHtml",
+                        "message": "Template HTML wajib diisi",
+                        "code": "invalid_type"
+                      }
+                    ],
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Model output is invalid.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Model API mengembalikan markdown yang tidak valid",
+                  "data": null,
+                  "error": {
+                    "code": "MODEL_OUTPUT_INVALID",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Model API is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
+                "example": {
+                  "success": false,
+                  "message": "Model API tidak tersedia",
+                  "data": null,
+                  "error": {
+                    "code": "SERVICE_UNAVAILABLE",
+                    "details": null,
+                    "requestId": "req_1234567890"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4612,6 +4779,37 @@
               },
               "requestId": { "type": "string", "example": "req_1234567890" }
             }
+          }
+        }
+      },
+      "GenerateCvMarkdownRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cvFileId", "summary", "templateHtml"],
+        "properties": {
+          "cvFileId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 8000 },
+          "templateHtml": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          }
+        }
+      },
+      "GeneratedCvMarkdown": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["markdown"],
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000,
+            "description": "Markdown HTML string safe to render after frontend sanitization."
           }
         }
       },

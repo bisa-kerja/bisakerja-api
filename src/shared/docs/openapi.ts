@@ -2293,6 +2293,70 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             )
           }
         }
+      },
+      "/api/v1/ai/cv-generate": {
+        post: {
+          tags: ["AI CV Generate"],
+          summary: "Generate markdown HTML CV",
+          description:
+            "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and HTML template input.",
+          security: bearerSecurity(),
+          requestBody: {
+            required: true,
+            content: jsonContent(ref("GenerateCvMarkdownRequest"), {
+              cvFileId: "11111111-1111-4111-8111-111111111111",
+              summary:
+                "Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.",
+              templateHtml:
+                "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
+            })
+          },
+          responses: {
+            "201": jsonResponse(
+              "Markdown HTML CV generated successfully.",
+              successEnvelopeSchema(ref("GeneratedCvMarkdown"), nullSchema),
+              {
+                success: true,
+                message: "Markdown CV berhasil dibuat",
+                data: {
+                  markdown:
+                    "<section><h1>Nama Kandidat</h1><h2>Ringkasan</h2><p>Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.</p></section>"
+                },
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Autentikasi diperlukan"
+            ),
+            "404": errorResponse(
+              "CV file is not found for the current user.",
+              "CV_FILE_NOT_FOUND",
+              "CV tidak ditemukan"
+            ),
+            "413": errorResponse(
+              "Payload exceeds configured limit.",
+              "PAYLOAD_TOO_LARGE",
+              "Payload terlalu besar"
+            ),
+            "422": validationErrorResponse(
+              "templateHtml",
+              "Template HTML wajib diisi",
+              "invalid_type"
+            ),
+            "502": errorResponse(
+              "Model output is invalid.",
+              "MODEL_OUTPUT_INVALID",
+              "Model API mengembalikan markdown yang tidak valid"
+            ),
+            "503": errorResponse(
+              "Model API is unavailable.",
+              "SERVICE_UNAVAILABLE",
+              "Model API tidak tersedia"
+            )
+          }
+        }
       }
     },
     components: {
@@ -2348,6 +2412,34 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 },
                 requestId: requestIdSchema
               }
+            }
+          }
+        },
+        GenerateCvMarkdownRequest: {
+          type: "object",
+          additionalProperties: false,
+          required: ["cvFileId", "summary", "templateHtml"],
+          properties: {
+            cvFileId: uuidSchema,
+            summary: { type: "string", minLength: 1, maxLength: 8000 },
+            templateHtml: {
+              type: "string",
+              minLength: 1,
+              maxLength: 20000
+            }
+          }
+        },
+        GeneratedCvMarkdown: {
+          type: "object",
+          additionalProperties: false,
+          required: ["markdown"],
+          properties: {
+            markdown: {
+              type: "string",
+              minLength: 1,
+              maxLength: 50000,
+              description:
+                "Markdown HTML string safe to render after frontend sanitization."
             }
           }
         },

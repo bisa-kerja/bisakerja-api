@@ -131,6 +131,7 @@ Rules:
 | Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
 | CV Files       | `/api/v1/me/cv-files`           | Authenticated or onboarding access token                             | Upload and read safe current-user CV metadata                                                        | `docs/modules/ai-cv-analyzer.md`   |
 | AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against target job roles using uploaded or stored CV input                               | `docs/modules/ai-cv-analyzer.md`   |
+| AI CV Generate | `/api/v1/ai/cv-generate`        | Authenticated and ownership-protected                                | Generate improved markdown HTML CV content from a stored CV reference, summary, and template         | `docs/modules/ai-cv-generate.md`   |
 | Internal       | `/api/v1/internal`              | Internal                                                             | Scraper job sync upsert and notification handoff routes                                              | `docs/integrations/scraper-api.md` |
 
 Route naming defaults:

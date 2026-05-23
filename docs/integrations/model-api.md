@@ -50,6 +50,7 @@ Current backend default endpoint assumptions:
 
 - `POST /job-fit`
 - `POST /cv-analyzer`
+- `POST /cv-generate`
 - `POST /job-recommendations`
 
 These paths are treated as the current internal contract until the Model API publishes a final route inventory.
@@ -61,6 +62,7 @@ These paths are treated as the current internal contract until the Model API pub
 | Job fit analysis    | `ai-job-fit`             | Fit score, explanation breakdown, skill match, experience match, preference match, skill gaps, recommendation                |
 | Skill gap analysis  | `ai-job-fit`             | Missing skills, priority, reason, and improvement direction                                                                  |
 | AI CV Analyzer      | `ai-cv-analyzer`         | Overall impression, job fit alignment, ATS score, keyword optimization, experience quantification, actionable improvements   |
+| AI CV Generate      | `ai-cv-generate`         | Final markdown HTML CV content generated from backend-owned CV reference, summary, and safe template input                   |
 | Job recommendations | `ai-job-recommendations` | Ranked job recommendations selected from backend-provided candidate job IDs with match score, level, reasons, and next steps |
 
 ## Request Ownership

@@ -6,6 +6,7 @@ import {
   createAiCvAnalyzerRouter,
   createCurrentUserCvFilesRouter
 } from "@/modules/ai-cv-analyzer";
+import { createAiCvGenerateRouter } from "@/modules/ai-cv-generate";
 import { createAuthRouter } from "@/modules/auth";
 import { createApplicationsRouter } from "@/modules/applications";
 import { createBookmarksRouter } from "@/modules/bookmarks";
@@ -72,6 +73,11 @@ export function getMountedRouters(
       id: "ai-cv-analyzer",
       mountPath: `${config.app.apiPrefix}/ai/cv-analyzer`,
       router: createAiCvAnalyzerRouter(config, options.aiCvAnalyzer)
+    },
+    {
+      id: "ai-cv-generate",
+      mountPath: `${config.app.apiPrefix}/ai/cv-generate`,
+      router: createAiCvGenerateRouter(config, options.aiCvGenerate)
     },
     {
       id: "users",

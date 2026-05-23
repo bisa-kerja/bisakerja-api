@@ -192,6 +192,26 @@ export const cvAnalyzerModelResponseSchema = z.strictObject({
   analyzedAt: isoDatetimeSchema
 });
 
+export const cvGenerateModelPayloadSchema = z.strictObject({
+  requestId: z.string().min(1).max(200),
+  inputVersion: z.literal(modelApiInputVersions.cvGenerate),
+  cv: z.strictObject({
+    fileId: z.string().min(1).max(200),
+    mimeType: z.string().min(1).max(100),
+    sizeBytes: z.int().positive(),
+    storageKey: z.string().min(1).max(512)
+  }),
+  summary: z.string().min(1).max(8000),
+  template: z.strictObject({
+    markdown: z.string().min(1).max(20000).nullable(),
+    html: z.string().min(1).max(20000).nullable()
+  })
+});
+
+export const cvGenerateModelResponseSchema = z.strictObject({
+  markdown: z.string().trim().min(1).max(50000)
+});
+
 export const jobRecommendationModelPayloadSchema = z.strictObject({
   requestId: z.string().min(1).max(200),
   inputVersion: z.literal(modelApiInputVersions.jobRecommendations),
@@ -243,6 +263,12 @@ export type CvAnalyzerModelPayload = z.infer<
 >;
 export type CvAnalyzerModelResponse = z.infer<
   typeof cvAnalyzerModelResponseSchema
+>;
+export type CvGenerateModelPayload = z.infer<
+  typeof cvGenerateModelPayloadSchema
+>;
+export type CvGenerateModelResponse = z.infer<
+  typeof cvGenerateModelResponseSchema
 >;
 export type JobRecommendationModelPayload = z.infer<
   typeof jobRecommendationModelPayloadSchema

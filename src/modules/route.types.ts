@@ -1,4 +1,5 @@
 import type { AiCvAnalyzerRouterOptions } from "@/modules/ai-cv-analyzer";
+import type { AiCvGenerateRouterOptions } from "@/modules/ai-cv-generate";
 import type { AuthRouterOptions } from "@/modules/auth";
 import type { ApplicationsRouterOptions } from "@/modules/applications";
 import type { BookmarksRouterOptions } from "@/modules/bookmarks";
@@ -10,6 +11,7 @@ import type { UsersRouterOptions } from "@/modules/users";
 
 export type RouteOptions = {
   aiCvAnalyzer?: AiCvAnalyzerRouterOptions;
+  aiCvGenerate?: AiCvGenerateRouterOptions;
   applications?: ApplicationsRouterOptions;
   auth?: AuthRouterOptions;
   bookmarks?: BookmarksRouterOptions;
