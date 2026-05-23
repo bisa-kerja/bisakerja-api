@@ -357,134 +357,64 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     updatedAt: "2026-04-24T08:00:00.000Z",
     job: jobCardExample
   };
-  const jobFitExample = {
-    jobId: "550e8400-e29b-41d4-a716-446655440010",
-    fitScore: 82,
-    readinessLevel: "READY_WITH_MINOR_GAPS",
-    recommendation: {
-      decision: "APPLY_NOW",
-      summary:
-        "You match the core backend requirements, with minor gaps in deployment experience.",
-      nextSteps: [
-        "Highlight TypeScript API experience in your CV.",
-        "Review PostgreSQL query optimization basics.",
-        "Prepare examples of backend project impact."
+  const cvAnalysisExample = {
+    jobRoles: ["Backend Developer"],
+    language: "id",
+    analysisResult: {
+      id: "550e8400-e29b-41d4-a716-446655440099",
+      schemaVersion: "cv-analysis-v2",
+      jobFitAlignment: {
+        score: 78,
+        summary:
+          "CV sudah cukup selaras dengan role Backend Developer karena menonjolkan REST API, PostgreSQL, dan pengalaman project backend. Kesesuaian bisa naik jika pengalaman deployment dibuat lebih eksplisit."
+      },
+      atsFriendliness: {
+        score: 84,
+        summary:
+          "Struktur CV cukup mudah dibaca ATS, tetapi beberapa keyword penting masih belum dirangkum jelas pada section skill."
+      },
+      overallImpression:
+        "CV menunjukkan fondasi backend yang kuat untuk kandidat junior-mid, dengan ruang perbaikan terbesar pada bukti dampak kerja dan penajaman keyword sesuai target role.",
+      topActionables: [
+        "Tambahkan 2-3 bullet terukur pada pengalaman backend, misalnya peningkatan performa, jumlah user, atau skala data.",
+        "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
+        "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
       ],
-      successProbability: 0.68
-    },
-    breakdown: {
-      skillMatch: {
-        score: 85,
-        matchedSkills: ["TypeScript", "PostgreSQL"],
-        missingSkills: ["Docker"]
-      },
-      experienceMatch: {
-        score: 75,
-        reason:
-          "Internship experience is aligned with entry-level backend responsibilities."
-      },
-      preferenceMatch: {
-        score: 90,
-        matchedPreferences: ["REMOTE", "DKI Jakarta"],
-        unmatchedPreferences: []
-      }
-    },
-    skillGaps: [
-      {
-        skill: "Docker",
-        priority: "MEDIUM",
-        reason: "The job mentions containerized deployment experience."
-      }
-    ],
-    model: {
-      name: "job-fit-model",
-      version: "v1"
-    },
-    analyzedAt: "2026-04-24T08:00:00.000Z"
-  };
-  const jobRecommendationsExample = {
-    recommendationRun: {
-      id: "660e8400-e29b-41d4-a716-446655440099",
-      cvAnalysisResultId: "550e8400-e29b-41d4-a716-446655440030",
-      generatedAt: "2026-05-18T10:00:00.000Z",
-      modelName: "job-recommendation-model",
-      modelVersion: "2026-05-18",
-      candidateCount: 42,
-      recommendationCount: 2
-    },
-    recommendations: [
-      {
-        job: {
-          id: "550e8400-e29b-41d4-a716-446655440010",
+      sectionReviews: [
+        {
+          sectionName: "Relevant Skills",
+          analysis:
+            "Skill backend relevan sudah muncul, tetapi belum semuanya dikelompokkan dengan jelas.",
+          actionPoints: [
+            "Kelompokkan skill menjadi Backend, Database, Testing, dan Deployment.",
+            "Prioritaskan skill yang paling sering diminta pada role target."
+          ],
+          whyItsImportantForYou:
+            "ATS dan recruiter biasanya mencari keyword skill spesifik sebelum membaca detail pengalaman."
+        }
+      ],
+      jobRecommendations: [
+        {
+          jobId: "550e8400-e29b-41d4-a716-446655440010",
           title: "Backend Developer",
           companyName: "Example Tech",
-          location: "Jakarta Selatan, DKI Jakarta",
-          workType: "REMOTE",
-          experienceLevel: "ENTRY_LEVEL"
-        },
-        matchScore: 86,
-        matchLevel: "strong",
-        reasons: [
-          "Skill REST API dan PostgreSQL pada CV cocok dengan kebutuhan utama role ini."
-        ],
-        matchedSkills: ["REST API", "PostgreSQL", "TypeScript"],
-        missingSkills: ["Docker"],
-        nextSteps: [
-          "Tambahkan pengalaman deploy atau Docker di CV sebelum melamar."
-        ],
-        isBookmarked: false,
-        hasApplied: false
-      }
-    ]
-  };
-  const cvAnalysisExample = {
-    jobId: "550e8400-e29b-41d4-a716-446655440010",
-    language: "id",
-    overallImpression: {
-      score: 85,
-      summary:
-        "CV sudah relevan untuk role backend entry-level, terutama pada pengalaman TypeScript API."
-    },
-    jobFitAlignment: {
-      score: 78,
-      summary:
-        "Skill utama sesuai, tetapi pengalaman deployment masih perlu diperkuat.",
-      matchedSignals: ["TypeScript", "REST API", "PostgreSQL"],
-      missingSignals: ["Docker", "CI/CD"]
-    },
-    atsFriendliness: {
-      score: 74,
-      issues: [
-        "Beberapa section belum memakai heading standar.",
-        "Keyword deployment belum cukup terlihat."
-      ]
-    },
-    keywordOptimization: {
-      recommendedKeywords: ["Docker", "CI/CD", "API Documentation"],
-      reason:
-        "Keyword ini muncul pada requirement dan relevan dengan backend role."
-    },
-    experienceQuantification: {
-      score: 70,
-      suggestions: [
-        "Tambahkan metrik jumlah endpoint yang dibuat.",
-        "Tambahkan dampak performa atau reliability jika tersedia."
-      ]
-    },
-    actionableImprovements: [
-      "Tambahkan ringkasan 2-3 kalimat yang menonjolkan backend API experience.",
-      "Tambahkan keyword Docker jika memang pernah digunakan.",
-      "Ubah bullet experience agar menyertakan angka atau dampak."
-    ],
-    generatedCv: {
-      available: false,
-      note: "Generated CV is future scope."
-    },
-    model: {
-      name: "cv-analyzer-model",
-      version: "v1"
-    },
-    analyzedAt: "2026-04-24T08:00:00.000Z"
+          matchScore: 82,
+          reason:
+            "Lowongan ini cocok dengan sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
+          nextStep:
+            "Perjelas bukti pengalaman deployment sebelum mengirim lamaran."
+        }
+      ],
+      generatedCv: {
+        available: false,
+        note: "Fitur CV yang dihasilkan belum tersedia."
+      },
+      model: {
+        name: "cv-analyzer-model",
+        version: "v1"
+      },
+      analyzedAt: "2026-04-24T08:00:00.000Z"
+    }
   };
   const cvFileExample = {
     id: "550e8400-e29b-41d4-a716-446655440030",
@@ -541,16 +471,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
         description: "Current-user application tracker records."
       },
       {
-        name: "AI Job Fit",
-        description: "Authenticated AI-based job fit analysis."
-      },
-      {
-        name: "AI Job Recommendations",
-        description: "Authenticated AI-based job recommendation list."
-      },
-      {
         name: "AI CV Analyzer",
-        description: "Authenticated CV analysis against a selected job."
+        description: "Authenticated CV analysis against target job roles."
       }
     ],
     paths: {
@@ -2158,230 +2080,6 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           }
         }
       },
-      "/api/v1/ai/job-fit": {
-        post: {
-          tags: ["AI Job Fit"],
-          summary: "Analyze job fit",
-          description:
-            "Builds backend-owned user and preference context, calls Model API, and returns a job fit analysis for the selected job.",
-          security: bearerSecurity(),
-          requestBody: {
-            required: true,
-            content: jsonContent(ref("AnalyzeJobFitRequest"), {
-              jobId: "550e8400-e29b-41d4-a716-446655440010",
-              persistResult: true
-            })
-          },
-          responses: {
-            "200": jsonResponse(
-              "Job fit analysis completed successfully.",
-              successEnvelopeSchema(ref("JobFitAnalysis"), nullSchema),
-              {
-                success: true,
-                message: "Analisis kecocokan pekerjaan berhasil diselesaikan",
-                data: jobFitExample,
-                meta: null
-              }
-            ),
-            "401": errorResponse(
-              "Authentication is required.",
-              "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
-            ),
-            "404": errorResponse(
-              "Job is not found.",
-              "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
-            ),
-            "409": errorResponse(
-              "User profile is incomplete.",
-              "PROFILE_INCOMPLETE",
-              "Data profil belum lengkap untuk analisis kecocokan pekerjaan"
-            ),
-            "422": validationErrorResponse(
-              "jobId",
-              "ID lowongan tidak valid. Gunakan UUID yang benar"
-            ),
-            "502": errorResponse(
-              "Downstream response is invalid.",
-              "DOWNSTREAM_ERROR",
-              "Model API mengembalikan data response yang tidak valid"
-            ),
-            "503": errorResponse(
-              "Model API is unavailable.",
-              "SERVICE_UNAVAILABLE",
-              "Model API tidak tersedia"
-            )
-          }
-        }
-      },
-      "/api/v1/ai/job-recommendations": {
-        post: {
-          tags: ["AI Job Recommendations"],
-          summary: "Generate job recommendations",
-          description:
-            "Generates a bounded list of job recommendations from an owned CV analysis result and backend candidate jobs.",
-          security: bearerSecurity(),
-          requestBody: {
-            required: true,
-            content: jsonContent(ref("GenerateJobRecommendationsRequest"), {
-              cvAnalysisResultId: "550e8400-e29b-41d4-a716-446655440030",
-              limit: 10,
-              filters: {
-                location: "Jakarta",
-                workType: "REMOTE",
-                experienceLevel: "ENTRY_LEVEL",
-                excludeAppliedJobs: true,
-                includeBookmarkedStatus: true
-              },
-              idempotencyKey: "recommendation-2026-05-18T10:00:00Z"
-            })
-          },
-          responses: {
-            "201": jsonResponse(
-              "Job recommendations generated successfully.",
-              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
-              {
-                success: true,
-                message: "Rekomendasi pekerjaan berhasil dibuat",
-                data: jobRecommendationsExample,
-                meta: null
-              }
-            ),
-            "200": jsonResponse(
-              "Existing idempotent recommendation run returned.",
-              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
-              {
-                success: true,
-                message: "Rekomendasi pekerjaan berhasil dibuat",
-                data: jobRecommendationsExample,
-                meta: null
-              }
-            ),
-            "401": errorResponse(
-              "Authentication is required.",
-              "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
-            ),
-            "404": errorResponse(
-              "CV analysis result is not found for current user.",
-              "CV_ANALYSIS_RESULT_NOT_FOUND",
-              "Hasil analisis CV tidak ditemukan"
-            ),
-            "422": errorResponse(
-              "CV analysis is required before recommendation generation.",
-              "CV_ANALYSIS_REQUIRED",
-              "Hasil analisis CV belum tersedia"
-            ),
-            "429": errorResponse(
-              "AI request rate limit exceeded.",
-              "RATE_LIMITED",
-              "Terlalu banyak permintaan",
-              { limit: "ai" }
-            ),
-            "502": errorResponse(
-              "Recommendation model response is invalid.",
-              "MODEL_RESPONSE_INVALID",
-              "Response model rekomendasi pekerjaan tidak valid"
-            ),
-            "503": errorResponse(
-              "Recommendation model service is unavailable.",
-              "MODEL_SERVICE_UNAVAILABLE",
-              "Layanan model rekomendasi pekerjaan sementara tidak tersedia"
-            )
-          }
-        }
-      },
-      "/api/v1/ai/job-recommendations/latest": {
-        get: {
-          tags: ["AI Job Recommendations"],
-          summary: "Get latest recommendation run",
-          description:
-            "Returns current user's latest recommendation run and visible recommendations.",
-          security: bearerSecurity(),
-          parameters: [
-            {
-              name: "limit",
-              in: "query",
-              schema: { type: "integer", minimum: 1, maximum: 20, default: 10 }
-            }
-          ],
-          responses: {
-            "200": jsonResponse(
-              "Latest recommendation run retrieved.",
-              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
-              {
-                success: true,
-                message: "Rekomendasi pekerjaan terbaru berhasil diambil",
-                data: jobRecommendationsExample,
-                meta: null
-              }
-            ),
-            "401": errorResponse(
-              "Authentication is required.",
-              "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
-            ),
-            "404": errorResponse(
-              "Recommendation run is not found.",
-              "JOB_RECOMMENDATION_NOT_FOUND",
-              "Rekomendasi pekerjaan belum tersedia"
-            ),
-            "422": validationErrorResponse(
-              "limit",
-              "Nilai limit harus antara 1 sampai 20"
-            )
-          }
-        }
-      },
-      "/api/v1/ai/job-recommendations/{recommendationRunId}": {
-        get: {
-          tags: ["AI Job Recommendations"],
-          summary: "Get recommendation run detail",
-          description:
-            "Returns a specific recommendation run detail for current user. Ownership is concealed with 404.",
-          security: bearerSecurity(),
-          parameters: [
-            {
-              name: "recommendationRunId",
-              in: "path",
-              required: true,
-              schema: uuidSchema
-            },
-            {
-              name: "limit",
-              in: "query",
-              schema: { type: "integer", minimum: 1, maximum: 20, default: 10 }
-            }
-          ],
-          responses: {
-            "200": jsonResponse(
-              "Recommendation run detail retrieved.",
-              successEnvelopeSchema(ref("JobRecommendationsData"), nullSchema),
-              {
-                success: true,
-                message: "Detail rekomendasi pekerjaan berhasil diambil",
-                data: jobRecommendationsExample,
-                meta: null
-              }
-            ),
-            "401": errorResponse(
-              "Authentication is required.",
-              "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
-            ),
-            "404": errorResponse(
-              "Recommendation run is not found.",
-              "JOB_RECOMMENDATION_NOT_FOUND",
-              "Rekomendasi pekerjaan tidak ditemukan"
-            ),
-            "422": validationErrorResponse(
-              "recommendationRunId",
-              "ID run rekomendasi pekerjaan tidak valid. Gunakan UUID yang benar"
-            )
-          }
-        }
-      },
       "/api/v1/me/cv-files": {
         post: {
           tags: ["AI CV Analyzer"],
@@ -2492,7 +2190,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["AI CV Analyzer"],
           summary: "Analyze CV",
           description:
-            "Compares a CV against a selected job using Model API. The CV source priority is direct PDF upload, explicit cvFileId, then the user's active CV.",
+            "Analyzes a CV against target job roles using Model API. The CV source priority is direct PDF upload, explicit cvFileId, then the user's active CV.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
@@ -3739,9 +3437,14 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
         AnalyzeCvMultipartRequest: {
           type: "object",
           additionalProperties: false,
-          required: ["jobId", "language", "inputMode"],
+          required: ["jobRoles", "language", "inputMode"],
           properties: {
-            jobId: uuidSchema,
+            jobRoles: {
+              type: "array",
+              minItems: 1,
+              maxItems: 10,
+              items: { type: "string" }
+            },
             language: { type: "string", enum: ["id", "en"] },
             inputMode: { type: "string", enum: ["UPLOAD", "REFERENCE"] },
             compareSource: {
@@ -3806,100 +3509,132 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
         CvAnalysis: {
           type: "object",
           additionalProperties: false,
-          required: [
-            "jobId",
-            "language",
-            "overallImpression",
-            "jobFitAlignment",
-            "atsFriendliness",
-            "keywordOptimization",
-            "experienceQuantification",
-            "actionableImprovements",
-            "generatedCv",
-            "model",
-            "analyzedAt"
-          ],
+          required: ["jobRoles", "language", "analysisResult"],
           properties: {
-            jobId: uuidSchema,
-            language: { type: "string", enum: ["id", "en"] },
-            overallImpression: {
-              type: "object",
-              additionalProperties: false,
-              required: ["score", "summary"],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                summary: { type: "string" }
-              }
-            },
-            jobFitAlignment: {
-              type: "object",
-              additionalProperties: false,
-              required: [
-                "score",
-                "summary",
-                "matchedSignals",
-                "missingSignals"
-              ],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                summary: { type: "string" },
-                matchedSignals: { type: "array", items: { type: "string" } },
-                missingSignals: { type: "array", items: { type: "string" } }
-              }
-            },
-            atsFriendliness: {
-              type: "object",
-              additionalProperties: false,
-              required: ["score", "issues"],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                issues: { type: "array", items: { type: "string" } }
-              }
-            },
-            keywordOptimization: {
-              type: "object",
-              additionalProperties: false,
-              required: ["recommendedKeywords", "reason"],
-              properties: {
-                recommendedKeywords: {
-                  type: "array",
-                  items: { type: "string" }
-                },
-                reason: { type: "string" }
-              }
-            },
-            experienceQuantification: {
-              type: "object",
-              additionalProperties: false,
-              required: ["score", "suggestions"],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                suggestions: { type: "array", items: { type: "string" } }
-              }
-            },
-            actionableImprovements: {
+            jobRoles: {
               type: "array",
               items: { type: "string" }
             },
-            generatedCv: {
+            language: { type: "string", enum: ["id", "en"] },
+            analysisResult: {
               type: "object",
               additionalProperties: false,
-              required: ["available", "note"],
+              required: [
+                "id",
+                "schemaVersion",
+                "jobFitAlignment",
+                "atsFriendliness",
+                "overallImpression",
+                "topActionables",
+                "sectionReviews",
+                "jobRecommendations",
+                "generatedCv",
+                "model",
+                "analyzedAt"
+              ],
               properties: {
-                available: { type: "boolean" },
-                note: { type: "string" }
+                id: uuidSchema,
+                schemaVersion: {
+                  type: "string",
+                  const: "cv-analysis-v2"
+                },
+                jobFitAlignment: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["score", "summary"],
+                  properties: {
+                    score: { type: "integer", minimum: 0, maximum: 100 },
+                    summary: { type: "string" }
+                  }
+                },
+                atsFriendliness: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["score", "summary"],
+                  properties: {
+                    score: { type: "integer", minimum: 0, maximum: 100 },
+                    summary: { type: "string" }
+                  }
+                },
+                overallImpression: { type: "string" },
+                topActionables: {
+                  type: "array",
+                  minItems: 1,
+                  maxItems: 3,
+                  items: { type: "string" }
+                },
+                sectionReviews: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: [
+                      "sectionName",
+                      "analysis",
+                      "actionPoints",
+                      "whyItsImportantForYou"
+                    ],
+                    properties: {
+                      sectionName: { type: "string" },
+                      analysis: { type: "string" },
+                      actionPoints: {
+                        type: "array",
+                        minItems: 1,
+                        items: { type: "string" }
+                      },
+                      whyItsImportantForYou: { type: "string" }
+                    }
+                  }
+                },
+                jobRecommendations: {
+                  type: "array",
+                  maxItems: 5,
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: [
+                      "jobId",
+                      "title",
+                      "companyName",
+                      "matchScore",
+                      "reason",
+                      "nextStep"
+                    ],
+                    properties: {
+                      jobId: { oneOf: [uuidSchema, nullSchema] },
+                      title: { type: "string" },
+                      companyName: { oneOf: [{ type: "string" }, nullSchema] },
+                      matchScore: {
+                        type: "integer",
+                        minimum: 0,
+                        maximum: 100
+                      },
+                      reason: { type: "string" },
+                      nextStep: { type: "string" }
+                    }
+                  }
+                },
+                generatedCv: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["available", "note"],
+                  properties: {
+                    available: { type: "boolean" },
+                    note: { type: "string" }
+                  }
+                },
+                model: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["name", "version"],
+                  properties: {
+                    name: { type: "string" },
+                    version: { type: "string" }
+                  }
+                },
+                analyzedAt: isoDateTimeSchema
               }
-            },
-            model: {
-              type: "object",
-              additionalProperties: false,
-              required: ["name", "version"],
-              properties: {
-                name: { type: "string" },
-                version: { type: "string" }
-              }
-            },
-            analyzedAt: isoDateTimeSchema
+            }
           }
         },
         HealthLiveData: {

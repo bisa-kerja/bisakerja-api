@@ -120,20 +120,18 @@ Rules:
 
 ## Route Group Index
 
-| Route group            | Prefix                           | Auth class                                                           | MVP scope                                                                                            | Future module doc                        |
-| ---------------------- | -------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| Health                 | `/health/live`, `/health/ready`  | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed       |
-| Auth                   | `/api/v1/auth`                   | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, and Google OAuth login | `docs/modules/auth.md`                   |
-| Users                  | `/api/v1/me`                     | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`                  |
-| Preferences            | `/api/v1/me/preferences`         | Authenticated or onboarding access token                             | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`            |
-| Jobs                   | `/api/v1/jobs`                   | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`                   |
-| Bookmarks              | `/api/v1/me/bookmarks`           | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`              |
-| Applications           | `/api/v1/me/applications`        | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`           |
-| CV Files               | `/api/v1/me/cv-files`            | Authenticated or onboarding access token                             | Upload and read safe current-user CV metadata                                                        | `docs/modules/ai-cv-analyzer.md`         |
-| AI Job Recommendations | `/api/v1/ai/job-recommendations` | Authenticated                                                        | Generate and read recommendation runs derived from owned CV analysis                                 | `docs/modules/ai-job-recommendations.md` |
-| AI Job Fit             | `/api/v1/ai/job-fit`             | Authenticated                                                        | Fit score, explanation, skill gap, and recommendation                                                | `docs/modules/ai-job-fit.md`             |
-| AI CV Analyzer         | `/api/v1/ai/cv-analyzer`         | Authenticated                                                        | CV analysis against selected job using uploaded or stored CV input                                   | `docs/modules/ai-cv-analyzer.md`         |
-| Internal               | `/api/v1/internal`               | Internal                                                             | Scraper job sync upsert and notification handoff routes                                              | `docs/integrations/scraper-api.md`       |
+| Route group    | Prefix                          | Auth class                                                           | MVP scope                                                                                            | Future module doc                  |
+| -------------- | ------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed |
+| Auth           | `/api/v1/auth`                  | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, and Google OAuth login | `docs/modules/auth.md`             |
+| Users          | `/api/v1/me`                    | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`            |
+| Preferences    | `/api/v1/me/preferences`        | Authenticated or onboarding access token                             | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
+| Jobs           | `/api/v1/jobs`                  | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
+| Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
+| Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
+| CV Files       | `/api/v1/me/cv-files`           | Authenticated or onboarding access token                             | Upload and read safe current-user CV metadata                                                        | `docs/modules/ai-cv-analyzer.md`   |
+| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against target job roles using uploaded or stored CV input                               | `docs/modules/ai-cv-analyzer.md`   |
+| Internal       | `/api/v1/internal`              | Internal                                                             | Scraper job sync upsert and notification handoff routes                                              | `docs/integrations/scraper-api.md` |
 
 Route naming defaults:
 
@@ -406,21 +404,13 @@ Application tracker endpoints use the standard response envelope. List responses
 
 ### AI
 
-| Method | Path                                                  | Auth          | Purpose                                                  |
-| ------ | ----------------------------------------------------- | ------------- | -------------------------------------------------------- |
-| `POST` | `/api/v1/ai/job-recommendations`                      | Authenticated | Generate job recommendations from owned CV analysis      |
-| `GET`  | `/api/v1/ai/job-recommendations/latest`               | Authenticated | Get latest recommendation run for current user           |
-| `GET`  | `/api/v1/ai/job-recommendations/:recommendationRunId` | Authenticated | Get detail for a specific recommendation run             |
-| `POST` | `/api/v1/ai/job-fit`                                  | Authenticated | Analyze user fit for a selected job                      |
-| `POST` | `/api/v1/ai/cv-analyzer`                              | Authenticated | Analyze uploaded or stored PDF CV against a selected job |
+| Method | Path                     | Auth          | Purpose                                                    |
+| ------ | ------------------------ | ------------- | ---------------------------------------------------------- |
+| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded or stored PDF CV against target job roles |
 
-AI analysis endpoints use the standard response envelope. `POST /api/v1/ai/job-recommendations` accepts optional `cvAnalysisResultId`, bounded `limit`, and optional filter overrides. The endpoint conceals cross-user analysis IDs with `404 CV_ANALYSIS_RESULT_NOT_FOUND`, returns `422 CV_ANALYSIS_REQUIRED` when the current user has no analysis result to resolve, and rejects model output that references unknown job IDs.
+AI analysis endpoints use the standard response envelope. Fit scoring and job recommendation output are embedded in the CV analyzer result so the active AI surface stays compact.
 
-`GET /api/v1/ai/job-recommendations/latest` and `GET /api/v1/ai/job-recommendations/:recommendationRunId` return recommendation snapshots for the current user only, with `404 JOB_RECOMMENDATION_NOT_FOUND` concealment for missing or non-owned runs.
-
-`POST /api/v1/ai/job-fit` accepts only `jobId` plus optional `persistResult`, returns `409 PROFILE_INCOMPLETE` or `409 PREFERENCES_INCOMPLETE` when required persisted context is missing, and stores sanitized snapshots only when `persistResult=true`.
-
-`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` metadata. The endpoint accepts one PDF `cvFile` for `UPLOAD` mode, or uses `REFERENCE` mode with `cvFileId` or active CV fallback. Not-found ownership checks use `404` codes (`JOB_NOT_FOUND`, `BOOKMARK_NOT_FOUND`, `CV_FILE_NOT_FOUND`), and oversized uploads return `413 PAYLOAD_TOO_LARGE`.
+`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` metadata and `jobRoles` target role list. The endpoint accepts one PDF `cvFile` for `UPLOAD` mode, or uses `REFERENCE` mode with `cvFileId` or active CV fallback. Successful responses return `data.analysisResult` with `schemaVersion: "cv-analysis-v2"`, bounded `jobFitAlignment` and `atsFriendliness` scores, dynamic `sectionReviews`, at most 3 `topActionables`, and at most 5 simple `jobRecommendations`. Not-found ownership checks use `404 CV_FILE_NOT_FOUND` for CV references, and oversized uploads return `413 PAYLOAD_TOO_LARGE`.
 
 ## Contract Stability Rules
 

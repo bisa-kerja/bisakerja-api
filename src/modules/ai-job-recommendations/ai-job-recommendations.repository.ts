@@ -27,7 +27,13 @@ type CvAnalysisResultWithJob = Prisma.CvAnalysisResultGetPayload<{
       include: typeof jobInclude;
     };
   };
-}>;
+}> & {
+  jobListingId: string;
+  jobListing: JobListingWithRelations;
+  schemaVersion: string | null;
+  topActionables: unknown;
+  sectionReviews: unknown;
+};
 
 export class PrismaAiJobRecommendationsRepository implements AiJobRecommendationsRepository {
   constructor(private readonly client: PrismaClientLike = prisma) {}
@@ -48,7 +54,9 @@ export class PrismaAiJobRecommendationsRepository implements AiJobRecommendation
       }
     });
 
-    return result ? mapCvAnalysisResult(result) : null;
+    return result?.jobListing
+      ? mapCvAnalysisResult(result as CvAnalysisResultWithJob)
+      : null;
   }
 
   async findLatestCvAnalysisResultForUser(
@@ -64,7 +72,9 @@ export class PrismaAiJobRecommendationsRepository implements AiJobRecommendation
       }
     });
 
-    return result ? mapCvAnalysisResult(result) : null;
+    return result?.jobListing
+      ? mapCvAnalysisResult(result as CvAnalysisResultWithJob)
+      : null;
   }
 
   async findUserPreference(userId: string): Promise<PreferenceContext | null> {
@@ -245,18 +255,20 @@ function mapCvAnalysisResult(
   result: CvAnalysisResultWithJob
 ): CvAnalysisResolverRecord {
   const jobFitAlignment = toJobFitAlignment(result.jobFitAlignment);
-  const keywordOptimization = toKeywordOptimization(result.keywordOptimization);
-  const actionableImprovements = toStringArray(result.actionableImprovements);
 
   return {
     id: result.id,
     userId: result.userId,
     jobListingId: result.jobListingId,
+    schemaVersion:
+      typeof result.schemaVersion === "string"
+        ? result.schemaVersion
+        : "cv-analysis-v2",
     analyzedAt: result.analyzedAt,
     job: mapJob(result.jobListing),
     jobFitAlignment,
-    keywordOptimization,
-    actionableImprovements
+    topActionables: toStringArray(result.topActionables),
+    sectionReviews: toSectionReviews(result.sectionReviews)
   };
 }
 
@@ -284,21 +296,36 @@ function toJobFitAlignment(
   };
 }
 
-function toKeywordOptimization(
+function toSectionReviews(
   value: unknown
-): CvAnalysisResolverRecord["keywordOptimization"] {
-  if (!value || typeof value !== "object") {
-    return {
-      recommendedKeywords: [],
-      reason: ""
-    };
+): CvAnalysisResolverRecord["sectionReviews"] {
+  if (!Array.isArray(value)) {
+    return [];
   }
 
-  const data = value as Record<string, unknown>;
-  return {
-    recommendedKeywords: toStringArray(data.recommendedKeywords),
-    reason: typeof data.reason === "string" ? data.reason : ""
-  };
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const data = item as Record<string, unknown>;
+    if (
+      typeof data.sectionName !== "string" ||
+      typeof data.analysis !== "string" ||
+      typeof data.whyItsImportantForYou !== "string"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        sectionName: data.sectionName,
+        analysis: data.analysis,
+        actionPoints: toStringArray(data.actionPoints),
+        whyItsImportantForYou: data.whyItsImportantForYou
+      }
+    ];
+  });
 }
 
 function toStringArray(value: unknown): string[] {
@@ -435,7 +462,10 @@ function buildCandidateWhere(input: {
 
   const inferredSkills = [
     ...input.cvAnalysisResult.jobFitAlignment.matchedSignals,
-    ...input.cvAnalysisResult.keywordOptimization.recommendedKeywords
+    ...input.cvAnalysisResult.topActionables,
+    ...input.cvAnalysisResult.sectionReviews.flatMap(
+      (section) => section.actionPoints
+    )
   ]
     .map((skill) => skill.trim())
     .filter(Boolean)

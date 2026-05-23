@@ -104,14 +104,7 @@ describe("model api schemas", () => {
           sizeBytes: 1024,
           storageKey: "cv/user-1/cv-1.pdf"
         },
-        job: {
-          id: "job-1",
-          title: "Backend Developer",
-          description: "Build backend APIs",
-          requirements: [],
-          skills: ["TypeScript"],
-          experienceLevel: "ENTRY_LEVEL"
-        }
+        jobRoles: ["Backend Developer"]
       }).success
     ).toBe(true);
 
@@ -128,14 +121,7 @@ describe("model api schemas", () => {
           sizeBytes: 1024,
           storageKey: "cv/user-1/cv-1.pdf"
         },
-        job: {
-          id: "job-1",
-          title: "Backend Developer",
-          description: "Build backend APIs",
-          requirements: [],
-          skills: ["TypeScript"],
-          experienceLevel: "ENTRY_LEVEL"
-        }
+        jobRoles: ["Backend Developer"]
       }).success
     ).toBe(false);
   });
@@ -161,10 +147,17 @@ describe("model api schemas", () => {
     expect(
       cvAnalyzerModelResponseSchema.safeParse({
         ...modelApiFixtures.validCvAnalyzerResponse,
-        overallImpression: {
-          ...modelApiFixtures.validCvAnalyzerResponse.overallImpression,
+        jobFitAlignment: {
+          ...modelApiFixtures.validCvAnalyzerResponse.jobFitAlignment,
           score: -1
         }
+      }).success
+    ).toBe(false);
+
+    expect(
+      cvAnalyzerModelResponseSchema.safeParse({
+        ...modelApiFixtures.validCvAnalyzerResponse,
+        topActionables: ["1", "2", "3", "4"]
       }).success
     ).toBe(false);
   });

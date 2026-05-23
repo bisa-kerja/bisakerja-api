@@ -25,9 +25,25 @@ const multipartBooleanSchema = z.preprocess((value) => {
   return value;
 }, z.boolean("Flag persistResult harus bernilai true atau false"));
 
+const multipartStringArraySchema = z.preprocess(
+  (value) => {
+    if (Array.isArray(value)) {
+      const values: unknown[] = value;
+      return values;
+    }
+
+    if (typeof value === "string") {
+      return [value];
+    }
+
+    return value;
+  },
+  z.array(z.string().trim().min(1).max(120)).min(1).max(10)
+);
+
 export const analyzeCvSchema = z
   .strictObject({
-    jobId: z.uuid("ID lowongan tidak valid. Gunakan UUID yang benar"),
+    jobRoles: multipartStringArraySchema,
     language: z.enum(["id", "en"]),
     inputMode: z.enum(["UPLOAD", "REFERENCE"]),
     compareSource: z

@@ -210,18 +210,16 @@ Relationship rules:
 
 ## MVP Module Persistence Map
 
-| Module                 | Persistence model                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Auth                   | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                               |
-| Users                  | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                             |
-| Preferences            | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                          |
-| Jobs                   | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows |
-| Bookmarks              | `Bookmark`, with read joins to `JobListing` and `Company`                                                                  |
-| Applications           | `ApplicationRecord` and `ApplicationStatusHistory`                                                                         |
-| AI Job Fit             | Read user/profile/preference/job context; optionally store `FitScoreResult` and `SkillGapResult` snapshots                 |
-| AI CV Analyzer         | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot                           |
-| AI Job Recommendations | Read owned CV analysis and candidate job catalog; store `JobRecommendationRun` and `JobRecommendationItem` snapshots       |
-| Health                 | No business persistence; may check PostgreSQL connectivity                                                                 |
+| Module         | Persistence model                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                                              |
+| Users          | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                                            |
+| Preferences    | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                                         |
+| Jobs           | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows                |
+| Bookmarks      | `Bookmark`, with read joins to `JobListing` and `Company`                                                                                 |
+| Applications   | `ApplicationRecord` and `ApplicationStatusHistory`                                                                                        |
+| AI CV Analyzer | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot with embedded simple job recommendations |
+| Health         | No business persistence; may check PostgreSQL connectivity                                                                                |
 
 ## ID Strategy
 

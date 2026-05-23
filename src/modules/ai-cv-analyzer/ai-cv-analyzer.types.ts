@@ -1,7 +1,6 @@
 import type { RequestHandler } from "express";
 
 import type { AppConfig } from "@/config/env";
-import type { JobRecord } from "@/modules/jobs";
 import type {
   CvAnalyzerModelPayload,
   CvAnalyzerModelResponse
@@ -51,7 +50,7 @@ export type ExpiredCvFileRecord = {
 
 export type CvAnalysisSnapshotInput = {
   userId: string;
-  jobId: string;
+  jobRoles: string[];
   cvFileMetadataId: string;
   language: "ID" | "EN";
   inputMode: "UPLOAD" | "REFERENCE";
@@ -61,8 +60,6 @@ export type CvAnalysisSnapshotInput = {
 };
 
 export type AiCvAnalyzerRepository = {
-  findVisibleJob(jobId: string): Promise<JobRecord | null>;
-  hasOwnedBookmarkForJob(userId: string, jobId: string): Promise<boolean>;
   createCvFileMetadata(input: {
     id: string;
     userId: string;
@@ -99,20 +96,24 @@ export type CvFileResource = {
 };
 
 export type CvAnalysisResource = {
-  jobId: string;
+  jobRoles: string[];
   language: "id" | "en";
-  overallImpression: CvAnalyzerModelResponse["overallImpression"];
-  jobFitAlignment: CvAnalyzerModelResponse["jobFitAlignment"];
-  atsFriendliness: CvAnalyzerModelResponse["atsFriendliness"];
-  keywordOptimization: CvAnalyzerModelResponse["keywordOptimization"];
-  experienceQuantification: CvAnalyzerModelResponse["experienceQuantification"];
-  actionableImprovements: string[];
-  generatedCv: {
-    available: false;
-    note: string;
+  analysisResult: {
+    id: string;
+    schemaVersion: CvAnalyzerModelResponse["schemaVersion"];
+    jobFitAlignment: CvAnalyzerModelResponse["jobFitAlignment"];
+    atsFriendliness: CvAnalyzerModelResponse["atsFriendliness"];
+    overallImpression: CvAnalyzerModelResponse["overallImpression"];
+    topActionables: CvAnalyzerModelResponse["topActionables"];
+    sectionReviews: CvAnalyzerModelResponse["sectionReviews"];
+    jobRecommendations: CvAnalyzerModelResponse["jobRecommendations"];
+    generatedCv: {
+      available: false;
+      note: string;
+    };
+    model: CvAnalyzerModelResponse["model"];
+    analyzedAt: string;
   };
-  model: CvAnalyzerModelResponse["model"];
-  analyzedAt: string;
 };
 
 export type CvAnalysisResult = {

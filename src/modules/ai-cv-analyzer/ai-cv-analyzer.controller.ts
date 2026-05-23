@@ -28,13 +28,14 @@ export class AiCvAnalyzerController {
     const startedAt = this.now();
     const input = req.body as AnalyzeCvInput;
     const userId = req.auth?.userId ?? "";
+    const resourceId = input.jobRoles.join(",");
 
     emitAuditEvent({
       action: "ai_cv_analyzer.requested",
       requestId: req.requestId,
       actorId: userId,
       resourceType: "cv-analysis",
-      resourceId: input.jobId,
+      resourceId,
       result: "success",
       metadata: {
         inputMode: input.inputMode,
@@ -64,11 +65,11 @@ export class AiCvAnalyzerController {
         requestId: req.requestId,
         actorId: userId,
         resourceType: "cv-analysis",
-        resourceId: input.jobId,
+        resourceId,
         result: "success",
         metadata: {
           cvFileMetadataId: result.cvFileMetadataId,
-          modelVersion: result.resource.model.version,
+          modelVersion: result.resource.analysisResult.model.version,
           durationMs
         }
       });
@@ -79,11 +80,11 @@ export class AiCvAnalyzerController {
           requestId: req.requestId,
           actorId: userId,
           resourceType: "cv-analysis",
-          resourceId: input.jobId,
+          resourceId,
           result: "success",
           metadata: {
             cvFileMetadataId: result.cvFileMetadataId,
-            modelVersion: result.resource.model.version
+            modelVersion: result.resource.analysisResult.model.version
           }
         });
       }
@@ -101,7 +102,7 @@ export class AiCvAnalyzerController {
         requestId: req.requestId,
         actorId: userId,
         resourceType: "cv-analysis",
-        resourceId: input.jobId,
+        resourceId,
         result: "failure",
         metadata: {
           errorCode:

@@ -6,8 +6,6 @@ import {
   createAiCvAnalyzerRouter,
   createCurrentUserCvFilesRouter
 } from "@/modules/ai-cv-analyzer";
-import { createAiJobRecommendationsRouter } from "@/modules/ai-job-recommendations";
-import { createAiJobFitRouter } from "@/modules/ai-job-fit";
 import { createAuthRouter } from "@/modules/auth";
 import { createApplicationsRouter } from "@/modules/applications";
 import { createBookmarksRouter } from "@/modules/bookmarks";
@@ -69,19 +67,6 @@ export function getMountedRouters(
       id: "cv-files",
       mountPath: `${config.app.apiPrefix}/me/cv-files`,
       router: createCurrentUserCvFilesRouter(config, options.aiCvAnalyzer)
-    },
-    {
-      id: "ai-job-recommendations",
-      mountPath: `${config.app.apiPrefix}/ai/job-recommendations`,
-      router: createAiJobRecommendationsRouter(
-        config,
-        options.aiJobRecommendations
-      )
-    },
-    {
-      id: "ai-job-fit",
-      mountPath: `${config.app.apiPrefix}/ai/job-fit`,
-      router: createAiJobFitRouter(config, options.aiJobFit)
     },
     {
       id: "ai-cv-analyzer",

@@ -49,7 +49,7 @@ describe("ai cv analyzer routes", () => {
       url: "/api/v1/ai/cv-analyzer",
       headers: authHeaders("user-1", "req_ai_cv_non_multipart"),
       body: {
-        jobId: jobRecord().id,
+        jobRoles: ["Backend Developer"],
         language: "id",
         inputMode: "UPLOAD"
       }
@@ -78,7 +78,7 @@ describe("ai cv analyzer routes", () => {
     });
   });
 
-  test("rejects unsupported mime type, oversized files, missing reference CV, and unsafe bookmark access", async () => {
+  test("rejects unsupported mime type, oversized files, and missing reference CV", async () => {
     const invalidMimeContext = createAiCvAnalyzerRouteContext();
     const invalidMimeResponse = await injectRoute(invalidMimeContext.app, {
       method: "POST",
@@ -121,24 +121,9 @@ describe("ai cv analyzer routes", () => {
       }
     );
 
-    const bookmarkContext = createAiCvAnalyzerRouteContext({
-      hasBookmark: false
-    });
-    const bookmarkResponse = await injectRoute(bookmarkContext.app, {
-      method: "POST",
-      url: "/api/v1/ai/cv-analyzer",
-      headers: authHeaders("user-1", "req_ai_cv_bookmark_missing"),
-      formData: buildCvFormData({
-        overrides: {
-          compareSource: "BOOKMARK"
-        }
-      })
-    });
-
     expect(invalidMimeResponse.status).toBe(422);
     expect(oversizedResponse.status).toBe(413);
     expect(missingReferenceResponse.status).toBe(422);
-    expect(bookmarkResponse.status).toBe(404);
     expect(invalidMimeResponse.body).toMatchObject({
       error: {
         details: [
@@ -158,9 +143,6 @@ describe("ai cv analyzer routes", () => {
           })
         ]
       }
-    });
-    expect(bookmarkResponse.body).toMatchObject({
-      error: { code: "BOOKMARK_NOT_FOUND" }
     });
   });
 
@@ -183,10 +165,13 @@ describe("ai cv analyzer routes", () => {
       success: true,
       message: "Analisis CV berhasil diselesaikan",
       data: {
-        jobId: jobRecord().id,
+        jobRoles: ["Backend Developer"],
         language: "id",
-        generatedCv: {
-          available: false
+        analysisResult: {
+          schemaVersion: "cv-analysis-v2",
+          generatedCv: {
+            available: false
+          }
         }
       },
       meta: null
@@ -550,7 +535,7 @@ function buildCvFormData(
   const formData = new FormData();
   const includeFile = options.includeFile ?? true;
 
-  formData.set("jobId", jobRecord().id);
+  formData.set("jobRoles", "Backend Developer");
   formData.set("language", options.overrides?.language ?? "id");
   formData.set("inputMode", options.overrides?.inputMode ?? "UPLOAD");
   formData.set(

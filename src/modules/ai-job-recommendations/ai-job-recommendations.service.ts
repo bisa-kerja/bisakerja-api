@@ -227,9 +227,12 @@ export function buildTalentProfile(
   const missingSkills = dedupeCaseInsensitive(
     cvAnalysisResult.jobFitAlignment.missingSignals
   );
-  const toolsAndTechnologies = dedupeCaseInsensitive(
-    cvAnalysisResult.keywordOptimization.recommendedKeywords
-  );
+  const toolsAndTechnologies = dedupeCaseInsensitive([
+    ...cvAnalysisResult.topActionables,
+    ...cvAnalysisResult.sectionReviews.flatMap(
+      (section) => section.actionPoints
+    )
+  ]);
 
   return {
     targetRole:

@@ -5,14 +5,14 @@ import { analyzeCvSchema } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema"
 describe("ai cv analyzer schema", () => {
   test("parses multipart metadata and defaults optional fields", () => {
     const result = analyzeCvSchema.parse({
-      jobId: "11111111-1111-4111-8111-111111111111",
+      jobRoles: ["Backend Developer"],
       language: "id",
       inputMode: "UPLOAD",
       persistResult: "true"
     });
 
     expect(result).toEqual({
-      jobId: "11111111-1111-4111-8111-111111111111",
+      jobRoles: ["Backend Developer"],
       language: "id",
       inputMode: "UPLOAD",
       compareSource: "JOB_SEARCH",
@@ -22,7 +22,7 @@ describe("ai cv analyzer schema", () => {
 
   test("rejects cvFileId for upload mode and unknown fields", () => {
     const uploadWithCvFileId = analyzeCvSchema.safeParse({
-      jobId: "11111111-1111-4111-8111-111111111111",
+      jobRoles: ["Backend Developer"],
       language: "id",
       inputMode: "UPLOAD",
       cvFileId: "22222222-2222-4222-8222-222222222222"
@@ -34,7 +34,7 @@ describe("ai cv analyzer schema", () => {
 
     expect(() =>
       analyzeCvSchema.parse({
-        jobId: "11111111-1111-4111-8111-111111111111",
+        jobRoles: ["Backend Developer"],
         language: "id",
         inputMode: "UPLOAD",
         profile: { careerStatus: "EARLY_CAREER" }
@@ -44,7 +44,7 @@ describe("ai cv analyzer schema", () => {
 
   test("returns friendly message for invalid cvFileId and persistResult", () => {
     const invalidCvFileId = analyzeCvSchema.safeParse({
-      jobId: "11111111-1111-4111-8111-111111111111",
+      jobRoles: ["Backend Developer"],
       language: "id",
       inputMode: "REFERENCE",
       cvFileId: "not-a-uuid"
@@ -55,7 +55,7 @@ describe("ai cv analyzer schema", () => {
     );
 
     const invalidPersistResult = analyzeCvSchema.safeParse({
-      jobId: "11111111-1111-4111-8111-111111111111",
+      jobRoles: ["Backend Developer"],
       language: "id",
       inputMode: "UPLOAD",
       persistResult: "yes"

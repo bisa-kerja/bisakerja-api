@@ -94,7 +94,7 @@ describe("PrismaAiCvAnalyzerRepository", () => {
 
       await repository.createSnapshot({
         userId: user.id,
-        jobId: job.id,
+        jobRoles: ["Backend Developer"],
         cvFileMetadataId: metadata.id,
         language: "ID",
         inputMode: "UPLOAD",
@@ -111,39 +111,40 @@ describe("PrismaAiCvAnalyzerRepository", () => {
             sizeBytes: metadata.sizeBytes,
             storageKey: metadata.storageKey
           },
-          job: {
-            id: job.id,
-            title: job.title,
-            description: job.description,
-            requirements: [],
-            skills: [],
-            experienceLevel: job.experienceLevel
-          }
+          jobRoles: ["Backend Developer"]
         },
         response: {
-          overallImpression: {
-            score: 80,
-            summary: "Relevant for the role."
-          },
+          schemaVersion: "cv-analysis-v2",
           jobFitAlignment: {
             score: 75,
-            summary: "Core backend skills are visible.",
-            matchedSignals: ["TypeScript"],
-            missingSignals: ["Docker"]
+            summary: "Core backend skills are visible."
           },
           atsFriendliness: {
             score: 70,
-            issues: ["Section headings are inconsistent."]
+            summary:
+              "Readable structure, but some ATS keyword coverage is still weak."
           },
-          keywordOptimization: {
-            recommendedKeywords: ["Docker"],
-            reason: "Appears in the job requirements."
-          },
-          experienceQuantification: {
-            score: 60,
-            suggestions: ["Add measurable API impact."]
-          },
-          actionableImprovements: ["Add a stronger backend summary."],
+          overallImpression: "Relevant for the role.",
+          topActionables: ["Add a stronger backend summary."],
+          sectionReviews: [
+            {
+              sectionName: "Work Experience",
+              analysis: "Experience is relevant but impact is not measured.",
+              actionPoints: ["Add measurable API impact."],
+              whyItsImportantForYou:
+                "Measured impact makes contribution easier to evaluate."
+            }
+          ],
+          jobRecommendations: [
+            {
+              jobId: job.id,
+              title: job.title,
+              companyName: "CV Analyzer Company",
+              matchScore: 80,
+              reason: "Role matches backend signals.",
+              nextStep: "Improve deployment evidence."
+            }
+          ],
           model: {
             name: "fixture-cv-analyzer-model",
             version: "test-2026-01"
@@ -152,22 +153,6 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         }
       });
 
-      const visibleJob = await repository.findVisibleJob(job.id);
-      const hasBookmark = await repository.hasOwnedBookmarkForJob(
-        user.id,
-        job.id
-      );
-      const otherUser = await context.prisma.user.create({
-        data: {
-          email: `cv-other-${context.runId}@example.test`,
-          username: `cv-other-${context.runId}`,
-          emailVerifiedAt: new Date("2026-04-22T00:00:00.000Z")
-        }
-      });
-      const otherUserHasBookmark = await repository.hasOwnedBookmarkForJob(
-        otherUser.id,
-        job.id
-      );
       const activeMetadata = await repository.findActiveCvFileMetadata(
         user.id,
         new Date("2026-04-23T00:00:00.000Z")
@@ -192,9 +177,6 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         }
       });
 
-      expect(visibleJob).toMatchObject({ id: job.id, title: job.title });
-      expect(hasBookmark).toBe(true);
-      expect(otherUserHasBookmark).toBe(false);
       expect(activeMetadata).toMatchObject({
         id: replacementMetadata.id,
         isActive: true

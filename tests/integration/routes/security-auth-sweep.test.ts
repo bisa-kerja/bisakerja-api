@@ -7,7 +7,6 @@ import type {
   AiCvAnalyzerRepository,
   CvFileStorage
 } from "@/modules/ai-cv-analyzer";
-import type { AiJobFitRepository } from "@/modules/ai-job-fit";
 import type { AuthRepository } from "@/modules/auth";
 import type { ApplicationsRepository } from "@/modules/applications";
 import type { BookmarksRepository } from "@/modules/bookmarks";
@@ -150,12 +149,6 @@ const protectedEndpoints: ProtectedEndpoint[] = [
     url: "/api/v1/me/applications"
   },
   {
-    id: "ai_job_fit",
-    method: "POST",
-    url: "/api/v1/ai/job-fit",
-    body: { jobId }
-  },
-  {
     id: "ai_cv_analyzer",
     method: "POST",
     url: "/api/v1/ai/cv-analyzer",
@@ -191,11 +184,6 @@ function createProtectedApp(config = testConfig()) {
       applications: {
         authMiddleware,
         repository: createUnexpectedCallProxy() as ApplicationsRepository
-      },
-      aiJobFit: {
-        authMiddleware,
-        repository: createUnexpectedCallProxy() as AiJobFitRepository,
-        modelApiClient: createUnexpectedCallProxy() as ModelApiClient
       },
       aiCvAnalyzer: {
         authMiddleware,

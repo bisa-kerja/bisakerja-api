@@ -44,29 +44,31 @@ export type JobFitModelResponseFixture = {
 };
 
 export type CvAnalyzerModelResponseFixture = {
-  overallImpression: {
-    score: number;
-    summary: string;
-  };
+  schemaVersion: "cv-analysis-v2";
   jobFitAlignment: {
     score: number;
     summary: string;
-    matchedSignals: string[];
-    missingSignals: string[];
   };
   atsFriendliness: {
     score: number;
-    issues: string[];
+    summary: string;
   };
-  keywordOptimization: {
-    recommendedKeywords: string[];
+  overallImpression: string;
+  topActionables: string[];
+  sectionReviews: {
+    sectionName: string;
+    analysis: string;
+    actionPoints: string[];
+    whyItsImportantForYou: string;
+  }[];
+  jobRecommendations: {
+    jobId: string | null;
+    title: string;
+    companyName: string | null;
+    matchScore: number;
     reason: string;
-  };
-  experienceQuantification: {
-    score: number;
-    suggestions: string[];
-  };
-  actionableImprovements: string[];
+    nextStep: string;
+  }[];
   model: {
     name: string;
     version: string;
@@ -163,29 +165,54 @@ export const modelApiFixtures = {
     analyzedAt: "2026-04-23T00:00:00.000Z"
   },
   validCvAnalyzerResponse: {
-    overallImpression: {
-      score: 85,
-      summary: "The CV is relevant for an entry-level backend role."
-    },
+    schemaVersion: "cv-analysis-v2",
     jobFitAlignment: {
       score: 78,
-      summary: "Core skills are visible, but deployment depth is limited.",
-      matchedSignals: ["TypeScript", "REST API"],
-      missingSignals: ["Docker", "CI/CD"]
+      summary: "Core skills are visible, but deployment depth is limited."
     },
     atsFriendliness: {
       score: 74,
-      issues: ["Section headings are inconsistent."]
+      summary: "Structure is readable, but some keywords are still weak."
     },
-    keywordOptimization: {
-      recommendedKeywords: ["Docker", "CI/CD"],
-      reason: "These keywords appear in the job requirements."
-    },
-    experienceQuantification: {
-      score: 70,
-      suggestions: ["Add endpoint counts or measurable project impact."]
-    },
-    actionableImprovements: ["Add a stronger backend-focused profile summary."],
+    overallImpression:
+      "The CV is relevant for an entry-level backend role, with the biggest gaps in deployment evidence and measurable impact.",
+    topActionables: [
+      "Add a stronger backend-focused profile summary.",
+      "Add measurable API or project impact.",
+      "Make deployment experience more explicit if available."
+    ],
+    sectionReviews: [
+      {
+        sectionName: "Relevant Skills",
+        analysis: "Core backend skills are present but not grouped clearly.",
+        actionPoints: [
+          "Group skills into Backend, Database, and Deployment.",
+          "Prioritize skills that match the target role."
+        ],
+        whyItsImportantForYou:
+          "Recruiters and ATS often scan technical keywords before reading experience details."
+      },
+      {
+        sectionName: "Work Experience",
+        analysis:
+          "Relevant experience exists, but impact is not quantified well.",
+        actionPoints: [
+          "Add metrics such as endpoint count, latency improvement, or system scale."
+        ],
+        whyItsImportantForYou:
+          "Measured impact helps employers understand contribution, not only responsibilities."
+      }
+    ],
+    jobRecommendations: [
+      {
+        jobId: "11111111-1111-4111-8111-111111111111",
+        title: "Backend Developer",
+        companyName: "Nusantara Tech",
+        matchScore: 82,
+        reason: "Role ini cocok dengan sinyal TypeScript dan REST API pada CV.",
+        nextStep: "Perjelas bukti pengalaman deployment sebelum melamar."
+      }
+    ],
     model: {
       name: "fixture-cv-analyzer-model",
       version: "test-2026-01"

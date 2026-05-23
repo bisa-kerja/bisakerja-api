@@ -110,41 +110,44 @@ describe("PrismaAiJobRecommendationsRepository", () => {
           expiresAt: new Date("2026-05-19T00:00:00.000Z")
         }
       });
+      const cvAnalysisData: Parameters<
+        typeof context.prisma.cvAnalysisResult.create
+      >[0]["data"] = {
+        userId: user.id,
+        jobListingId: job.id,
+        cvFileMetadataId: cvFile.id,
+        language: "ID",
+        inputMode: "REFERENCE",
+        compareSource: "JOB_SEARCH",
+        schemaVersion: "cv-analysis-v2",
+        overallImpression: "Relevan untuk backend role",
+        jobFitAlignment: {
+          score: 80,
+          summary: "Cocok",
+          matchedSignals: ["TypeScript"],
+          missingSignals: ["Docker"]
+        },
+        atsFriendliness: {
+          score: 74,
+          summary: "Struktur cukup rapi tetapi keyword deployment masih lemah"
+        },
+        topActionables: ["Tambah pengalaman deploy"],
+        sectionReviews: [
+          {
+            sectionName: "Relevant Skills",
+            analysis:
+              "Skill relevan sudah ada, tetapi belum dikelompokkan jelas.",
+            actionPoints: ["Kelompokkan skill backend dan deployment."],
+            whyItsImportantForYou:
+              "Keyword teknis yang jelas membantu screening awal."
+          }
+        ],
+        modelName: "fixture-cv-model",
+        modelVersion: "test-2026-01",
+        analyzedAt: new Date("2026-05-18T08:00:00.000Z")
+      };
       const cvAnalysis = await context.prisma.cvAnalysisResult.create({
-        data: {
-          userId: user.id,
-          jobListingId: job.id,
-          cvFileMetadataId: cvFile.id,
-          language: "ID",
-          inputMode: "REFERENCE",
-          compareSource: "JOB_SEARCH",
-          overallImpression: {
-            score: 85,
-            summary: "Relevan untuk backend role"
-          },
-          jobFitAlignment: {
-            score: 80,
-            summary: "Cocok",
-            matchedSignals: ["TypeScript"],
-            missingSignals: ["Docker"]
-          },
-          atsFriendliness: {
-            score: 74,
-            issues: ["Section headings inconsistent"]
-          },
-          keywordOptimization: {
-            recommendedKeywords: ["REST API"],
-            reason: "Sesuai requirement"
-          },
-          experienceQuantification: {
-            score: 70,
-            suggestions: ["Tambahkan metrik impact"]
-          },
-          actionableImprovements: ["Tambah pengalaman deploy"],
-          modelName: "fixture-cv-model",
-          modelVersion: "test-2026-01",
-          analyzedAt: new Date("2026-05-18T08:00:00.000Z")
-        }
+        data: cvAnalysisData
       });
 
       const resolvedCv = await repository.findCvAnalysisResultByIdForUser(

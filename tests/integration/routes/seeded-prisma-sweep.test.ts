@@ -4,7 +4,6 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { createApp } from "@/app";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer";
-import { PrismaAiJobFitRepository } from "@/modules/ai-job-fit";
 import { PrismaAuthRepository } from "@/modules/auth";
 import { PrismaApplicationsRepository } from "@/modules/applications";
 import { PrismaBookmarksRepository } from "@/modules/bookmarks";
@@ -99,14 +98,6 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       },
       users: {
         repository: new PrismaUsersRepository(prisma)
-      },
-      aiJobFit: {
-        repository: new PrismaAiJobFitRepository(prisma),
-        modelApiClient: createModelApiClient(config, {
-          mockResponses: {
-            jobFit: modelApiFixtures.validJobFitResponse
-          }
-        })
       },
       aiCvAnalyzer: {
         repository: new PrismaAiCvAnalyzerRepository(prisma),
@@ -523,17 +514,6 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       },
       meta: null
     });
-
-    const aiJobFit = await request(app, requestResults, {
-      method: "POST",
-      url: "/api/v1/ai/job-fit",
-      headers: authHeadersForSeedUser,
-      body: {
-        jobId: seededJobForDetail.id,
-        persistResult: true
-      }
-    });
-    expect(aiJobFit.status).toBe(200);
 
     const aiCvAnalyzer = await request(app, requestResults, {
       method: "POST",

@@ -17,6 +17,7 @@ export type CvAnalysisResolverRecord = {
   id: string;
   userId: string;
   jobListingId: string;
+  schemaVersion: string;
   analyzedAt: Date;
   job: JobRecord;
   jobFitAlignment: {
@@ -25,11 +26,13 @@ export type CvAnalysisResolverRecord = {
     matchedSignals: string[];
     missingSignals: string[];
   };
-  keywordOptimization: {
-    recommendedKeywords: string[];
-    reason: string;
-  };
-  actionableImprovements: string[];
+  topActionables: string[];
+  sectionReviews: {
+    sectionName: string;
+    analysis: string;
+    actionPoints: string[];
+    whyItsImportantForYou: string;
+  }[];
 };
 
 export type RecommendationCandidateRecord = {

@@ -62,14 +62,7 @@ const cvPayload: CvAnalyzerModelPayload = {
     sizeBytes: 1024,
     storageKey: "cv/user-1/cv-1.pdf"
   },
-  job: {
-    id: "job-1",
-    title: "Backend Developer",
-    description: "Build backend APIs",
-    requirements: [{ type: "SKILL", value: "TypeScript", priority: "HIGH" }],
-    skills: ["TypeScript"],
-    experienceLevel: "ENTRY_LEVEL"
-  }
+  jobRoles: ["Backend Developer"]
 };
 
 const recommendationPayload: JobRecommendationModelPayload = {

@@ -274,17 +274,25 @@ function createContext(): {
       jobListingId: jobA.id,
       analyzedAt: new Date("2026-05-18T00:00:00.000Z"),
       job: jobA,
+      schemaVersion: "cv-analysis-v2",
       jobFitAlignment: {
         score: 80,
         summary: "Cocok",
         matchedSignals: ["TypeScript", "PostgreSQL"],
         missingSignals: ["Docker"]
       },
-      keywordOptimization: {
-        recommendedKeywords: ["REST API", "Docker"],
-        reason: "Kebutuhan role backend"
-      },
-      actionableImprovements: ["Tambah pengalaman deploy"]
+      topActionables: ["Tambah pengalaman deploy"],
+      sectionReviews: [
+        {
+          sectionName: "Relevant Skills",
+          analysis: "Skill inti sudah relevan tetapi belum rapi.",
+          actionPoints: [
+            "Kelompokkan skill backend, database, dan deployment."
+          ],
+          whyItsImportantForYou:
+            "Keyword teknis yang rapi memudahkan ATS membaca CV."
+        }
+      ]
     },
     preference: {
       targetRoles: ["Backend Developer"],

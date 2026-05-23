@@ -152,40 +152,39 @@ export const cvAnalyzerModelPayloadSchema = z.strictObject({
     sizeBytes: z.int().positive(),
     storageKey: z.string().min(1).max(512)
   }),
-  job: z.strictObject({
-    id: z.string().min(1).max(200),
-    title: z.string().min(1).max(200),
-    description: z.string().min(1).max(20000).nullable(),
-    requirements: z.array(jobRequirementSchema).max(200),
-    skills: z.array(z.string().min(1).max(80)).max(200),
-    experienceLevel: z.enum(allowedExperienceLevels).nullable()
-  })
+  jobRoles: z.array(z.string().min(1).max(120)).min(1).max(10)
+});
+
+const cvAnalyzerSectionReviewSchema = z.strictObject({
+  sectionName: z.string().min(1).max(120),
+  analysis: z.string().min(1).max(2000),
+  actionPoints: z.array(z.string().min(1).max(500)).min(1).max(10),
+  whyItsImportantForYou: z.string().min(1).max(2000)
+});
+
+const cvAnalyzerJobRecommendationSchema = z.strictObject({
+  jobId: z.string().min(1).max(200).nullable(),
+  title: z.string().min(1).max(200),
+  companyName: z.string().min(1).max(200).nullable(),
+  matchScore: scoreSchema,
+  reason: z.string().min(1).max(1000),
+  nextStep: z.string().min(1).max(500)
 });
 
 export const cvAnalyzerModelResponseSchema = z.strictObject({
-  overallImpression: z.strictObject({
+  schemaVersion: z.literal("cv-analysis-v2"),
+  jobFitAlignment: z.strictObject({
     score: scoreSchema,
     summary: z.string().min(1).max(2000)
   }),
-  jobFitAlignment: z.strictObject({
-    score: scoreSchema,
-    summary: z.string().min(1).max(2000),
-    matchedSignals: z.array(z.string().min(1).max(200)).max(100),
-    missingSignals: z.array(z.string().min(1).max(200)).max(100)
-  }),
   atsFriendliness: z.strictObject({
     score: scoreSchema,
-    issues: z.array(z.string().min(1).max(500)).max(50)
+    summary: z.string().min(1).max(2000)
   }),
-  keywordOptimization: z.strictObject({
-    recommendedKeywords: z.array(z.string().min(1).max(120)).max(100),
-    reason: z.string().min(1).max(2000)
-  }),
-  experienceQuantification: z.strictObject({
-    score: scoreSchema,
-    suggestions: z.array(z.string().min(1).max(500)).max(50)
-  }),
-  actionableImprovements: z.array(z.string().min(1).max(500)).max(50),
+  overallImpression: z.string().min(1).max(3000),
+  topActionables: z.array(z.string().min(1).max(500)).min(1).max(3),
+  sectionReviews: z.array(cvAnalyzerSectionReviewSchema).max(20),
+  jobRecommendations: z.array(cvAnalyzerJobRecommendationSchema).max(5),
   model: z.strictObject({
     name: z.string().min(1).max(120),
     version: z.string().min(1).max(120)

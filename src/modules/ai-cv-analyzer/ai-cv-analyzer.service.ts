@@ -16,8 +16,6 @@ import type {
   CvFileStorage,
   UploadedCvFile
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
-import { jobsErrorCodes } from "@/modules/jobs/jobs.constants";
-import type { JobRecord } from "@/modules/jobs";
 import type {
   CvAnalyzerModelPayload,
   CvAnalyzerModelResponse
@@ -39,26 +37,6 @@ export class AiCvAnalyzerService {
     input: AnalyzeCvInput,
     uploadedFile: UploadedCvFile | null
   ): Promise<CvAnalysisResult> {
-    const job = await this.repository.findVisibleJob(input.jobId);
-    const hasOwnedBookmark =
-      input.compareSource === "BOOKMARK"
-        ? await this.repository.hasOwnedBookmarkForJob(userId, input.jobId)
-        : true;
-
-    if (!job) {
-      throw new NotFoundError(
-        "Lowongan tidak ditemukan",
-        jobsErrorCodes.jobNotFound
-      );
-    }
-
-    if (!hasOwnedBookmark) {
-      throw new NotFoundError(
-        "Bookmark tidak ditemukan",
-        aiCvAnalyzerErrorCodes.bookmarkNotFound
-      );
-    }
-
     let cleanupTarget: { fileId: string; storageKey: string } | null = null;
 
     try {
@@ -68,8 +46,7 @@ export class AiCvAnalyzerService {
       const payload = buildCvAnalyzerPayload(
         requestId,
         cvSource.input,
-        cvSource.metadata,
-        job
+        cvSource.metadata
       );
       const response = await this.options.modelApiClient.analyzeCv(payload);
       const persisted = input.persistResult;
@@ -77,7 +54,7 @@ export class AiCvAnalyzerService {
       if (persisted) {
         await this.repository.createSnapshot({
           userId,
-          jobId: job.id,
+          jobRoles: cvSource.input.jobRoles,
           cvFileMetadataId: cvSource.metadata.id,
           language: toModelLanguage(cvSource.input.language),
           inputMode: cvSource.input.inputMode,
@@ -89,7 +66,8 @@ export class AiCvAnalyzerService {
 
       return {
         resource: mapCvAnalysisResource(
-          job.id,
+          crypto.randomUUID(),
+          cvSource.input.jobRoles,
           cvSource.input.language,
           response
         ),
@@ -314,8 +292,7 @@ export async function cleanupExpiredCvFiles(
 export function buildCvAnalyzerPayload(
   requestId: string,
   input: AnalyzeCvInput,
-  metadata: CvFileMetadataRecord,
-  job: JobRecord
+  metadata: CvFileMetadataRecord
 ): CvAnalyzerModelPayload {
   return {
     requestId,
@@ -329,41 +306,35 @@ export function buildCvAnalyzerPayload(
       sizeBytes: metadata.sizeBytes,
       storageKey: metadata.storageKey
     },
-    job: {
-      id: job.id,
-      title: job.title,
-      description: job.description,
-      requirements: job.requirements.map((requirement) => ({
-        type: requirement.type,
-        value: requirement.value,
-        priority: requirement.priority ?? "LOW"
-      })),
-      skills: job.skills.map((skill) => skill.name),
-      experienceLevel: job.experienceLevel
-    }
+    jobRoles: input.jobRoles
   };
 }
 
 export function mapCvAnalysisResource(
-  jobId: string,
+  analysisId: string,
+  jobRoles: string[],
   language: "id" | "en",
   response: CvAnalyzerModelResponse
 ): CvAnalysisResource {
   return {
-    jobId,
+    jobRoles,
     language,
-    overallImpression: response.overallImpression,
-    jobFitAlignment: response.jobFitAlignment,
-    atsFriendliness: response.atsFriendliness,
-    keywordOptimization: response.keywordOptimization,
-    experienceQuantification: response.experienceQuantification,
-    actionableImprovements: response.actionableImprovements,
-    generatedCv: {
-      available: false,
-      note: generatedCvUnavailableNote
-    },
-    model: response.model,
-    analyzedAt: response.analyzedAt
+    analysisResult: {
+      id: analysisId,
+      schemaVersion: response.schemaVersion,
+      jobFitAlignment: response.jobFitAlignment,
+      atsFriendliness: response.atsFriendliness,
+      overallImpression: response.overallImpression,
+      topActionables: response.topActionables,
+      sectionReviews: response.sectionReviews,
+      jobRecommendations: response.jobRecommendations,
+      generatedCv: {
+        available: false,
+        note: generatedCvUnavailableNote
+      },
+      model: response.model,
+      analyzedAt: response.analyzedAt
+    }
   };
 }
 

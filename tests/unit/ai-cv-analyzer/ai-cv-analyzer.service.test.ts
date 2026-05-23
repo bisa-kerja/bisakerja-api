@@ -26,17 +26,17 @@ describe("AiCvAnalyzerService", () => {
     const payload = buildCvAnalyzerPayload(
       "req_cv_payload",
       {
-        jobId: jobRecord().id,
+        jobRoles: ["Backend Developer"],
         language: "id",
         inputMode: "UPLOAD",
         compareSource: "JOB_SEARCH",
         persistResult: false
       },
-      metadata,
-      jobRecord()
+      metadata
     );
     const resource = mapCvAnalysisResource(
-      jobRecord().id,
+      "analysis-1",
+      ["Backend Developer"],
       "id",
       modelApiFixtures.validCvAnalyzerResponse
     );
@@ -51,10 +51,14 @@ describe("AiCvAnalyzerService", () => {
       }
     });
     expect(resource).toMatchObject({
-      jobId: jobRecord().id,
+      jobRoles: ["Backend Developer"],
       language: "id",
-      generatedCv: {
-        available: false
+      analysisResult: {
+        id: "analysis-1",
+        schemaVersion: "cv-analysis-v2",
+        generatedCv: {
+          available: false
+        }
       }
     });
   });
@@ -77,7 +81,7 @@ describe("AiCvAnalyzerService", () => {
       "user-1",
       "req_cv_success",
       {
-        jobId: jobRecord().id,
+        jobRoles: ["Backend Developer"],
         language: "id",
         inputMode: "UPLOAD",
         compareSource: "JOB_SEARCH",
@@ -158,7 +162,7 @@ describe("AiCvAnalyzerService", () => {
       "user-1",
       "req_cv_reference_fallback",
       {
-        jobId: jobRecord().id,
+        jobRoles: ["Backend Developer"],
         language: "id",
         inputMode: "REFERENCE",
         compareSource: "JOB_SEARCH",
@@ -170,7 +174,7 @@ describe("AiCvAnalyzerService", () => {
       "user-1",
       "req_cv_reference_explicit",
       {
-        jobId: jobRecord().id,
+        jobRoles: ["Backend Developer"],
         language: "id",
         inputMode: "REFERENCE",
         cvFileId: activeMetadata.id,
@@ -193,7 +197,7 @@ describe("AiCvAnalyzerService", () => {
         "user-1",
         "req_cv_reference_forbidden",
         {
-          jobId: jobRecord().id,
+          jobRoles: ["Backend Developer"],
           language: "id",
           inputMode: "REFERENCE",
           cvFileId: otherUserMetadata.id,
@@ -211,44 +215,7 @@ describe("AiCvAnalyzerService", () => {
     }
   });
 
-  test("returns safe validation and ownership errors, and cleans up uploaded file on downstream failure", async () => {
-    const missingBookmarkRepository = new InMemoryAiCvAnalyzerRepository({
-      hasBookmark: false
-    });
-    const missingBookmarkService = new AiCvAnalyzerService(
-      missingBookmarkRepository,
-      {
-        modelApiClient: {
-          analyzeJobFit: () => Promise.reject(new Error("Not used")),
-          analyzeCv: () =>
-            Promise.resolve(modelApiFixtures.validCvAnalyzerResponse)
-        },
-        storage: new InMemoryCvFileStorage(),
-        cvRetentionDays: 1
-      }
-    );
-
-    try {
-      await missingBookmarkService.analyzeCv(
-        "user-1",
-        "req_cv_bookmark_missing",
-        {
-          jobId: jobRecord().id,
-          language: "id",
-          inputMode: "UPLOAD",
-          compareSource: "BOOKMARK",
-          persistResult: false
-        },
-        uploadedCvFile()
-      );
-      throw new Error("Expected bookmark ownership failure");
-    } catch (error) {
-      expect(error).toMatchObject({
-        statusCode: 404,
-        code: "BOOKMARK_NOT_FOUND"
-      });
-    }
-
+  test("cleans up uploaded file on downstream failure", async () => {
     const cleanupRepository = new InMemoryAiCvAnalyzerRepository();
     const cleanupStorage = new InMemoryCvFileStorage();
     const cleanupService = new AiCvAnalyzerService(cleanupRepository, {
@@ -266,7 +233,7 @@ describe("AiCvAnalyzerService", () => {
         "user-1",
         "req_cv_cleanup_failure",
         {
-          jobId: jobRecord().id,
+          jobRoles: ["Backend Developer"],
           language: "id",
           inputMode: "UPLOAD",
           compareSource: "JOB_SEARCH",

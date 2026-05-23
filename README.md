@@ -32,7 +32,7 @@ This repository is responsible for:
 - Auth, session, email verification, password reset, and Google OAuth workflows
 - User profile, preference, bookmark, CV file, and application tracker workflows
 - Job search and job detail access over normalized job records
-- AI job fit, AI CV analyzer, and AI job recommendation orchestration through the Model API boundary
+- AI CV Analyzer orchestration through the Model API boundary, including CV feedback, fit alignment, and embedded job recommendations
 - Internal scraper sync and notification handoff endpoints protected by service credentials
 - Prisma schema, migrations, seed data, and repository-level persistence logic
 - Service-owned technical documentation and generated API artifacts
@@ -77,20 +77,20 @@ The Backend API does not own:
 
 ## MVP Modules
 
-| Module                 | Responsibility                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------------- |
-| Auth                   | Register, login, logout, refresh/session, password reset, email verification, and Google OAuth    |
-| Users                  | Account profile, onboarding state, career background, skills, and education                       |
-| Preferences            | Career status, target roles, locations, work types, salary, and notifications                     |
-| Jobs                   | Search, filter, sort, list, detail, company data, source data, and apply links                    |
-| Bookmarks              | Save, remove, list saved jobs, duplicate handling, and ownership checks                           |
-| Applications           | Track user-specific applications, status changes, and status history                              |
-| CV Files               | Upload reusable user CV PDFs and expose safe active-file metadata                                 |
-| AI Job Fit             | Prepare inference context and return fit score, skill gap, and next steps                         |
-| AI CV Analyzer         | Analyze uploaded or stored CV PDFs against a selected job and return improvement signals          |
-| AI Job Recommendations | Generate persisted recommendation runs from owned CV analysis and backend-selected candidate jobs |
-| Internal               | Accept scraper job sync payloads and notification handoff events through service-token auth       |
-| Health                 | Liveness and readiness endpoints                                                                  |
+| Module                 | Responsibility                                                                                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth                   | Register, login, logout, refresh/session, password reset, email verification, and Google OAuth                                                                  |
+| Users                  | Account profile, onboarding state, career background, skills, and education                                                                                     |
+| Preferences            | Career status, target roles, locations, work types, salary, and notifications                                                                                   |
+| Jobs                   | Search, filter, sort, list, detail, company data, source data, and apply links                                                                                  |
+| Bookmarks              | Save, remove, list saved jobs, duplicate handling, and ownership checks                                                                                         |
+| Applications           | Track user-specific applications, status changes, and status history                                                                                            |
+| CV Files               | Upload reusable user CV PDFs and expose safe active-file metadata                                                                                               |
+| AI CV Analyzer         | Analyze uploaded or stored CV PDFs against target job roles; return fit alignment, ATS feedback, section reviews, top actions, and embedded job recommendations |
+| AI Job Fit             | Retired standalone route; fit-style output now lives in CV Analyzer `analysisResult.jobFitAlignment`                                                            |
+| AI Job Recommendations | Retired standalone route; compact recommendations now live in CV Analyzer `analysisResult.jobRecommendations`                                                   |
+| Internal               | Accept scraper job sync payloads and notification handoff events through service-token auth                                                                     |
+| Health                 | Liveness and readiness endpoints                                                                                                                                |
 
 Future modules such as mentoring, notification expansion, analytics, payments, and direct ATS integration are documented as future scope and should not block MVP behavior.
 
@@ -104,20 +104,18 @@ http://localhost:3000/api/v1
 
 Key route groups:
 
-| Route group            | Prefix                           | Auth class                               |
-| ---------------------- | -------------------------------- | ---------------------------------------- |
-| Health                 | `/health/live`, `/health/ready`  | Public or infrastructure-restricted      |
-| Auth                   | `/api/v1/auth`                   | Public plus authenticated session routes |
-| Users                  | `/api/v1/me`                     | Authenticated                            |
-| Preferences            | `/api/v1/me/preferences`         | Authenticated or onboarding access token |
-| Jobs                   | `/api/v1/jobs`                   | Public for search and detail             |
-| Bookmarks              | `/api/v1/me/bookmarks`           | Authenticated and ownership-protected    |
-| Applications           | `/api/v1/me/applications`        | Authenticated and ownership-protected    |
-| CV Files               | `/api/v1/me/cv-files`            | Authenticated or onboarding access token |
-| AI Job Fit             | `/api/v1/ai/job-fit`             | Authenticated                            |
-| AI CV Analyzer         | `/api/v1/ai/cv-analyzer`         | Authenticated                            |
-| AI Job Recommendations | `/api/v1/ai/job-recommendations` | Authenticated                            |
-| Internal               | `/api/v1/internal`               | Service-token protected                  |
+| Route group    | Prefix                          | Auth class                               |
+| -------------- | ------------------------------- | ---------------------------------------- |
+| Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted      |
+| Auth           | `/api/v1/auth`                  | Public plus authenticated session routes |
+| Users          | `/api/v1/me`                    | Authenticated                            |
+| Preferences    | `/api/v1/me/preferences`        | Authenticated or onboarding access token |
+| Jobs           | `/api/v1/jobs`                  | Public for search and detail             |
+| Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected    |
+| Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected    |
+| CV Files       | `/api/v1/me/cv-files`           | Authenticated or onboarding access token |
+| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                            |
+| Internal       | `/api/v1/internal`              | Service-token protected                  |
 
 JSON responses use a consistent envelope with `success`, `message`, `data`, `meta`, and `error` fields. See `docs/api-response-standard.md` for the full response contract.
 

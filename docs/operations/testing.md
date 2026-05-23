@@ -434,7 +434,7 @@ Contract tests must verify:
 - Request id is forwarded to the Model API client.
 - Fit score responses are normalized to score range `0` to `100`.
 - Skill gap responses include matched skills, missing skills, and recommendations when available.
-- CV Analyzer responses include overall impression, job fit alignment, ATS score, keyword feedback, quantification feedback, and actionable improvements.
+- CV Analyzer responses include schema version, job fit alignment, ATS friendliness, overall impression, bounded top actionables, and dynamic section reviews.
 - Invalid model output maps to `502 DOWNSTREAM_ERROR`.
 - Timeout or unavailable model service maps to `503 SERVICE_UNAVAILABLE` when the dependency is unavailable.
 

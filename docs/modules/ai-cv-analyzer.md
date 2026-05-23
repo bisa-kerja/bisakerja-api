@@ -1,6 +1,6 @@
 ---
 title: AI CV Analyzer Module
-description: CV upload, language selection, selected job comparison, ATS score, keyword optimization, experience quantification, improvements, privacy, and retention contract for the Bisakerja Backend API.
+description: CV upload, language selection, target role comparison, ATS friendliness, job fit alignment, dynamic section reviews, actionable feedback, privacy, and retention contract for the Bisakerja Backend API.
 owner: backend-owner
 reviewers:
   - platform-docs-maintainer
@@ -13,7 +13,7 @@ last_reviewed: 2026-05-22
 
 # AI CV Analyzer Module
 
-The AI CV Analyzer module analyzes a user's CV against a selected job listing. It validates CV input, stores reusable CV metadata when requested, loads normalized job context, calls Model API, returns product-safe analysis output, and optionally stores sanitized analysis snapshots.
+The AI CV Analyzer module analyzes a user's CV against one or more target job roles. It validates CV input, stores reusable CV metadata when requested, calls Model API, returns product-safe analysis output, and optionally stores sanitized analysis snapshots.
 
 Generated improved CV output remains outside the current contract.
 
@@ -26,11 +26,10 @@ The AI CV Analyzer module owns:
 - Selected job comparison.
 - Overall CV impression.
 - Job fit alignment.
-- ATS friendliness score.
-- Keyword optimization suggestions.
-- Experience quantification feedback.
-- Actionable improvement steps.
-- Generated CV future note.
+- ATS friendliness score and summary.
+- Top actionable improvements.
+- Dynamic section reviews based on detected CV sections.
+- Generated CV availability note.
 - CV privacy and retention rules.
 - Downstream Model API failure mapping.
 
@@ -51,11 +50,11 @@ The AI CV Analyzer module does not own:
 
 ## Endpoint Summary
 
-| Method | Path                         | Auth                                     | Purpose                                                  |
-| ------ | ---------------------------- | ---------------------------------------- | -------------------------------------------------------- |
-| `POST` | `/api/v1/me/cv-files`        | Authenticated or onboarding access token | Upload a current user's reusable PDF CV                  |
-| `GET`  | `/api/v1/me/cv-files/active` | Authenticated or onboarding access token | Read the current user's active CV metadata               |
-| `POST` | `/api/v1/ai/cv-analyzer`     | Authenticated                            | Analyze uploaded or stored PDF CV against a selected job |
+| Method | Path                         | Auth                                     | Purpose                                                    |
+| ------ | ---------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| `POST` | `/api/v1/me/cv-files`        | Authenticated or onboarding access token | Upload a current user's reusable PDF CV                    |
+| `GET`  | `/api/v1/me/cv-files/active` | Authenticated or onboarding access token | Read the current user's active CV metadata                 |
+| `POST` | `/api/v1/ai/cv-analyzer`     | Authenticated                            | Analyze uploaded or stored PDF CV against target job roles |
 
 Future endpoints for analysis history or generated CV download require separate documentation.
 
@@ -63,8 +62,6 @@ Future endpoints for analysis history or generated CV download require separate 
 
 - Route requires authenticated user identity.
 - Current-user CV upload and active CV lookup may be used before email verification so onboarding can save an optional CV.
-- Selected job must exist in normalized job data.
-- If the job is selected from bookmarks, the bookmark must belong to current user.
 - If the CV is referenced by stored file id, the file metadata must belong to current user.
 - Cross-user CV references are concealed as `404 CV_FILE_NOT_FOUND`.
 - Request body must not include trusted profile or preference data.
@@ -127,7 +124,7 @@ For multipart upload, metadata fields are sent alongside file part.
 
 ```json
 {
-  "jobId": "11111111-1111-4111-8111-111111111111",
+  "jobRoles": ["Backend Developer", "Software Engineer"],
   "language": "id",
   "inputMode": "UPLOAD",
   "compareSource": "JOB_SEARCH",
@@ -139,7 +136,7 @@ Validation:
 
 | Field           | Rule                                                                               |
 | --------------- | ---------------------------------------------------------------------------------- |
-| `jobId`         | Required internal job listing id                                                   |
+| `jobRoles`      | Required target role list, 1-10 items                                              |
 | `language`      | Required enum: `id` or `en`                                                        |
 | `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                             |
 | `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`; default `JOB_SEARCH` |
@@ -170,20 +167,7 @@ CV file validation:
     "sizeBytes": 524288,
     "storageKey": "cv/user_123/cv_file_123.pdf"
   },
-  "job": {
-    "id": "11111111-1111-4111-8111-111111111111",
-    "title": "Backend Developer",
-    "description": "Build and maintain backend APIs.",
-    "requirements": [
-      {
-        "type": "SKILL",
-        "value": "TypeScript",
-        "priority": "HIGH"
-      }
-    ],
-    "skills": ["TypeScript", "PostgreSQL"],
-    "experienceLevel": "ENTRY_LEVEL"
-  }
+  "jobRoles": ["Backend Developer", "Software Engineer"]
 }
 ```
 
@@ -202,50 +186,56 @@ Payload rules:
   "success": true,
   "message": "Analisis CV berhasil diselesaikan",
   "data": {
-    "jobId": "11111111-1111-4111-8111-111111111111",
+    "jobRoles": ["Backend Developer", "Software Engineer"],
     "language": "id",
-    "overallImpression": {
-      "score": 85,
-      "summary": "CV sudah relevan untuk role backend entry-level, terutama pada pengalaman TypeScript API."
-    },
-    "jobFitAlignment": {
-      "score": 78,
-      "summary": "Skill utama sesuai, tetapi pengalaman deployment masih perlu diperkuat.",
-      "matchedSignals": ["TypeScript", "REST API", "PostgreSQL"],
-      "missingSignals": ["Docker", "CI/CD"]
-    },
-    "atsFriendliness": {
-      "score": 74,
-      "issues": [
-        "Beberapa section belum memakai heading standar.",
-        "Keyword deployment belum cukup terlihat."
-      ]
-    },
-    "keywordOptimization": {
-      "recommendedKeywords": ["Docker", "CI/CD", "API Documentation"],
-      "reason": "Keyword ini muncul pada requirement dan relevan dengan backend role."
-    },
-    "experienceQuantification": {
-      "score": 70,
-      "suggestions": [
-        "Tambahkan metrik jumlah endpoint yang dibuat.",
-        "Tambahkan dampak performa atau reliability jika tersedia."
-      ]
-    },
-    "actionableImprovements": [
-      "Tambahkan ringkasan 2-3 kalimat yang menonjolkan backend API experience.",
-      "Tambahkan keyword Docker jika memang pernah digunakan.",
-      "Ubah bullet experience agar menyertakan angka atau dampak."
-    ],
-    "generatedCv": {
-      "available": false,
-      "note": "Generated CV is future scope."
-    },
-    "model": {
-      "name": "cv-analyzer-model",
-      "version": "v1"
-    },
-    "analyzedAt": "2026-04-22T00:00:00.000Z"
+    "analysisResult": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "schemaVersion": "cv-analysis-v2",
+      "jobFitAlignment": {
+        "score": 78,
+        "summary": "CV sudah cukup selaras dengan role Backend Developer karena menonjolkan REST API, PostgreSQL, dan pengalaman project backend. Kesesuaian bisa naik jika pengalaman deployment dibuat lebih eksplisit."
+      },
+      "atsFriendliness": {
+        "score": 84,
+        "summary": "Struktur CV cukup mudah dibaca ATS, tetapi beberapa keyword penting masih belum dirangkum jelas pada section skill."
+      },
+      "overallImpression": "CV menunjukkan fondasi backend yang kuat untuk kandidat junior-mid, dengan ruang perbaikan terbesar pada bukti dampak kerja dan penajaman keyword sesuai target role.",
+      "topActionables": [
+        "Tambahkan 2-3 bullet terukur pada pengalaman backend, misalnya peningkatan performa, jumlah user, atau skala data.",
+        "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
+        "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
+      ],
+      "sectionReviews": [
+        {
+          "sectionName": "Relevant Skills",
+          "analysis": "Skill backend relevan sudah muncul, tetapi belum semuanya dikelompokkan dengan jelas.",
+          "actionPoints": [
+            "Kelompokkan skill menjadi Backend, Database, Testing, dan Deployment.",
+            "Prioritaskan skill yang paling sering diminta pada role target."
+          ],
+          "whyItsImportantForYou": "ATS dan recruiter biasanya mencari keyword skill spesifik sebelum membaca detail pengalaman."
+        }
+      ],
+      "jobRecommendations": [
+        {
+          "jobId": "11111111-1111-4111-8111-111111111111",
+          "title": "Backend Developer",
+          "companyName": "Nusantara Tech",
+          "matchScore": 82,
+          "reason": "Lowongan ini cocok dengan sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
+          "nextStep": "Perjelas bukti pengalaman deployment sebelum mengirim lamaran."
+        }
+      ],
+      "generatedCv": {
+        "available": false,
+        "note": "Fitur CV yang dihasilkan belum tersedia."
+      },
+      "model": {
+        "name": "cv-analyzer-model",
+        "version": "v1"
+      },
+      "analyzedAt": "2026-04-22T00:00:00.000Z"
+    }
   },
   "meta": null
 }
@@ -253,26 +243,31 @@ Payload rules:
 
 Response rules:
 
-- Scores are integers from `0` to `100`.
-- Output language should follow requested `language`.
+- `analysisResult.schemaVersion` wajib bernilai `cv-analysis-v2` untuk contract ini.
+- `jobFitAlignment.score` dan `atsFriendliness.score` adalah integer `0-100`.
+- `overallImpression` wajib berupa string ringkas, user-facing.
+- `topActionables` wajib berisi `1-3` item.
+- `sectionReviews` bersifat dinamis; section yang tidak ditemukan tidak boleh dipaksa muncul.
+- `sectionReviews[].actionPoints` wajib minimal satu item.
+- `jobRecommendations` adalah rekomendasi ringkas dari hasil analisis CV saat ini, maksimal 5 item.
+- Job recommendation item hanya berisi `jobId`, `title`, `companyName`, `matchScore`, `reason`, dan `nextStep`.
 - Do not return raw Model API internals.
 - Do not return raw full CV text by default.
-- Keep generated CV explicitly unavailable in MVP unless future scope changes.
+- Keep generated CV explicitly unavailable in current contract.
 
 ## Service Logic
 
 1. Require authenticated identity.
 2. Validate metadata fields and upload/reference mode.
-3. Validate selected `JobListing`.
-4. If `compareSource` is `BOOKMARK`, verify current user owns the bookmark for the job.
-5. Validate CV file or referenced CV metadata ownership.
-6. Store CV file or temporary metadata according to retention policy.
-7. Build backend-prepared Model API payload.
-8. Call Model API with timeout and request id.
-9. Validate Model API response with Zod.
-10. Map result to product-safe response.
-11. Optionally persist `CvAnalysisResult` snapshot and sanitized file metadata.
-12. Return standard success envelope.
+3. Validate target `jobRoles`.
+4. Validate CV file or referenced CV metadata ownership.
+5. Store CV file or temporary metadata according to retention policy.
+6. Build backend-prepared Model API payload.
+7. Call Model API with timeout and request id.
+8. Validate Model API response with Zod.
+9. Map result to product-safe response.
+10. Optionally persist `CvAnalysisResult` snapshot and sanitized file metadata.
+11. Return standard success envelope.
 
 ## Repository And Database Usage
 
@@ -379,7 +374,7 @@ Include:
 
 - `requestId`
 - `userId`
-- `jobId`
+- `jobRoles`
 - `language`
 - `inputMode`
 - `fileSizeBytes`
