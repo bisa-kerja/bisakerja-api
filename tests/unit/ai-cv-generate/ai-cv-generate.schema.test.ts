@@ -4,7 +4,7 @@ import { generateCvMarkdownSchema } from "@/modules/ai-cv-generate/ai-cv-generat
 
 const validInput = {
   cvFileId: "11111111-1111-4111-8111-111111111111",
-  summary: "Backend developer dengan pengalaman REST API.",
+  summary: "Backend developer with REST API experience.",
   templateHtml: "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
 };
 

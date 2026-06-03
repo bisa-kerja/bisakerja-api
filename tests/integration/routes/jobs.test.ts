@@ -26,7 +26,7 @@ describe("jobs routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Daftar lowongan berhasil diambil",
+      message: "Jobs retrieved successfully",
       meta: {
         pagination: {
           page: 1,
@@ -131,7 +131,7 @@ describe("jobs routes", () => {
         details: [
           expect.objectContaining({
             path: "jobId",
-            message: "ID lowongan tidak valid. Gunakan UUID yang benar"
+            message: "Job ID is invalid. Use a valid UUID"
           })
         ]
       }
@@ -150,7 +150,7 @@ describe("jobs routes", () => {
     expect(detail.status).toBe(200);
     expect(detail.body).toMatchObject({
       success: true,
-      message: "Lowongan berhasil diambil",
+      message: "Job retrieved successfully",
       data: {
         title: "Backend Developer",
         company: {

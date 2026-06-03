@@ -32,7 +32,7 @@ AI CV Generate creates improved markdown HTML CV content from a current user's s
 ```json
 {
   "cvFileId": "11111111-1111-4111-8111-111111111111",
-  "summary": "Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.",
+  "summary": "Backend candidate with REST API, PostgreSQL, and basic deployment experience.",
   "templateHtml": "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
 }
 ```
@@ -54,9 +54,9 @@ Validation rules:
 ```json
 {
   "success": true,
-  "message": "Markdown CV berhasil dibuat",
+  "message": "Markdown CV created successfully",
   "data": {
-    "markdown": "<section><h1>Nama Kandidat</h1><h2>Ringkasan</h2><p>Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.</p></section>"
+    "markdown": "<section><h1>Candidate Name</h1><h2>Summary</h2><p>Backend candidate with REST API, PostgreSQL, and basic deployment experience.</p></section>"
   },
   "meta": null
 }

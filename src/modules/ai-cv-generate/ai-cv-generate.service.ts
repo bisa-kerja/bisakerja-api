@@ -34,14 +34,14 @@ export class AiCvGenerateService {
 
     if (metadata?.userId !== userId) {
       throw new NotFoundError(
-        "CV tidak ditemukan",
+        "CV not found",
         aiCvGenerateErrorCodes.cvFileNotFound
       );
     }
 
     if (!this.options.modelApiClient.generateCvMarkdown) {
       throw new ServiceUnavailableError(
-        "Model API generate CV belum tersedia",
+        "Model API CV generation is not available yet",
         "MODEL_SERVICE_UNAVAILABLE",
         { dependency: "model-api", operation: "cv-generate" }
       );
@@ -54,7 +54,7 @@ export class AiCvGenerateService {
 
     if (!isSafeMarkdown(markdown)) {
       throw new DownstreamError(
-        "Model API mengembalikan markdown yang tidak valid",
+        "Model API returned invalid markdown",
         aiCvGenerateErrorCodes.modelOutputInvalid,
         { dependency: "model-api", operation: "cv-generate" }
       );

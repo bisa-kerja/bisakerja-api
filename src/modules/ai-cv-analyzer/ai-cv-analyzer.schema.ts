@@ -23,7 +23,7 @@ const multipartBooleanSchema = z.preprocess((value) => {
   }
 
   return value;
-}, z.boolean("Flag persistResult harus bernilai true atau false"));
+}, z.boolean("persistResult flag must be true or false"));
 
 const multipartStringArraySchema = z.preprocess(
   (value) => {
@@ -52,19 +52,15 @@ export const analyzeCvSchema = z
     persistResult: multipartBooleanSchema.default(
       defaultPersistCvAnalysisResult
     ),
-    cvFileId: z
-      .uuid("ID file CV tidak valid. Gunakan UUID yang benar")
-      .optional(),
-    directJobId: z
-      .uuid("ID lowongan tidak valid. Gunakan UUID yang benar")
-      .optional()
+    cvFileId: z.uuid("CV file ID is invalid. Use a valid UUID").optional(),
+    directJobId: z.uuid("Job ID is invalid. Use a valid UUID").optional()
   })
   .superRefine((value, ctx) => {
     if (value.inputMode === "UPLOAD" && value.cvFileId) {
       ctx.addIssue({
         code: "custom",
         path: ["cvFileId"],
-        message: "ID file CV tidak boleh dikirim saat mode UPLOAD"
+        message: "CV file ID must not be sent in UPLOAD mode"
       });
     }
 
@@ -72,7 +68,7 @@ export const analyzeCvSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["directJobId"],
-        message: "ID lowongan wajib dikirim untuk DIRECT_JOB_DETAIL"
+        message: "Job ID is required for DIRECT_JOB_DETAIL"
       });
     }
   });
@@ -88,20 +84,18 @@ export type UploadCvFileInput = z.infer<typeof uploadCvFileSchema>;
 export const listCvAnalysisResultsQuerySchema = z.strictObject({
   page: z.coerce
     .number()
-    .int("Halaman harus berupa bilangan bulat")
-    .min(1, "Halaman minimal 1")
+    .int("Page must be an integer")
+    .min(1, "Page must be at least 1")
     .default(1),
   limit: z.coerce
     .number()
-    .int("Batas data harus berupa bilangan bulat")
-    .min(1, "Batas data minimal 1")
-    .max(50, "Batas data maksimal 50")
+    .int("Limit must be an integer")
+    .min(1, "Limit must be at least 1")
+    .max(50, "Limit must be at most 50")
     .default(10),
   sortBy: z.literal("analyzedAt").default("analyzedAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
-  cvFileId: z
-    .uuid("ID file CV tidak valid. Gunakan UUID yang benar")
-    .optional(),
+  cvFileId: z.uuid("CV file ID is invalid. Use a valid UUID").optional(),
   schemaVersion: z.string().trim().min(1).max(80).optional(),
   inputMode: z.enum(["UPLOAD", "REFERENCE"]).optional(),
   compareSource: z
@@ -110,9 +104,7 @@ export const listCvAnalysisResultsQuerySchema = z.strictObject({
 });
 
 export const cvAnalysisResultParamsSchema = z.strictObject({
-  analysisResultId: z.uuid(
-    "ID hasil analisis CV tidak valid. Gunakan UUID yang benar"
-  )
+  analysisResultId: z.uuid("CV analysis result ID is invalid. Use a valid UUID")
 });
 
 export type ListCvAnalysisResultsQueryInput = z.infer<

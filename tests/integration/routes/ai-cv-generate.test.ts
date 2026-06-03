@@ -38,7 +38,7 @@ describe("ai cv generate route", () => {
       generateCvMarkdown: (payload) => {
         modelPayload = payload;
         return Promise.resolve({
-          markdown: "<section><h1>Nama Kandidat</h1></section>"
+          markdown: "<section><h1>Candidate Name</h1></section>"
         });
       }
     });
@@ -53,9 +53,9 @@ describe("ai cv generate route", () => {
     expect(response.status).toBe(201);
     expect(response.body).toEqual({
       success: true,
-      message: "Markdown CV berhasil dibuat",
+      message: "Markdown CV created successfully",
       data: {
-        markdown: "<section><h1>Nama Kandidat</h1></section>"
+        markdown: "<section><h1>Candidate Name</h1></section>"
       },
       meta: null
     });
@@ -66,7 +66,7 @@ describe("ai cv generate route", () => {
         fileId: cvFileId,
         storageKey: ownedCvFile.storageKey
       },
-      summary: "Kandidat backend dengan pengalaman REST API.",
+      summary: "Backend candidate with REST API experience.",
       template: {
         markdown: null,
         html: "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
@@ -103,7 +103,7 @@ describe("ai cv generate route", () => {
       headers: authHeaders(userId, "req_cv_generate_validation"),
       body: {
         cvFileId,
-        summary: "Kandidat backend"
+        summary: "Backend candidate"
       }
     });
 
@@ -290,7 +290,7 @@ function authHeaders(authUserId: string, requestId: string) {
 function validBody() {
   return {
     cvFileId,
-    summary: "Kandidat backend dengan pengalaman REST API.",
+    summary: "Backend candidate with REST API experience.",
     templateHtml: "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
   };
 }

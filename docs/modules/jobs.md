@@ -104,7 +104,7 @@ If `relevance` is requested without a keyword, the API falls back to newest-firs
 ```json
 {
   "success": true,
-  "message": "Daftar lowongan berhasil diambil",
+  "message": "Jobs retrieved successfully",
   "data": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -169,7 +169,7 @@ List response rules:
 ```json
 {
   "success": true,
-  "message": "Lowongan berhasil diambil",
+  "message": "Job retrieved successfully",
   "data": {
     "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
@@ -359,7 +359,7 @@ Rules:
 
 Validation detail example for invalid route param:
 
-- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
+- `jobId`: `Job ID is invalid. Use a valid UUID`
 
 ## Observability
 

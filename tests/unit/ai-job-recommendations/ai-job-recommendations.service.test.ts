@@ -281,7 +281,7 @@ function createContext(): {
         matchedSignals: ["TypeScript", "PostgreSQL"],
         missingSignals: ["Docker"]
       },
-      topActionables: ["Tambah pengalaman deploy"],
+      topActionables: ["Add deployment experience"],
       sectionReviews: [
         {
           sectionName: "Relevant Skills",
@@ -342,7 +342,7 @@ function createRunDetailRecord(
         reasons: ["Kecocokan skill backend utama sudah kuat."],
         matchedSkills: ["TypeScript", "PostgreSQL"],
         missingSkills: ["Docker"],
-        nextSteps: ["Tambahkan pengalaman deployment di CV."],
+        nextSteps: ["Add deployment experience to the CV."],
         job: candidateJob,
         isBookmarked: false,
         hasApplied: false

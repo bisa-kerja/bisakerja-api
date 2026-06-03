@@ -54,13 +54,13 @@ describe("jobs schemas", () => {
     expect(invalidRange.success).toBe(false);
     expect(invalidRange.error?.issues[0]?.path.join(".")).toBe("salaryMax");
     expect(invalidRange.error?.issues[0]?.message).toBe(
-      "Gaji maksimum harus lebih besar atau sama dengan gaji minimum"
+      "Maximum salary must be greater than or equal to minimum salary"
     );
 
     const invalidJobId = jobParamsSchema.safeParse({ jobId: "job_123" });
     expect(invalidJobId.success).toBe(false);
     expect(invalidJobId.error?.issues[0]?.message).toBe(
-      "ID lowongan tidak valid. Gunakan UUID yang benar"
+      "Job ID is invalid. Use a valid UUID"
     );
   });
 });

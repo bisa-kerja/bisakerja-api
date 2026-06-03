@@ -110,7 +110,7 @@ export class AiJobRecommendationsService {
     });
     if (!this.options.modelApiClient.recommendJobs) {
       throw new ServiceUnavailableError(
-        "Client Model API rekomendasi pekerjaan belum tersedia",
+        "Client Model API job recommendations are not available yet",
         aiJobRecommendationsErrorCodes.modelServiceUnavailable
       );
     }
@@ -160,7 +160,7 @@ export class AiJobRecommendationsService {
 
     if (!run) {
       throw new NotFoundError(
-        "Rekomendasi pekerjaan belum tersedia",
+        "Job recommendations are not available yet",
         aiJobRecommendationsErrorCodes.jobRecommendationNotFound
       );
     }
@@ -180,7 +180,7 @@ export class AiJobRecommendationsService {
 
     if (!run) {
       throw new NotFoundError(
-        "Rekomendasi pekerjaan tidak ditemukan",
+        "Job recommendations not found",
         aiJobRecommendationsErrorCodes.jobRecommendationNotFound
       );
     }
@@ -400,7 +400,7 @@ function validateAndSelectRecommendations(
   for (const recommendation of response.recommendations) {
     if (!candidateMap.has(recommendation.jobId)) {
       throw new DownstreamError(
-        "Model API mengembalikan jobId yang tidak ada pada kandidat backend",
+        "Model API returned a jobId that does not exist in backend candidates",
         aiJobRecommendationsErrorCodes.modelResponseInvalid,
         {
           jobId: recommendation.jobId
@@ -410,7 +410,7 @@ function validateAndSelectRecommendations(
 
     if (seen.has(recommendation.jobId)) {
       throw new DownstreamError(
-        "Model API mengembalikan duplikasi jobId pada rekomendasi",
+        "Model API returned duplicate jobId values in recommendations",
         aiJobRecommendationsErrorCodes.modelResponseInvalid,
         {
           jobId: recommendation.jobId
@@ -442,7 +442,7 @@ async function resolveCvAnalysisResult(
 
     if (!result) {
       throw new NotFoundError(
-        "Hasil analisis CV tidak ditemukan",
+        "CV analysis result not found",
         aiJobRecommendationsErrorCodes.cvAnalysisResultNotFound
       );
     }
@@ -453,11 +453,10 @@ async function resolveCvAnalysisResult(
   const latestResult =
     await repository.findLatestCvAnalysisResultForUser(userId);
   if (!latestResult) {
-    throw new ValidationError("Hasil analisis CV belum tersedia", [
+    throw new ValidationError("CV analysis result is not available yet", [
       {
         path: "cvAnalysisResultId",
-        message:
-          "Jalankan analisis CV terlebih dahulu sebelum meminta rekomendasi pekerjaan",
+        message: "Run CV analysis before requesting job recommendations",
         code: aiJobRecommendationsErrorCodes.cvAnalysisRequired.toLowerCase()
       }
     ]);
@@ -474,7 +473,7 @@ async function callRecommendationModelApi(
   } catch (error) {
     if (error instanceof ServiceUnavailableError) {
       throw new ServiceUnavailableError(
-        "Layanan model rekomendasi pekerjaan sementara tidak tersedia",
+        "Job recommendation model service is temporarily unavailable",
         aiJobRecommendationsErrorCodes.modelServiceUnavailable,
         error.details
       );
@@ -482,7 +481,7 @@ async function callRecommendationModelApi(
 
     if (error instanceof DownstreamError) {
       throw new DownstreamError(
-        "Response model rekomendasi pekerjaan tidak valid",
+        "Job recommendation model response is invalid",
         aiJobRecommendationsErrorCodes.modelResponseInvalid,
         error.details
       );

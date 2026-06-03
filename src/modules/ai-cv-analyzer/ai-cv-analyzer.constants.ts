@@ -6,15 +6,16 @@ export const aiCvAnalyzerErrorCodes = {
 } as const;
 
 export const aiCvAnalyzerSuccessMessages = {
-  activeCvFileRetrieved: "CV aktif berhasil diambil",
-  completed: "Analisis CV berhasil diselesaikan",
-  cvAnalysisResultDetailRetrieved: "Detail hasil analisis CV berhasil diambil",
-  cvAnalysisResultLatestRetrieved: "Hasil analisis CV terbaru berhasil diambil",
-  cvAnalysisResultsRetrieved: "Daftar hasil analisis CV berhasil diambil",
-  cvFileUploaded: "CV berhasil diunggah"
+  activeCvFileRetrieved: "Active CV retrieved successfully",
+  completed: "CV analysis completed successfully",
+  cvAnalysisResultDetailRetrieved: "CV analysis result retrieved successfully",
+  cvAnalysisResultLatestRetrieved:
+    "Latest CV analysis result retrieved successfully",
+  cvAnalysisResultsRetrieved: "CV analysis results retrieved successfully",
+  cvFileUploaded: "CV uploaded successfully"
 } as const;
 
 export const defaultPersistCvAnalysisResult = false;
 export const defaultCvCompareSource = "JOB_SEARCH" as const;
 export const generatedCvUnavailableNote =
-  "Fitur CV yang dihasilkan belum tersedia.";
+  "Generated CV feature is not available yet.";

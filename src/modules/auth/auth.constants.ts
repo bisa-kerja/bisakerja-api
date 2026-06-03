@@ -17,4 +17,4 @@ export const authErrorCodes = {
 } as const;
 
 export const genericForgotPasswordMessage =
-  "Jika email terdaftar, instruksi reset kata sandi akan dikirim.";
+  "If the email is registered, password reset instructions will be sent";

@@ -104,10 +104,10 @@ export function requireMultipartFormData(): RequestHandler {
   return (req, _res, next) => {
     if (!req.is("multipart/form-data")) {
       next(
-        new ValidationError("Multipart form data diperlukan", [
+        new ValidationError("Multipart form data is required", [
           {
             path: "body",
-            message: "Request harus multipart/form-data",
+            message: "Request must use multipart/form-data",
             code: "custom"
           }
         ])
@@ -132,10 +132,10 @@ export function createCvUploadMiddleware(config: AppConfig): RequestHandler {
     fileFilter: (_req, file, callback) => {
       if (!allowedMimeTypes.has(file.mimetype.toLowerCase())) {
         callback(
-          new ValidationError("Tipe file CV tidak didukung", [
+          new ValidationError("CV file type is not supported", [
             {
               path: "cvFile",
-              message: `Tipe file CV tidak didukung. Gunakan ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
+              message: `CV file type is not supported. Gunakan ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
               code: "custom"
             }
           ])
@@ -172,10 +172,10 @@ export function validateUploadPresence(): RequestHandler {
 
     if (input.inputMode === "UPLOAD" && !req.file) {
       next(
-        new ValidationError("File CV wajib diunggah", [
+        new ValidationError("CV file is required", [
           {
             path: "cvFile",
-            message: "File CV PDF diperlukan untuk analisis",
+            message: "PDF CV file is required for analysis",
             code: "custom"
           }
         ])
@@ -191,10 +191,10 @@ export function validateCvFilePresence(): RequestHandler {
   return (req, _res, next) => {
     if (!req.file) {
       next(
-        new ValidationError("File CV wajib diunggah", [
+        new ValidationError("CV file is required", [
           {
             path: "cvFile",
-            message: "File CV wajib diunggah",
+            message: "CV file is required",
             code: "custom"
           }
         ])
@@ -209,7 +209,7 @@ export function validateCvFilePresence(): RequestHandler {
 function mapMulterError(error: multer.MulterError, config: AppConfig) {
   if (error.code === "LIMIT_FILE_SIZE") {
     return new PayloadTooLargeError(
-      "Ukuran file CV melebihi batas maksimum",
+      "CV file size exceeds the maximum limit",
       "PAYLOAD_TOO_LARGE",
       {
         path: "cvFile",
@@ -219,20 +219,20 @@ function mapMulterError(error: multer.MulterError, config: AppConfig) {
   }
 
   if (error.code === "LIMIT_UNEXPECTED_FILE") {
-    return new ValidationError("Hanya satu file CV yang boleh diunggah", [
+    return new ValidationError("Only one CV file can be uploaded", [
       {
         path: "cvFile",
-        message: "Unggah tepat satu file pada field cvFile",
+        message: "Upload exactly one file in the cvFile field",
         code: error.code
       }
     ]);
   }
 
-  return new ValidationError("Payload upload multipart tidak valid", [
+  return new ValidationError("Multipart upload payload is invalid", [
     {
       path: "cvFile",
       message:
-        "Payload upload CV tidak valid. Periksa kembali field multipart dan kirim ulang file CV.",
+        "CV upload payload is invalid. Check the multipart fields and upload the CV file again.",
       code: error.code
     }
   ]);

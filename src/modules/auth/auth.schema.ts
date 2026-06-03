@@ -2,21 +2,21 @@ import { z } from "zod";
 
 const passwordSchema = z
   .string()
-  .min(12, "Kata sandi minimal 12 karakter")
-  .max(128, "Kata sandi maksimal 128 karakter")
-  .regex(/[a-z]/, "Kata sandi harus mengandung huruf kecil")
-  .regex(/[A-Z]/, "Kata sandi harus mengandung huruf besar")
-  .regex(/[0-9]/, "Kata sandi harus mengandung angka")
-  .regex(/[^A-Za-z0-9]/, "Kata sandi harus mengandung simbol");
+  .min(12, "Password must be at least 12 characters")
+  .max(128, "Password must be at most 128 characters")
+  .regex(/[a-z]/, "Password must contain a lowercase letter")
+  .regex(/[A-Z]/, "Password must contain an uppercase letter")
+  .regex(/[0-9]/, "Password must contain a number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain a symbol");
 
 const usernameSchema = z
   .string()
   .trim()
-  .min(3, "Username minimal 3 karakter")
-  .max(30, "Username maksimal 30 karakter")
+  .min(3, "Username must be at least 3 characters")
+  .max(30, "Username must be at most 30 characters")
   .regex(
     /^[a-z0-9_]+$/,
-    "Username hanya boleh berisi huruf kecil, angka, dan underscore, contoh salman_123"
+    "Username may only contain lowercase letters, numbers, and underscores, for example salman_123"
   )
   .transform((value) => value.toLowerCase());
 
@@ -26,7 +26,7 @@ const emailSchema = z.preprocess((value) => {
   }
 
   return value.trim().toLowerCase();
-}, z.email("Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com"));
+}, z.email("Email is invalid. Use a complete email format, for example name@domain.com"));
 
 export const registerSchema = z
   .strictObject({
@@ -35,31 +35,31 @@ export const registerSchema = z
     phoneNumber: z
       .string()
       .trim()
-      .min(8, "Nomor telepon minimal 8 digit")
-      .max(20, "Nomor telepon maksimal 20 digit")
+      .min(8, "Phone number must be at least 8 digits")
+      .max(20, "Phone number must be at most 20 digits")
       .regex(
         /^\+?62[0-9]{7,16}$/,
-        "Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789"
+        "Phone number is invalid. Use an Indonesian phone number, for example +628123456789"
       ),
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Konfirmasi kata sandi wajib diisi")
+    confirmPassword: z.string().min(1, "Password confirmation is required")
   })
   .refine((value) => value.password === value.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Konfirmasi kata sandi tidak sesuai. Samakan dengan kata sandi"
+    message: "Password confirmation must match the password"
   });
 
 export const loginSchema = z.strictObject({
   identifier: z
     .string()
     .trim()
-    .min(3, "Email atau username minimal 3 karakter")
-    .max(254, "Email atau username maksimal 254 karakter")
+    .min(3, "Email or username must be at least 3 characters")
+    .max(254, "Email or username must be at most 254 characters")
     .transform((value) => value.toLowerCase()),
   password: z
     .string()
-    .min(1, "Kata sandi wajib diisi")
-    .max(128, "Kata sandi maksimal 128 karakter")
+    .min(1, "Password is required")
+    .max(128, "Password must be at most 128 characters")
 });
 
 export const forgotPasswordSchema = z.strictObject({
@@ -71,14 +71,14 @@ export const resetPasswordSchema = z
     token: z
       .string()
       .trim()
-      .min(32, "Token reset kata sandi tidak valid")
-      .max(256, "Token reset kata sandi tidak valid"),
+      .min(32, "Password reset token is invalid")
+      .max(256, "Password reset token is invalid"),
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Konfirmasi kata sandi wajib diisi")
+    confirmPassword: z.string().min(1, "Password confirmation is required")
   })
   .refine((value) => value.password === value.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Konfirmasi kata sandi tidak sesuai. Samakan dengan kata sandi"
+    message: "Password confirmation must match the password"
   });
 
 export const verifyEmailSchema = z.strictObject({
@@ -86,7 +86,7 @@ export const verifyEmailSchema = z.strictObject({
   otp: z
     .string()
     .trim()
-    .regex(/^[0-9]{6}$/, "OTP tidak valid. Gunakan 6 digit angka")
+    .regex(/^[0-9]{6}$/, "OTP is invalid. Use 6 digits")
 });
 
 export const emptyBodySchema = z.strictObject({}).optional();
@@ -95,13 +95,13 @@ export const googleOauthExchangeSchema = z.strictObject({
   code: z
     .string()
     .trim()
-    .min(1, "Kode OAuth wajib diisi")
-    .max(4096, "Kode OAuth terlalu panjang"),
+    .min(1, "OAuth code is required")
+    .max(4096, "OAuth code is too long"),
   state: z
     .string()
     .trim()
-    .min(16, "State OAuth tidak valid")
-    .max(512, "State OAuth tidak valid")
+    .min(16, "OAuth state is invalid")
+    .max(512, "OAuth state is invalid")
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

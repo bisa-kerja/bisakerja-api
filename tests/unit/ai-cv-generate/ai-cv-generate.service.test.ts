@@ -41,7 +41,7 @@ describe("AiCvGenerateService", () => {
 
     const result = await service.generateMarkdown(userId, "req-1", {
       cvFileId,
-      summary: "Ringkasan aman",
+      summary: "Summary aman",
       templateHtml: "<section>{{summary}}</section>"
     });
 
@@ -51,7 +51,7 @@ describe("AiCvGenerateService", () => {
     expect(calledPayload).toMatchObject({
       requestId: "req-1",
       cv: { fileId: cvFileId },
-      summary: "Ringkasan aman"
+      summary: "Summary aman"
     });
   });
 
@@ -71,7 +71,7 @@ describe("AiCvGenerateService", () => {
     try {
       await service.generateMarkdown(userId, "req-1", {
         cvFileId,
-        summary: "Ringkasan aman",
+        summary: "Summary aman",
         templateHtml: "<section>{{summary}}</section>"
       });
       throw new Error("Expected service to reject");
@@ -93,7 +93,7 @@ describe("AiCvGenerateService", () => {
     try {
       await service.generateMarkdown(userId, "req-1", {
         cvFileId,
-        summary: "Ringkasan aman",
+        summary: "Summary aman",
         templateHtml: "<section>{{summary}}</section>"
       });
       throw new Error("Expected service to reject");

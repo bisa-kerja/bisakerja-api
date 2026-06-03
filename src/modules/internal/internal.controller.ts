@@ -31,9 +31,7 @@ export class InternalController {
       }
     });
 
-    res.json(
-      successResponse(result, "Lowongan dari scraper berhasil disinkronkan")
-    );
+    res.json(successResponse(result, "Scraper jobs synced successfully"));
   };
 
   acceptNotificationEvents = async (req: Request, res: Response) => {

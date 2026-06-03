@@ -65,7 +65,7 @@ describe("preferences schemas", () => {
 
     expect(duplicate.success).toBe(false);
     expect(duplicate.error?.issues[0]?.message).toBe(
-      "Target peran tidak boleh duplikat"
+      "Target roles must not be duplicated"
     );
   });
 
@@ -79,7 +79,7 @@ describe("preferences schemas", () => {
       "salaryExpectation.max"
     );
     expect(invalid.error?.issues[0]?.message).toBe(
-      "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum"
+      "Maximum salary expectation must be greater than or equal to minimum"
     );
   });
 });

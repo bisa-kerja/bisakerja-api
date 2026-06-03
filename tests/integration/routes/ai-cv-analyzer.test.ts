@@ -72,7 +72,7 @@ describe("ai cv analyzer routes", () => {
         details: [
           expect.objectContaining({
             path: "body",
-            message: "Request harus multipart/form-data"
+            message: "Request must use multipart/form-data"
           })
         ]
       }
@@ -133,7 +133,7 @@ describe("ai cv analyzer routes", () => {
         details: [
           expect.objectContaining({
             path: "cvFile",
-            message: "Tipe file CV tidak didukung. Gunakan application/pdf"
+            message: "CV file type is not supported. Gunakan application/pdf"
           })
         ]
       }
@@ -143,7 +143,7 @@ describe("ai cv analyzer routes", () => {
         details: [
           expect.objectContaining({
             path: "cvFileId",
-            message: "Unggah CV atau kirim ID file CV yang valid"
+            message: "Upload a CV or send a valid CV file ID"
           })
         ]
       }
@@ -167,7 +167,7 @@ describe("ai cv analyzer routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Analisis CV berhasil diselesaikan",
+      message: "CV analysis completed successfully",
       data: {
         jobRoles: ["Backend Developer"],
         language: "id",
@@ -216,7 +216,7 @@ describe("ai cv analyzer routes", () => {
     expect(uploadResponse.status).toBe(201);
     expect(uploadResponse.body).toMatchObject({
       success: true,
-      message: "CV berhasil diunggah",
+      message: "CV uploaded successfully",
       data: {
         cvFile: {
           originalFileName: "cv.pdf",
@@ -313,7 +313,7 @@ describe("ai cv analyzer routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Daftar hasil analisis CV berhasil diambil",
+      message: "CV analysis results retrieved successfully",
       data: [
         {
           id: "11111111-1111-4111-8111-111111111111",
@@ -322,7 +322,7 @@ describe("ai cv analyzer routes", () => {
           jobFitAlignment: { score: 78 },
           atsFriendliness: { score: 84 },
           topActionablesPreview: [
-            "Tambahkan 2-3 bullet terukur pada pengalaman backend.",
+            "Add 2-3 measurable bullets to backend experience.",
             "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
             "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
           ],
@@ -378,14 +378,14 @@ describe("ai cv analyzer routes", () => {
     expect(latestResponse.status).toBe(200);
     expect(latestResponse.body).toMatchObject({
       success: true,
-      message: "Hasil analisis CV terbaru berhasil diambil",
+      message: "Latest CV analysis result retrieved successfully",
       data: {
         analysisResult: {
           id: "11111111-1111-4111-8111-111111111115",
           schemaVersion: "cv-analysis-v2",
           generatedCv: {
             available: false,
-            note: "Fitur CV yang dihasilkan belum tersedia."
+            note: "Generated CV feature is not available yet."
           }
         },
         context: {
@@ -400,7 +400,7 @@ describe("ai cv analyzer routes", () => {
     expect(detailResponse.status).toBe(200);
     expect(detailResponse.body).toMatchObject({
       success: true,
-      message: "Detail hasil analisis CV berhasil diambil",
+      message: "CV analysis result retrieved successfully",
       data: {
         analysisResult: {
           id: "11111111-1111-4111-8111-111111111114"
@@ -455,7 +455,7 @@ describe("ai cv analyzer routes", () => {
   test("isolates ai failure from jobs routes", async () => {
     const context = createAiCvAnalyzerRouteContext({
       analyzeCv: () =>
-        Promise.reject(new ServiceUnavailableError("Model API tidak tersedia"))
+        Promise.reject(new ServiceUnavailableError("Model API is unavailable"))
     });
 
     const aiResponse = await injectRoute(context.app, {
@@ -615,6 +615,10 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
           file.expiresAt > now
       ) ?? null
     );
+  }
+
+  findCandidateJobsForCvAnalysis(): Promise<JobRecord[]> {
+    return Promise.resolve(this.job ? [this.job] : []);
   }
 
   markCvFileDeleted(): Promise<void> {
@@ -885,7 +889,7 @@ function analysisResultRecord(
     compareSource: "JOB_SEARCH",
     schemaVersion: "cv-analysis-v2",
     overallImpression:
-      "CV menunjukkan fondasi backend yang kuat untuk kandidat junior-mid.",
+      "CV shows a strong backend foundation for a junior-mid candidate.",
     jobFitAlignment: {
       score: 78,
       summary: "Cukup selaras dengan role Backend Developer."
@@ -895,7 +899,7 @@ function analysisResultRecord(
       summary: "Struktur cukup mudah dibaca ATS."
     },
     topActionables: [
-      "Tambahkan 2-3 bullet terukur pada pengalaman backend.",
+      "Add 2-3 measurable bullets to backend experience.",
       "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
       "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
     ],
@@ -905,7 +909,7 @@ function analysisResultRecord(
         analysis: "Skill relevan sudah ada, namun belum terstruktur.",
         actionPoints: ["Urutkan skill berdasarkan relevansi role target."],
         whyItsImportantForYou:
-          "ATS dan recruiter mencari keyword skill sebelum detail pengalaman."
+          "ATS and recruiters look for skill keywords before experience details."
       }
     ],
     jobRecommendations: [
@@ -914,8 +918,8 @@ function analysisResultRecord(
         title: "Backend Developer",
         companyName: "Example Tech",
         matchScore: 82,
-        reason: "Cocok dengan pengalaman REST API dan PostgreSQL.",
-        nextStep: "Perjelas pengalaman deployment sebelum mengirim lamaran."
+        reason: "Matches REST API and PostgreSQL experience.",
+        nextStep: "Clarify deployment experience before sending an application."
       }
     ],
     modelName: "cv-analyzer-model",

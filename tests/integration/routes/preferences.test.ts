@@ -67,7 +67,7 @@ describe("preferences routes", () => {
     expect(created.status).toBe(200);
     expect(created.body).toMatchObject({
       success: true,
-      message: "Preferensi berhasil disimpan",
+      message: "Preferences saved successfully",
       data: {
         careerStatus: "FRESH_GRADUATE",
         targetRoles: ["Backend Developer"],
@@ -93,7 +93,7 @@ describe("preferences routes", () => {
     expect(read.status).toBe(200);
     expect(read.body).toMatchObject({
       success: true,
-      message: "Preferensi berhasil diambil",
+      message: "Preferences retrieved successfully",
       data: {
         id: "pref-user-1",
         targetRoles: ["Backend Developer"]
@@ -156,7 +156,7 @@ describe("preferences routes", () => {
     expect(patched.status).toBe(200);
     expect(patched.body).toMatchObject({
       success: true,
-      message: "Preferensi berhasil diperbarui",
+      message: "Preferences updated successfully",
       data: {
         targetRoles: ["Backend Developer"],
         salaryExpectation: {
@@ -211,7 +211,7 @@ describe("preferences routes", () => {
           expect.objectContaining({
             path: "salaryExpectation.max",
             message:
-              "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum"
+              "Maximum salary expectation must be greater than or equal to minimum"
           })
         ]
       }

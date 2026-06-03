@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const requiredText = (name: string, max = 5000) =>
-  z.string().trim().min(1, `${name} wajib diisi`).max(max);
+  z.string().trim().min(1, `${name} is required`).max(max);
 
 const nullableText = (max = 5000) =>
   z.union([z.string().trim().min(1).max(max), z.null()]).optional();
@@ -13,7 +13,7 @@ const nullableDateTime = z
       .trim()
       .min(1)
       .refine((value) => !Number.isNaN(Date.parse(value)), {
-        message: "Format datetime ISO tidak valid"
+        message: "ISO datetime format is invalid"
       }),
     z.null()
   ])
@@ -71,7 +71,7 @@ const jobListingSchema = z
     sourceUpdatedAt: nullableDateTime,
     lastSeenAt: requiredText("jobListing.lastSeenAt", 80).refine(
       (value) => !Number.isNaN(Date.parse(value)),
-      { message: "Format datetime ISO tidak valid" }
+      { message: "ISO datetime format is invalid" }
     ),
     status: z
       .enum(["ACTIVE", "STALE", "EXPIRED", "CLOSED", "HIDDEN"])
@@ -88,7 +88,7 @@ const jobListingSchema = z
       context.addIssue({
         code: "custom",
         path: ["salaryMax"],
-        message: "salaryMax harus lebih besar atau sama dengan salaryMin"
+        message: "salaryMax must be greater than or equal to salaryMin"
       });
     }
   });
@@ -137,7 +137,7 @@ export const notificationEventsSchema = z.strictObject({
         status: requiredText("status", 40),
         lastSeenAt: requiredText("lastSeenAt", 80).refine(
           (value) => !Number.isNaN(Date.parse(value)),
-          { message: "Format datetime ISO tidak valid" }
+          { message: "ISO datetime format is invalid" }
         )
       })
     )

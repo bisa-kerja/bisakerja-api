@@ -103,7 +103,7 @@ Successful response:
 ```json
 {
   "success": true,
-  "message": "CV berhasil diunggah",
+  "message": "CV uploaded successfully",
   "data": {
     "cvFile": {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -173,7 +173,7 @@ Multipart fields:
 | `inputMode`     | `UPLOAD` or `REFERENCE`.                                                                                              |
 | `compareSource` | `BOOKMARK`, `JOB_SEARCH`, or `DIRECT_JOB_DETAIL`.                                                                     |
 | `jobRoles[]`    | Target roles selected for analysis.                                                                                   |
-| `cvFile`        | One PDF file part. For `REFERENCE`, Backend resolves and streams owned active/selected CV bytes.                      |
+| `cvFile`        | One PDF file part. For `REFERENCE`, Backend resolves and streams owned active/selected CV bytess.                     |
 | `jobCandidates` | JSON array of Backend-selected jobs with unique `jobId` and model-owned `scoringInput`.                               |
 | `rankingPolicy` | JSON object requiring candidate membership, deduplication, Backend hydration ownership, and max five recommendations. |
 
@@ -213,7 +213,7 @@ Payload rules:
 ```json
 {
   "success": true,
-  "message": "Analisis CV berhasil diselesaikan",
+  "message": "CV analysis completed successfully",
   "data": {
     "jobRoles": ["Backend Developer", "Software Engineer"],
     "language": "id",
@@ -222,15 +222,15 @@ Payload rules:
       "schemaVersion": "cv-analysis-v2",
       "jobFitAlignment": {
         "score": 78,
-        "summary": "CV sudah cukup selaras dengan role Backend Developer karena menonjolkan REST API, PostgreSQL, dan pengalaman project backend. Kesesuaian bisa naik jika pengalaman deployment dibuat lebih eksplisit."
+        "summary": "The CV is well aligned with the Backend Developer role because it highlights REST API, PostgreSQL, and backend project experience. Fit can improve if deployment experience is made more explicit."
       },
       "atsFriendliness": {
         "score": 84,
         "summary": "Struktur CV cukup mudah dibaca ATS, tetapi beberapa keyword penting masih belum dirangkum jelas pada section skill."
       },
-      "overallImpression": "CV menunjukkan fondasi backend yang kuat untuk kandidat junior-mid, dengan ruang perbaikan terbesar pada bukti dampak kerja dan penajaman keyword sesuai target role.",
+      "overallImpression": "The CV shows a strong backend foundation for a junior-mid candidate, with the largest improvement areas in impact evidence and keyword alignment for the target role.",
       "topActionables": [
-        "Tambahkan 2-3 bullet terukur pada pengalaman backend, misalnya peningkatan performa, jumlah user, atau skala data.",
+        "Add 2-3 measurable bullets to backend experience, such as performance improvement, user count, or data scale.",
         "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
         "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
       ],
@@ -242,7 +242,7 @@ Payload rules:
             "Kelompokkan skill menjadi Backend, Database, Testing, dan Deployment.",
             "Prioritaskan skill yang paling sering diminta pada role target."
           ],
-          "whyItsImportantForYou": "ATS dan recruiter biasanya mencari keyword skill spesifik sebelum membaca detail pengalaman."
+          "whyItsImportantForYou": "ATS and recruiters usually look for specific skill keywords before reading experience details."
         }
       ],
       "jobRecommendations": [
@@ -251,13 +251,13 @@ Payload rules:
           "title": "Backend Developer",
           "companyName": "Nusantara Tech",
           "matchScore": 82,
-          "reason": "Lowongan ini cocok dengan sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
-          "nextStep": "Perjelas bukti pengalaman deployment sebelum mengirim lamaran."
+          "reason": "This job matches TypeScript, REST API, and PostgreSQL signals in the CV.",
+          "nextStep": "Clarify deployment evidence before sending an application."
         }
       ],
       "generatedCv": {
         "available": false,
-        "note": "Fitur CV yang dihasilkan belum tersedia."
+        "note": "Generated CV feature is not available yet."
       },
       "model": {
         "name": "cv-analyzer-model",
@@ -415,10 +415,10 @@ Suggested metadata:
 
 Validation detail examples for `422 VALIDATION_ERROR`:
 
-- `body`: `Request harus multipart/form-data`
-- `cvFile`: `Tipe file CV tidak didukung. Gunakan application/pdf`
-- `cvFile`: `File CV PDF diperlukan untuk analisis`
-- `cvFileId`: `Unggah CV atau kirim ID file CV yang valid`
+- `body`: `Request must use multipart/form-data`
+- `cvFile`: `CV file type is not supported. Gunakan application/pdf`
+- `cvFile`: `PDF CV file is required for analysis`
+- `cvFileId`: `Upload a CV or send a valid CV file ID`
 
 ## Observability
 

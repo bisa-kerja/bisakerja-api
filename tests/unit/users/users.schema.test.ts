@@ -24,7 +24,7 @@ describe("users schemas", () => {
     const empty = updateCurrentUserSchema.safeParse({});
     expect(empty.success).toBe(false);
     expect(empty.error?.issues[0]?.message).toBe(
-      "Minimal satu data profil harus diisi"
+      "At least one profile field must be provided"
     );
     expect(
       updateCurrentUserSchema.safeParse({
@@ -63,7 +63,7 @@ describe("users schemas", () => {
     });
     expect(invalidUrl.success).toBe(false);
     expect(invalidUrl.error?.issues[0]?.message).toBe(
-      "URL foto profil tidak valid"
+      "Profile photo URL is invalid"
     );
   });
 

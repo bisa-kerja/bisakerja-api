@@ -33,7 +33,7 @@ describe("ai cv analyzer schema", () => {
     });
     expect(uploadWithCvFileId.success).toBe(false);
     expect(uploadWithCvFileId.error?.issues[0]?.message).toBe(
-      "ID file CV tidak boleh dikirim saat mode UPLOAD"
+      "CV file ID must not be sent in UPLOAD mode"
     );
 
     expect(() =>
@@ -55,7 +55,7 @@ describe("ai cv analyzer schema", () => {
     });
     expect(invalidCvFileId.success).toBe(false);
     expect(invalidCvFileId.error?.issues[0]?.message).toBe(
-      "ID file CV tidak valid. Gunakan UUID yang benar"
+      "CV file ID is invalid. Use a valid UUID"
     );
 
     const invalidPersistResult = analyzeCvSchema.safeParse({
@@ -66,7 +66,7 @@ describe("ai cv analyzer schema", () => {
     });
     expect(invalidPersistResult.success).toBe(false);
     expect(invalidPersistResult.error?.issues[0]?.message).toBe(
-      "Flag persistResult harus bernilai true atau false"
+      "persistResult flag must be true or false"
     );
   });
 

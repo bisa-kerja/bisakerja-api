@@ -31,7 +31,7 @@ describe("ai job fit schema", () => {
 
     expect(invalid.success).toBe(false);
     expect(invalid.error?.issues[0]?.message).toBe(
-      "ID lowongan tidak valid. Gunakan UUID yang benar"
+      "Job ID is invalid. Use a valid UUID"
     );
   });
 });

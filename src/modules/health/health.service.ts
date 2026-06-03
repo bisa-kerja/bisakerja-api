@@ -73,7 +73,7 @@ export async function getReadinessPayload(
     modelApi.status !== "healthy"
   ) {
     throw new ServiceUnavailableError(
-      "Layanan belum siap",
+      "Service is not ready",
       "SERVICE_UNAVAILABLE",
       {
         dependencies: {

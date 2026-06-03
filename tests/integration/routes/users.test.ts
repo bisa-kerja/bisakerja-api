@@ -48,7 +48,7 @@ describe("users routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Profil berhasil diambil",
+      message: "Profile retrieved successfully",
       data: {
         id: "user-1",
         username: "salman",
@@ -127,7 +127,7 @@ describe("users routes", () => {
         details: [
           expect.objectContaining({
             path: "",
-            message: "Minimal satu data profil harus diisi",
+            message: "At least one profile field must be provided",
             code: "custom"
           })
         ]
@@ -182,7 +182,7 @@ describe("users routes", () => {
         details: [
           expect.objectContaining({
             path: "url",
-            message: "URL foto profil tidak valid"
+            message: "Profile photo URL is invalid"
           })
         ]
       }
@@ -234,7 +234,7 @@ describe("users routes", () => {
         details: [
           expect.objectContaining({
             path: "skills.1.name",
-            message: "Nama keahlian tidak boleh duplikat dalam daftar yang sama"
+            message: "Skill names must not be duplicated in the same list"
           })
         ]
       }
@@ -310,8 +310,7 @@ describe("users routes", () => {
         details: [
           expect.objectContaining({
             path: "experience.0.endDate",
-            message:
-              "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai"
+            message: "End date must be greater than or equal to start date"
           })
         ]
       }
@@ -360,7 +359,7 @@ describe("users routes", () => {
         details: [
           expect.objectContaining({
             path: "education.0.degree",
-            message: "Gelar wajib diisi"
+            message: "Degree is required"
           })
         ]
       }

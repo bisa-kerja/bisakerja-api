@@ -59,7 +59,7 @@ describe("applications schemas", () => {
     const empty = updateApplicationSchema.safeParse({});
     expect(empty.success).toBe(false);
     expect(empty.error?.issues[0]?.message).toBe(
-      "Minimal satu field pembaruan harus diisi"
+      "At least one update field must be provided"
     );
     expect(updateApplicationSchema.parse({ notes: null })).toEqual({
       notes: null

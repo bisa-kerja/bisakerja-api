@@ -10,34 +10,34 @@ import {
 export const listApplicationsQuerySchema = z.strictObject({
   page: z.coerce
     .number()
-    .int("Halaman harus berupa bilangan bulat")
-    .min(1, "Halaman minimal 1")
+    .int("Page must be an integer")
+    .min(1, "Page must be at least 1")
     .default(1),
   limit: z.coerce
     .number()
-    .int("Batas data harus berupa bilangan bulat")
-    .min(1, "Batas data minimal 1")
-    .max(100, "Batas data maksimal 100")
+    .int("Limit must be an integer")
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit must be at most 100")
     .default(20),
   keyword: z
     .string()
     .trim()
-    .min(1, "Kata kunci tidak boleh kosong")
-    .max(120, "Kata kunci maksimal 120 karakter")
+    .min(1, "Keyword cannot be empty")
+    .max(120, "Keyword must be at most 120 characters")
     .optional(),
   status: z.enum(allowedApplicationStatuses).optional(),
   sort: z.enum(allowedApplicationSorts).default("updated_desc")
 });
 
 export const createApplicationSchema = z.strictObject({
-  jobId: z.uuid("ID lowongan tidak valid. Gunakan UUID yang benar"),
+  jobId: z.uuid("Job ID is invalid. Use a valid UUID"),
   status: z.enum(allowedApplicationStatuses).default("APPLIED"),
   notes: z
     .string()
     .trim()
     .max(
       applicationNotesMaxLength,
-      `Catatan maksimal ${String(applicationNotesMaxLength)} karakter`
+      `Notes must be at most ${String(applicationNotesMaxLength)} characters`
     )
     .optional(),
   source: z.enum(allowedApplicationSources).default("MANUAL")
@@ -52,7 +52,7 @@ export const updateApplicationSchema = z
           .trim()
           .max(
             applicationNotesMaxLength,
-            `Catatan maksimal ${String(applicationNotesMaxLength)} karakter`
+            `Notes must be at most ${String(applicationNotesMaxLength)} characters`
           ),
         z.null()
       ])
@@ -64,7 +64,7 @@ export const updateApplicationSchema = z
       context.addIssue({
         code: "custom",
         path: [],
-        message: "Minimal satu field pembaruan harus diisi"
+        message: "At least one update field must be provided"
       });
     }
   });
@@ -76,13 +76,13 @@ export const updateApplicationStatusSchema = z.strictObject({
     .trim()
     .max(
       applicationNotesMaxLength,
-      `Catatan maksimal ${String(applicationNotesMaxLength)} karakter`
+      `Notes must be at most ${String(applicationNotesMaxLength)} characters`
     )
     .optional()
 });
 
 export const applicationParamsSchema = z.strictObject({
-  applicationId: z.uuid("ID lamaran tidak valid. Gunakan UUID yang benar")
+  applicationId: z.uuid("Application ID is invalid. Use a valid UUID")
 });
 
 export type ListApplicationsQueryInput = z.infer<

@@ -147,10 +147,10 @@ Validation:
 
 ## Response Schema
 
-`GET /api/v1/me/applications` returns message `Daftar lamaran berhasil diambil`.
-`POST /api/v1/me/applications` returns message `Lamaran berhasil dibuat`.
-`PATCH /api/v1/me/applications/:applicationId` returns message `Lamaran berhasil diperbarui`.
-`PATCH /api/v1/me/applications/:applicationId/status` returns message `Status lamaran berhasil diperbarui`.
+`GET /api/v1/me/applications` returns message `Applications retrieved successfully`.
+`POST /api/v1/me/applications` returns message `Application created successfully`.
+`PATCH /api/v1/me/applications/:applicationId` returns message `Application updated successfully`.
+`PATCH /api/v1/me/applications/:applicationId/status` returns message `Application status updated successfully`.
 
 ### Application Resource
 
@@ -202,7 +202,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Daftar lamaran berhasil diambil",
+  "message": "Applications retrieved successfully",
   "data": [
     {
       "id": "55555555-5555-4555-8555-555555555555",
@@ -359,9 +359,9 @@ Database rules:
 
 Validation detail examples for `422 VALIDATION_ERROR`:
 
-- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
-- `status`: `Status lamaran tidak didukung. Gunakan status yang tersedia`
-- `""`: `Minimal satu field pembaruan harus diisi`
+- `jobId`: `Job ID is invalid. Use a valid UUID`
+- `status`: `Application status must use one of the supported values`
+- `""`: `At least one update field must be provided`
 
 ## Observability
 

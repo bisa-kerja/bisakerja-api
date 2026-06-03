@@ -209,7 +209,7 @@ Refresh cookies use the configured `AUTH_REFRESH_COOKIE_NAME`, `HttpOnly`, expli
 ```json
 {
   "success": true,
-  "message": "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
+  "message": "Account registered successfully. Please verify your email",
   "data": {
     "user": {
       "id": "user_123",
@@ -236,7 +236,7 @@ The register session is access-token only. It does not set a refresh cookie and 
 ```json
 {
   "success": true,
-  "message": "Login berhasil",
+  "message": "Login successful",
   "data": {
     "user": {
       "id": "user_123",
@@ -261,7 +261,7 @@ The register session is access-token only. It does not set a refresh cookie and 
 ```json
 {
   "success": true,
-  "message": "Email berhasil diverifikasi",
+  "message": "Email verified successfully",
   "data": {
     "user": {
       "id": "user_123",
@@ -406,11 +406,11 @@ Use generic messages for login and password reset discovery paths to avoid accou
 
 Validation detail examples for `422 VALIDATION_ERROR`:
 
-- `username`: `Username hanya boleh berisi huruf kecil, angka, dan underscore, contoh salman_123`
-- `email`: `Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com`
-- `phoneNumber`: `Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789`
-- `password`: `Kata sandi tidak memenuhi syarat: ...`
-- `confirmPassword`: `Konfirmasi kata sandi tidak sesuai. Samakan dengan kata sandi`
+- `username`: `Username may only contain lowercase letters, numbers, and underscores, for example salman_123`
+- `email`: `Email is invalid. Use a complete email format, for example name@domain.com`
+- `phoneNumber`: `Phone number is invalid. Use an Indonesian phone number, for example +628123456789`
+- `password`: `Password does not meet requirements: ...`
+- `confirmPassword`: `Password confirmation must match the password`
 
 ## Security Requirements
 

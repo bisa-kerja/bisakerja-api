@@ -31,7 +31,7 @@ export class UsersService {
 
       if (duplicate && duplicate.id !== userId) {
         throw new ConflictError(
-          "Username sudah terdaftar",
+          "Username is already registered",
           usersErrorCodes.usernameAlreadyRegistered
         );
       }
@@ -87,7 +87,7 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundError(
-        "User tidak ditemukan",
+        "Current user not found",
         usersErrorCodes.userNotFound
       );
     }

@@ -7,9 +7,9 @@ export const aiJobRecommendationsErrorCodes = {
 } as const;
 
 export const aiJobRecommendationsSuccessMessages = {
-  generated: "Rekomendasi pekerjaan berhasil dibuat",
-  latestRetrieved: "Rekomendasi pekerjaan terbaru berhasil diambil",
-  detailRetrieved: "Detail rekomendasi pekerjaan berhasil diambil"
+  generated: "Job recommendations created successfully",
+  latestRetrieved: "Latest job recommendations retrieved successfully",
+  detailRetrieved: "Job recommendation detail retrieved successfully"
 } as const;
 
 export const defaultJobRecommendationLimit = 10;

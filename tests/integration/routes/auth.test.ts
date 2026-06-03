@@ -47,7 +47,7 @@ describe("auth routes", () => {
     expect(typeof body.data.session.accessToken).toBe("string");
     expect(response.body).toEqual({
       success: true,
-      message: "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
+      message: "Account registered successfully. Please verify your email",
       data: {
         user: {
           id: body.data.user.id,
@@ -549,7 +549,7 @@ describe("auth routes", () => {
     ).toBe(true);
     expect(exchange.body).toMatchObject({
       success: true,
-      message: "Login Google berhasil",
+      message: "Google login successful",
       data: {
         user: {
           email: "google.user@example.com",

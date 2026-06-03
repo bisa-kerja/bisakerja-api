@@ -72,7 +72,7 @@ export class AuthService {
 
     if (existingEmail) {
       throw new ConflictError(
-        "Email sudah terdaftar",
+        "Email is already registered",
         authErrorCodes.emailAlreadyRegistered
       );
     }
@@ -83,7 +83,7 @@ export class AuthService {
 
     if (existingUsername) {
       throw new ConflictError(
-        "Username sudah terdaftar",
+        "Username is already registered",
         authErrorCodes.usernameAlreadyRegistered
       );
     }
@@ -183,7 +183,7 @@ export class AuthService {
 
     if (!profile.emailVerified) {
       throw new AuthorizationError(
-        "Email Google belum terverifikasi",
+        "Google email is not verified",
         authErrorCodes.googleOauthEmailUnverified
       );
     }
@@ -348,14 +348,14 @@ export class AuthService {
 
     if (!token) {
       throw new BadRequestError(
-        "Token reset kata sandi tidak valid",
+        "Password reset token is invalid",
         authErrorCodes.passwordResetTokenInvalid
       );
     }
 
     if (token.expiresAt <= this.now()) {
       throw new BadRequestError(
-        "Token reset kata sandi sudah kedaluwarsa",
+        "Password reset token has expired",
         authErrorCodes.passwordResetTokenExpired
       );
     }
@@ -380,14 +380,14 @@ export class AuthService {
 
     if (!token) {
       throw new BadRequestError(
-        "OTP verifikasi email tidak valid",
+        "Email verification OTP is invalid",
         authErrorCodes.emailVerificationInvalid
       );
     }
 
     if (token.expiresAt <= this.now()) {
       throw new BadRequestError(
-        "OTP verifikasi email sudah kedaluwarsa",
+        "Email verification OTP has expired",
         authErrorCodes.emailVerificationExpired
       );
     }
@@ -448,7 +448,7 @@ export class AuthService {
 
     if (!user.emailVerified) {
       throw new AuthorizationError(
-        "Verifikasi email diperlukan",
+        "Email verification is required",
         authErrorCodes.emailNotVerified
       );
     }
@@ -538,7 +538,7 @@ function trimUsername(value: string) {
 
 function invalidCredentials() {
   return new AuthenticationError(
-    "Email, username, atau kata sandi tidak valid",
+    "Email, username, or password is invalid",
     authErrorCodes.invalidCredentials
   );
 }

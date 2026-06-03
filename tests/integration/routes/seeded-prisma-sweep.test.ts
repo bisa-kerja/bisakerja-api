@@ -141,7 +141,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       url: "/api/v1/jobs?page=1&limit=5&keyword=backend"
     });
     expect(jobsList.status).toBe(200);
-    expectListEnvelope(jobsList.body, "Daftar lowongan berhasil diambil");
+    expectListEnvelope(jobsList.body, "Jobs retrieved successfully");
     expectListHasItems(jobsList.body);
     expectNoInternalJobFields(jobsList.body);
 
@@ -152,7 +152,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(jobDetail.status).toBe(200);
     expect(jobDetail.body).toMatchObject({
       success: true,
-      message: "Lowongan berhasil diambil",
+      message: "Job retrieved successfully",
       data: {
         id: seededJobForDetail.id,
         company: { id: seededJobForDetail.companyId },
@@ -329,7 +329,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
             startDate: "2024-01-15",
             endDate: null,
             isCurrent: true,
-            description: "Mengelola API pencarian lowongan dan autentikasi."
+            description: "Manages job search and authentication APIs."
           }
         ]
       }
@@ -404,7 +404,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
       headers: authHeadersForSeedUser
     });
     expect(listBookmarks.status).toBe(200);
-    expectListEnvelope(listBookmarks.body, "Daftar bookmark berhasil diambil");
+    expectListEnvelope(listBookmarks.body, "Bookmarks retrieved successfully");
     expectNoInternalJobFields(listBookmarks.body);
 
     const createBookmark = await request(app, requestResults, {
@@ -418,7 +418,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(createBookmark.status).toBe(201);
     expect(createBookmark.body).toMatchObject({
       success: true,
-      message: "Lowongan berhasil disimpan",
+      message: "Job saved successfully",
       data: {
         jobId: seededJobForBookmark.id
       },
@@ -444,7 +444,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(listApplications.status).toBe(200);
     expectListEnvelope(
       listApplications.body,
-      "Daftar lamaran berhasil diambil"
+      "Applications retrieved successfully"
     );
     expectListHasItems(listApplications.body);
     expectNoInternalJobFields(listApplications.body);
@@ -462,7 +462,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(createApplication.status).toBe(201);
     expect(createApplication.body).toMatchObject({
       success: true,
-      message: "Lamaran berhasil dibuat",
+      message: "Application created successfully",
       data: {
         status: "APPLIED",
         source: "MANUAL",
@@ -485,7 +485,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(patchApplication.status).toBe(200);
     expect(patchApplication.body).toMatchObject({
       success: true,
-      message: "Lamaran berhasil diperbarui",
+      message: "Application updated successfully",
       data: {
         id: seededAnnisaApplication.id,
         notes: "Interview follow-up confirmed by seeded route sweep.",
@@ -506,7 +506,7 @@ describeIfDatabaseTestsEnabled("seeded Prisma route sweep", () => {
     expect(patchApplicationStatus.status).toBe(200);
     expect(patchApplicationStatus.body).toMatchObject({
       success: true,
-      message: "Status lamaran berhasil diperbarui",
+      message: "Application status updated successfully",
       data: {
         id: seededAnnisaApplication.id,
         status: "ACCEPTED",

@@ -19,7 +19,7 @@ const recommendationFiltersSchema = z
 
 export const generateJobRecommendationsSchema = z.strictObject({
   cvAnalysisResultId: z
-    .uuid("ID hasil analisis CV tidak valid. Gunakan UUID yang benar")
+    .uuid("CV analysis result ID is invalid. Use a valid UUID")
     .optional(),
   limit: z
     .int()
@@ -41,7 +41,7 @@ export const getJobRecommendationsQuerySchema = z.strictObject({
 
 export const jobRecommendationRunParamsSchema = z.strictObject({
   recommendationRunId: z.uuid(
-    "ID run rekomendasi pekerjaan tidak valid. Gunakan UUID yang benar"
+    "Job recommendation run ID is invalid. Use a valid UUID"
   )
 });
 

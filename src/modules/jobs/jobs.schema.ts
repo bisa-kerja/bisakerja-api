@@ -10,8 +10,8 @@ import {
 const optionalTrimmedString = z
   .string()
   .trim()
-  .min(1, "Nilai filter tidak boleh kosong")
-  .max(120, "Nilai filter maksimal 120 karakter")
+  .min(1, "Filter value cannot be empty")
+  .max(120, "Filter value must be at most 120 characters")
   .optional();
 
 const optionalSlug = z
@@ -20,23 +20,23 @@ const optionalSlug = z
   .toLowerCase()
   .regex(
     /^[a-z0-9-]+$/,
-    "Slug platform hanya boleh huruf kecil, angka, dan dash"
+    "Platform slug may only contain lowercase letters, numbers, and dashes"
   )
-  .max(80, "Slug platform maksimal 80 karakter")
+  .max(80, "Platform slug must be at most 80 characters")
   .optional();
 
 export const listJobsQuerySchema = z
   .strictObject({
     page: z.coerce
       .number()
-      .int("Halaman harus berupa bilangan bulat")
-      .min(1, "Halaman minimal 1")
+      .int("Page must be an integer")
+      .min(1, "Page must be at least 1")
       .default(1),
     limit: z.coerce
       .number()
-      .int("Batas data harus berupa bilangan bulat")
-      .min(1, "Batas data minimal 1")
-      .max(100, "Batas data maksimal 100")
+      .int("Limit must be an integer")
+      .min(1, "Limit must be at least 1")
+      .max(100, "Limit must be at most 100")
       .default(20),
     keyword: optionalTrimmedString,
     location: optionalTrimmedString,
@@ -47,13 +47,13 @@ export const listJobsQuerySchema = z
     experienceLevel: z.enum(allowedExperienceLevels).optional(),
     salaryMin: z.coerce
       .number()
-      .int("Gaji minimum harus berupa bilangan bulat")
-      .nonnegative("Gaji minimum tidak boleh negatif")
+      .int("Minimum salary must be an integer")
+      .nonnegative("Minimum salary cannot be negative")
       .optional(),
     salaryMax: z.coerce
       .number()
-      .int("Gaji maksimum harus berupa bilangan bulat")
-      .nonnegative("Gaji maksimum tidak boleh negatif")
+      .int("Maximum salary must be an integer")
+      .nonnegative("Maximum salary cannot be negative")
       .optional(),
     sourcePlatform: optionalSlug,
     skill: optionalTrimmedString,
@@ -69,13 +69,14 @@ export const listJobsQuerySchema = z
       context.addIssue({
         code: "custom",
         path: ["salaryMax"],
-        message: "Gaji maksimum harus lebih besar atau sama dengan gaji minimum"
+        message:
+          "Maximum salary must be greater than or equal to minimum salary"
       });
     }
   });
 
 export const jobParamsSchema = z.strictObject({
-  jobId: z.uuid("ID lowongan tidak valid. Gunakan UUID yang benar")
+  jobId: z.uuid("Job ID is invalid. Use a valid UUID")
 });
 
 export type ListJobsQueryInput = z.infer<typeof listJobsQuerySchema>;

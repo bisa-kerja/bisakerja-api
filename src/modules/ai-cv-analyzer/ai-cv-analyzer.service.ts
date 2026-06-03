@@ -125,10 +125,10 @@ export class AiCvAnalyzerService {
     uploadedFile: UploadedCvFile | null
   ): Promise<CvFileResource> {
     if (!uploadedFile) {
-      throw createValidationError("File CV wajib diunggah", [
+      throw createValidationError("CV file is required", [
         {
           path: "cvFile",
-          message: "File CV wajib diunggah",
+          message: "CV file is required",
           code: "custom"
         }
       ]);
@@ -213,7 +213,7 @@ export class AiCvAnalyzerService {
 
     if (!record) {
       throw new NotFoundError(
-        "Hasil analisis CV tidak ditemukan",
+        "CV analysis result not found",
         aiCvAnalyzerErrorCodes.cvAnalysisResultNotFound
       );
     }
@@ -231,7 +231,7 @@ export class AiCvAnalyzerService {
 
     if (!record) {
       throw new NotFoundError(
-        "Hasil analisis CV tidak ditemukan",
+        "CV analysis result not found",
         aiCvAnalyzerErrorCodes.cvAnalysisResultNotFound
       );
     }
@@ -247,7 +247,7 @@ export class AiCvAnalyzerService {
 
     if (!metadata) {
       throw new NotFoundError(
-        "CV aktif tidak ditemukan",
+        "Active CV not found",
         aiCvAnalyzerErrorCodes.cvFileNotFound
       );
     }
@@ -306,14 +306,14 @@ export class AiCvAnalyzerService {
 
       if (!metadata) {
         throw new NotFoundError(
-          "CV tidak ditemukan",
+          "CV not found",
           aiCvAnalyzerErrorCodes.cvFileNotFound
         );
       }
 
       if (metadata.userId !== userId) {
         throw new NotFoundError(
-          "CV tidak ditemukan",
+          "CV not found",
           aiCvAnalyzerErrorCodes.cvFileNotFound
         );
       }
@@ -335,10 +335,10 @@ export class AiCvAnalyzerService {
       );
 
       if (!metadata) {
-        throw createValidationError("CV aktif belum tersedia", [
+        throw createValidationError("Active CV is not available yet", [
           {
             path: "cvFileId",
-            message: "Unggah CV atau kirim ID file CV yang valid",
+            message: "Upload a CV or send a valid CV file ID",
             code: "custom"
           }
         ]);
@@ -354,10 +354,10 @@ export class AiCvAnalyzerService {
       };
     }
 
-    throw createValidationError("File CV wajib diunggah", [
+    throw createValidationError("CV file is required", [
       {
         path: "cvFile",
-        message: "File CV PDF diperlukan untuk analisis",
+        message: "PDF CV file is required for analysis",
         code: "custom"
       }
     ]);
@@ -675,10 +675,10 @@ async function resolveCvBytes(
   }
 
   if (!storage.readFile) {
-    throw createValidationError("File CV referensi tidak bisa dibaca", [
+    throw createValidationError("Reference CV file cannot be read", [
       {
         path: "cvFileId",
-        message: "Storage CV tidak mendukung pembacaan file referensi",
+        message: "CV storage does not support reading reference files",
         code: "custom"
       }
     ]);
@@ -727,8 +727,8 @@ function buildJobFitSummary(
   }
 
   return matched
-    ? `CV menunjukkan kecocokan melalui ${matched}${missing ? `, dengan gap pada ${missing}` : ""}.`
-    : "Kecocokan CV dihitung dari evidence yang berhasil diparse.";
+    ? `CV shows fit through ${matched}${missing ? `, with gaps in ${missing}` : ""}.`
+    : "CV fit is based on available parsed evidence.";
 }
 
 function buildAtsSummary(
@@ -742,8 +742,8 @@ function buildAtsSummary(
       : "CV structure is readable based on parser evidence.";
   }
   return issues
-    ? `Review ATS menemukan ${issues}.`
-    : "Struktur CV terbaca berdasarkan evidence parser.";
+    ? `ATS review found ${issues}.`
+    : "CV structure is readable based on parser evidence.";
 }
 
 function buildOverallImpression(
@@ -757,8 +757,8 @@ function buildOverallImpression(
       : "Overall impression is grounded in model evidence.";
   }
   return evidence
-    ? `Impresi keseluruhan berdasarkan ${evidence}.`
-    : "Impresi keseluruhan dibuat dari evidence model.";
+    ? `Overall impression is grounded in ${evidence}.`
+    : "Overall impression is grounded in model evidence.";
 }
 
 function buildTopActionables(
@@ -770,18 +770,18 @@ function buildTopActionables(
   const fallback =
     language === "en"
       ? "Keep CV claims specific and evidence-based."
-      : "Pastikan klaim CV spesifik dan berbasis evidence.";
+      : "Keep CV claims specific and evidence-based.";
 
   return [
     ...missing.map((skill) =>
       language === "en"
         ? `Add stronger evidence for ${skill}.`
-        : `Tambahkan evidence untuk ${skill}.`
+        : `Add stronger evidence for ${skill}.`
     ),
     ...ats.map((issue) =>
       language === "en"
         ? `Fix ATS issue: ${issue}.`
-        : `Perbaiki isu ATS: ${issue}.`
+        : `Fix ATS issue: ${issue}.`
     ),
     fallback
   ].slice(0, 3);
@@ -793,13 +793,13 @@ function buildSectionReviews(
 ): PublicCvAnalysisResponse["sectionReviews"] {
   return [
     {
-      sectionName: language === "en" ? "Skills" : "Keahlian",
+      sectionName: language === "en" ? "Skills" : "Skills",
       analysis: buildJobFitSummary(response, language),
       actionPoints: buildTopActionables(response, language).slice(0, 2),
       whyItsImportantForYou:
         language === "en"
           ? "Recruiters compare visible skills with job requirements."
-          : "Recruiter membandingkan skill terlihat dengan kebutuhan lowongan."
+          : "Recruiter compares visible skills with job requirements."
     },
     {
       sectionName: "ATS",
@@ -809,12 +809,12 @@ function buildSectionReviews(
         : [
             language === "en"
               ? "Keep sections clear and searchable."
-              : "Pertahankan section jelas dan mudah dicari."
+              : "Keep sections clear and searchable."
           ],
       whyItsImportantForYou:
         language === "en"
           ? "Readable CV text improves automated screening."
-          : "Teks CV yang terbaca membantu screening otomatis."
+          : "Readable CV text improves automated screening."
     }
   ];
 }
@@ -827,8 +827,8 @@ function buildRecommendationReason(skills: string[], language: "id" | "en") {
       : "Recommended from model ranking evidence.";
   }
   return matched
-    ? `Skill cocok: ${matched}.`
-    : "Direkomendasikan dari evidence ranking model.";
+    ? `Matched skills: ${matched}.`
+    : "Recommended from model ranking evidence.";
 }
 
 function buildRecommendationNextStep(skills: string[], language: "id" | "en") {
@@ -839,8 +839,8 @@ function buildRecommendationNextStep(skills: string[], language: "id" | "en") {
       : "Review job details before applying.";
   }
   return missing
-    ? `Siapkan evidence untuk ${missing}.`
-    : "Review detail lowongan sebelum melamar.";
+    ? `Prepare evidence for ${missing}.`
+    : "Review job details before applying.";
 }
 
 function createValidationError(

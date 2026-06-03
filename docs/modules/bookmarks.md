@@ -142,7 +142,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Daftar bookmark berhasil diambil",
+  "message": "Bookmarks retrieved successfully",
   "data": [
     {
       "id": "44444444-4444-4444-8444-444444444444",
@@ -205,7 +205,7 @@ Successful creation returns HTTP `201`.
 ```json
 {
   "success": true,
-  "message": "Lowongan berhasil disimpan",
+  "message": "Job saved successfully",
   "data": {
     "id": "44444444-4444-4444-8444-444444444444",
     "jobId": "11111111-1111-4111-8111-111111111111",
@@ -216,7 +216,7 @@ Successful creation returns HTTP `201`.
 ```
 
 Delete returns `204` with no response body for MVP.
-List response message is `Daftar bookmark berhasil diambil`.
+List response message is `Bookmarks retrieved successfully`.
 
 ## Service Logic
 
@@ -291,8 +291,8 @@ Database rules:
 
 Validation detail examples for `422 VALIDATION_ERROR`:
 
-- `jobId`: `ID lowongan tidak valid. Gunakan UUID yang benar`
-- `sort`: `Urutan tidak didukung. Gunakan nilai urutan yang tersedia`
+- `jobId`: `Job ID is invalid. Use a valid UUID`
+- `sort`: `Sort is not supported. Use one of the supported sort values`
 
 ## Observability
 

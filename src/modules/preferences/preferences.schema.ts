@@ -16,14 +16,14 @@ import {
 
 const targetRoleSchema = z
   .string()
-  .min(1, "Target peran wajib diisi")
-  .max(120, "Target peran maksimal 120 karakter")
+  .min(1, "Target role is required")
+  .max(120, "Target role must be at most 120 characters")
   .transform((value) => normalizeWhitespace(value));
 
 const targetRolesSchema = z
   .array(targetRoleSchema)
-  .min(1, "Minimal satu target peran wajib diisi")
-  .max(20, "Maksimal 20 target peran")
+  .min(1, "At least one target role is required")
+  .max(20, "At most 20 target roles are allowed")
   .superRefine((roles, context) => {
     const seen = new Set<string>();
 
@@ -33,7 +33,7 @@ const targetRolesSchema = z
         context.addIssue({
           code: "custom",
           path: [index],
-          message: "Target peran tidak boleh duplikat"
+          message: "Target roles must not be duplicated"
         });
       }
       seen.add(key);
@@ -43,12 +43,12 @@ const targetRolesSchema = z
 const locationSchema = z.strictObject({
   province: z
     .string()
-    .min(1, "Provinsi wajib diisi")
-    .max(120, "Provinsi maksimal 120 karakter")
+    .min(1, "Province is required")
+    .max(120, "Province must be at most 120 characters")
     .transform((value) => normalizeWhitespace(value)),
   city: z
     .string()
-    .max(120, "Kota maksimal 120 karakter")
+    .max(120, "City must be at most 120 characters")
     .optional()
     .nullable()
     .transform((value) => normalizeOptionalWhitespace(value))
@@ -56,28 +56,28 @@ const locationSchema = z.strictObject({
 
 const locationsSchema = z
   .array(locationSchema)
-  .min(1, "Minimal satu lokasi target wajib diisi")
-  .max(20, "Maksimal 20 lokasi target");
+  .min(1, "At least one target location is required")
+  .max(20, "At most 20 target locations are allowed");
 
 export const salaryExpectationSchema = z
   .strictObject({
     min: z
-      .int("Ekspektasi gaji minimum harus berupa angka")
-      .nonnegative("Ekspektasi gaji minimum tidak boleh negatif")
+      .int("Minimum salary expectation must be an integer")
+      .nonnegative("Minimum salary expectation cannot be negative")
       .optional()
       .nullable()
       .default(null),
     max: z
-      .int("Ekspektasi gaji maksimum harus berupa angka")
-      .nonnegative("Ekspektasi gaji maksimum tidak boleh negatif")
+      .int("Maximum salary expectation must be an integer")
+      .nonnegative("Maximum salary expectation cannot be negative")
       .optional()
       .nullable()
       .default(null),
     currency: z
       .string()
       .trim()
-      .min(3, "Mata uang gaji harus 3 karakter")
-      .max(3, "Mata uang gaji harus 3 karakter")
+      .min(3, "Salary currency must be 3 characters")
+      .max(3, "Salary currency must be 3 characters")
       .transform((value) => value.toUpperCase())
       .default(defaultSalaryCurrency),
     period: z.enum(allowedSalaryPeriods).default(defaultSalaryPeriod)
@@ -92,7 +92,7 @@ export const salaryExpectationSchema = z
         code: "custom",
         path: ["max"],
         message:
-          "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum"
+          "Maximum salary expectation must be greater than or equal to minimum"
       });
     }
   })
@@ -110,8 +110,8 @@ export const upsertPreferencesSchema = z.strictObject({
   locations: locationsSchema,
   workTypes: z
     .array(z.enum(allowedWorkTypes))
-    .min(1, "Minimal satu tipe kerja wajib diisi")
-    .max(3, "Maksimal 3 tipe kerja"),
+    .min(1, "At least one work type is required")
+    .max(3, "At most 3 work types are allowed"),
   salaryExpectation: salaryExpectationSchema,
   emailNotificationsEnabled: z.boolean()
 });
@@ -119,20 +119,20 @@ export const upsertPreferencesSchema = z.strictObject({
 const partialSalaryExpectationSchema = z
   .strictObject({
     min: z
-      .int("Ekspektasi gaji minimum harus berupa angka")
-      .nonnegative("Ekspektasi gaji minimum tidak boleh negatif")
+      .int("Minimum salary expectation must be an integer")
+      .nonnegative("Minimum salary expectation cannot be negative")
       .optional()
       .nullable(),
     max: z
-      .int("Ekspektasi gaji maksimum harus berupa angka")
-      .nonnegative("Ekspektasi gaji maksimum tidak boleh negatif")
+      .int("Maximum salary expectation must be an integer")
+      .nonnegative("Maximum salary expectation cannot be negative")
       .optional()
       .nullable(),
     currency: z
       .string()
       .trim()
-      .min(3, "Mata uang gaji harus 3 karakter")
-      .max(3, "Mata uang gaji harus 3 karakter")
+      .min(3, "Salary currency must be 3 characters")
+      .max(3, "Salary currency must be 3 characters")
       .transform((value) => value.toUpperCase())
       .optional(),
     period: z.enum(allowedSalaryPeriods).optional()
@@ -147,7 +147,7 @@ const partialSalaryExpectationSchema = z
         code: "custom",
         path: ["max"],
         message:
-          "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum"
+          "Maximum salary expectation must be greater than or equal to minimum"
       });
     }
   });
@@ -159,8 +159,8 @@ export const patchPreferencesSchema = z.strictObject({
   locations: locationsSchema.optional(),
   workTypes: z
     .array(z.enum(allowedWorkTypes))
-    .min(1, "Minimal satu tipe kerja wajib diisi")
-    .max(3, "Maksimal 3 tipe kerja")
+    .min(1, "At least one work type is required")
+    .max(3, "At most 3 work types are allowed")
     .optional(),
   salaryExpectation: partialSalaryExpectationSchema.optional(),
   emailNotificationsEnabled: z.boolean().optional()

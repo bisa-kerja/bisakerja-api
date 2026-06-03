@@ -49,7 +49,7 @@ The Health module does not own:
 ```json
 {
   "success": true,
-  "message": "Layanan aktif",
+  "message": "Service is live",
   "data": {
     "service": "bisakerja-api",
     "status": "live",
@@ -64,7 +64,7 @@ The Health module does not own:
 ```json
 {
   "success": true,
-  "message": "Layanan siap",
+  "message": "Service is ready",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",

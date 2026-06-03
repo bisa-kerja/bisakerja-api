@@ -44,12 +44,12 @@ describe("auth schemas", () => {
     expect(
       issues.find((issue) => issue.path.join(".") === "email")?.message
     ).toBe(
-      "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com"
+      "Email is invalid. Use a complete email format, for example name@domain.com"
     );
     expect(
       issues.find((issue) => issue.path.join(".") === "confirmPassword")
         ?.message
-    ).toBe("Konfirmasi kata sandi tidak sesuai. Samakan dengan kata sandi");
+    ).toBe("Password confirmation must match the password");
   });
 
   test("accepts email or username login identifiers", () => {

@@ -61,7 +61,7 @@ export class AuthController {
           user: serializeAuthUser(result.user),
           session: result.session
         },
-        "Akun berhasil didaftarkan. Silakan verifikasi email Anda."
+        "Account registered successfully. Please verify your email"
       )
     );
   };
@@ -83,7 +83,7 @@ export class AuthController {
         result: "success"
       });
 
-      res.json(this.authSessionResponse(result, "Login berhasil"));
+      res.json(this.authSessionResponse(result, "Login successful"));
     } catch (error) {
       emitAuditEvent({
         action: "auth.login_failed",
@@ -115,7 +115,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(this.authSessionResponse(result, "Sesi berhasil diperbarui"));
+    res.json(this.authSessionResponse(result, "Session refreshed"));
   };
 
   logout = async (req: Request, res: Response) => {
@@ -134,7 +134,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(successResponse(null, "Logout berhasil"));
+    res.json(successResponse(null, "Logout successful"));
   };
 
   forgotPassword = async (req: Request, res: Response) => {
@@ -161,7 +161,7 @@ export class AuthController {
       result: "success"
     });
 
-    res.json(successResponse(null, "Reset kata sandi berhasil"));
+    res.json(successResponse(null, "Password reset successful"));
   };
 
   verifyEmail = async (req: Request, res: Response) => {
@@ -186,7 +186,7 @@ export class AuthController {
           user: serializeAuthUser(result.user),
           session: result.session
         },
-        "Email berhasil diverifikasi"
+        "Email verified successfully"
       )
     );
   };
@@ -202,7 +202,7 @@ export class AuthController {
     res.json(
       successResponse(
         { authorizeUrl: result.authorizeUrl },
-        "URL login Google berhasil dibuat"
+        "Google login URL created successfully"
       )
     );
   };
@@ -223,7 +223,7 @@ export class AuthController {
 
     if (!expectedState || !expectedNonce) {
       throw new BadRequestError(
-        "State Google tidak valid",
+        "Google OAuth state is invalid",
         authErrorCodes.googleOauthStateInvalid
       );
     }
@@ -232,7 +232,7 @@ export class AuthController {
     if (state !== expectedState) {
       clearGoogleOauthCookies(res, this.dependencies.config);
       throw new BadRequestError(
-        "State Google tidak valid",
+        "Google OAuth state is invalid",
         authErrorCodes.googleOauthStateInvalid
       );
     }
@@ -255,7 +255,7 @@ export class AuthController {
       metadata: { provider: "google" }
     });
 
-    res.json(this.authSessionResponse(result, "Login Google berhasil"));
+    res.json(this.authSessionResponse(result, "Google login successful"));
   };
 
   private authSessionResponse(

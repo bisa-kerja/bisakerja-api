@@ -43,7 +43,7 @@ describe("bookmarks schemas", () => {
     const invalidBodyJobId = saveBookmarkSchema.safeParse({ jobId: "job_123" });
     expect(invalidBodyJobId.success).toBe(false);
     expect(invalidBodyJobId.error?.issues[0]?.message).toBe(
-      "ID lowongan tidak valid. Gunakan UUID yang benar"
+      "Job ID is invalid. Use a valid UUID"
     );
 
     const invalidParamJobId = bookmarkParamsSchema.safeParse({
@@ -51,7 +51,7 @@ describe("bookmarks schemas", () => {
     });
     expect(invalidParamJobId.success).toBe(false);
     expect(invalidParamJobId.error?.issues[0]?.message).toBe(
-      "ID lowongan tidak valid. Gunakan UUID yang benar"
+      "Job ID is invalid. Use a valid UUID"
     );
   });
 });

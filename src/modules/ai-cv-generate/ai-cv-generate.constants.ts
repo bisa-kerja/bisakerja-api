@@ -1,5 +1,5 @@
 export const aiCvGenerateSuccessMessages = {
-  generated: "Markdown CV berhasil dibuat"
+  generated: "Markdown CV created successfully"
 } as const;
 
 export const aiCvGenerateErrorCodes = {

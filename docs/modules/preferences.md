@@ -142,14 +142,14 @@ Validation:
 
 ## Response Schema
 
-`GET /api/v1/me/preferences` returns message `Preferensi berhasil diambil`.
-`PUT /api/v1/me/preferences` returns message `Preferensi berhasil disimpan`.
-`PATCH /api/v1/me/preferences` returns message `Preferensi berhasil diperbarui`.
+`GET /api/v1/me/preferences` returns message `Preferences retrieved successfully`.
+`PUT /api/v1/me/preferences` returns message `Preferences saved successfully`.
+`PATCH /api/v1/me/preferences` returns message `Preferences updated successfully`.
 
 ```json
 {
   "success": true,
-  "message": "Preferensi berhasil diambil",
+  "message": "Preferences retrieved successfully",
   "data": {
     "id": "pref_123",
     "careerStatus": "FRESH_GRADUATE",
@@ -253,7 +253,7 @@ Consumers must read persisted preferences from Backend API persistence, not trus
 
 Validation detail example for salary range:
 
-- `salaryExpectation.max`: `Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum`
+- `salaryExpectation.max`: `Maximum salary expectation must be greater than or equal to minimum`
 
 ## Observability
 

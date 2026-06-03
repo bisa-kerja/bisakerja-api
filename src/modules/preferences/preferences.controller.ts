@@ -38,7 +38,7 @@ export class PreferencesController {
     res.json(
       successResponse(
         serializePreference(preference),
-        "Preferensi berhasil diambil"
+        "Preferences retrieved successfully"
       )
     );
   };
@@ -76,7 +76,7 @@ export class PreferencesController {
     res.json(
       successResponse(
         serializePreference(preference),
-        "Preferensi berhasil disimpan"
+        "Preferences saved successfully"
       )
     );
   };
@@ -105,7 +105,7 @@ export class PreferencesController {
     res.json(
       successResponse(
         serializePreference(preference),
-        "Preferensi berhasil diperbarui"
+        "Preferences updated successfully"
       )
     );
   };
