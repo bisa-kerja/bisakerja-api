@@ -186,6 +186,82 @@ describe("ai cv analyzer routes", () => {
     expect(JSON.stringify(response.body)).not.toContain("requestId");
   });
 
+  test("returns OpenAPI-compatible English fallback for all compare sources", async () => {
+    for (const compareSource of [
+      "BOOKMARK",
+      "JOB_SEARCH",
+      "DIRECT_JOB_DETAIL"
+    ] as const) {
+      const context = createAiCvAnalyzerRouteContext();
+      const response = await injectRoute(context.app, {
+        method: "POST",
+        url: "/api/v1/ai/cv-analyzer",
+        headers: authHeaders("user-1", `req_ai_cv_${compareSource}`),
+        formData: buildCvFormData({
+          overrides: {
+            language: "id",
+            compareSource,
+            ...(compareSource === "DIRECT_JOB_DETAIL"
+              ? { directJobId: "11111111-1111-4111-8111-111111111111" }
+              : {})
+          }
+        })
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        success: true,
+        data: {
+          language: "id",
+          analysisResult: {
+            schemaVersion: "cv-analysis-v2",
+            jobFitAlignment: {
+              score: 78,
+              summary:
+                "CV shows fit through TypeScript, PostgreSQL, with gaps in Docker."
+            },
+            atsFriendliness: {
+              score: 74,
+              summary: "ATS review found Weak keyword grouping."
+            },
+            overallImpression:
+              "Overall impression is grounded in entry-level backend alignment, deployment gap.",
+            topActionables: expect.arrayContaining([
+              "Add stronger evidence for Docker."
+            ]) as unknown,
+            sectionReviews: expect.arrayContaining([
+              expect.objectContaining({
+                sectionName: "Skills",
+                actionPoints: expect.arrayContaining([
+                  "Add stronger evidence for Docker."
+                ]) as unknown
+              })
+            ]) as unknown,
+            jobRecommendations: [
+              expect.objectContaining({
+                jobId: "11111111-1111-4111-8111-111111111111",
+                title: "Backend Developer",
+                matchScore: 82,
+                reason: "Matched skills: TypeScript, PostgreSQL.",
+                nextStep: "Prepare evidence for Docker."
+              })
+            ],
+            generatedCv: { available: false },
+            model: {
+              name: "fixture-cv-analyzer-model",
+              version: "test-2026-01"
+            },
+            analyzedAt: "2026-04-23T00:00:00.000Z"
+          }
+        },
+        meta: null
+      });
+      expect(JSON.stringify(response.body)).not.toMatch(
+        /storageKey|bytes|system prompt|token|email|phone|address/i
+      );
+    }
+  });
+
   test("uploads onboarding CV, exposes active CV, and reuses it for analyzer fallback", async () => {
     const context = createAiCvAnalyzerRouteContext();
 
@@ -828,6 +904,10 @@ function buildCvFormData(
 
   if (options.overrides?.cvFileId) {
     formData.set("cvFileId", options.overrides.cvFileId);
+  }
+
+  if (options.overrides?.directJobId) {
+    formData.set("directJobId", options.overrides.directJobId);
   }
 
   if (includeFile) {

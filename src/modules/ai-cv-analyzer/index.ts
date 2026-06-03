@@ -8,7 +8,10 @@ export {
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";
 export {
   buildCvAnalyzerPayload,
+  buildCvAnalyzerWrapperInput,
   buildPublicCvAnalysisResponse,
+  cvAnalyzerWrapperSystemPrompt,
+  validatePublicCvAnalysisResponse,
   mapCvAnalysisResource,
   mapCvFileResource,
   sanitizeOriginalFileName,

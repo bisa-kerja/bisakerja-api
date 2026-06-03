@@ -284,6 +284,14 @@ Response rules:
 - Do not return raw full CV text by default.
 - Keep generated CV explicitly unavailable in current contract.
 
+## Wrapper Prompt And Fallback Safety
+
+The public prose wrapper uses an allowlisted input only. Allowed fields are request id, requested language, job roles, compare source, input mode, model-core evidence, detected sections, and compact hydrated candidate metadata. Raw CV text, file bytes, storage keys, tokens, DB URLs, emails, phones, addresses, and full Model API payloads are excluded from wrapper input.
+
+Current staging returns English copy by default, including when `language=id` is requested. Generated wrapper output must pass strict JSON validation before persistence or frontend response. It must preserve model scores, model metadata, candidate ids, recommendation order, and recommendation scores exactly. Invalid or unsafe generated output is replaced by deterministic fallback copy.
+
+Safety filters reject or remove copy that exposes prompts, system/developer messages, secrets, tokens, PII-like contact/address data, unsupported companies/jobs, prompt-injection text, protected-class claims, guaranteed hiring outcomes, or invented evidence.
+
 ## Stored Analysis Results
 
 Stored result endpoints read sanitized snapshots from `cv_analysis_results`. They do not call Model API and do not re-run analysis.
