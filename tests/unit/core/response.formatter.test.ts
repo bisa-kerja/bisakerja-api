@@ -65,9 +65,9 @@ describe("response formatter", () => {
   });
 
   test("formats empty and error responses", () => {
-    expect(emptyResponse("Berhasil dihapus")).toEqual({
+    expect(emptyResponse("Delete completed successfully")).toEqual({
       success: true,
-      message: "Berhasil dihapus",
+      message: "Delete completed successfully",
       data: null,
       meta: null
     });

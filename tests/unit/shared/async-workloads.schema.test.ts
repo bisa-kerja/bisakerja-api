@@ -59,7 +59,7 @@ describe("async workloads schema", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(ZodError);
       if (error instanceof ZodError) {
-        expect(error.issues[0]?.message).toBe("OTP harus 6 digit angka");
+        expect(error.issues[0]?.message).toBe("OTP must be 6 digits");
       }
     }
 
