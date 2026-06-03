@@ -157,30 +157,56 @@ CV file validation:
 
 ## Backend-Prepared Model Payload
 
+Backend calls Model API through the internal multipart contract:
+
+```text
+POST /internal/model/cv-analysis
+content-type: multipart/form-data
+```
+
+Multipart fields:
+
+| Field           | Rule                                                                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `requestId`     | Required trace id from Backend request context.                                                                       |
+| `language`      | `id` or `en`; Backend maps to Prisma `ID`/`EN` only at persistence boundary.                                          |
+| `inputMode`     | `UPLOAD` or `REFERENCE`.                                                                                              |
+| `compareSource` | `BOOKMARK`, `JOB_SEARCH`, or `DIRECT_JOB_DETAIL`.                                                                     |
+| `jobRoles[]`    | Target roles selected for analysis.                                                                                   |
+| `cvFile`        | One PDF file part. For `REFERENCE`, Backend resolves and streams owned active/selected CV bytes.                      |
+| `jobCandidates` | JSON array of Backend-selected jobs with unique `jobId` and model-owned `scoringInput`.                               |
+| `rankingPolicy` | JSON object requiring candidate membership, deduplication, Backend hydration ownership, and max five recommendations. |
+
+Example `jobCandidates[]` item:
+
 ```json
 {
-  "requestId": "req_123",
-  "inputVersion": "cv-analyzer-v1",
-  "language": "ID",
-  "inputMode": "UPLOAD",
-  "compareSource": "JOB_SEARCH",
-  "cv": {
-    "fileId": "cv_file_123",
-    "mimeType": "application/pdf",
-    "sizeBytes": 524288,
-    "storageKey": "cv/user_123/cv_file_123.pdf"
+  "jobId": "11111111-1111-4111-8111-111111111111",
+  "scoringInput": {
+    "titleText": "Backend Developer",
+    "descriptionText": "Build REST APIs and PostgreSQL services.",
+    "requirementSummary": "TypeScript, PostgreSQL, API testing.",
+    "requiredSkills": ["typescript", "postgresql", "rest api"],
+    "requirements": ["Build REST APIs", "Maintain PostgreSQL schema"],
+    "roleFamily": "backend",
+    "experienceLevel": "ENTRY_LEVEL",
+    "workType": "REMOTE"
   },
-  "jobRoles": ["Backend Developer", "Software Engineer"]
+  "backendMetadata": {
+    "title": "Backend Developer",
+    "companyName": "Nusantara Tech",
+    "source": "JOB_SEARCH"
+  }
 }
 ```
 
 Payload rules:
 
-- Include only the temporary file reference or extracted text needed by Model API according to final integration design.
-- Do not include passwords, tokens, OTP values, or unrelated profile data.
-- Do not persist raw extracted CV text unless retention and privacy rules are documented.
-- Propagate request id to Model API.
-- Normalize frontend-facing language selection to the internal downstream enum expected by Model API.
+- Backend owns auth, file ownership, candidate retrieval, visibility/expiry filters, persistence, and final public response shape.
+- Model API owns PDF parsing, CV evidence extraction, ATS signals, scoring, and candidate reranking only.
+- Model API must not receive DB credentials, write backend data, hydrate jobs, decide auth/ownership, or generate final public wrapper fields.
+- `backendMetadata` is trace/hydration context only; Model API must validate recommendation `jobId` membership from `jobCandidates`.
+- Contract fixtures live in `artifacts/backend_model_api_contract/internal_contract_fixtures.json` and ownership matrix in `artifacts/backend_model_api_contract/openapi_prisma_owner_matrix.json`.
 
 ## Response Schema
 
