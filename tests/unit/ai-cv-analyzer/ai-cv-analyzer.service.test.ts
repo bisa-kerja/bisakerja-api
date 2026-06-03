@@ -200,7 +200,7 @@ describe("AiCvAnalyzerService", () => {
       matchScore: 82
     });
     expect(response.jobFitAlignment.summary).toBe(
-      "CV shows fit through TypeScript, PostgreSQL, with gaps in Docker."
+      "Your CV shows relevant evidence in TypeScript, PostgreSQL. Strengthen proof for Docker to improve role fit."
     );
     expect(response.overallImpression).toContain("Overall impression");
     expect(JSON.stringify(response)).not.toMatch(
@@ -237,18 +237,19 @@ describe("AiCvAnalyzerService", () => {
     );
 
     expect(response.jobFitAlignment.summary).toBe(
-      "CV shows fit through TypeScript, with gaps in Docker."
+      "Your CV shows relevant evidence in TypeScript. Strengthen proof for Docker to improve role fit."
     );
     expect(response.atsFriendliness.summary).toBe(
-      "ATS review found Weak keyword grouping."
+      "ATS review found Weak keyword grouping. Fix these so parsers can read your qualifications consistently."
     );
     expect(response.overallImpression).toBe(
-      "Overall impression is grounded in backend alignment."
+      "Overall impression is grounded in backend alignment. The CV is usable for review, but stronger quantified examples can make the fit clearer."
     );
     expect(JSON.stringify(response)).not.toMatch(
       /ignore previous|developer prompt|alice@example\.com|\+62 812|Jl\. Example/i
     );
   });
+
 
   test("uses optional GenAI wrapper when enabled and falls back when provider fails", async () => {
     const generated = {
@@ -330,7 +331,7 @@ describe("AiCvAnalyzerService", () => {
     );
 
     expect(fallbackResult.resource.analysisResult.overallImpression).toBe(
-      "Overall impression is grounded in entry-level backend alignment, deployment gap."
+      "Overall impression is grounded in entry-level backend alignment, deployment gap. The CV is usable for review, but stronger quantified examples can make the fit clearer."
     );
   });
 
@@ -448,6 +449,30 @@ describe("AiCvAnalyzerService", () => {
         code: "DOWNSTREAM_ERROR"
       });
     }
+  });
+
+  test("keeps staging fallback copy English for id and en requests", () => {
+    const idResponse = buildPublicCvAnalysisResponse(
+      modelApiFixtures.validCvAnalyzerResponse,
+      [jobRecord()],
+      "id"
+    );
+    const enResponse = buildPublicCvAnalysisResponse(
+      modelApiFixtures.validCvAnalyzerResponse,
+      [jobRecord()],
+      "en"
+    );
+
+    expect(idResponse.jobFitAlignment.summary).toBe(
+      enResponse.jobFitAlignment.summary
+    );
+    expect(idResponse.topActionables).toEqual(enResponse.topActionables);
+    expect(
+      idResponse.sectionReviews.map((section) => section.sectionName)
+    ).toEqual(["Skills", "ATS Readability", "Role Evidence"]);
+    expect(JSON.stringify(idResponse)).not.toMatch(
+      /\b(perbaiki|keterampilan|lamaran|ringkasan|cocok)\b/i
+    );
   });
 
   test("stores metadata, persists snapshots only when requested, and sanitizes filenames", async () => {
