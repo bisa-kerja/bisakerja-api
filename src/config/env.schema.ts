@@ -141,6 +141,18 @@ export const envSchema = z
     ),
     MODEL_API_SERVICE_TOKEN: requiredString("MODEL_API_SERVICE_TOKEN"),
     MODEL_API_ENABLE_MOCK: booleanSchema,
+    AI_CV_ANALYZER_GENAI_ENABLED: booleanSchema,
+    AI_CV_ANALYZER_GENAI_BASE_URL: requiredUrl("AI_CV_ANALYZER_GENAI_BASE_URL"),
+    AI_CV_ANALYZER_GENAI_MODEL: requiredString("AI_CV_ANALYZER_GENAI_MODEL"),
+    AI_CV_ANALYZER_GENAI_API_KEY: requiredString(
+      "AI_CV_ANALYZER_GENAI_API_KEY"
+    ),
+    AI_CV_ANALYZER_GENAI_TIMEOUT_MS: numberFromString(
+      "AI_CV_ANALYZER_GENAI_TIMEOUT_MS"
+    ).pipe(z.number().int().positive()),
+    AI_CV_ANALYZER_GENAI_MAX_RETRIES: numberFromString(
+      "AI_CV_ANALYZER_GENAI_MAX_RETRIES"
+    ).pipe(z.number().int().min(0).max(2)),
     SCRAPER_API_SERVICE_TOKEN: requiredString("SCRAPER_API_SERVICE_TOKEN"),
     GOOGLE_OAUTH_ENABLED: booleanSchema,
     GOOGLE_OAUTH_CLIENT_ID: requiredString("GOOGLE_OAUTH_CLIENT_ID"),

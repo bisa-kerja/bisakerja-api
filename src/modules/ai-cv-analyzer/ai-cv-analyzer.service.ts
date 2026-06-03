@@ -17,6 +17,7 @@ import type {
   CvAnalysisResource,
   CvAnalysisCandidateRecord,
   CvAnalysisResult,
+  CvAnalyzerWrapperInput,
   CvFileResource,
   CvFileMetadataRecord,
   CvFileStorage,
@@ -74,10 +75,17 @@ export class AiCvAnalyzerService {
       );
       const modelCoreResponse =
         await this.options.modelApiClient.analyzeCv(payload);
+      const wrapperResponse = await this.generateWrapperResponse(
+        requestId,
+        cvSource.input,
+        modelCoreResponse,
+        candidates
+      );
       const response = buildPublicCvAnalysisResponse(
         modelCoreResponse,
         candidates,
-        cvSource.input.language
+        cvSource.input.language,
+        wrapperResponse
       );
       const persisted = input.persistResult;
 
@@ -255,6 +263,30 @@ export class AiCvAnalyzerService {
     }
 
     return mapCvFileResource(metadata);
+  }
+
+  private async generateWrapperResponse(
+    requestId: string,
+    input: AnalyzeCvInput,
+    modelCoreResponse: CvAnalyzerModelResponse,
+    candidates: CvAnalysisCandidateRecord[]
+  ): Promise<unknown> {
+    if (!this.options.genAiEnabled || !this.options.genAiClient) {
+      return undefined;
+    }
+
+    try {
+      return await this.options.genAiClient.generateCvAnalysisCopy(
+        buildCvAnalyzerWrapperInput(
+          requestId,
+          input,
+          modelCoreResponse,
+          candidates
+        )
+      );
+    } catch {
+      return undefined;
+    }
   }
 
   private async resolveCvSource(
@@ -453,7 +485,7 @@ export function buildCvAnalyzerWrapperInput(
   input: AnalyzeCvInput,
   modelCoreResponse: CvAnalyzerModelResponse,
   candidates: CvAnalysisCandidateRecord[]
-) {
+): CvAnalyzerWrapperInput {
   return {
     requestId,
     language: "en" as const,

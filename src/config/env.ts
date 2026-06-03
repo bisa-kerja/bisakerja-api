@@ -76,6 +76,14 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         serviceToken: parsed.MODEL_API_SERVICE_TOKEN,
         enableMock: parsed.MODEL_API_ENABLE_MOCK
       },
+      aiCvAnalyzerGenAi: {
+        enabled: parsed.AI_CV_ANALYZER_GENAI_ENABLED,
+        baseUrl: parsed.AI_CV_ANALYZER_GENAI_BASE_URL,
+        model: parsed.AI_CV_ANALYZER_GENAI_MODEL,
+        apiKey: parsed.AI_CV_ANALYZER_GENAI_API_KEY,
+        timeoutMs: parsed.AI_CV_ANALYZER_GENAI_TIMEOUT_MS,
+        maxRetries: parsed.AI_CV_ANALYZER_GENAI_MAX_RETRIES
+      },
       scraperApi: {
         serviceToken: parsed.SCRAPER_API_SERVICE_TOKEN
       },

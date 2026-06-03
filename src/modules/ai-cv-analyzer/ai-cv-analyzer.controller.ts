@@ -23,7 +23,9 @@ export class AiCvAnalyzerController {
       modelApiClient: dependencies.modelApiClient,
       storage: dependencies.storage,
       cvRetentionDays: dependencies.config.uploads.cvRetentionDays,
-      now: dependencies.now
+      now: dependencies.now,
+      genAiEnabled: dependencies.config.integrations.aiCvAnalyzerGenAi.enabled,
+      genAiClient: dependencies.genAiClient
     });
     this.now = dependencies.now ?? (() => new Date());
   }

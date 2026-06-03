@@ -286,11 +286,13 @@ Response rules:
 
 ## Wrapper Prompt And Fallback Safety
 
-The public prose wrapper uses an allowlisted input only. Allowed fields are request id, requested language, job roles, compare source, input mode, model-core evidence, detected sections, and compact hydrated candidate metadata. Raw CV text, file bytes, storage keys, tokens, DB URLs, emails, phones, addresses, and full Model API payloads are excluded from wrapper input.
+The public prose wrapper uses an allowlisted input only. Allowed fields are request id, requested language, job roles, compare source, input mode, model-core evidence, detected sections, and compact hydrated candidate metadata. Raw CV text, file bytes, storage keys, tokens, DB URLs, emails, phones, addresses, auth headers, and full Model API payloads are excluded from wrapper input.
 
-Current staging returns English copy by default, including when `language=id` is requested. Generated wrapper output must pass strict JSON validation before persistence or frontend response. It must preserve model scores, model metadata, candidate ids, recommendation order, and recommendation scores exactly. Invalid or unsafe generated output is replaced by deterministic fallback copy.
+Deterministic Backend fallback remains the default. Optional provider-generated copy is controlled by `AI_CV_ANALYZER_GENAI_ENABLED` and uses an OpenAI-compatible chat-completions provider such as OpenRouter. The provider request uses the backend-owned injection-resistant system prompt, JSON-only response mode, configured timeout, sanitized request-id logging, and no retry by default.
 
-Safety filters reject or remove copy that exposes prompts, system/developer messages, secrets, tokens, PII-like contact/address data, unsupported companies/jobs, prompt-injection text, protected-class claims, guaranteed hiring outcomes, or invented evidence.
+Current staging returns English copy by default, including when `language=id` is requested. Generated wrapper output must pass strict JSON validation before persistence or frontend response. It must preserve model scores, model metadata, candidate ids, recommendation order, recommendation count, recommendation scores, and analysis timestamp exactly. Invalid or unsafe generated output is replaced by deterministic fallback copy without failing successful model-core inference.
+
+Safety filters reject or remove copy that exposes prompts, system/developer messages, secrets, tokens, PII-like contact/address data, unsupported companies/jobs, prompt-injection text, protected-class claims, guaranteed hiring outcomes, or invented evidence. Provider timeout, malformed JSON, markdown output, schema drift, score mutation, candidate mutation, and safety rejection all fall back to deterministic copy.
 
 ## Stored Analysis Results
 
@@ -332,9 +334,11 @@ Privacy rules:
 6. Build backend-prepared Model API payload.
 7. Call Model API with timeout and request id.
 8. Validate Model API response with Zod.
-9. Map result to product-safe response.
-10. Optionally persist `CvAnalysisResult` snapshot and sanitized file metadata.
-11. Return standard success envelope.
+9. Build allowlisted wrapper input.
+10. If `AI_CV_ANALYZER_GENAI_ENABLED=true`, call the configured GenAI provider for JSON-only public copy.
+11. Validate generated copy against schema, safety filters, and model-owned invariants; fall back deterministically on failure.
+12. Optionally persist `CvAnalysisResult` snapshot and sanitized file metadata.
+13. Return standard success envelope.
 
 ## Repository And Database Usage
 
@@ -393,15 +397,17 @@ Suggested metadata:
 
 ## Downstream Failure Behavior
 
-| Failure                    | Status     | Error code                                       | Behavior                            |
-| -------------------------- | ---------- | ------------------------------------------------ | ----------------------------------- |
-| Invalid file type          | 422        | `VALIDATION_ERROR`                               | Reject before storage or model call |
-| File too large             | 413        | `PAYLOAD_TOO_LARGE`                              | Reject before storage or model call |
-| Job not found              | 404        | `JOB_NOT_FOUND`                                  | No model call                       |
-| Bookmark not owned         | 404        | `BOOKMARK_NOT_FOUND`                             | Hide ownership details              |
-| Model API timeout          | 503        | `SERVICE_UNAVAILABLE`                            | Return safe AI unavailable error    |
-| Model API invalid response | 502        | `DOWNSTREAM_ERROR`                               | Reject untrusted output             |
-| Storage unavailable        | 500 or 503 | `INTERNAL_SERVER_ERROR` or `SERVICE_UNAVAILABLE` | Do not call model                   |
+| Failure                                    | Status     | Error code                                       | Behavior                            |
+| ------------------------------------------ | ---------- | ------------------------------------------------ | ----------------------------------- |
+| Invalid file type                          | 422        | `VALIDATION_ERROR`                               | Reject before storage or model call |
+| File too large                             | 413        | `PAYLOAD_TOO_LARGE`                              | Reject before storage or model call |
+| Job not found                              | 404        | `JOB_NOT_FOUND`                                  | No model call                       |
+| Bookmark not owned                         | 404        | `BOOKMARK_NOT_FOUND`                             | Hide ownership details              |
+| Model API timeout                          | 503        | `SERVICE_UNAVAILABLE`                            | Return safe AI unavailable error    |
+| Model API invalid response                 | 502        | `DOWNSTREAM_ERROR`                               | Reject untrusted output             |
+| GenAI provider timeout                     | 200        | None                                             | Use deterministic fallback copy     |
+| GenAI provider invalid JSON or unsafe copy | 200        | None                                             | Use deterministic fallback copy     |
+| Storage unavailable                        | 500 or 503 | `INTERNAL_SERVER_ERROR` or `SERVICE_UNAVAILABLE` | Do not call model                   |
 
 ## Error Cases
 

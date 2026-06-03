@@ -86,6 +86,42 @@ export type CvAnalysisResultListResult = {
   total: number;
 };
 
+export type CvAnalyzerWrapperInput = {
+  requestId: string;
+  language: "en";
+  requestedLanguage: "id" | "en";
+  jobRoles: string[];
+  compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+  inputMode: "UPLOAD" | "REFERENCE";
+  modelEvidence: {
+    parsedCv: {
+      status: CvAnalyzerModelResponse["parsedCv"]["status"];
+      pageCount: CvAnalyzerModelResponse["parsedCv"]["pageCount"];
+      textLength: CvAnalyzerModelResponse["parsedCv"]["textLength"];
+      detectedSections: CvAnalyzerModelResponse["parsedCv"]["detectedSections"];
+      extractionEvidence: NonNullable<
+        CvAnalyzerModelResponse["parsedCv"]["extractionEvidence"]
+      >;
+    };
+    jobFitAlignment: CvAnalyzerModelResponse["jobFitAlignment"];
+    atsFriendliness: CvAnalyzerModelResponse["atsFriendliness"];
+    overallImpression: CvAnalyzerModelResponse["overallImpression"];
+    candidateReranking: CvAnalyzerModelResponse["candidateReranking"];
+    model: CvAnalyzerModelResponse["model"];
+    createdAt: CvAnalyzerModelResponse["createdAt"];
+  };
+  candidateMetadata: {
+    jobId: string;
+    title: string;
+    companyName: string | null;
+    locationDisplay: string | null;
+  }[];
+};
+
+export type CvAnalyzerGenAiClient = {
+  generateCvAnalysisCopy(input: CvAnalyzerWrapperInput): Promise<unknown>;
+};
+
 export type PublicCvAnalysisResponse = {
   schemaVersion: "cv-analysis-v2";
   jobFitAlignment: { score: number; summary: string };
@@ -213,6 +249,8 @@ export type AiCvAnalyzerServiceOptions = {
   storage: CvFileStorage;
   cvRetentionDays: number;
   now?: () => Date;
+  genAiEnabled?: boolean;
+  genAiClient?: CvAnalyzerGenAiClient;
 };
 
 export type CleanupExpiredCvFilesResult = {
@@ -225,6 +263,7 @@ export type AiCvAnalyzerControllerDependencies = {
   repository: AiCvAnalyzerRepository;
   config: AppConfig;
   modelApiClient: ModelApiClient;
+  genAiClient?: CvAnalyzerGenAiClient;
   storage: CvFileStorage;
   now?: () => Date;
 };
@@ -233,6 +272,7 @@ export type AiCvAnalyzerRouterOptions = {
   repository?: AiCvAnalyzerRepository;
   authMiddleware?: RequestHandler;
   modelApiClient?: ModelApiClient;
+  genAiClient?: CvAnalyzerGenAiClient;
   storage?: CvFileStorage;
   now?: () => Date;
 };

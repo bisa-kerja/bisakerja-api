@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   AiCvAnalyzerService,
   buildCvAnalyzerPayload,
+  createCvAnalyzerGenAiClient,
   buildCvAnalyzerWrapperInput,
   buildPublicCvAnalysisResponse,
   cleanupExpiredCvFiles,
@@ -22,6 +23,7 @@ import type {
 } from "@/modules/ai-cv-analyzer";
 import type { JobRecord } from "@/modules/jobs";
 import { modelApiFixtures } from "../../fixtures/model-api";
+import { testConfig } from "../../helpers/config";
 
 describe("AiCvAnalyzerService", () => {
   test("builds backend-owned payload and product-safe resource", () => {
@@ -113,6 +115,64 @@ describe("AiCvAnalyzerService", () => {
     expect(cvAnalyzerWrapperSystemPrompt).toContain("Preserve numeric scores");
   });
 
+  test("accepts safe generated wrapper copy without changing model-owned fields", () => {
+    const generated = {
+      ...buildPublicCvAnalysisResponse(
+        modelApiFixtures.validCvAnalyzerResponse,
+        [jobRecord()],
+        "en"
+      ),
+      jobFitAlignment: {
+        score: 78,
+        summary:
+          "Generated summary stays grounded in TypeScript and PostgreSQL evidence."
+      },
+      atsFriendliness: {
+        score: 74,
+        summary: "Generated ATS summary stays focused on keyword grouping."
+      },
+      overallImpression:
+        "Generated impression remains conservative and evidence-based for the target backend role.",
+      topActionables: [
+        "Strengthen Docker evidence with one concrete project example."
+      ],
+      sectionReviews: [
+        {
+          sectionName: "Skills",
+          analysis: "Backend skills are visible and grouped around TypeScript.",
+          actionPoints: ["Add Docker deployment evidence."],
+          whyItsImportantForYou:
+            "Recruiters compare visible skills with target role requirements."
+        }
+      ],
+      jobRecommendations: [
+        {
+          jobId: "11111111-1111-4111-8111-111111111111",
+          title: "Backend Developer",
+          companyName: "Nusantara Tech",
+          matchScore: 82,
+          reason: "Generated reason uses TypeScript and PostgreSQL evidence.",
+          nextStep: "Prepare Docker evidence before applying."
+        }
+      ]
+    };
+
+    const response = buildPublicCvAnalysisResponse(
+      modelApiFixtures.validCvAnalyzerResponse,
+      [jobRecord()],
+      "id",
+      generated
+    );
+
+    expect(response.jobFitAlignment.summary).toContain("Generated summary");
+    expect(response.jobFitAlignment.score).toBe(78);
+    expect(response.atsFriendliness.score).toBe(74);
+    expect(response.jobRecommendations[0]).toMatchObject({
+      jobId: "11111111-1111-4111-8111-111111111111",
+      matchScore: 82
+    });
+  });
+
   test("rejects unsafe generated wrapper copy and keeps deterministic English fallback", () => {
     const unsafeGenerated = {
       ...buildPublicCvAnalysisResponse(
@@ -188,6 +248,206 @@ describe("AiCvAnalyzerService", () => {
     expect(JSON.stringify(response)).not.toMatch(
       /ignore previous|developer prompt|alice@example\.com|\+62 812|Jl\. Example/i
     );
+  });
+
+  test("uses optional GenAI wrapper when enabled and falls back when provider fails", async () => {
+    const generated = {
+      ...buildPublicCvAnalysisResponse(
+        modelApiFixtures.validCvAnalyzerResponse,
+        [jobRecord()],
+        "en"
+      ),
+      overallImpression:
+        "Generated wrapper impression from provider evidence only."
+    };
+    const successfulRepository = new InMemoryAiCvAnalyzerRepository();
+    const successfulService = new AiCvAnalyzerService(successfulRepository, {
+      modelApiClient: {
+        analyzeJobFit: () => Promise.reject(new Error("Not used")),
+        analyzeCv: () =>
+          Promise.resolve(modelApiFixtures.validCvAnalyzerResponse)
+      },
+      genAiEnabled: true,
+      genAiClient: {
+        generateCvAnalysisCopy: (wrapperInput) => {
+          expect(wrapperInput.requestId).toBe("req_cv_genai_success");
+          expect(JSON.stringify(wrapperInput)).not.toContain("storageKey");
+          return Promise.resolve(generated);
+        }
+      },
+      storage: new InMemoryCvFileStorage(),
+      cvRetentionDays: 1,
+      now: () => new Date("2026-04-23T00:00:00.000Z")
+    });
+
+    const generatedResult = await successfulService.analyzeCv(
+      "user-1",
+      "req_cv_genai_success",
+      {
+        jobRoles: ["Backend Developer"],
+        language: "id",
+        inputMode: "UPLOAD",
+        compareSource: "JOB_SEARCH",
+        persistResult: false
+      },
+      uploadedCvFile()
+    );
+
+    expect(generatedResult.resource.analysisResult.overallImpression).toBe(
+      "Generated wrapper impression from provider evidence only."
+    );
+
+    const fallbackService = new AiCvAnalyzerService(
+      new InMemoryAiCvAnalyzerRepository(),
+      {
+        modelApiClient: {
+          analyzeJobFit: () => Promise.reject(new Error("Not used")),
+          analyzeCv: () =>
+            Promise.resolve(modelApiFixtures.validCvAnalyzerResponse)
+        },
+        genAiEnabled: true,
+        genAiClient: {
+          generateCvAnalysisCopy: () =>
+            Promise.reject(new Error("provider timeout"))
+        },
+        storage: new InMemoryCvFileStorage(),
+        cvRetentionDays: 1,
+        now: () => new Date("2026-04-23T00:00:00.000Z")
+      }
+    );
+
+    const fallbackResult = await fallbackService.analyzeCv(
+      "user-1",
+      "req_cv_genai_fallback",
+      {
+        jobRoles: ["Backend Developer"],
+        language: "id",
+        inputMode: "UPLOAD",
+        compareSource: "JOB_SEARCH",
+        persistResult: false
+      },
+      uploadedCvFile()
+    );
+
+    expect(fallbackResult.resource.analysisResult.overallImpression).toBe(
+      "Overall impression is grounded in entry-level backend alignment, deployment gap."
+    );
+  });
+
+  test("parses OpenAI-compatible provider JSON and sends only wrapper input", async () => {
+    const providerPayload = buildPublicCvAnalysisResponse(
+      modelApiFixtures.validCvAnalyzerResponse,
+      [jobRecord()],
+      "en"
+    );
+    const requests: { url: string; body: unknown; headers: Headers }[] = [];
+    const client = createCvAnalyzerGenAiClient(
+      testConfig({
+        AI_CV_ANALYZER_GENAI_ENABLED: "true",
+        AI_CV_ANALYZER_GENAI_API_KEY: "test-provider-key"
+      }),
+      {
+        fetch: ((url, init) => {
+          const requestUrl = url instanceof Request ? url.url : url.toString();
+          const requestBody = typeof init?.body === "string" ? init.body : "{}";
+          requests.push({
+            url: requestUrl,
+            body: JSON.parse(requestBody),
+            headers: new Headers(init?.headers)
+          });
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                choices: [
+                  {
+                    message: {
+                      role: "assistant",
+                      content: JSON.stringify(providerPayload)
+                    }
+                  }
+                ]
+              }),
+              { status: 200 }
+            )
+          );
+        }) as typeof fetch
+      }
+    );
+
+    const wrapperInput = buildCvAnalyzerWrapperInput(
+      "req_provider_json",
+      {
+        jobRoles: ["Backend Developer"],
+        language: "id",
+        inputMode: "UPLOAD",
+        compareSource: "JOB_SEARCH",
+        persistResult: false
+      },
+      modelApiFixtures.validCvAnalyzerResponse,
+      [jobRecord()]
+    );
+    const response = await client.generateCvAnalysisCopy(wrapperInput);
+
+    expect(response).toEqual(providerPayload);
+    expect(requests[0]?.url).toBe(
+      "https://openrouter.ai/api/v1/chat/completions"
+    );
+    expect(requests[0]?.headers.get("authorization")).toBe(
+      "Bearer test-provider-key"
+    );
+    expect(JSON.stringify(requests[0]?.body)).not.toMatch(
+      /storageKey|bytes|test@example\.com/i
+    );
+  });
+
+  test("rejects provider markdown content before public response validation", async () => {
+    const client = createCvAnalyzerGenAiClient(
+      testConfig({
+        AI_CV_ANALYZER_GENAI_ENABLED: "true",
+        AI_CV_ANALYZER_GENAI_API_KEY: "test-provider-key"
+      }),
+      {
+        fetch: (() =>
+          Promise.resolve(
+            new Response(
+              JSON.stringify({
+                choices: [
+                  {
+                    message: {
+                      role: "assistant",
+                      content: "```json\n{}\n```"
+                    }
+                  }
+                ]
+              }),
+              { status: 200 }
+            )
+          )) as unknown as typeof fetch
+      }
+    );
+
+    try {
+      await client.generateCvAnalysisCopy(
+        buildCvAnalyzerWrapperInput(
+          "req_provider_markdown",
+          {
+            jobRoles: ["Backend Developer"],
+            language: "id",
+            inputMode: "UPLOAD",
+            compareSource: "JOB_SEARCH",
+            persistResult: false
+          },
+          modelApiFixtures.validCvAnalyzerResponse,
+          [jobRecord()]
+        )
+      );
+      throw new Error("Expected provider markdown rejection");
+    } catch (error) {
+      expect(error).toMatchObject({
+        statusCode: 502,
+        code: "DOWNSTREAM_ERROR"
+      });
+    }
   });
 
   test("stores metadata, persists snapshots only when requested, and sanitizes filenames", async () => {

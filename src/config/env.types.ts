@@ -62,6 +62,14 @@ export type AppConfig = {
       serviceToken: string;
       enableMock: boolean;
     };
+    aiCvAnalyzerGenAi: {
+      enabled: boolean;
+      baseUrl: string;
+      model: string;
+      apiKey: string;
+      timeoutMs: number;
+      maxRetries: number;
+    };
     scraperApi: {
       serviceToken: string;
     };

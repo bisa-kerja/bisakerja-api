@@ -262,6 +262,127 @@ describe("ai cv analyzer routes", () => {
     }
   });
 
+  test("returns generated provider copy when GenAI wrapper is enabled", async () => {
+    const generated = {
+      ...modelApiFixtures.validCvAnalyzerResponse,
+      generated: true
+    };
+    const publicGenerated = {
+      schemaVersion: "cv-analysis-v2" as const,
+      jobFitAlignment: {
+        score: 78,
+        summary: "Generated copy: backend strengths are visible."
+      },
+      atsFriendliness: {
+        score: 74,
+        summary: "Generated copy: improve keyword grouping."
+      },
+      overallImpression:
+        "Generated provider copy stays grounded in backend evidence.",
+      topActionables: ["Add Docker deployment evidence."],
+      sectionReviews: [
+        {
+          sectionName: "Skills",
+          analysis: "Generated skill review remains evidence-based.",
+          actionPoints: ["Add Docker deployment evidence."],
+          whyItsImportantForYou:
+            "Recruiters compare skills against target requirements."
+        }
+      ],
+      jobRecommendations: [
+        {
+          jobId: "11111111-1111-4111-8111-111111111111",
+          title: "Backend Developer",
+          companyName: "Nusantara Tech",
+          matchScore: 82,
+          reason: "Generated reason uses matched backend skills.",
+          nextStep: "Prepare Docker evidence before applying."
+        }
+      ],
+      model: {
+        name: "fixture-cv-analyzer-model",
+        version: "test-2026-01"
+      },
+      analyzedAt: "2026-04-23T00:00:00.000Z"
+    };
+    const wrapperRequests: unknown[] = [];
+    const context = createAiCvAnalyzerRouteContext({
+      config: testConfig({ AI_CV_ANALYZER_GENAI_ENABLED: "true" }),
+      genAiClient: {
+        generateCvAnalysisCopy: (wrapperInput) => {
+          wrapperRequests.push(wrapperInput);
+          return Promise.resolve(publicGenerated);
+        }
+      }
+    });
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_genai_generated"),
+      formData: buildCvFormData()
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        analysisResult: {
+          jobFitAlignment: {
+            score: 78,
+            summary: "Generated copy: backend strengths are visible."
+          },
+          overallImpression:
+            "Generated provider copy stays grounded in backend evidence.",
+          jobRecommendations: [
+            expect.objectContaining({
+              jobId: "11111111-1111-4111-8111-111111111111",
+              matchScore: 82
+            })
+          ]
+        }
+      }
+    });
+    expect(wrapperRequests).toHaveLength(1);
+    expect(JSON.stringify(wrapperRequests[0])).not.toMatch(/storageKey|bytes/i);
+    expect(JSON.stringify(response.body)).not.toMatch(
+      /storageKey|bytes|system prompt|token|email|phone|address/i
+    );
+    expect(generated.generated).toBe(true);
+  });
+
+  test("keeps fallback response when GenAI wrapper provider fails", async () => {
+    const context = createAiCvAnalyzerRouteContext({
+      config: testConfig({ AI_CV_ANALYZER_GENAI_ENABLED: "true" }),
+      genAiClient: {
+        generateCvAnalysisCopy: () => Promise.reject(new Error("timeout"))
+      }
+    });
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_genai_fallback"),
+      formData: buildCvFormData()
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        analysisResult: {
+          jobFitAlignment: {
+            score: 78,
+            summary:
+              "CV shows fit through TypeScript, PostgreSQL, with gaps in Docker."
+          },
+          overallImpression:
+            "Overall impression is grounded in entry-level backend alignment, deployment gap."
+        }
+      }
+    });
+  });
+
   test("uploads onboarding CV, exposes active CV, and reuses it for analyzer fallback", async () => {
     const context = createAiCvAnalyzerRouteContext();
 
@@ -571,6 +692,9 @@ function createAiCvAnalyzerRouteContext(
     hasBookmark?: boolean;
     job?: JobRecord | null;
     analyzeCv?: () => Promise<typeof modelApiFixtures.validCvAnalyzerResponse>;
+    genAiClient?: {
+      generateCvAnalysisCopy(input: unknown): Promise<unknown>;
+    };
     config?: ReturnType<typeof testConfig>;
     fileMetadata?: CvFileMetadataRecord[];
     analysisResults?: CvAnalysisResultRecord[];
@@ -606,6 +730,7 @@ function createAiCvAnalyzerRouteContext(
             return Promise.resolve(modelApiFixtures.validCvAnalyzerResponse);
           }
         },
+        genAiClient: overrides.genAiClient,
         now: () => new Date("2026-04-23T00:00:00.000Z")
       },
       jobs: {

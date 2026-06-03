@@ -8,6 +8,7 @@ import { createAuthMiddleware } from "@/core/middlewares/auth.middleware";
 import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { AiCvAnalyzerController } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.controller";
+import { createCvAnalyzerGenAiClient } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.genai";
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.repository";
 import {
   analyzeCvSchema,
@@ -27,12 +28,18 @@ export function createAiCvAnalyzerRouter(
   const repository = options.repository ?? new PrismaAiCvAnalyzerRepository();
   const authMiddleware = options.authMiddleware ?? createAuthMiddleware(config);
   const modelApiClient = options.modelApiClient ?? createModelApiClient(config);
+  const genAiClient =
+    options.genAiClient ??
+    (config.integrations.aiCvAnalyzerGenAi.enabled
+      ? createCvAnalyzerGenAiClient(config)
+      : undefined);
   const storage =
     options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
   const controller = new AiCvAnalyzerController({
     repository,
     config,
     modelApiClient,
+    genAiClient,
     storage,
     now: options.now
   });
@@ -74,12 +81,18 @@ export function createCurrentUserCvFilesRouter(
     options.authMiddleware ??
     createAuthMiddleware(config, undefined, { allowUnverifiedEmail: true });
   const modelApiClient = options.modelApiClient ?? createModelApiClient(config);
+  const genAiClient =
+    options.genAiClient ??
+    (config.integrations.aiCvAnalyzerGenAi.enabled
+      ? createCvAnalyzerGenAiClient(config)
+      : undefined);
   const storage =
     options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
   const controller = new AiCvAnalyzerController({
     repository,
     config,
     modelApiClient,
+    genAiClient,
     storage,
     now: options.now
   });
