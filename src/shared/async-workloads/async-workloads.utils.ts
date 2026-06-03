@@ -21,7 +21,7 @@ export function summarizeAsyncJobError(error: unknown): AsyncJobErrorDetails {
 
   return {
     code: "ASYNC_JOB_RUNTIME_ERROR",
-    message: "Error runtime async job tidak diketahui"
+    message: "Unknown async job runtime error"
   };
 }
 
@@ -34,13 +34,11 @@ export function toAsyncJobIdempotencyKey(
 
 export function createAsyncQueueUnavailableError(cause: unknown) {
   return new ServiceUnavailableError(
-    "Antrian async job sementara tidak tersedia",
+    "Async job queue is temporarily unavailable",
     "ASYNC_QUEUE_UNAVAILABLE",
     {
       cause:
-        cause instanceof Error
-          ? cause.message
-          : "Error queue Redis tidak diketahui"
+        cause instanceof Error ? cause.message : "Unknown Redis queue error"
     }
   );
 }

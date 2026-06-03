@@ -28,12 +28,12 @@ describe("validation message formatter", () => {
     expect(issues).toContainEqual({
       path: "email",
       code: "invalid_type",
-      message: "Email wajib diisi"
+      message: "Email is required"
     });
     expect(issues).toContainEqual({
       path: "age",
       code: "invalid_type",
-      message: "Age harus berupa angka"
+      message: "Age must be a number"
     });
   });
 
@@ -62,10 +62,10 @@ describe("validation message formatter", () => {
     const passwordIssue = issues.find((issue) => issue.path === "password");
     expect(passwordIssue).toBeDefined();
     expect(passwordIssue?.message).toContain(
-      "Kata sandi tidak memenuhi syarat"
+      "Password does not meet requirements"
     );
-    expect(passwordIssue?.message).toContain("minimal 12 karakter");
-    expect(passwordIssue?.message).toContain("huruf besar");
+    expect(passwordIssue?.message).toContain("at least 12 characters");
+    expect(passwordIssue?.message).toContain("uppercase letter");
   });
 
   test("formats unrecognized keys into field-level details", () => {
@@ -82,7 +82,7 @@ describe("validation message formatter", () => {
     expect(issues).toContainEqual({
       path: "unknownField",
       code: "unrecognized_keys",
-      message: "Unknown Field tidak dikenali"
+      message: "Unknown Field is not recognized"
     });
   });
 
@@ -103,7 +103,7 @@ describe("validation message formatter", () => {
     expect(issues).toContainEqual({
       path: "salaryExpectation.min",
       code: "too_small",
-      message: "Ekspektasi gaji minimum minimal 0"
+      message: "Minimum salary expectation must be at least 0"
     });
   });
 
@@ -119,9 +119,7 @@ describe("validation message formatter", () => {
 
     const workTypeIssue = issues.find((issue) => issue.path === "workType");
     expect(workTypeIssue).toBeDefined();
-    expect(workTypeIssue?.message).toContain(
-      "Tipe kerja harus salah satu dari"
-    );
+    expect(workTypeIssue?.message).toContain("Work type must be one of");
     expect(workTypeIssue?.message).toContain("REMOTE");
     expect(workTypeIssue?.message).toContain("HYBRID");
     expect(workTypeIssue?.message).toContain("ONSITE");

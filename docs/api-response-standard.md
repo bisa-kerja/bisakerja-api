@@ -44,7 +44,7 @@ Use this shape for single resource reads, mutations, and action responses that r
 ```json
 {
   "success": true,
-  "message": "Permintaan berhasil diproses",
+  "message": "Request completed successfully",
   "data": {
     "id": "11111111-1111-4111-8111-111111111111"
   },
@@ -184,14 +184,14 @@ All error responses must use this shape.
 ```json
 {
   "success": false,
-  "message": "Validasi gagal",
+  "message": "Validation failed",
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
       {
         "path": "email",
-        "message": "Format email tidak valid",
+        "message": "Email is invalid. Use a complete email format, for example name@domain.com",
         "code": "invalid_string"
       }
     ],
@@ -222,14 +222,14 @@ Zod validation errors should use this detail shape:
 ```json
 {
   "success": false,
-  "message": "Validasi gagal",
+  "message": "Validation failed",
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
       {
         "path": "preferences.salaryMin",
-        "message": "Tipe tidak sesuai: diharapkan angka, diterima teks",
+        "message": "Minimum salary must be a number",
         "code": "invalid_type"
       }
     ],
@@ -278,7 +278,7 @@ Example target detail quality for auth registration:
 ```json
 {
   "path": "phoneNumber",
-  "message": "Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789",
+  "message": "Phone number is invalid. Use an Indonesian phone number, for example +628123456789",
   "code": "invalid_format"
 }
 ```
@@ -288,17 +288,17 @@ Example for password rules in one field:
 ```json
 {
   "path": "password",
-  "message": "Kata sandi tidak memenuhi syarat: minimal 12 karakter; harus mengandung huruf besar; harus mengandung angka; harus mengandung simbol",
+  "message": "Password does not meet requirements: at least 12 characters; must contain an uppercase letter; must contain a number; must contain a symbol",
   "code": "custom"
 }
 ```
 
 Before and after example for register validation quality:
 
-- Before (not acceptable): `Format tidak valid`, `Nilai terlalu kecil`.
-- After (required): `Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com`.
-- After (required): `Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789`.
-- After (required): `Kata sandi tidak memenuhi syarat: ...`.
+- Before (not acceptable): `Invalid input`, `Too small`.
+- After (required): `Email is invalid. Use a complete email format, for example name@domain.com`.
+- After (required): `Phone number is invalid. Use an Indonesian phone number, for example +628123456789`.
+- After (required): `Password does not meet requirements: ...`.
 
 ### Optional Metadata For Future Extension
 
@@ -366,7 +366,7 @@ Authentication errors:
 ```json
 {
   "success": false,
-  "message": "Autentikasi diperlukan",
+  "message": "Authentication required",
   "data": null,
   "error": {
     "code": "UNAUTHENTICATED",
@@ -381,7 +381,7 @@ Authorization errors:
 ```json
 {
   "success": false,
-  "message": "Anda tidak memiliki akses ke resource ini",
+  "message": "You are not allowed to access this resource",
   "data": null,
   "error": {
     "code": "FORBIDDEN",

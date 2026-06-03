@@ -50,7 +50,7 @@ export function createModelApiClient(
 
         if (!mockResponse) {
           throw new ServiceUnavailableError(
-            "Mock response Model API belum dikonfigurasi",
+            "Model API mock response is not configured",
             "SERVICE_UNAVAILABLE",
             { dependency: "model-api", operation: "job-fit" }
           );
@@ -79,7 +79,7 @@ export function createModelApiClient(
 
         if (!mockResponse) {
           throw new ServiceUnavailableError(
-            "Mock response Model API belum dikonfigurasi",
+            "Model API mock response is not configured",
             "SERVICE_UNAVAILABLE",
             { dependency: "model-api", operation: "cv-analyzer" }
           );
@@ -108,7 +108,7 @@ export function createModelApiClient(
 
         if (!mockResponse) {
           throw new ServiceUnavailableError(
-            "Mock response Model API belum dikonfigurasi",
+            "Model API mock response is not configured",
             "SERVICE_UNAVAILABLE",
             { dependency: "model-api", operation: "cv-generate" }
           );
@@ -137,7 +137,7 @@ export function createModelApiClient(
 
         if (!mockResponse) {
           throw new ServiceUnavailableError(
-            "Mock response Model API belum dikonfigurasi",
+            "Model API mock response is not configured",
             "SERVICE_UNAVAILABLE",
             { dependency: "model-api", operation: "job-recommendations" }
           );
@@ -220,7 +220,7 @@ async function requestModelApi<TPayload, TResponse>(
 
     if (error instanceof ZodError) {
       throw new DownstreamError(
-        "Model API mengembalikan data response yang tidak valid",
+        "Model API returned an invalid response payload",
         "DOWNSTREAM_ERROR",
         {
           dependency: "model-api",
@@ -237,7 +237,7 @@ async function requestModelApi<TPayload, TResponse>(
 
     if (isAbortError(error)) {
       throw new ServiceUnavailableError(
-        "Request ke Model API timeout",
+        "Model API request timed out",
         "SERVICE_UNAVAILABLE",
         {
           dependency: "model-api",
@@ -258,7 +258,7 @@ async function requestModelApi<TPayload, TResponse>(
     );
 
     throw new ServiceUnavailableError(
-      "Model API tidak tersedia",
+      "Model API is unavailable",
       "SERVICE_UNAVAILABLE",
       {
         dependency: "model-api",
@@ -340,7 +340,7 @@ async function requestMultipartModelApi<TResponse>(
 
     if (error instanceof ZodError) {
       throw new DownstreamError(
-        "Model API mengembalikan data response yang tidak valid",
+        "Model API returned an invalid response payload",
         "DOWNSTREAM_ERROR",
         {
           dependency: "model-api",
@@ -357,7 +357,7 @@ async function requestMultipartModelApi<TResponse>(
 
     if (isAbortError(error)) {
       throw new ServiceUnavailableError(
-        "Request ke Model API timeout",
+        "Model API request timed out",
         "SERVICE_UNAVAILABLE",
         {
           dependency: "model-api",
@@ -378,7 +378,7 @@ async function requestMultipartModelApi<TResponse>(
     );
 
     throw new ServiceUnavailableError(
-      "Model API tidak tersedia",
+      "Model API is unavailable",
       "SERVICE_UNAVAILABLE",
       {
         dependency: "model-api",
@@ -396,7 +396,7 @@ function parseJsonBody(rawBody: string, operation: string): unknown {
     return rawBody ? (JSON.parse(rawBody) as unknown) : null;
   } catch {
     throw new DownstreamError(
-      "Model API mengembalikan JSON yang tidak valid",
+      "Model API returned invalid JSON",
       "DOWNSTREAM_ERROR",
       {
         dependency: "model-api",
@@ -420,14 +420,14 @@ function mapModelApiHttpError(
 
   if (statusCode >= 500) {
     return new ServiceUnavailableError(
-      "Model API tidak tersedia",
+      "Model API is unavailable",
       "SERVICE_UNAVAILABLE",
       details
     );
   }
 
   return new DownstreamError(
-    "Model API menolak request dari backend",
+    "Model API rejected the backend request",
     "DOWNSTREAM_ERROR",
     details
   );

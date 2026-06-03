@@ -31,6 +31,9 @@ const genericIssueMessagePatterns = [
   /^unrecognized key/i,
   /^invalid option/i,
   /^invalid value/i,
+  /^input is invalid$/i,
+  /^format is invalid$/i,
+  /^value is not supported$/i,
   /^input tidak valid$/i,
   /^format tidak valid$/i,
   /^nilai tidak didukung$/i
@@ -51,80 +54,80 @@ const sensitivePathKeywords = [
 const fieldLabelDictionary: Record<string, string> = {
   username: "Username",
   email: "Email",
-  phoneNumber: "Nomor telepon",
-  password: "Kata sandi",
-  confirmPassword: "Konfirmasi kata sandi",
-  identifier: "Email atau username",
+  phoneNumber: "Phone number",
+  password: "Password",
+  confirmPassword: "Password confirmation",
+  identifier: "Email or username",
   otp: "OTP",
   token: "Token",
   state: "State",
-  code: "Kode",
-  page: "Halaman",
-  limit: "Batas data",
-  keyword: "Kata kunci",
-  location: "Lokasi",
-  province: "Provinsi",
-  city: "Kota",
-  workType: "Tipe kerja",
-  employmentType: "Tipe pekerjaan",
-  experienceLevel: "Level pengalaman",
-  salaryMin: "Gaji minimum",
-  salaryMax: "Gaji maksimum",
-  sourcePlatform: "Platform sumber",
-  skill: "Keahlian",
-  category: "Kategori",
-  sort: "Urutan",
-  jobId: "ID lowongan",
-  applicationId: "ID lamaran",
+  code: "Code",
+  page: "Page",
+  limit: "Limit",
+  keyword: "Keyword",
+  location: "Location",
+  province: "Province",
+  city: "City",
+  workType: "Work type",
+  employmentType: "Employment type",
+  experienceLevel: "Experience level",
+  salaryMin: "Minimum salary",
+  salaryMax: "Maximum salary",
+  sourcePlatform: "Source platform",
+  skill: "Skill",
+  category: "Category",
+  sort: "Sort",
+  jobId: "Job ID",
+  applicationId: "Application ID",
   status: "Status",
-  notes: "Catatan",
-  source: "Sumber",
-  persistResult: "Simpan hasil",
-  inputMode: "Mode input",
-  compareSource: "Sumber perbandingan",
-  language: "Bahasa",
-  cvFileId: "ID file CV",
-  displayName: "Nama tampilan",
-  storageKey: "Kunci penyimpanan",
+  notes: "Notes",
+  source: "Source",
+  persistResult: "Persist result",
+  inputMode: "Input mode",
+  compareSource: "Compare source",
+  language: "Language",
+  cvFileId: "CV file ID",
+  displayName: "Display name",
+  storageKey: "Storage key",
   url: "URL",
-  mimeType: "Tipe MIME",
-  sizeBytes: "Ukuran file",
-  skills: "Keahlian",
-  experience: "Pengalaman",
-  education: "Pendidikan",
-  title: "Judul",
-  company: "Perusahaan",
-  startDate: "Tanggal mulai",
-  endDate: "Tanggal selesai",
-  isCurrent: "Status saat ini",
-  description: "Deskripsi",
-  institution: "Institusi",
-  degree: "Gelar",
-  fieldOfStudy: "Bidang studi",
-  startYear: "Tahun mulai",
-  endYear: "Tahun selesai",
-  careerStatus: "Status karier",
-  jobSeekingStatus: "Status pencarian kerja",
-  targetRoles: "Target peran",
-  locations: "Lokasi target",
-  workTypes: "Preferensi tipe kerja",
-  salaryExpectation: "Ekspektasi gaji",
-  "salaryExpectation.min": "Ekspektasi gaji minimum",
-  "salaryExpectation.max": "Ekspektasi gaji maksimum",
-  "salaryExpectation.currency": "Mata uang gaji",
-  "salaryExpectation.period": "Periode gaji",
-  emailNotificationsEnabled: "Notifikasi email",
-  runId: "ID run",
-  candidates: "Kandidat",
-  eventId: "ID event",
-  syncEventId: "ID sinkronisasi event",
-  externalJobId: "ID lowongan eksternal",
-  companyName: "Nama perusahaan",
-  sourceUrl: "URL sumber",
-  lastSeenAt: "Waktu terakhir terlihat",
-  jobs: "Daftar lowongan",
-  requirements: "Persyaratan",
-  values: "Nilai"
+  mimeType: "MIME type",
+  sizeBytes: "File size",
+  skills: "Skills",
+  experience: "Experience",
+  education: "Education",
+  title: "Title",
+  company: "Company",
+  startDate: "Start date",
+  endDate: "End date",
+  isCurrent: "Current status",
+  description: "Description",
+  institution: "Institution",
+  degree: "Degree",
+  fieldOfStudy: "Field of study",
+  startYear: "Start year",
+  endYear: "End year",
+  careerStatus: "Career status",
+  jobSeekingStatus: "Job seeking status",
+  targetRoles: "Target roles",
+  locations: "Target locations",
+  workTypes: "Work type preferences",
+  salaryExpectation: "Salary expectation",
+  "salaryExpectation.min": "Minimum salary expectation",
+  "salaryExpectation.max": "Maximum salary expectation",
+  "salaryExpectation.currency": "Salary currency",
+  "salaryExpectation.period": "Salary period",
+  emailNotificationsEnabled: "Email notifications",
+  runId: "Run ID",
+  candidates: "Candidates",
+  eventId: "Event ID",
+  syncEventId: "Sync event ID",
+  externalJobId: "External job ID",
+  companyName: "Company name",
+  sourceUrl: "Source URL",
+  lastSeenAt: "Last seen time",
+  jobs: "Jobs",
+  requirements: "Requirements",
+  values: "Values"
 };
 
 function toPath(path: PropertyKey[]): string {
@@ -170,7 +173,7 @@ function resolveFieldLabel(path: PropertyKey[]) {
 
   if (/^\d+$/.test(lastSegment)) {
     const index = Number.parseInt(lastSegment, 10);
-    return `Item ke-${String(index + 1)}`;
+    return `Item ${String(index + 1)}`;
   }
 
   return humanizeSegment(lastSegment);
@@ -178,32 +181,32 @@ function resolveFieldLabel(path: PropertyKey[]) {
 
 function translateParsedType(value: unknown) {
   if (typeof value !== "string") {
-    return "tidak diketahui";
+    return "unknown";
   }
 
   switch (value) {
     case "string":
-      return "teks";
+      return "string";
     case "number":
     case "int":
     case "float":
     case "bigint":
-      return "angka";
+      return "number";
     case "boolean":
       return "boolean";
     case "date":
-      return "tanggal";
+      return "date";
     case "array":
     case "set":
-      return "daftar";
+      return "array";
     case "object":
     case "record":
     case "map":
-      return "objek";
+      return "object";
     case "null":
       return "null";
     case "undefined":
-      return "tidak ada";
+      return "undefined";
     default:
       return value;
   }
@@ -245,15 +248,15 @@ function translateInvalidFormat(format: unknown) {
 
   switch (format) {
     case "email":
-      return "Gunakan format email yang valid";
+      return "Use a complete email format, for example name@domain.com";
     case "url":
-      return "Gunakan format URL yang valid";
+      return "Use a valid URL format";
     case "uuid":
-      return "Gunakan format UUID yang valid";
+      return "Use a valid UUID";
     case "date":
-      return "Gunakan format tanggal yang valid";
+      return "Use a valid date format";
     case "datetime":
-      return "Gunakan format datetime ISO yang valid";
+      return "Use a valid ISO datetime format";
     default:
       return null;
   }
@@ -268,14 +271,14 @@ function formatInvalidTypeMessage(issue: ZodIssueLike, fieldLabel: string) {
       : (receivedFromMessage ?? null);
 
   if (received === "undefined") {
-    return `${fieldLabel} wajib diisi`;
+    return `${fieldLabel} is required`;
   }
 
   if (issue.expected) {
-    return `${fieldLabel} harus berupa ${translateParsedType(issue.expected)}`;
+    return `${fieldLabel} must be a ${translateParsedType(issue.expected)}`;
   }
 
-  return `${fieldLabel} tidak sesuai tipe data`;
+  return `${fieldLabel} has an invalid type`;
 }
 
 function formatTooSmallMessage(issue: ZodIssueLike, fieldLabel: string) {
@@ -290,11 +293,11 @@ function formatTooSmallMessage(issue: ZodIssueLike, fieldLabel: string) {
     typeof issue.inclusive === "boolean" ? issue.inclusive : true;
 
   if (origin === "string" && minimum !== null) {
-    return `${fieldLabel} minimal ${String(minimum)} karakter`;
+    return `${fieldLabel} must be at least ${String(minimum)} characters`;
   }
 
   if ((origin === "array" || origin === "set") && minimum !== null) {
-    return `${fieldLabel} minimal ${String(minimum)} item`;
+    return `${fieldLabel} must contain at least ${String(minimum)} items`;
   }
 
   if (
@@ -302,11 +305,11 @@ function formatTooSmallMessage(issue: ZodIssueLike, fieldLabel: string) {
     minimum !== null
   ) {
     return inclusive
-      ? `${fieldLabel} minimal ${String(minimum)}`
-      : `${fieldLabel} harus lebih dari ${String(minimum)}`;
+      ? `${fieldLabel} must be at least ${String(minimum)}`
+      : `${fieldLabel} must be greater than ${String(minimum)}`;
   }
 
-  return `${fieldLabel} nilainya terlalu kecil`;
+  return `${fieldLabel} is too small`;
 }
 
 function formatTooBigMessage(issue: ZodIssueLike, fieldLabel: string) {
@@ -321,11 +324,11 @@ function formatTooBigMessage(issue: ZodIssueLike, fieldLabel: string) {
     typeof issue.inclusive === "boolean" ? issue.inclusive : true;
 
   if (origin === "string" && maximum !== null) {
-    return `${fieldLabel} maksimal ${String(maximum)} karakter`;
+    return `${fieldLabel} must be at most ${String(maximum)} characters`;
   }
 
   if ((origin === "array" || origin === "set") && maximum !== null) {
-    return `${fieldLabel} maksimal ${String(maximum)} item`;
+    return `${fieldLabel} must contain at most ${String(maximum)} items`;
   }
 
   if (
@@ -333,11 +336,11 @@ function formatTooBigMessage(issue: ZodIssueLike, fieldLabel: string) {
     maximum !== null
   ) {
     return inclusive
-      ? `${fieldLabel} maksimal ${String(maximum)}`
-      : `${fieldLabel} harus kurang dari ${String(maximum)}`;
+      ? `${fieldLabel} must be at most ${String(maximum)}`
+      : `${fieldLabel} must be less than ${String(maximum)}`;
   }
 
-  return `${fieldLabel} nilainya terlalu besar`;
+  return `${fieldLabel} is too large`;
 }
 
 function formatInvalidValueMessage(issue: ZodIssueLike, fieldLabel: string) {
@@ -353,10 +356,10 @@ function formatInvalidValueMessage(issue: ZodIssueLike, fieldLabel: string) {
     .slice(0, 8);
 
   if (safeValues.length > 0) {
-    return `${fieldLabel} harus salah satu dari: ${safeValues.join(", ")}`;
+    return `${fieldLabel} must be one of: ${safeValues.join(", ")}`;
   }
 
-  return `Nilai ${fieldLabel.toLowerCase()} tidak didukung`;
+  return `${fieldLabel} is not supported`;
 }
 
 function getIssuePriority(code: string) {
@@ -413,7 +416,7 @@ function formatSingleIssue(issue: ZodIssueLike): FormattedIssue[] {
       return {
         path: toPath(path),
         code: issue.code,
-        message: `${fieldLabel} tidak dikenali`,
+        message: `${fieldLabel} is not recognized`,
         priority: getIssuePriority(issue.code)
       };
     });
@@ -445,8 +448,8 @@ function formatSingleIssue(issue: ZodIssueLike): FormattedIssue[] {
     case "invalid_string": {
       const hint = translateInvalidFormat(issue.format ?? issue.validation);
       message = hint
-        ? `${fieldLabel} tidak valid. ${hint}`
-        : `${fieldLabel} tidak valid`;
+        ? `${fieldLabel} is invalid. ${hint}`
+        : `${fieldLabel} is invalid`;
       break;
     }
     case "too_small":
@@ -460,18 +463,18 @@ function formatSingleIssue(issue: ZodIssueLike): FormattedIssue[] {
       message = formatInvalidValueMessage(issue, fieldLabel);
       break;
     case "not_multiple_of":
-      message = `${fieldLabel} harus kelipatan yang valid`;
+      message = `${fieldLabel} must be a valid multiple`;
       break;
     case "invalid_union":
     case "invalid_key":
     case "invalid_element":
-      message = `${fieldLabel} memiliki format yang tidak didukung`;
+      message = `${fieldLabel} has an unsupported format`;
       break;
     case "custom":
-      message = `${fieldLabel} tidak valid`;
+      message = `${fieldLabel} is invalid`;
       break;
     default:
-      message = `${fieldLabel} tidak valid`;
+      message = `${fieldLabel} is invalid`;
       break;
   }
 
@@ -491,9 +494,18 @@ function combinePasswordIssues(path: string, issues: FormattedIssue[]) {
       issues.map((issue) =>
         issue.message
           .replace(/^Kata sandi\s*/i, "")
-          .replace(/^harus\s*/i, "harus ")
-          .replace(/^minimal\s*/i, "minimal ")
-          .replace(/^maksimal\s*/i, "maksimal ")
+          .replace(/^Password\s*/i, "")
+          .replace(/^must\s*/i, "must ")
+          .replace(/^has\s*/i, "has ")
+          .replace(/^is\s*/i, "is ")
+          .replace(/^harus\s*/i, "must ")
+          .replace(/^minimal\s*/i, "at least ")
+          .replace(/^maksimal\s*/i, "at most ")
+          .replace(/karakter/gi, "characters")
+          .replace(/mengandung huruf kecil/gi, "contain a lowercase letter")
+          .replace(/mengandung huruf besar/gi, "contain an uppercase letter")
+          .replace(/mengandung angka/gi, "contain a number")
+          .replace(/mengandung simbol/gi, "contain a symbol")
           .trim()
       )
     )
@@ -508,7 +520,7 @@ function combinePasswordIssues(path: string, issues: FormattedIssue[]) {
   return {
     path,
     code: "custom",
-    message: `Kata sandi tidak memenuhi syarat: ${combined.join("; ")}`,
+    message: `Password does not meet requirements: ${combined.join("; ")}`,
     priority: 100
   };
 }

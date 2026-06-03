@@ -41,7 +41,7 @@ describe("validation error contracts", () => {
     };
 
     expect(body.success).toBe(false);
-    expect(body.message).toBe("Validasi gagal");
+    expect(body.message).toBe("Validation failed");
     expect(body.data).toBeNull();
     expect(body.error.code).toBe("VALIDATION_ERROR");
     expect(body.error.requestId).toBe("req_contract_register_validation");
@@ -111,7 +111,7 @@ describe("validation error contracts", () => {
     }
 
     const forbiddenMessagePattern =
-      /^(Format tidak valid|Nilai terlalu kecil|Nilai terlalu besar|Invalid input|Invalid email address)$/i;
+      /^(Format tidak valid|Nilai terlalu kecil|Nilai terlalu besar|Format is invalid|Value is too small|Value is too large|Invalid input|Invalid email address)$/i;
 
     const hasForbiddenMessage = details.some((detail) => {
       if (typeof detail !== "object" || detail === null) {

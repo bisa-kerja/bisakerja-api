@@ -106,9 +106,9 @@ function validationErrorResponse(
   exampleMessage: string,
   exampleCode = "invalid_format"
 ) {
-  return jsonResponse("Validasi gagal", ref("ErrorEnvelope"), {
+  return jsonResponse("Validation failed", ref("ErrorEnvelope"), {
     success: false,
-    message: "Validasi gagal",
+    message: "Validation failed",
     data: null,
     error: {
       code: "VALIDATION_ERROR",
@@ -128,12 +128,12 @@ function authValidationAndRateLimitResponses() {
   return {
     "422": validationErrorResponse(
       "email",
-      "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com"
+      "Email is invalid. Use a complete email format, for example name@domain.com"
     ),
     "429": errorResponse(
       "Rate limit exceeded.",
       "RATE_LIMITED",
-      "Terlalu banyak permintaan",
+      "Too many requests",
       {
         limit: "auth"
       }
@@ -796,7 +796,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Refresh cookie is missing or invalid.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -1004,7 +1004,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "429": errorResponse(
               "Rate limit exceeded.",
               "RATE_LIMITED",
-              "Terlalu banyak permintaan",
+              "Too many requests",
               {
                 limit: "auth"
               }
@@ -1139,7 +1139,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Service token is missing or invalid.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "body.jobs",
@@ -1193,7 +1193,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Service token is missing or invalid.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "body.candidates",
@@ -1429,7 +1429,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             )
           }
         },
@@ -1461,7 +1461,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "409": errorResponse(
               "Username is already used.",
@@ -1506,7 +1506,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "mimeType",
@@ -1550,7 +1550,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "skills.0.name",
@@ -1596,7 +1596,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "experience.0.endDate",
@@ -1640,7 +1640,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "education.0.endYear",
@@ -1671,7 +1671,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Preferences do not exist yet.",
@@ -1722,7 +1722,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "salaryExpectation.max",
@@ -1762,7 +1762,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "workTypes",
@@ -1843,7 +1843,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "sort",
@@ -1880,7 +1880,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Job is not found.",
@@ -1921,7 +1921,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Bookmark is not found.",
@@ -2009,7 +2009,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "status",
@@ -2046,7 +2046,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Job is not found.",
@@ -2105,7 +2105,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Application is not found.",
@@ -2160,7 +2160,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Application is not found.",
@@ -2223,7 +2223,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "413": errorResponse(
               "Uploaded CV exceeds the configured limit.",
@@ -2238,7 +2238,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "503": errorResponse(
               "CV storage is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Layanan sementara tidak tersedia"
+              "Service temporarily unavailable"
             )
           }
         }
@@ -2274,7 +2274,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Active CV file is not found.",
@@ -2318,7 +2318,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": {
               description:
@@ -2476,7 +2476,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse("page", "Halaman minimal 1")
           }
@@ -2503,7 +2503,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "CV analysis result is not found.",
@@ -2542,7 +2542,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "CV analysis result is not found.",
@@ -2590,7 +2590,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "CV file is not found for the current user.",
@@ -2600,7 +2600,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "413": errorResponse(
               "Payload exceeds configured limit.",
               "PAYLOAD_TOO_LARGE",
-              "Payload terlalu besar"
+              "Payload is too large"
             ),
             "422": validationErrorResponse(
               "templateHtml",

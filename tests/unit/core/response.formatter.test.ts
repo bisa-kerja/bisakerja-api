@@ -12,7 +12,7 @@ describe("response formatter", () => {
   test("formats a success response", () => {
     expect(successResponse({ id: "job_123" })).toEqual({
       success: true,
-      message: "Permintaan berhasil diproses",
+      message: "Request completed successfully",
       data: { id: "job_123" },
       meta: null
     });
@@ -73,10 +73,10 @@ describe("response formatter", () => {
     });
 
     expect(
-      errorResponse("Validasi gagal", "VALIDATION_ERROR", "req_123", [])
+      errorResponse("Validation failed", "VALIDATION_ERROR", "req_123", [])
     ).toEqual({
       success: false,
-      message: "Validasi gagal",
+      message: "Validation failed",
       data: null,
       error: {
         code: "VALIDATION_ERROR",

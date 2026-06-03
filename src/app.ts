@@ -46,7 +46,7 @@ export function createApp(config: AppConfig = env, options: AppOptions = {}) {
   registerRoutes(app, config, options.routes);
 
   app.use((_req, _res, next) => {
-    next(new NotFoundError("Route tidak ditemukan"));
+    next(new NotFoundError("Route not found"));
   });
 
   app.use(errorHandler);

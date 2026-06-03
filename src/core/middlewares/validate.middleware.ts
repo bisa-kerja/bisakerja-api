@@ -40,7 +40,7 @@ function parsePart(
 
   if (!result.success) {
     throw new ValidationError(
-      "Validasi gagal",
+      "Validation failed",
       toValidationIssues(result.error)
     );
   }
