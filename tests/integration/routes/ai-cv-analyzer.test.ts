@@ -218,22 +218,23 @@ describe("ai cv analyzer routes", () => {
             jobFitAlignment: {
               score: 78,
               summary:
-                "CV shows fit through TypeScript, PostgreSQL, with gaps in Docker."
+                "Your CV shows relevant evidence in TypeScript, PostgreSQL. Strengthen proof for Docker to improve role fit."
             },
             atsFriendliness: {
               score: 74,
-              summary: "ATS review found Weak keyword grouping."
+              summary:
+                "ATS review found Weak keyword grouping. Fix these so parsers can read your qualifications consistently."
             },
             overallImpression:
-              "Overall impression is grounded in entry-level backend alignment, deployment gap.",
+              "Overall impression is grounded in entry-level backend alignment, deployment gap. The CV is usable for review, but stronger quantified examples can make the fit clearer.",
             topActionables: expect.arrayContaining([
-              "Add stronger evidence for Docker."
+              "Add one measurable bullet or project example that proves Docker."
             ]) as unknown,
             sectionReviews: expect.arrayContaining([
               expect.objectContaining({
                 sectionName: "Skills",
                 actionPoints: expect.arrayContaining([
-                  "Add stronger evidence for Docker."
+                  "Add one measurable bullet or project example that proves Docker."
                 ]) as unknown
               })
             ]) as unknown,
@@ -242,8 +243,10 @@ describe("ai cv analyzer routes", () => {
                 jobId: "11111111-1111-4111-8111-111111111111",
                 title: "Backend Developer",
                 matchScore: 82,
-                reason: "Matched skills: TypeScript, PostgreSQL.",
-                nextStep: "Prepare evidence for Docker."
+                reason:
+                  "This role is recommended because the model found overlap in TypeScript, PostgreSQL.",
+                nextStep:
+                  "Before applying, prepare examples or learning proof for Docker."
               })
             ],
             generatedCv: { available: false },
@@ -260,6 +263,130 @@ describe("ai cv analyzer routes", () => {
         /storageKey|bytes|system prompt|token|email|phone|address/i
       );
     }
+  });
+
+  test("rejects missing direct job before calling Model API", async () => {
+    let modelCalls = 0;
+    const context = createAiCvAnalyzerRouteContext({
+      analyzeCv: () => {
+        modelCalls += 1;
+        return Promise.resolve(modelApiFixtures.validCvAnalyzerResponse);
+      }
+    });
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_direct_missing"),
+      formData: buildCvFormData({
+        overrides: {
+          compareSource: "DIRECT_JOB_DETAIL",
+          directJobId: "22222222-2222-4222-8222-222222222222"
+        }
+      })
+    });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "JOB_NOT_FOUND" }
+    });
+    expect(modelCalls).toBe(0);
+  });
+
+  test("hides missing bookmark candidates before calling Model API", async () => {
+    let modelCalls = 0;
+    const context = createAiCvAnalyzerRouteContext({
+      hasBookmark: false,
+      analyzeCv: () => {
+        modelCalls += 1;
+        return Promise.resolve(modelApiFixtures.validCvAnalyzerResponse);
+      }
+    });
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_bookmark_missing"),
+      formData: buildCvFormData({
+        overrides: { compareSource: "BOOKMARK" }
+      })
+    });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "BOOKMARK_NOT_FOUND" }
+    });
+    expect(modelCalls).toBe(0);
+  });
+
+  test("rejects empty job search candidates before calling Model API", async () => {
+    let modelCalls = 0;
+    const context = createAiCvAnalyzerRouteContext({
+      job: null,
+      analyzeCv: () => {
+        modelCalls += 1;
+        return Promise.resolve(modelApiFixtures.validCvAnalyzerResponse);
+      }
+    });
+
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_job_search_empty"),
+      formData: buildCvFormData()
+    });
+
+    expect(response.status).toBe(422);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "jobRoles",
+            message: "No active jobs match the requested job roles"
+          })
+        ]
+      }
+    });
+    expect(modelCalls).toBe(0);
+  });
+
+  test("accepts max repeated jobRoles without multipart infrastructure failure", async () => {
+    const context = createAiCvAnalyzerRouteContext();
+    const response = await injectRoute(context.app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-analyzer",
+      headers: authHeaders("user-1", "req_ai_cv_max_roles"),
+      formData: buildCvFormData({
+        jobRoles: [
+          "Backend Developer",
+          "API Engineer",
+          "Node Developer",
+          "TypeScript Developer",
+          "PostgreSQL Developer",
+          "Express Developer",
+          "Platform Engineer",
+          "Software Engineer",
+          "Web Developer",
+          "Backend Intern"
+        ],
+        overrides: { persistResult: "false" }
+      })
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        jobRoles: expect.arrayContaining([
+          "Backend Developer",
+          "Backend Intern"
+        ]) as unknown
+      }
+    });
   });
 
   test("returns generated provider copy when GenAI wrapper is enabled", async () => {
@@ -374,10 +501,10 @@ describe("ai cv analyzer routes", () => {
           jobFitAlignment: {
             score: 78,
             summary:
-              "CV shows fit through TypeScript, PostgreSQL, with gaps in Docker."
+              "Your CV shows relevant evidence in TypeScript, PostgreSQL. Strengthen proof for Docker to improve role fit."
           },
           overallImpression:
-            "Overall impression is grounded in entry-level backend alignment, deployment gap."
+            "Overall impression is grounded in entry-level backend alignment, deployment gap. The CV is usable for review, but stronger quantified examples can make the fit clearer."
         }
       }
     });
@@ -700,15 +827,18 @@ function createAiCvAnalyzerRouteContext(
     analysisResults?: CvAnalysisResultRecord[];
   } = {}
 ) {
+  const repositoryJob = Object.hasOwn(overrides, "job")
+    ? (overrides.job ?? null)
+    : jobRecord();
   const repository = new InMemoryAiCvAnalyzerRepository(
-    overrides.job ?? jobRecord(),
+    repositoryJob,
     overrides.hasBookmark ?? true,
     overrides.fileMetadata,
     overrides.analysisResults
   );
   const storage = new InMemoryCvFileStorage();
   const jobsRepository = new StaticJobsRepository(
-    overrides.job ? [overrides.job] : [jobRecord()]
+    repositoryJob ? [repositoryJob] : [jobRecord()]
   );
   const authMiddleware = createTestAuthMiddleware();
   const config =
@@ -818,8 +948,27 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     );
   }
 
-  findCandidateJobsForCvAnalysis(): Promise<JobRecord[]> {
-    return Promise.resolve(this.job ? [this.job] : []);
+  findCandidateJobsForCvAnalysis(
+    input: Parameters<
+      NonNullable<AiCvAnalyzerRepository["findCandidateJobsForCvAnalysis"]>
+    >[0]
+  ): Promise<JobRecord[]> {
+    if (!this.job) {
+      return Promise.resolve([]);
+    }
+
+    if (input.compareSource === "BOOKMARK" && !this.hasBookmark) {
+      return Promise.resolve([]);
+    }
+
+    if (
+      input.compareSource === "DIRECT_JOB_DETAIL" &&
+      input.directJobId !== this.job.id
+    ) {
+      return Promise.resolve([]);
+    }
+
+    return Promise.resolve([this.job]);
   }
 
   markCvFileDeleted(): Promise<void> {
@@ -1010,12 +1159,15 @@ function buildCvFormData(
     includeFile?: boolean;
     file?: File;
     overrides?: Record<string, string>;
+    jobRoles?: string[];
   } = {}
 ) {
   const formData = new FormData();
   const includeFile = options.includeFile ?? true;
 
-  formData.set("jobRoles", "Backend Developer");
+  for (const role of options.jobRoles ?? ["Backend Developer"]) {
+    formData.append("jobRoles", role);
+  }
   formData.set("language", options.overrides?.language ?? "id");
   formData.set("inputMode", options.overrides?.inputMode ?? "UPLOAD");
   formData.set(

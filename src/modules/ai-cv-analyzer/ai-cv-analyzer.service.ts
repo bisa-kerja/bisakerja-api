@@ -61,6 +61,8 @@ export class AiCvAnalyzerService {
             now: this.now()
           })
         : [];
+      assertCvAnalyzerCandidates(input.compareSource, candidates);
+
       const cvBytes = await resolveCvBytes(
         this.options.storage,
         cvSource.metadata.storageKey,
@@ -423,6 +425,37 @@ export async function cleanupExpiredCvFiles(
     deleted,
     failed
   };
+}
+
+function assertCvAnalyzerCandidates(
+  compareSource: AnalyzeCvInput["compareSource"],
+  candidates: CvAnalysisCandidateRecord[]
+) {
+  if (candidates.length > 0) {
+    return;
+  }
+
+  if (compareSource === "DIRECT_JOB_DETAIL") {
+    throw new NotFoundError(
+      "Job not found",
+      aiCvAnalyzerErrorCodes.jobNotFound
+    );
+  }
+
+  if (compareSource === "BOOKMARK") {
+    throw new NotFoundError(
+      "Bookmark not found",
+      aiCvAnalyzerErrorCodes.bookmarkNotFound
+    );
+  }
+
+  throw createValidationError("No job candidates found", [
+    {
+      path: "jobRoles",
+      message: "No active jobs match the requested job roles",
+      code: "custom"
+    }
+  ]);
 }
 
 export function buildCvAnalyzerPayload(

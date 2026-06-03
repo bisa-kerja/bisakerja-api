@@ -1,5 +1,6 @@
 export const aiCvAnalyzerErrorCodes = {
   bookmarkNotFound: "BOOKMARK_NOT_FOUND",
+  jobNotFound: "JOB_NOT_FOUND",
   cvAnalysisResultNotFound: "CV_ANALYSIS_RESULT_NOT_FOUND",
   cvAnalysisResultUnsupported: "CV_ANALYSIS_RESULT_UNSUPPORTED",
   cvFileNotFound: "CV_FILE_NOT_FOUND"

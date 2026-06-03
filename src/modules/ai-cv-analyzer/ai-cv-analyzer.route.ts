@@ -139,8 +139,8 @@ export function createCvUploadMiddleware(config: AppConfig): RequestHandler {
     limits: {
       files: 1,
       fileSize: config.uploads.cvUploadMaxBytes,
-      fields: 8,
-      parts: 9
+      fields: 16,
+      parts: 17
     },
     fileFilter: (_req, file, callback) => {
       if (!allowedMimeTypes.has(file.mimetype.toLowerCase())) {

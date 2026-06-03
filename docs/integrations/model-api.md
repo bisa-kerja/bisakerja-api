@@ -120,14 +120,14 @@ Backend sends only model scoring fields to Model API. Public recommendation fiel
 
 ## Failure Contract
 
-| Model API outcome                                        | Backend behavior                                                                                                |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `422 contract_validation_error`                          | Return frontend validation/dependency error without persistence; log request id and validation path only.       |
-| `422 cv_parse_empty_text` or parse failure               | Return deterministic CV parse failure or low-confidence fallback policy; never fabricate CV text.               |
-| `503 model_not_ready`, stale artifact, or loader failure | Return AI unavailable; do not retry validation failures.                                                        |
-| `504 inference_timeout`                                  | Return timeout/unavailable response; keep non-AI routes healthy.                                                |
-| Empty candidate set                                      | Backend resolves before call; if still empty, skip Model API and return deterministic no-recommendation policy. |
-| GenAI wrapper failure                                    | Backend keeps model scores/order and creates deterministic fallback prose from model-core evidence.             |
+| Model API outcome                                        | Backend behavior                                                                                                                                                                                                                     |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `422 contract_validation_error`                          | Return frontend validation/dependency error without persistence; log request id and validation path only.                                                                                                                            |
+| `422 cv_parse_empty_text` or parse failure               | Return deterministic CV parse failure or low-confidence fallback policy; never fabricate CV text.                                                                                                                                    |
+| `503 model_not_ready`, stale artifact, or loader failure | Return AI unavailable; do not retry validation failures.                                                                                                                                                                             |
+| `504 inference_timeout`                                  | Return timeout/unavailable response; keep non-AI routes healthy.                                                                                                                                                                     |
+| Empty candidate set                                      | Backend resolves before call. `DIRECT_JOB_DETAIL` returns `404 JOB_NOT_FOUND`, `BOOKMARK` returns ownership-safe `404 BOOKMARK_NOT_FOUND`, and `JOB_SEARCH` returns `422 VALIDATION_ERROR` instead of sending empty `jobCandidates`. |
+| GenAI wrapper failure                                    | Backend keeps model scores/order and creates deterministic fallback prose from model-core evidence.                                                                                                                                  |
 
 ## Supported Workflows
 

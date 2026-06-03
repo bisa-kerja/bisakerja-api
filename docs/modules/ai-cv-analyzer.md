@@ -403,6 +403,7 @@ Suggested metadata:
 | File too large                             | 413        | `PAYLOAD_TOO_LARGE`                              | Reject before storage or model call |
 | Job not found                              | 404        | `JOB_NOT_FOUND`                                  | No model call                       |
 | Bookmark not owned                         | 404        | `BOOKMARK_NOT_FOUND`                             | Hide ownership details              |
+| No active job search candidates            | 422        | `VALIDATION_ERROR`                               | No model call                       |
 | Model API timeout                          | 503        | `SERVICE_UNAVAILABLE`                            | Return safe AI unavailable error    |
 | Model API invalid response                 | 502        | `DOWNSTREAM_ERROR`                               | Reject untrusted output             |
 | GenAI provider timeout                     | 200        | None                                             | Use deterministic fallback copy     |
@@ -423,6 +424,7 @@ Suggested metadata:
 | Referenced CV not found             | 404        | `CV_FILE_NOT_FOUND`                              |
 | No active CV fallback               | 422        | `VALIDATION_ERROR`                               |
 | Bookmark not found for current user | 404        | `BOOKMARK_NOT_FOUND`                             |
+| No active job search candidates     | 422        | `VALIDATION_ERROR`                               |
 | Storage unavailable                 | 500 or 503 | `INTERNAL_SERVER_ERROR` or `SERVICE_UNAVAILABLE` |
 | Model unavailable                   | 503        | `SERVICE_UNAVAILABLE`                            |
 | Model invalid response              | 502        | `DOWNSTREAM_ERROR`                               |

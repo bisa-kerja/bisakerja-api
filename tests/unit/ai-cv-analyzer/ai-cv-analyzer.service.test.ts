@@ -250,7 +250,6 @@ describe("AiCvAnalyzerService", () => {
     );
   });
 
-
   test("uses optional GenAI wrapper when enabled and falls back when provider fails", async () => {
     const generated = {
       ...buildPublicCvAnalysisResponse(
@@ -627,6 +626,48 @@ describe("AiCvAnalyzerService", () => {
     }
   });
 
+  test("resolves empty candidates before Model API call", async () => {
+    let modelCalls = 0;
+    const service = new AiCvAnalyzerService(
+      new InMemoryAiCvAnalyzerRepository({ job: null }),
+      {
+        modelApiClient: {
+          analyzeJobFit: () => Promise.reject(new Error("Not used")),
+          analyzeCv: () => {
+            modelCalls += 1;
+            return Promise.resolve(modelApiFixtures.validCvAnalyzerResponse);
+          }
+        },
+        storage: new InMemoryCvFileStorage(),
+        cvRetentionDays: 1,
+        now: () => new Date("2026-04-23T00:00:00.000Z")
+      }
+    );
+
+    try {
+      await service.analyzeCv(
+        "user-1",
+        "req_cv_empty_candidates",
+        {
+          jobRoles: ["Backend Developer"],
+          language: "id",
+          inputMode: "UPLOAD",
+          compareSource: "JOB_SEARCH",
+          persistResult: false
+        },
+        uploadedCvFile()
+      );
+      throw new Error("Expected empty candidate validation failure");
+    } catch (error) {
+      expect(error).toMatchObject({
+        statusCode: 422,
+        code: "VALIDATION_ERROR"
+      });
+    }
+
+    expect(modelCalls).toBe(0);
+  });
+
   test("cleans up uploaded file on downstream failure", async () => {
     const cleanupRepository = new InMemoryAiCvAnalyzerRepository();
     const cleanupStorage = new InMemoryCvFileStorage();
@@ -778,14 +819,34 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     return Promise.resolve();
   }
 
-  findCandidateJobsForCvAnalysis(): Promise<JobRecord[]> {
-    return Promise.resolve(
-      Object.hasOwn(this.state, "job")
-        ? this.state.job
-          ? [this.state.job]
-          : []
-        : [jobRecord()]
-    );
+  findCandidateJobsForCvAnalysis(
+    input: Parameters<
+      NonNullable<AiCvAnalyzerRepository["findCandidateJobsForCvAnalysis"]>
+    >[0]
+  ): Promise<JobRecord[]> {
+    const job = Object.hasOwn(this.state, "job")
+      ? (this.state.job ?? null)
+      : jobRecord();
+
+    if (!job) {
+      return Promise.resolve([]);
+    }
+
+    if (
+      input.compareSource === "BOOKMARK" &&
+      this.state.hasBookmark === false
+    ) {
+      return Promise.resolve([]);
+    }
+
+    if (
+      input.compareSource === "DIRECT_JOB_DETAIL" &&
+      input.directJobId !== job.id
+    ) {
+      return Promise.resolve([]);
+    }
+
+    return Promise.resolve([job]);
   }
 
   createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
