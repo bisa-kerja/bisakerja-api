@@ -302,6 +302,62 @@ describe("model api client", () => {
     await expectRejects(client.analyzeJobFit(jobFitPayload), DownstreamError);
   });
 
+  test("sends cv analyzer multipart without storage metadata", async () => {
+    const fetchMock = mock(
+      (_url: string | URL | Request, _init?: RequestInit) =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify(modelApiFixtures.validCvAnalyzerResponse),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" }
+            }
+          )
+        )
+    );
+    const client = createModelApiClient(
+      testConfig({
+        MODEL_API_ENABLE_MOCK: "false",
+        MODEL_API_SERVICE_TOKEN: "live-model-token"
+      }),
+      { fetch: asFetch(fetchMock) }
+    );
+
+    await client.analyzeCv({
+      ...cvPayload,
+      cv: {
+        ...cvPayload.cv,
+        bytes: Buffer.from("%PDF-1.4\nphase 41 sanitized cv\n%%EOF")
+      }
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const call = fetchMock.mock.calls.at(0);
+    expect(call).toBeDefined();
+
+    if (!call) {
+      throw new Error("Expected fetch to be called");
+    }
+
+    const [url, init] = call;
+    expect(toRequestUrl(url)).toBe(
+      "http://localhost:8000/internal/model/cv-analysis"
+    );
+    expect(init?.headers).toMatchObject({
+      authorization: "Bearer live-model-token",
+      "x-request-id": "req_cv_client"
+    });
+    expect(init?.body).toBeInstanceOf(FormData);
+
+    const form = init?.body as FormData;
+    expect(form.has("cv")).toBe(false);
+    expect(JSON.stringify([...form.entries()])).not.toContain("storageKey");
+    expect(form.getAll("jobRoles")).toEqual(["Backend Developer"]);
+    expect(form.get("inputMode")).toBe("UPLOAD");
+    expect(form.get("compareSource")).toBe("JOB_SEARCH");
+    expect(form.get("cvFile")).toBeInstanceOf(Blob);
+  });
+
   test("calls recommendation endpoint with request id and token", async () => {
     const fetchMock = mock(
       (_url: string | URL | Request, _init?: RequestInit) =>

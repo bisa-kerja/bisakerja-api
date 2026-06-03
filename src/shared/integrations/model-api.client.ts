@@ -294,7 +294,6 @@ async function requestMultipartModelApi<TResponse>(
   for (const role of options.payload.jobRoles) {
     form.append("jobRoles", role);
   }
-  form.set("cv", JSON.stringify(cvMetadata));
   form.set("jobCandidates", JSON.stringify(options.payload.jobCandidates));
   form.set("rankingPolicy", JSON.stringify(options.payload.rankingPolicy));
   form.set(
