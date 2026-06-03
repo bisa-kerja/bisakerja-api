@@ -91,7 +91,8 @@ function createDocumentationRouteOptions(): RouteOptions {
     health: {
       checks: {
         postgresql: () => Promise.resolve(),
-        redis: () => Promise.resolve()
+        redis: () => Promise.resolve(),
+        modelApi: () => Promise.resolve()
       }
     },
     internal: {
