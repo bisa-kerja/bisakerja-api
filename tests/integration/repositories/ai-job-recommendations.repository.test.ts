@@ -123,7 +123,7 @@ describe("PrismaAiJobRecommendationsRepository", () => {
         overallImpression: "Relevan untuk backend role",
         jobFitAlignment: {
           score: 80,
-          summary: "Cocok",
+          summary: "Good fit",
           matchedSignals: ["TypeScript"],
           missingSignals: ["Docker"]
         },
@@ -135,8 +135,7 @@ describe("PrismaAiJobRecommendationsRepository", () => {
         sectionReviews: [
           {
             sectionName: "Relevant Skills",
-            analysis:
-              "Skill relevan sudah ada, tetapi belum dikelompokkan jelas.",
+            analysis: "Relevant skills are present, but not grouped clearly.",
             actionPoints: ["Kelompokkan skill backend dan deployment."],
             whyItsImportantForYou:
               "Keyword teknis yang jelas membantu screening awal."
@@ -240,7 +239,7 @@ describe("PrismaAiJobRecommendationsRepository", () => {
             reasons: ["Kecocokan skill backend utama sudah kuat."],
             matchedSkills: ["TypeScript"],
             missingSkills: ["Docker"],
-            nextSteps: ["Tambahkan pengalaman deployment di CV."]
+            nextSteps: ["Add deployment experience to the CV."]
           }
         ]
       });

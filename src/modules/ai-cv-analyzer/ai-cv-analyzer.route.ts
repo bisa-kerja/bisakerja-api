@@ -135,7 +135,7 @@ export function createCvUploadMiddleware(config: AppConfig): RequestHandler {
           new ValidationError("CV file type is not supported", [
             {
               path: "cvFile",
-              message: `CV file type is not supported. Gunakan ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
+              message: `CV file type is not supported. Use ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
               code: "custom"
             }
           ])

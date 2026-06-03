@@ -20,10 +20,10 @@ describe("response formatter", () => {
 
   test("formats a created response", () => {
     expect(
-      createdResponse({ id: "app_123" }, "Lamaran berhasil dibuat")
+      createdResponse({ id: "app_123" }, "Application created successfully")
     ).toEqual({
       success: true,
-      message: "Lamaran berhasil dibuat",
+      message: "Application created successfully",
       data: { id: "app_123" },
       meta: null
     });
@@ -44,11 +44,11 @@ describe("response formatter", () => {
           },
           sort: "newest"
         },
-        "Daftar lowongan berhasil diambil"
+        "Jobs retrieved successfully"
       )
     ).toEqual({
       success: true,
-      message: "Daftar lowongan berhasil diambil",
+      message: "Jobs retrieved successfully",
       data: [{ id: "job_123" }],
       meta: {
         pagination: {

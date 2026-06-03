@@ -65,7 +65,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Layanan aktif",
+                  "message": "Service is live",
                   "data": {
                     "service": "bisakerja-api",
                     "status": "live",
@@ -102,7 +102,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Layanan siap",
+                  "message": "Service is ready",
                   "data": {
                     "service": "bisakerja-api",
                     "status": "ready",
@@ -124,7 +124,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Layanan belum siap",
+                  "message": "Service is not ready",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",
@@ -191,7 +191,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
+                  "message": "Account registered successfully. Please verify your email",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -219,7 +219,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Email sudah terdaftar",
+                  "message": "Email is already registered",
                   "data": null,
                   "error": {
                     "code": "EMAIL_ALREADY_REGISTERED",
@@ -326,7 +326,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Login berhasil",
+                  "message": "Login successful",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -354,7 +354,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Email, username, atau kata sandi tidak valid",
+                  "message": "Email, username, or password is invalid",
                   "data": null,
                   "error": {
                     "code": "INVALID_CREDENTIALS",
@@ -459,7 +459,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Sesi berhasil diperbarui",
+                  "message": "Session refreshed",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -582,7 +582,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Logout berhasil",
+                  "message": "Logout successful",
                   "data": null,
                   "meta": null
                 }
@@ -668,7 +668,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Jika email terdaftar, instruksi reset kata sandi akan dikirim.",
+                  "message": "If the email is registered, password reset instructions will be sent",
                   "data": null,
                   "meta": null
                 }
@@ -756,7 +756,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Reset kata sandi berhasil",
+                  "message": "Password reset successful",
                   "data": null,
                   "meta": null
                 }
@@ -770,7 +770,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Token reset kata sandi tidak valid",
+                  "message": "Password reset token is invalid",
                   "data": null,
                   "error": {
                     "code": "PASSWORD_RESET_TOKEN_INVALID",
@@ -874,7 +874,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Email berhasil diverifikasi",
+                  "message": "Email verified successfully",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -902,7 +902,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "OTP verifikasi email tidak valid",
+                  "message": "Email verification OTP is invalid",
                   "data": null,
                   "error": {
                     "code": "EMAIL_VERIFICATION_INVALID",
@@ -991,7 +991,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "URL login Google berhasil dibuat",
+                  "message": "Google login URL created successfully",
                   "data": {
                     "authorizeUrl": "https://accounts.google.com/o/oauth2/v2/auth?..."
                   },
@@ -1025,7 +1025,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Google SSO belum dikonfigurasi",
+                  "message": "Google SSO is not configured",
                   "data": null,
                   "error": {
                     "code": "GOOGLE_SSO_NOT_CONFIGURED",
@@ -1086,7 +1086,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Login Google berhasil",
+                  "message": "Google login successful",
                   "data": {
                     "user": {
                       "id": "550e8400-e29b-41d4-a716-446655440001",
@@ -1114,7 +1114,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "State Google tidak valid",
+                  "message": "Google OAuth state is invalid",
                   "data": null,
                   "error": {
                     "code": "GOOGLE_OAUTH_STATE_INVALID",
@@ -1132,7 +1132,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Akun sudah terhubung dengan akun Google lain",
+                  "message": "Account is already linked to another Google account",
                   "data": null,
                   "error": {
                     "code": "GOOGLE_OAUTH_ACCOUNT_ALREADY_LINKED",
@@ -1192,7 +1192,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Google SSO belum dikonfigurasi",
+                  "message": "Google SSO is not configured",
                   "data": null,
                   "error": {
                     "code": "GOOGLE_SSO_NOT_CONFIGURED",
@@ -1376,7 +1376,7 @@
                     "details": [
                       {
                         "path": "body.jobs",
-                        "message": "Daftar lowongan wajib berisi minimal 1 item",
+                        "message": "Jobs list must contain at least 1 item",
                         "code": "invalid_format"
                       }
                     ],
@@ -1492,7 +1492,7 @@
                     "details": [
                       {
                         "path": "body.candidates",
-                        "message": "Daftar kandidat notifikasi wajib diisi",
+                        "message": "Notification candidates are required",
                         "code": "invalid_format"
                       }
                     ],
@@ -1659,7 +1659,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Daftar lowongan berhasil diambil",
+                  "message": "Jobs retrieved successfully",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440010",
@@ -1724,7 +1724,7 @@
                     "details": [
                       {
                         "path": "salaryMax",
-                        "message": "Gaji maksimum harus lebih besar atau sama dengan gaji minimum",
+                        "message": "salaryMax must be greater than or equal to salaryMin",
                         "code": "custom"
                       }
                     ],
@@ -1772,7 +1772,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Lowongan berhasil diambil",
+                  "message": "Job retrieved successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440010",
                     "title": "Backend Developer",
@@ -1828,7 +1828,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Lowongan tidak ditemukan",
+                  "message": "Job not found",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -1853,7 +1853,7 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "message": "Job ID is invalid. Use a valid UUID",
                         "code": "invalid_format"
                       }
                     ],
@@ -1890,7 +1890,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Profil berhasil diambil",
+                  "message": "Profile retrieved successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2004,7 +2004,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Profil berhasil diperbarui",
+                  "message": "Profile updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2085,7 +2085,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Username sudah terdaftar",
+                  "message": "Username is already registered",
                   "data": null,
                   "error": {
                     "code": "USERNAME_ALREADY_REGISTERED",
@@ -2110,7 +2110,7 @@
                     "details": [
                       {
                         "path": "",
-                        "message": "Minimal satu data profil harus diisi",
+                        "message": "At least one profile field must be provided",
                         "code": "custom"
                       }
                     ],
@@ -2163,7 +2163,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Foto profil berhasil diperbarui",
+                  "message": "Profile photo updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2251,7 +2251,7 @@
                     "details": [
                       {
                         "path": "mimeType",
-                        "message": "Tipe file tidak didukung. Gunakan image/jpeg, image/png, atau image/webp",
+                        "message": "File type is not supported. Use image/jpeg, image/png, or image/webp",
                         "code": "invalid_format"
                       }
                     ],
@@ -2302,7 +2302,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Keahlian berhasil diperbarui",
+                  "message": "Skills updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2390,7 +2390,7 @@
                     "details": [
                       {
                         "path": "skills.0.name",
-                        "message": "Nama keahlian tidak boleh duplikat dalam daftar yang sama",
+                        "message": "Skill names must not be duplicated in the same list",
                         "code": "custom"
                       }
                     ],
@@ -2450,7 +2450,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Pengalaman berhasil diperbarui",
+                  "message": "Experience updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2538,7 +2538,7 @@
                     "details": [
                       {
                         "path": "experience.0.endDate",
-                        "message": "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai",
+                        "message": "End date must be greater than or equal to start date",
                         "code": "custom"
                       }
                     ],
@@ -2596,7 +2596,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Pendidikan berhasil diperbarui",
+                  "message": "Education updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440001",
                     "username": "salman",
@@ -2684,7 +2684,7 @@
                     "details": [
                       {
                         "path": "education.0.endYear",
-                        "message": "Tahun selesai harus lebih besar atau sama dengan tahun mulai",
+                        "message": "End year must be greater than or equal to start year",
                         "code": "custom"
                       }
                     ],
@@ -2721,7 +2721,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Preferensi berhasil diambil",
+                  "message": "Preferences retrieved successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440030",
                     "careerStatus": "FRESH_GRADUATE",
@@ -2774,7 +2774,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Preferensi tidak ditemukan",
+                  "message": "Preferences not found",
                   "data": null,
                   "error": {
                     "code": "PREFERENCES_NOT_FOUND",
@@ -2836,7 +2836,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Preferensi berhasil disimpan",
+                  "message": "Preferences saved successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440030",
                     "careerStatus": "FRESH_GRADUATE",
@@ -2896,7 +2896,7 @@
                     "details": [
                       {
                         "path": "salaryExpectation.max",
-                        "message": "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum",
+                        "message": "salaryExpectation.max must be greater than or equal to min",
                         "code": "custom"
                       }
                     ],
@@ -2945,7 +2945,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Preferensi berhasil diperbarui",
+                  "message": "Preferences updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440030",
                     "careerStatus": "FRESH_GRADUATE",
@@ -3005,7 +3005,7 @@
                     "details": [
                       {
                         "path": "workTypes",
-                        "message": "Minimal satu tipe kerja wajib diisi",
+                        "message": "At least one work type is required",
                         "code": "too_small"
                       }
                     ],
@@ -3099,7 +3099,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Daftar bookmark berhasil diambil",
+                  "message": "Bookmarks retrieved successfully",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440040",
@@ -3186,7 +3186,7 @@
                     "details": [
                       {
                         "path": "sort",
-                        "message": "Urutan tidak didukung. Gunakan nilai urutan yang tersedia",
+                        "message": "Sort is not supported. Use one of the supported sort values",
                         "code": "invalid_format"
                       }
                     ],
@@ -3230,7 +3230,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Lowongan berhasil disimpan",
+                  "message": "Job saved successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440040",
                     "jobId": "550e8400-e29b-41d4-a716-446655440010",
@@ -3266,7 +3266,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Lowongan tidak ditemukan",
+                  "message": "Job not found",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -3284,7 +3284,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Bookmark sudah ada",
+                  "message": "Bookmark already exists",
                   "data": null,
                   "error": {
                     "code": "BOOKMARK_ALREADY_EXISTS",
@@ -3309,7 +3309,7 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "message": "Job ID is invalid. Use a valid UUID",
                         "code": "invalid_format"
                       }
                     ],
@@ -3367,7 +3367,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Bookmark tidak ditemukan",
+                  "message": "Bookmark not found",
                   "data": null,
                   "error": {
                     "code": "BOOKMARK_NOT_FOUND",
@@ -3392,7 +3392,7 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "message": "Job ID is invalid. Use a valid UUID",
                         "code": "invalid_format"
                       }
                     ],
@@ -3488,7 +3488,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Daftar lamaran berhasil diambil",
+                  "message": "Applications retrieved successfully",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440050",
@@ -3579,7 +3579,7 @@
                     "details": [
                       {
                         "path": "status",
-                        "message": "Status lamaran tidak didukung. Gunakan status yang tersedia",
+                        "message": "Application status is not supported. Use one of the supported statuses",
                         "code": "invalid_format"
                       }
                     ],
@@ -3632,7 +3632,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Lamaran berhasil dibuat",
+                  "message": "Application created successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440050",
                     "status": "APPLIED",
@@ -3703,7 +3703,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Lowongan tidak ditemukan",
+                  "message": "Job not found",
                   "data": null,
                   "error": {
                     "code": "JOB_NOT_FOUND",
@@ -3721,7 +3721,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Lamaran sudah dilacak",
+                  "message": "Application is already tracked",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_ALREADY_TRACKED",
@@ -3746,7 +3746,7 @@
                     "details": [
                       {
                         "path": "jobId",
-                        "message": "ID lowongan tidak valid. Gunakan UUID yang benar",
+                        "message": "Job ID is invalid. Use a valid UUID",
                         "code": "invalid_format"
                       }
                     ],
@@ -3811,7 +3811,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Lamaran berhasil diperbarui",
+                  "message": "Application updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440050",
                     "status": "APPLIED",
@@ -3882,7 +3882,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Lamaran tidak ditemukan",
+                  "message": "Application not found",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_NOT_FOUND",
@@ -3907,7 +3907,7 @@
                     "details": [
                       {
                         "path": "",
-                        "message": "Minimal satu field pembaruan harus diisi",
+                        "message": "At least one update field must be provided",
                         "code": "custom"
                       }
                     ],
@@ -3972,7 +3972,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Status lamaran berhasil diperbarui",
+                  "message": "Application status updated successfully",
                   "data": {
                     "id": "550e8400-e29b-41d4-a716-446655440050",
                     "status": "INTERVIEW",
@@ -4043,7 +4043,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Lamaran tidak ditemukan",
+                  "message": "Application not found",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_NOT_FOUND",
@@ -4061,7 +4061,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Perubahan status lamaran tidak valid",
+                  "message": "Application status transition is invalid",
                   "data": null,
                   "error": {
                     "code": "APPLICATION_STATUS_CONFLICT",
@@ -4086,7 +4086,7 @@
                     "details": [
                       {
                         "path": "status",
-                        "message": "Status lamaran tidak didukung. Gunakan status yang tersedia",
+                        "message": "Application status is not supported. Use one of the supported statuses",
                         "code": "invalid_format"
                       }
                     ],
@@ -4141,7 +4141,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "CV berhasil diunggah",
+                  "message": "CV uploaded successfully",
                   "data": {
                     "cvFile": {
                       "id": "550e8400-e29b-41d4-a716-446655440030",
@@ -4183,7 +4183,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Ukuran file CV melebihi batas maksimum",
+                  "message": "CV file size exceeds the maximum limit",
                   "data": null,
                   "error": {
                     "code": "PAYLOAD_TOO_LARGE",
@@ -4208,7 +4208,7 @@
                     "details": [
                       {
                         "path": "cvFile",
-                        "message": "File CV wajib diunggah",
+                        "message": "CV file is required",
                         "code": "invalid_format"
                       }
                     ],
@@ -4270,7 +4270,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "CV aktif berhasil diambil",
+                  "message": "Active CV retrieved successfully",
                   "data": {
                     "cvFile": {
                       "id": "550e8400-e29b-41d4-a716-446655440030",
@@ -4312,7 +4312,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "CV aktif tidak ditemukan",
+                  "message": "Active CV not found",
                   "data": null,
                   "error": {
                     "code": "CV_FILE_NOT_FOUND",
@@ -4361,7 +4361,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Analisis CV berhasil diselesaikan",
+                  "message": "CV analysis completed successfully",
                   "data": {
                     "jobRoles": ["Backend Developer"],
                     "language": "id",
@@ -4370,27 +4370,27 @@
                       "schemaVersion": "cv-analysis-v2",
                       "jobFitAlignment": {
                         "score": 78,
-                        "summary": "CV sudah cukup selaras dengan role Backend Developer karena menonjolkan REST API, PostgreSQL, dan pengalaman project backend. Kesesuaian bisa naik jika pengalaman deployment dibuat lebih eksplisit."
+                        "summary": "The CV is reasonably aligned with the Backend Developer role because it highlights REST API, PostgreSQL, and backend project experience. Fit can improve if deployment experience is made more explicit."
                       },
                       "atsFriendliness": {
                         "score": 84,
-                        "summary": "Struktur CV cukup mudah dibaca ATS, tetapi beberapa keyword penting masih belum dirangkum jelas pada section skill."
+                        "summary": "The CV structure is easy enough for ATS to read, but several important keywords are not summarized clearly in the skills section."
                       },
-                      "overallImpression": "CV menunjukkan fondasi backend yang kuat untuk kandidat junior-mid, dengan ruang perbaikan terbesar pada bukti dampak kerja dan penajaman keyword sesuai target role.",
+                      "overallImpression": "The CV shows a strong backend foundation for a junior-mid candidate, with the biggest improvement areas in measurable impact and role-specific keywords.",
                       "topActionables": [
-                        "Tambahkan 2-3 bullet terukur pada pengalaman backend, misalnya peningkatan performa, jumlah user, atau skala data.",
-                        "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
-                        "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
+                        "Add 2-3 measurable bullets to backend experience, such as performance improvement, user count, or data scale.",
+                        "Create a technical skills section that groups programming languages, databases, frameworks, and deployment tools.",
+                        "Align the profile summary with the Backend Developer role so key keywords appear near the top of the CV."
                       ],
                       "sectionReviews": [
                         {
                           "sectionName": "Relevant Skills",
-                          "analysis": "Skill backend relevan sudah muncul, tetapi belum semuanya dikelompokkan dengan jelas.",
+                          "analysis": "Relevant backend skills are present, but not all are grouped clearly.",
                           "actionPoints": [
-                            "Kelompokkan skill menjadi Backend, Database, Testing, dan Deployment.",
-                            "Prioritaskan skill yang paling sering diminta pada role target."
+                            "Group skills into Backend, Database, Testing, and Deployment.",
+                            "Prioritize skills most often requested for the target role."
                           ],
-                          "whyItsImportantForYou": "ATS dan recruiter biasanya mencari keyword skill spesifik sebelum membaca detail pengalaman."
+                          "whyItsImportantForYou": "ATS and recruiters usually look for specific skill keywords before reading experience details."
                         }
                       ],
                       "jobRecommendations": [
@@ -4399,13 +4399,13 @@
                           "title": "Backend Developer",
                           "companyName": "Example Tech",
                           "matchScore": 82,
-                          "reason": "Lowongan ini cocok dengan sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
-                          "nextStep": "Perjelas bukti pengalaman deployment sebelum mengirim lamaran."
+                          "reason": "This job matches TypeScript, REST API, and PostgreSQL signals in the CV.",
+                          "nextStep": "Clarify deployment experience before applying."
                         }
                       ],
                       "generatedCv": {
                         "available": false,
-                        "note": "Fitur CV yang dihasilkan belum tersedia."
+                        "note": "Generated CV feature is not available yet."
                       },
                       "model": { "name": "cv-analyzer-model", "version": "v1" },
                       "analyzedAt": "2026-04-24T08:00:00.000Z"
@@ -4443,7 +4443,7 @@
                   "jobNotFound": {
                     "value": {
                       "success": false,
-                      "message": "Lowongan tidak ditemukan",
+                      "message": "Job not found",
                       "data": null,
                       "error": {
                         "code": "JOB_NOT_FOUND",
@@ -4455,7 +4455,7 @@
                   "bookmarkNotFound": {
                     "value": {
                       "success": false,
-                      "message": "Bookmark tidak ditemukan",
+                      "message": "Bookmark not found",
                       "data": null,
                       "error": {
                         "code": "BOOKMARK_NOT_FOUND",
@@ -4467,7 +4467,7 @@
                   "cvFileNotFound": {
                     "value": {
                       "success": false,
-                      "message": "CV tidak ditemukan",
+                      "message": "CV not found",
                       "data": null,
                       "error": {
                         "code": "CV_FILE_NOT_FOUND",
@@ -4487,7 +4487,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Ukuran file CV melebihi batas maksimum",
+                  "message": "CV file size exceeds the maximum limit",
                   "data": null,
                   "error": {
                     "code": "PAYLOAD_TOO_LARGE",
@@ -4512,7 +4512,7 @@
                     "details": [
                       {
                         "path": "cvFile",
-                        "message": "File CV PDF diperlukan untuk analisis",
+                        "message": "PDF CV file is required for analysis",
                         "code": "invalid_format"
                       }
                     ],
@@ -4529,7 +4529,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Model API mengembalikan data response yang tidak valid",
+                  "message": "Model API returned an invalid response",
                   "data": null,
                   "error": {
                     "code": "DOWNSTREAM_ERROR",
@@ -4547,7 +4547,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Model API tidak tersedia",
+                  "message": "Model API is unavailable",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",
@@ -4670,7 +4670,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Daftar hasil analisis CV berhasil diambil",
+                  "message": "CV analysis results retrieved successfully",
                   "data": [
                     {
                       "id": "550e8400-e29b-41d4-a716-446655440099",
@@ -4680,11 +4680,11 @@
                       "compareSource": "JOB_SEARCH",
                       "jobFitAlignment": { "score": 78 },
                       "atsFriendliness": { "score": 84 },
-                      "overallImpressionPreview": "CV menunjukkan fondasi backend kuat, perlu penguatan bukti dampak kerja.",
+                      "overallImpressionPreview": "The CV shows a strong backend foundation and needs stronger evidence of work impact.",
                       "topActionablesPreview": [
-                        "Tambahkan bullet terukur pada pengalaman backend.",
-                        "Kelompokkan skill teknis per kategori.",
-                        "Perkuat ringkasan profil sesuai role target."
+                        "Add measurable bullets to backend experience.",
+                        "Group technical skills by category.",
+                        "Strengthen the profile summary for the target role."
                       ],
                       "model": { "name": "cv-analyzer-model", "version": "v1" },
                       "cvFile": {
@@ -4742,7 +4742,7 @@
                     "details": [
                       {
                         "path": "page",
-                        "message": "Halaman minimal 1",
+                        "message": "Page must be at least 1",
                         "code": "invalid_format"
                       }
                     ],
@@ -4781,34 +4781,34 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Hasil analisis CV terbaru berhasil diambil",
+                  "message": "Latest CV analysis result retrieved successfully",
                   "data": {
                     "analysisResult": {
                       "id": "550e8400-e29b-41d4-a716-446655440099",
                       "schemaVersion": "cv-analysis-v2",
                       "jobFitAlignment": {
                         "score": 78,
-                        "summary": "CV cukup selaras dengan role Backend Developer, perlu perjelas pengalaman deployment."
+                        "summary": "The CV is reasonably aligned with the Backend Developer role and should clarify deployment experience."
                       },
                       "atsFriendliness": {
                         "score": 84,
-                        "summary": "Struktur sudah cukup ATS-friendly, keyword utama perlu dipertegas pada section skill."
+                        "summary": "The structure is ATS-friendly enough, but key keywords should be clearer in the skills section."
                       },
-                      "overallImpression": "Fondasi backend kuat untuk level junior-mid dengan ruang peningkatan pada dampak terukur.",
+                      "overallImpression": "Strong backend foundation for junior-mid level, with room to improve measurable impact.",
                       "topActionables": [
-                        "Tambahkan 2-3 bullet terukur pada pengalaman backend.",
-                        "Kelompokkan skill menjadi Backend, Database, Testing, Deployment.",
-                        "Sesuaikan ringkasan profil dengan keyword role Backend Developer."
+                        "Add 2-3 measurable bullets to backend experience.",
+                        "Group skills into Backend, Database, Testing, and Deployment.",
+                        "Align the profile summary with Backend Developer role keywords."
                       ],
                       "sectionReviews": [
                         {
                           "sectionName": "Relevant Skills",
-                          "analysis": "Skill relevan sudah ada, namun belum terstruktur untuk screening cepat recruiter.",
+                          "analysis": "Relevant skills are present, but not structured for quick recruiter screening.",
                           "actionPoints": [
-                            "Urutkan skill berdasarkan relevansi role target.",
-                            "Pisahkan skill inti backend dari tools pendukung."
+                            "Order skills by target-role relevance.",
+                            "Separate core backend skills from supporting tools."
                           ],
-                          "whyItsImportantForYou": "Recruiter dan ATS biasanya menilai keyword skill sebelum detail pengalaman."
+                          "whyItsImportantForYou": "Recruiters and ATS usually evaluate skill keywords before experience details."
                         }
                       ],
                       "jobRecommendations": [
@@ -4817,13 +4817,13 @@
                           "title": "Backend Developer",
                           "companyName": "Example Tech",
                           "matchScore": 82,
-                          "reason": "Cocok karena ada sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
-                          "nextStep": "Perjelas pengalaman deployment dan testing sebelum melamar."
+                          "reason": "Good fit because the CV shows TypeScript, REST API, and PostgreSQL signals.",
+                          "nextStep": "Clarify deployment and testing experience before applying."
                         }
                       ],
                       "generatedCv": {
                         "available": false,
-                        "note": "Fitur CV yang dihasilkan belum tersedia."
+                        "note": "Generated CV feature is not available yet."
                       },
                       "model": { "name": "cv-analyzer-model", "version": "v1" },
                       "analyzedAt": "2026-04-24T08:00:00.000Z"
@@ -4876,7 +4876,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Hasil analisis CV tidak ditemukan",
+                  "message": "Hasil analisis CV not found",
                   "data": null,
                   "error": {
                     "code": "CV_ANALYSIS_RESULT_NOT_FOUND",
@@ -4928,34 +4928,34 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Detail hasil analisis CV berhasil diambil",
+                  "message": "CV analysis result retrieved successfully",
                   "data": {
                     "analysisResult": {
                       "id": "550e8400-e29b-41d4-a716-446655440099",
                       "schemaVersion": "cv-analysis-v2",
                       "jobFitAlignment": {
                         "score": 78,
-                        "summary": "CV cukup selaras dengan role Backend Developer, perlu perjelas pengalaman deployment."
+                        "summary": "The CV is reasonably aligned with the Backend Developer role and should clarify deployment experience."
                       },
                       "atsFriendliness": {
                         "score": 84,
-                        "summary": "Struktur sudah cukup ATS-friendly, keyword utama perlu dipertegas pada section skill."
+                        "summary": "The structure is ATS-friendly enough, but key keywords should be clearer in the skills section."
                       },
-                      "overallImpression": "Fondasi backend kuat untuk level junior-mid dengan ruang peningkatan pada dampak terukur.",
+                      "overallImpression": "Strong backend foundation for junior-mid level, with room to improve measurable impact.",
                       "topActionables": [
-                        "Tambahkan 2-3 bullet terukur pada pengalaman backend.",
-                        "Kelompokkan skill menjadi Backend, Database, Testing, Deployment.",
-                        "Sesuaikan ringkasan profil dengan keyword role Backend Developer."
+                        "Add 2-3 measurable bullets to backend experience.",
+                        "Group skills into Backend, Database, Testing, and Deployment.",
+                        "Align the profile summary with Backend Developer role keywords."
                       ],
                       "sectionReviews": [
                         {
                           "sectionName": "Relevant Skills",
-                          "analysis": "Skill relevan sudah ada, namun belum terstruktur untuk screening cepat recruiter.",
+                          "analysis": "Relevant skills are present, but not structured for quick recruiter screening.",
                           "actionPoints": [
-                            "Urutkan skill berdasarkan relevansi role target.",
-                            "Pisahkan skill inti backend dari tools pendukung."
+                            "Order skills by target-role relevance.",
+                            "Separate core backend skills from supporting tools."
                           ],
-                          "whyItsImportantForYou": "Recruiter dan ATS biasanya menilai keyword skill sebelum detail pengalaman."
+                          "whyItsImportantForYou": "Recruiters and ATS usually evaluate skill keywords before experience details."
                         }
                       ],
                       "jobRecommendations": [
@@ -4964,13 +4964,13 @@
                           "title": "Backend Developer",
                           "companyName": "Example Tech",
                           "matchScore": 82,
-                          "reason": "Cocok karena ada sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
-                          "nextStep": "Perjelas pengalaman deployment dan testing sebelum melamar."
+                          "reason": "Good fit because the CV shows TypeScript, REST API, and PostgreSQL signals.",
+                          "nextStep": "Clarify deployment and testing experience before applying."
                         }
                       ],
                       "generatedCv": {
                         "available": false,
-                        "note": "Fitur CV yang dihasilkan belum tersedia."
+                        "note": "Generated CV feature is not available yet."
                       },
                       "model": { "name": "cv-analyzer-model", "version": "v1" },
                       "analyzedAt": "2026-04-24T08:00:00.000Z"
@@ -5023,7 +5023,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Hasil analisis CV tidak ditemukan",
+                  "message": "Hasil analisis CV not found",
                   "data": null,
                   "error": {
                     "code": "CV_ANALYSIS_RESULT_NOT_FOUND",
@@ -5048,7 +5048,7 @@
                     "details": [
                       {
                         "path": "analysisResultId",
-                        "message": "ID hasil analisis CV tidak valid. Gunakan UUID yang benar",
+                        "message": "CV analysis result ID is invalid. Use a valid UUID",
                         "code": "invalid_format"
                       }
                     ],
@@ -5076,7 +5076,7 @@
               },
               "example": {
                 "cvFileId": "11111111-1111-4111-8111-111111111111",
-                "summary": "Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.",
+                "summary": "Backend candidate with REST API, PostgreSQL, and basic deployment experience.",
                 "templateHtml": "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
               }
             }
@@ -5102,9 +5102,9 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Markdown CV berhasil dibuat",
+                  "message": "Markdown CV created successfully",
                   "data": {
-                    "markdown": "<section><h1>Nama Kandidat</h1><h2>Ringkasan</h2><p>Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.</p></section>"
+                    "markdown": "<section><h1>Candidate Name</h1><h2>Summary</h2><p>Backend candidate with REST API, PostgreSQL, and basic deployment experience.</p></section>"
                   },
                   "meta": null
                 }
@@ -5136,7 +5136,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "CV tidak ditemukan",
+                  "message": "CV not found",
                   "data": null,
                   "error": {
                     "code": "CV_FILE_NOT_FOUND",
@@ -5179,7 +5179,7 @@
                     "details": [
                       {
                         "path": "templateHtml",
-                        "message": "Template HTML wajib diisi",
+                        "message": "Template HTML is required",
                         "code": "invalid_type"
                       }
                     ],
@@ -5196,7 +5196,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Model API mengembalikan markdown yang tidak valid",
+                  "message": "Model API returned invalid markdown",
                   "data": null,
                   "error": {
                     "code": "MODEL_OUTPUT_INVALID",
@@ -5214,7 +5214,7 @@
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Model API tidak tersedia",
+                  "message": "Model API is unavailable",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",

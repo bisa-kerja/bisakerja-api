@@ -133,7 +133,7 @@ describe("ai cv analyzer routes", () => {
         details: [
           expect.objectContaining({
             path: "cvFile",
-            message: "CV file type is not supported. Gunakan application/pdf"
+            message: "CV file type is not supported. Use application/pdf"
           })
         ]
       }
@@ -323,8 +323,8 @@ describe("ai cv analyzer routes", () => {
           atsFriendliness: { score: 84 },
           topActionablesPreview: [
             "Add 2-3 measurable bullets to backend experience.",
-            "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
-            "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
+            "Create a technical skills section that groups programming languages, databases, frameworks, and deployment tools.",
+            "Align the profile summary with the Backend Developer role so key keywords appear near the top of the CV."
           ],
           cvFile: {
             id: "550e8400-e29b-41d4-a716-446655440030",
@@ -721,6 +721,7 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
 
 class InMemoryCvFileStorage implements CvFileStorage {
   readonly savedFiles: UploadedCvFile[] = [];
+  private readonly filesByStorageKey = new Map<string, Buffer>();
 
   saveFile(input: {
     userId: string;
@@ -728,17 +729,28 @@ class InMemoryCvFileStorage implements CvFileStorage {
     mimeType: string;
     buffer: Buffer;
   }) {
+    const storageKey = `cv/${input.userId}/${input.fileId}.pdf`;
+
     this.savedFiles.push({
       originalName: `${input.fileId}.pdf`,
       mimeType: input.mimeType,
       sizeBytes: input.buffer.length,
       buffer: input.buffer
     });
+    this.filesByStorageKey.set(storageKey, input.buffer);
 
     return Promise.resolve({
       storageDriver: "LOCAL" as const,
-      storageKey: `cv/${input.userId}/${input.fileId}.pdf`
+      storageKey
     });
+  }
+
+  readFile(storageKey: string): Promise<Buffer> {
+    const file = this.filesByStorageKey.get(storageKey);
+    if (!file) {
+      throw new Error("Stored CV file not found");
+    }
+    return Promise.resolve(file);
   }
 
   deleteFile(): Promise<void> {
@@ -900,14 +912,14 @@ function analysisResultRecord(
     },
     topActionables: [
       "Add 2-3 measurable bullets to backend experience.",
-      "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
-      "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
+      "Create a technical skills section that groups programming languages, databases, frameworks, and deployment tools.",
+      "Align the profile summary with the Backend Developer role so key keywords appear near the top of the CV."
     ],
     sectionReviews: [
       {
         sectionName: "Relevant Skills",
-        analysis: "Skill relevan sudah ada, namun belum terstruktur.",
-        actionPoints: ["Urutkan skill berdasarkan relevansi role target."],
+        analysis: "Relevant skills are present, but not structured yet.",
+        actionPoints: ["Order skills by target-role relevance."],
         whyItsImportantForYou:
           "ATS and recruiters look for skill keywords before experience details."
       }

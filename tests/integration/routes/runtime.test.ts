@@ -20,7 +20,7 @@ describe("runtime routes and middleware", () => {
     expect(response.headers["x-request-id"]).toStartWith("req_");
     expect(response.body).toEqual({
       success: true,
-      message: "Layanan aktif",
+      message: "Service is live",
       data: {
         service: "bisakerja-api",
         status: "live",

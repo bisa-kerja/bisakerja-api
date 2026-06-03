@@ -307,7 +307,7 @@ describe("health routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       success: true,
-      message: "Layanan aktif",
+      message: "Service is live",
       data: {
         service: "bisakerja-api",
         status: "live",

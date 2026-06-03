@@ -366,31 +366,31 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
       jobFitAlignment: {
         score: 78,
         summary:
-          "CV sudah cukup selaras dengan role Backend Developer karena menonjolkan REST API, PostgreSQL, dan pengalaman project backend. Kesesuaian bisa naik jika pengalaman deployment dibuat lebih eksplisit."
+          "The CV is reasonably aligned with the Backend Developer role because it highlights REST API, PostgreSQL, and backend project experience. Fit can improve if deployment experience is made more explicit."
       },
       atsFriendliness: {
         score: 84,
         summary:
-          "Struktur CV cukup mudah dibaca ATS, tetapi beberapa keyword penting masih belum dirangkum jelas pada section skill."
+          "The CV structure is easy enough for ATS to read, but several important keywords are not summarized clearly in the skills section."
       },
       overallImpression:
-        "CV menunjukkan fondasi backend yang kuat untuk kandidat junior-mid, dengan ruang perbaikan terbesar pada bukti dampak kerja dan penajaman keyword sesuai target role.",
+        "The CV shows a strong backend foundation for a junior-mid candidate, with the biggest improvement areas in measurable impact and role-specific keywords.",
       topActionables: [
-        "Tambahkan 2-3 bullet terukur pada pengalaman backend, misalnya peningkatan performa, jumlah user, atau skala data.",
-        "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
-        "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
+        "Add 2-3 measurable bullets to backend experience, such as performance improvement, user count, or data scale.",
+        "Create a technical skills section that groups programming languages, databases, frameworks, and deployment tools.",
+        "Align the profile summary with the Backend Developer role so key keywords appear near the top of the CV."
       ],
       sectionReviews: [
         {
           sectionName: "Relevant Skills",
           analysis:
-            "Skill backend relevan sudah muncul, tetapi belum semuanya dikelompokkan dengan jelas.",
+            "Relevant backend skills are present, but not all are grouped clearly.",
           actionPoints: [
-            "Kelompokkan skill menjadi Backend, Database, Testing, dan Deployment.",
-            "Prioritaskan skill yang paling sering diminta pada role target."
+            "Group skills into Backend, Database, Testing, and Deployment.",
+            "Prioritize skills most often requested for the target role."
           ],
           whyItsImportantForYou:
-            "ATS dan recruiter biasanya mencari keyword skill spesifik sebelum membaca detail pengalaman."
+            "ATS and recruiters usually look for specific skill keywords before reading experience details."
         }
       ],
       jobRecommendations: [
@@ -400,14 +400,13 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           companyName: "Example Tech",
           matchScore: 82,
           reason:
-            "Lowongan ini cocok dengan sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
-          nextStep:
-            "Perjelas bukti pengalaman deployment sebelum mengirim lamaran."
+            "This job matches TypeScript, REST API, and PostgreSQL signals in the CV.",
+          nextStep: "Clarify deployment experience before applying."
         }
       ],
       generatedCv: {
         available: false,
-        note: "Fitur CV yang dihasilkan belum tersedia."
+        note: "Generated CV feature is not available yet."
       },
       model: {
         name: "cv-analyzer-model",
@@ -434,11 +433,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     jobFitAlignment: { score: 78 },
     atsFriendliness: { score: 84 },
     overallImpressionPreview:
-      "CV menunjukkan fondasi backend kuat, perlu penguatan bukti dampak kerja.",
+      "The CV shows a strong backend foundation and needs stronger evidence of work impact.",
     topActionablesPreview: [
-      "Tambahkan bullet terukur pada pengalaman backend.",
-      "Kelompokkan skill teknis per kategori.",
-      "Perkuat ringkasan profil sesuai role target."
+      "Add measurable bullets to backend experience.",
+      "Group technical skills by category.",
+      "Strengthen the profile summary for the target role."
     ],
     model: {
       name: "cv-analyzer-model",
@@ -457,31 +456,31 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
       jobFitAlignment: {
         score: 78,
         summary:
-          "CV cukup selaras dengan role Backend Developer, perlu perjelas pengalaman deployment."
+          "The CV is reasonably aligned with the Backend Developer role and should clarify deployment experience."
       },
       atsFriendliness: {
         score: 84,
         summary:
-          "Struktur sudah cukup ATS-friendly, keyword utama perlu dipertegas pada section skill."
+          "The structure is ATS-friendly enough, but key keywords should be clearer in the skills section."
       },
       overallImpression:
-        "Fondasi backend kuat untuk level junior-mid dengan ruang peningkatan pada dampak terukur.",
+        "Strong backend foundation for junior-mid level, with room to improve measurable impact.",
       topActionables: [
-        "Tambahkan 2-3 bullet terukur pada pengalaman backend.",
-        "Kelompokkan skill menjadi Backend, Database, Testing, Deployment.",
-        "Sesuaikan ringkasan profil dengan keyword role Backend Developer."
+        "Add 2-3 measurable bullets to backend experience.",
+        "Group skills into Backend, Database, Testing, and Deployment.",
+        "Align the profile summary with Backend Developer role keywords."
       ],
       sectionReviews: [
         {
           sectionName: "Relevant Skills",
           analysis:
-            "Skill relevan sudah ada, namun belum terstruktur untuk screening cepat recruiter.",
+            "Relevant skills are present, but not structured for quick recruiter screening.",
           actionPoints: [
-            "Urutkan skill berdasarkan relevansi role target.",
-            "Pisahkan skill inti backend dari tools pendukung."
+            "Order skills by target-role relevance.",
+            "Separate core backend skills from supporting tools."
           ],
           whyItsImportantForYou:
-            "Recruiter dan ATS biasanya menilai keyword skill sebelum detail pengalaman."
+            "Recruiters and ATS usually evaluate skill keywords before experience details."
         }
       ],
       jobRecommendations: [
@@ -491,14 +490,13 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           companyName: "Example Tech",
           matchScore: 82,
           reason:
-            "Cocok karena ada sinyal TypeScript, REST API, dan PostgreSQL pada CV.",
-          nextStep:
-            "Perjelas pengalaman deployment dan testing sebelum melamar."
+            "Good fit because the CV shows TypeScript, REST API, and PostgreSQL signals.",
+          nextStep: "Clarify deployment and testing experience before applying."
         }
       ],
       generatedCv: {
         available: false,
-        note: "Fitur CV yang dihasilkan belum tersedia."
+        note: "Generated CV feature is not available yet."
       },
       model: {
         name: "cv-analyzer-model",
@@ -587,7 +585,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("HealthLiveData"), nullSchema),
               {
                 success: true,
-                message: "Layanan aktif",
+                message: "Service is live",
                 data: {
                   service: "bisakerja-api",
                   status: "live",
@@ -611,7 +609,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("HealthReadyData"), nullSchema),
               {
                 success: true,
-                message: "Layanan siap",
+                message: "Service is ready",
                 data: {
                   service: "bisakerja-api",
                   status: "ready",
@@ -627,7 +625,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "503": errorResponse(
               "A required dependency is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Layanan belum siap",
+              "Service is not ready",
               {
                 dependencies: {
                   postgresql: "unhealthy",
@@ -666,7 +664,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 success: true,
                 message:
-                  "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
+                  "Account registered successfully. Please verify your email",
                 data: {
                   user: {
                     ...authUserExample,
@@ -681,7 +679,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "409": errorResponse(
               "Email or username already exists.",
               "EMAIL_ALREADY_REGISTERED",
-              "Email sudah terdaftar"
+              "Email is already registered"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -723,7 +721,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Login berhasil",
+                  message: "Login successful",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -735,7 +733,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Credentials are invalid.",
               "INVALID_CREDENTIALS",
-              "Email, username, atau kata sandi tidak valid"
+              "Email, username, or password is invalid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -784,7 +782,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Sesi berhasil diperbarui",
+                  message: "Session refreshed",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -834,7 +832,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 successEnvelopeSchema(nullSchema, nullSchema),
                 {
                   success: true,
-                  message: "Logout berhasil",
+                  message: "Logout successful",
                   data: null,
                   meta: null
                 }
@@ -863,7 +861,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 success: true,
                 message:
-                  "Jika email terdaftar, instruksi reset kata sandi akan dikirim.",
+                  "If the email is registered, password reset instructions will be sent",
                 data: null,
                 meta: null
               }
@@ -891,7 +889,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(nullSchema, nullSchema),
               {
                 success: true,
-                message: "Reset kata sandi berhasil",
+                message: "Password reset successful",
                 data: null,
                 meta: null
               }
@@ -899,7 +897,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Reset token is expired or invalid.",
               "PASSWORD_RESET_TOKEN_INVALID",
-              "Token reset kata sandi tidak valid"
+              "Password reset token is invalid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -944,7 +942,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Email berhasil diverifikasi",
+                  message: "Email verified successfully",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -956,7 +954,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Email verification OTP is expired or invalid.",
               "EMAIL_VERIFICATION_INVALID",
-              "OTP verifikasi email tidak valid"
+              "Email verification OTP is invalid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -988,7 +986,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "URL login Google berhasil dibuat",
+                message: "Google login URL created successfully",
                 data: {
                   authorizeUrl:
                     "https://accounts.google.com/o/oauth2/v2/auth?..."
@@ -999,7 +997,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "501": errorResponse(
               "Google SSO is not configured.",
               "GOOGLE_SSO_NOT_CONFIGURED",
-              "Google SSO belum dikonfigurasi"
+              "Google SSO is not configured"
             ),
             "429": errorResponse(
               "Rate limit exceeded.",
@@ -1045,7 +1043,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Login Google berhasil",
+                message: "Google login successful",
                 data: {
                   user: authUserExample,
                   session: authSessionExample
@@ -1056,17 +1054,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "400": errorResponse(
               "OAuth state mismatch.",
               "GOOGLE_OAUTH_STATE_INVALID",
-              "State Google tidak valid"
+              "Google OAuth state is invalid"
             ),
             "409": errorResponse(
               "Google account already linked.",
               "GOOGLE_OAUTH_ACCOUNT_ALREADY_LINKED",
-              "Akun sudah terhubung dengan akun Google lain"
+              "Account is already linked to another Google account"
             ),
             "501": errorResponse(
               "Google SSO is not configured.",
               "GOOGLE_SSO_NOT_CONFIGURED",
-              "Google SSO belum dikonfigurasi"
+              "Google SSO is not configured"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -1143,7 +1141,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "body.jobs",
-              "Daftar lowongan wajib berisi minimal 1 item"
+              "Jobs list must contain at least 1 item"
             )
           }
         }
@@ -1197,7 +1195,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "body.candidates",
-              "Daftar kandidat notifikasi wajib diisi"
+              "Notification candidates are required"
             )
           }
         }
@@ -1328,7 +1326,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar lowongan berhasil diambil",
+                message: "Jobs retrieved successfully",
                 data: [jobCardExample],
                 meta: {
                   pagination: {
@@ -1349,7 +1347,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "salaryMax",
-              "Gaji maksimum harus lebih besar atau sama dengan gaji minimum",
+              "salaryMax must be greater than or equal to salaryMin",
               "custom"
             )
           }
@@ -1375,7 +1373,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("JobDetail"), nullSchema),
               {
                 success: true,
-                message: "Lowongan berhasil diambil",
+                message: "Job retrieved successfully",
                 data: {
                   ...jobCardExample,
                   company: {
@@ -1399,11 +1397,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
+              "Job not found"
             ),
             "422": validationErrorResponse(
               "jobId",
-              "ID lowongan tidak valid. Gunakan UUID yang benar"
+              "Job ID is invalid. Use a valid UUID"
             )
           }
         }
@@ -1421,7 +1419,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profil berhasil diambil",
+                message: "Profile retrieved successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1453,7 +1451,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profil berhasil diperbarui",
+                message: "Profile updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1466,11 +1464,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "409": errorResponse(
               "Username is already used.",
               "USERNAME_ALREADY_REGISTERED",
-              "Username sudah terdaftar"
+              "Username is already registered"
             ),
             "422": validationErrorResponse(
               "",
-              "Minimal satu data profil harus diisi",
+              "At least one profile field must be provided",
               "custom"
             )
           }
@@ -1498,7 +1496,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Foto profil berhasil diperbarui",
+                message: "Profile photo updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1510,7 +1508,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "mimeType",
-              "Tipe file tidak didukung. Gunakan image/jpeg, image/png, atau image/webp"
+              "File type is not supported. Use image/jpeg, image/png, or image/webp"
             )
           }
         }
@@ -1542,7 +1540,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Keahlian berhasil diperbarui",
+                message: "Skills updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1554,7 +1552,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "skills.0.name",
-              "Nama keahlian tidak boleh duplikat dalam daftar yang sama",
+              "Skill names must not be duplicated in the same list",
               "custom"
             )
           }
@@ -1588,7 +1586,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Pengalaman berhasil diperbarui",
+                message: "Experience updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1600,7 +1598,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "experience.0.endDate",
-              "Tanggal selesai harus lebih besar atau sama dengan tanggal mulai",
+              "End date must be greater than or equal to start date",
               "custom"
             )
           }
@@ -1632,7 +1630,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Pendidikan berhasil diperbarui",
+                message: "Education updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1644,7 +1642,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "education.0.endYear",
-              "Tahun selesai harus lebih besar atau sama dengan tahun mulai",
+              "End year must be greater than or equal to start year",
               "custom"
             )
           }
@@ -1663,7 +1661,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferensi berhasil diambil",
+                message: "Preferences retrieved successfully",
                 data: preferencesExample,
                 meta: null
               }
@@ -1676,7 +1674,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Preferences do not exist yet.",
               "PREFERENCES_NOT_FOUND",
-              "Preferensi tidak ditemukan"
+              "Preferences not found"
             )
           }
         },
@@ -1714,7 +1712,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferensi berhasil disimpan",
+                message: "Preferences saved successfully",
                 data: preferencesExample,
                 meta: null
               }
@@ -1726,7 +1724,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "salaryExpectation.max",
-              "Ekspektasi gaji maksimum harus lebih besar atau sama dengan minimum",
+              "salaryExpectation.max must be greater than or equal to min",
               "custom"
             )
           }
@@ -1750,7 +1748,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferensi berhasil diperbarui",
+                message: "Preferences updated successfully",
                 data: {
                   ...preferencesExample,
                   workTypes: ["REMOTE"],
@@ -1766,7 +1764,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "workTypes",
-              "Minimal satu tipe kerja wajib diisi",
+              "At least one work type is required",
               "too_small"
             )
           }
@@ -1822,7 +1820,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar bookmark berhasil diambil",
+                message: "Bookmarks retrieved successfully",
                 data: [bookmarkExample],
                 meta: {
                   pagination: {
@@ -1847,7 +1845,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "sort",
-              "Urutan tidak didukung. Gunakan nilai urutan yang tersedia"
+              "Sort is not supported. Use one of the supported sort values"
             )
           }
         },
@@ -1868,7 +1866,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("BookmarkSummary"), nullSchema),
               {
                 success: true,
-                message: "Lowongan berhasil disimpan",
+                message: "Job saved successfully",
                 data: {
                   id: "550e8400-e29b-41d4-a716-446655440040",
                   jobId: "550e8400-e29b-41d4-a716-446655440010",
@@ -1885,16 +1883,16 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
+              "Job not found"
             ),
             "409": errorResponse(
               "Bookmark already exists.",
               "BOOKMARK_ALREADY_EXISTS",
-              "Bookmark sudah ada"
+              "Bookmark already exists"
             ),
             "422": validationErrorResponse(
               "jobId",
-              "ID lowongan tidak valid. Gunakan UUID yang benar"
+              "Job ID is invalid. Use a valid UUID"
             )
           }
         }
@@ -1926,11 +1924,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Bookmark is not found.",
               "BOOKMARK_NOT_FOUND",
-              "Bookmark tidak ditemukan"
+              "Bookmark not found"
             ),
             "422": validationErrorResponse(
               "jobId",
-              "ID lowongan tidak valid. Gunakan UUID yang benar"
+              "Job ID is invalid. Use a valid UUID"
             )
           }
         }
@@ -1988,7 +1986,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar lamaran berhasil diambil",
+                message: "Applications retrieved successfully",
                 data: [applicationExample],
                 meta: {
                   pagination: {
@@ -2013,7 +2011,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "status",
-              "Status lamaran tidak didukung. Gunakan status yang tersedia"
+              "Application status is not supported. Use one of the supported statuses"
             )
           }
         },
@@ -2038,7 +2036,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Lamaran berhasil dibuat",
+                message: "Application created successfully",
                 data: applicationExample,
                 meta: null
               }
@@ -2051,16 +2049,16 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
+              "Job not found"
             ),
             "409": errorResponse(
               "Application is already tracked.",
               "APPLICATION_ALREADY_TRACKED",
-              "Lamaran sudah dilacak"
+              "Application is already tracked"
             ),
             "422": validationErrorResponse(
               "jobId",
-              "ID lowongan tidak valid. Gunakan UUID yang benar"
+              "Job ID is invalid. Use a valid UUID"
             )
           }
         }
@@ -2093,7 +2091,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Lamaran berhasil diperbarui",
+                message: "Application updated successfully",
                 data: {
                   ...applicationExample,
                   notes: "Recruiter replied and asked for availability.",
@@ -2110,11 +2108,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Application is not found.",
               "APPLICATION_NOT_FOUND",
-              "Lamaran tidak ditemukan"
+              "Application not found"
             ),
             "422": validationErrorResponse(
               "",
-              "Minimal satu field pembaruan harus diisi",
+              "At least one update field must be provided",
               "custom"
             )
           }
@@ -2148,7 +2146,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Status lamaran berhasil diperbarui",
+                message: "Application status updated successfully",
                 data: {
                   ...applicationExample,
                   status: "INTERVIEW",
@@ -2165,16 +2163,16 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Application is not found.",
               "APPLICATION_NOT_FOUND",
-              "Lamaran tidak ditemukan"
+              "Application not found"
             ),
             "409": errorResponse(
               "Requested status transition is not allowed.",
               "APPLICATION_STATUS_CONFLICT",
-              "Perubahan status lamaran tidak valid"
+              "Application status transition is invalid"
             ),
             "422": validationErrorResponse(
               "status",
-              "Status lamaran tidak didukung. Gunakan status yang tersedia"
+              "Application status is not supported. Use one of the supported statuses"
             )
           }
         }
@@ -2215,7 +2213,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "CV berhasil diunggah",
+                message: "CV uploaded successfully",
                 data: { cvFile: cvFileExample },
                 meta: null
               }
@@ -2228,13 +2226,13 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "413": errorResponse(
               "Uploaded CV exceeds the configured limit.",
               "PAYLOAD_TOO_LARGE",
-              "Ukuran file CV melebihi batas maksimum",
+              "CV file size exceeds the maximum limit",
               {
                 path: "cvFile",
                 maxBytes: config.uploads.cvUploadMaxBytes
               }
             ),
-            "422": validationErrorResponse("cvFile", "File CV wajib diunggah"),
+            "422": validationErrorResponse("cvFile", "CV file is required"),
             "503": errorResponse(
               "CV storage is unavailable.",
               "SERVICE_UNAVAILABLE",
@@ -2266,7 +2264,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "CV aktif berhasil diambil",
+                message: "Active CV retrieved successfully",
                 data: { cvFile: cvFileExample },
                 meta: null
               }
@@ -2279,7 +2277,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Active CV file is not found.",
               "CV_FILE_NOT_FOUND",
-              "CV aktif tidak ditemukan"
+              "Active CV not found"
             )
           }
         }
@@ -2310,7 +2308,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CvAnalysis"), nullSchema),
               {
                 success: true,
-                message: "Analisis CV berhasil diselesaikan",
+                message: "CV analysis completed successfully",
                 data: cvAnalysisExample,
                 meta: null
               }
@@ -2330,7 +2328,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                     jobNotFound: {
                       value: {
                         success: false,
-                        message: "Lowongan tidak ditemukan",
+                        message: "Job not found",
                         data: null,
                         error: {
                           code: "JOB_NOT_FOUND",
@@ -2342,7 +2340,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                     bookmarkNotFound: {
                       value: {
                         success: false,
-                        message: "Bookmark tidak ditemukan",
+                        message: "Bookmark not found",
                         data: null,
                         error: {
                           code: "BOOKMARK_NOT_FOUND",
@@ -2354,7 +2352,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                     cvFileNotFound: {
                       value: {
                         success: false,
-                        message: "CV tidak ditemukan",
+                        message: "CV not found",
                         data: null,
                         error: {
                           code: "CV_FILE_NOT_FOUND",
@@ -2370,7 +2368,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "413": errorResponse(
               "Uploaded CV exceeds the configured limit.",
               "PAYLOAD_TOO_LARGE",
-              "Ukuran file CV melebihi batas maksimum",
+              "CV file size exceeds the maximum limit",
               {
                 path: "cvFile",
                 maxBytes: config.uploads.cvUploadMaxBytes
@@ -2378,17 +2376,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "cvFile",
-              "File CV PDF diperlukan untuk analisis"
+              "PDF CV file is required for analysis"
             ),
             "502": errorResponse(
               "Downstream response is invalid.",
               "DOWNSTREAM_ERROR",
-              "Model API mengembalikan data response yang tidak valid"
+              "Model API returned an invalid response"
             ),
             "503": errorResponse(
               "Model API is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Model API tidak tersedia"
+              "Model API is unavailable"
             )
           }
         }
@@ -2457,7 +2455,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar hasil analisis CV berhasil diambil",
+                message: "CV analysis results retrieved successfully",
                 data: [cvAnalysisResultSummaryExample],
                 meta: {
                   pagination: {
@@ -2478,7 +2476,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "UNAUTHENTICATED",
               "Authentication required"
             ),
-            "422": validationErrorResponse("page", "Halaman minimal 1")
+            "422": validationErrorResponse("page", "Page must be at least 1")
           }
         }
       },
@@ -2495,7 +2493,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CvAnalysisResultDetail"), nullSchema),
               {
                 success: true,
-                message: "Hasil analisis CV terbaru berhasil diambil",
+                message: "Latest CV analysis result retrieved successfully",
                 data: cvAnalysisResultDetailExample,
                 meta: null
               }
@@ -2508,7 +2506,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "CV analysis result is not found.",
               "CV_ANALYSIS_RESULT_NOT_FOUND",
-              "Hasil analisis CV tidak ditemukan"
+              "Hasil analisis CV not found"
             )
           }
         }
@@ -2534,7 +2532,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CvAnalysisResultDetail"), nullSchema),
               {
                 success: true,
-                message: "Detail hasil analisis CV berhasil diambil",
+                message: "CV analysis result retrieved successfully",
                 data: cvAnalysisResultDetailExample,
                 meta: null
               }
@@ -2547,11 +2545,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "CV analysis result is not found.",
               "CV_ANALYSIS_RESULT_NOT_FOUND",
-              "Hasil analisis CV tidak ditemukan"
+              "Hasil analisis CV not found"
             ),
             "422": validationErrorResponse(
               "analysisResultId",
-              "ID hasil analisis CV tidak valid. Gunakan UUID yang benar"
+              "CV analysis result ID is invalid. Use a valid UUID"
             )
           }
         }
@@ -2568,7 +2566,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             content: jsonContent(ref("GenerateCvMarkdownRequest"), {
               cvFileId: "11111111-1111-4111-8111-111111111111",
               summary:
-                "Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.",
+                "Backend candidate with REST API, PostgreSQL, and basic deployment experience.",
               templateHtml:
                 "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
             })
@@ -2579,10 +2577,10 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("GeneratedCvMarkdown"), nullSchema),
               {
                 success: true,
-                message: "Markdown CV berhasil dibuat",
+                message: "Markdown CV created successfully",
                 data: {
                   markdown:
-                    "<section><h1>Nama Kandidat</h1><h2>Ringkasan</h2><p>Kandidat backend dengan pengalaman REST API, PostgreSQL, dan deployment dasar.</p></section>"
+                    "<section><h1>Candidate Name</h1><h2>Summary</h2><p>Backend candidate with REST API, PostgreSQL, and basic deployment experience.</p></section>"
                 },
                 meta: null
               }
@@ -2595,7 +2593,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "CV file is not found for the current user.",
               "CV_FILE_NOT_FOUND",
-              "CV tidak ditemukan"
+              "CV not found"
             ),
             "413": errorResponse(
               "Payload exceeds configured limit.",
@@ -2604,18 +2602,18 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "templateHtml",
-              "Template HTML wajib diisi",
+              "Template HTML is required",
               "invalid_type"
             ),
             "502": errorResponse(
               "Model output is invalid.",
               "MODEL_OUTPUT_INVALID",
-              "Model API mengembalikan markdown yang tidak valid"
+              "Model API returned invalid markdown"
             ),
             "503": errorResponse(
               "Model API is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Model API tidak tersedia"
+              "Model API is unavailable"
             )
           }
         }

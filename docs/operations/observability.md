@@ -131,7 +131,7 @@ Example readiness response:
 ```json
 {
   "success": true,
-  "message": "Layanan siap",
+  "message": "Service is ready",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",

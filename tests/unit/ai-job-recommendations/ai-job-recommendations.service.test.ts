@@ -277,7 +277,7 @@ function createContext(): {
       schemaVersion: "cv-analysis-v2",
       jobFitAlignment: {
         score: 80,
-        summary: "Cocok",
+        summary: "Good fit",
         matchedSignals: ["TypeScript", "PostgreSQL"],
         missingSignals: ["Docker"]
       },
@@ -285,12 +285,12 @@ function createContext(): {
       sectionReviews: [
         {
           sectionName: "Relevant Skills",
-          analysis: "Skill inti sudah relevan tetapi belum rapi.",
+          analysis: "Core skills are relevant but not well organized.",
           actionPoints: [
             "Kelompokkan skill backend, database, dan deployment."
           ],
           whyItsImportantForYou:
-            "Keyword teknis yang rapi memudahkan ATS membaca CV."
+            "Organized technical keywords help ATS read the CV."
         }
       ]
     },

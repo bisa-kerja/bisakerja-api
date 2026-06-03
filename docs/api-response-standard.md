@@ -59,7 +59,7 @@ Use HTTP `201` when a resource is created.
 ```json
 {
   "success": true,
-  "message": "Lamaran berhasil dibuat",
+  "message": "Application created successfully",
   "data": {
     "id": "app_123",
     "status": "APPLIED"
@@ -81,7 +81,7 @@ Use this shape for paginated collection endpoints.
 ```json
 {
   "success": true,
-  "message": "Daftar lowongan berhasil diambil",
+  "message": "Jobs retrieved successfully",
   "data": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -400,7 +400,7 @@ Model API unavailable:
 ```json
 {
   "success": false,
-  "message": "Layanan analisis AI sementara tidak tersedia",
+  "message": "AI analysis service is temporarily unavailable",
   "data": null,
   "error": {
     "code": "SERVICE_UNAVAILABLE",
@@ -417,7 +417,7 @@ Model API invalid response:
 ```json
 {
   "success": false,
-  "message": "Hasil analisis AI tidak dapat diproses",
+  "message": "AI analysis result cannot be processed",
   "data": null,
   "error": {
     "code": "DOWNSTREAM_ERROR",

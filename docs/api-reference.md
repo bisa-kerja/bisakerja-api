@@ -175,7 +175,7 @@ Successful readiness response:
 ```json
 {
   "success": true,
-  "message": "Layanan siap",
+  "message": "Service is ready",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",
@@ -194,7 +194,7 @@ Readiness failure response:
 ```json
 {
   "success": false,
-  "message": "Layanan belum siap",
+  "message": "Service is not ready",
   "data": null,
   "error": {
     "code": "SERVICE_UNAVAILABLE",

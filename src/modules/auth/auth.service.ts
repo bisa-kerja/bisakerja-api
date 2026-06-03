@@ -214,7 +214,7 @@ export class AuthService {
         alreadyLinked.providerAccountId !== profile.providerAccountId
       ) {
         throw new ConflictError(
-          "Akun sudah terhubung dengan akun Google lain",
+          "Account is already linked to another Google account",
           authErrorCodes.googleOauthAccountAlreadyLinked
         );
       }
@@ -401,7 +401,7 @@ export class AuthService {
 
   googleSsoPlaceholder(): never {
     throw new NotImplementedError(
-      "Google SSO belum dikonfigurasi",
+      "Google SSO is not configured",
       authErrorCodes.googleSsoNotConfigured
     );
   }
@@ -485,7 +485,7 @@ export class AuthService {
 
     if (!this.googleOauth) {
       throw new NotImplementedError(
-        "Google SSO belum dikonfigurasi",
+        "Google SSO is not configured",
         authErrorCodes.googleSsoNotConfigured
       );
     }
@@ -544,7 +544,7 @@ function invalidCredentials() {
 }
 
 function unauthenticated() {
-  return new AuthenticationError("Autentikasi diperlukan", "UNAUTHENTICATED");
+  return new AuthenticationError("Authentication required", "UNAUTHENTICATED");
 }
 
 function safeUser(user: AuthUserWithCredential): AuthUser {

@@ -226,21 +226,21 @@ Payload rules:
       },
       "atsFriendliness": {
         "score": 84,
-        "summary": "Struktur CV cukup mudah dibaca ATS, tetapi beberapa keyword penting masih belum dirangkum jelas pada section skill."
+        "summary": "The CV structure is easy enough for ATS to read, but several important keywords are not summarized clearly in the skills section."
       },
       "overallImpression": "The CV shows a strong backend foundation for a junior-mid candidate, with the largest improvement areas in impact evidence and keyword alignment for the target role.",
       "topActionables": [
         "Add 2-3 measurable bullets to backend experience, such as performance improvement, user count, or data scale.",
-        "Buat bagian skill teknis yang mengelompokkan bahasa pemrograman, database, framework, dan tools deployment.",
-        "Sesuaikan ringkasan profil dengan target role Backend Developer agar keyword utama muncul di bagian atas CV."
+        "Create a technical skills section that groups programming languages, databases, frameworks, and deployment tools.",
+        "Align the profile summary with the Backend Developer role so key keywords appear near the top of the CV."
       ],
       "sectionReviews": [
         {
           "sectionName": "Relevant Skills",
-          "analysis": "Skill backend relevan sudah muncul, tetapi belum semuanya dikelompokkan dengan jelas.",
+          "analysis": "Relevant backend skills are present, but not all are grouped clearly.",
           "actionPoints": [
-            "Kelompokkan skill menjadi Backend, Database, Testing, dan Deployment.",
-            "Prioritaskan skill yang paling sering diminta pada role target."
+            "Group skills into Backend, Database, Testing, and Deployment.",
+            "Prioritize skills most often requested for the target role."
           ],
           "whyItsImportantForYou": "ATS and recruiters usually look for specific skill keywords before reading experience details."
         }
@@ -272,14 +272,14 @@ Payload rules:
 
 Response rules:
 
-- `analysisResult.schemaVersion` wajib bernilai `cv-analysis-v2` untuk contract ini.
-- `jobFitAlignment.score` dan `atsFriendliness.score` adalah integer `0-100`.
-- `overallImpression` wajib berupa string ringkas, user-facing.
-- `topActionables` wajib berisi `1-3` item.
-- `sectionReviews` bersifat dinamis; section yang tidak ditemukan tidak boleh dipaksa muncul.
-- `sectionReviews[].actionPoints` wajib minimal satu item.
-- `jobRecommendations` adalah rekomendasi ringkas dari hasil analisis CV saat ini, maksimal 5 item.
-- Job recommendation item hanya berisi `jobId`, `title`, `companyName`, `matchScore`, `reason`, dan `nextStep`.
+- `analysisResult.schemaVersion` must be `cv-analysis-v2` for this contract.
+- `jobFitAlignment.score` and `atsFriendliness.score` are integer `0-100` values.
+- `overallImpression` must be concise user-facing text.
+- `topActionables` must contain `1-3` items.
+- `sectionReviews` is dynamic; sections that are not found must not be forced into the response.
+- `sectionReviews[].actionPoints` must contain at least one item.
+- `jobRecommendations` contains compact recommendations from the current CV analysis result, maximum 5 items.
+- Job recommendation items only contain `jobId`, `title`, `companyName`, `matchScore`, `reason`, and `nextStep`.
 - Do not return raw Model API internals.
 - Do not return raw full CV text by default.
 - Keep generated CV explicitly unavailable in current contract.
@@ -416,7 +416,7 @@ Suggested metadata:
 Validation detail examples for `422 VALIDATION_ERROR`:
 
 - `body`: `Request must use multipart/form-data`
-- `cvFile`: `CV file type is not supported. Gunakan application/pdf`
+- `cvFile`: `CV file type is not supported. Use application/pdf`
 - `cvFile`: `PDF CV file is required for analysis`
 - `cvFileId`: `Upload a CV or send a valid CV file ID`
 

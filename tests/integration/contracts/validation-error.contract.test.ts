@@ -79,7 +79,7 @@ describe("validation error contracts", () => {
       return (
         candidate.path === "email" &&
         candidate.message ===
-          "Email tidak valid. Gunakan format email lengkap, contoh nama@domain.com"
+          "Email is invalid. Use a complete email format, for example name@domain.com"
       );
     });
     expect(hasEmailFriendlyMessage).toBe(true);
@@ -111,7 +111,7 @@ describe("validation error contracts", () => {
     }
 
     const forbiddenMessagePattern =
-      /^(Format tidak valid|Nilai terlalu kecil|Nilai terlalu besar|Format is invalid|Value is too small|Value is too large|Invalid input|Invalid email address)$/i;
+      /^(Format is invalid|Value is too small|Value is too large|Format is invalid|Value is too small|Value is too large|Invalid input|Invalid email address)$/i;
 
     const hasForbiddenMessage = details.some((detail) => {
       if (typeof detail !== "object" || detail === null) {

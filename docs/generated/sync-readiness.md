@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/sync-readiness.md
-last_reviewed: 2026-05-23
+last_reviewed: 2026-06-03
 generated_by: sync-readiness-script
-generated_at: 2026-05-23T11:15:30.197Z
-source_commit: 874748b20974b16223faad020a285a8a6a489a62
+generated_at: 2026-06-03T13:55:33.422Z
+source_commit: b9ee6aa45091d09a81674555f2b523a7df7de76a
 ---
 
 # Backend API Sync Readiness
@@ -24,8 +24,8 @@ This page is generated from the current service-owned docs tree and the document
 | -------------- | ------------------------------------------ |
 | Total docs     | 34                                         |
 | Generated docs | 3                                          |
-| Generated at   | `2026-05-23T11:15:30.197Z`                 |
-| Source commit  | `874748b20974b16223faad020a285a8a6a489a62` |
+| Generated at   | `2026-06-03T13:55:33.422Z`                 |
+| Source commit  | `b9ee6aa45091d09a81674555f2b523a7df7de76a` |
 
 ## OpenAPI Status
 

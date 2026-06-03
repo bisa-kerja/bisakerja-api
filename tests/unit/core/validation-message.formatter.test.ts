@@ -50,13 +50,13 @@ describe("validation message formatter", () => {
       path: "username",
       code: "invalid_format",
       message:
-        "Username hanya boleh berisi huruf kecil, angka, dan underscore, contoh salman_123"
+        "Username may only contain lowercase letters, numbers, and underscores, for example salman_123"
     });
     expect(issues).toContainEqual({
       path: "phoneNumber",
       code: "invalid_format",
       message:
-        "Nomor telepon tidak valid. Gunakan nomor Indonesia, contoh +628123456789"
+        "Phone number is invalid. Use an Indonesian phone number, for example +628123456789"
     });
 
     const passwordIssue = issues.find((issue) => issue.path === "password");
