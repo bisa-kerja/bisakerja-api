@@ -1,4 +1,4 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
@@ -33,6 +33,10 @@ export class LocalCvFileStorage implements CvFileStorage {
       storageDriver: "LOCAL",
       storageKey
     };
+  }
+
+  async readFile(storageKey: string): Promise<Buffer> {
+    return readFile(this.toAbsolutePath(storageKey));
   }
 
   async deleteFile(storageKey: string): Promise<void> {

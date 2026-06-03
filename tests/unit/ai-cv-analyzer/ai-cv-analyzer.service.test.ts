@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   AiCvAnalyzerService,
   buildCvAnalyzerPayload,
+  buildPublicCvAnalysisResponse,
   cleanupExpiredCvFiles,
   createCvExpiryDate,
   mapCvAnalysisResource,
@@ -38,7 +39,11 @@ describe("AiCvAnalyzerService", () => {
       "analysis-1",
       ["Backend Developer"],
       "id",
-      modelApiFixtures.validCvAnalyzerResponse
+      buildPublicCvAnalysisResponse(
+        modelApiFixtures.validCvAnalyzerResponse,
+        [jobRecord()],
+        "id"
+      )
     );
 
     expect(payload).toMatchObject({
@@ -366,6 +371,16 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     return Promise.resolve();
   }
 
+  findCandidateJobsForCvAnalysis(): Promise<JobRecord[]> {
+    return Promise.resolve(
+      Object.hasOwn(this.state, "job")
+        ? this.state.job
+          ? [this.state.job]
+          : []
+        : [jobRecord()]
+    );
+  }
+
   createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
     this.snapshots.push(structuredClone(input));
     return Promise.resolve();
@@ -412,6 +427,10 @@ class InMemoryCvFileStorage implements CvFileStorage {
       storageDriver: "LOCAL" as const,
       storageKey
     });
+  }
+
+  readFile(): Promise<Buffer> {
+    return Promise.resolve(Buffer.from("%PDF-1.4 stored cv"));
   }
 
   deleteFile(storageKey: string): Promise<void> {

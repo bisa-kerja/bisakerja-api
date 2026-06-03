@@ -62,7 +62,30 @@ const cvPayload: CvAnalyzerModelPayload = {
     sizeBytes: 1024,
     storageKey: "cv/user-1/cv-1.pdf"
   },
-  jobRoles: ["Backend Developer"]
+  jobRoles: ["Backend Developer"],
+  rankingPolicy: {
+    backendOwnsHydration: true,
+    requireCandidateJobIds: true,
+    deduplicateByJobId: true,
+    maxRecommendations: 1
+  },
+  jobCandidates: [
+    {
+      jobId: "11111111-1111-4111-8111-111111111111",
+      scoringInput: {
+        titleText: "Backend Developer",
+        descriptionText: "Build APIs",
+        requirementSummary: "TypeScript",
+        requiredSkills: ["TypeScript"],
+        requirements: [
+          { type: "SKILL", value: "TypeScript", priority: "HIGH" }
+        ],
+        roleFamily: "backend developer",
+        experienceLevel: "ENTRY_LEVEL",
+        workType: "REMOTE"
+      }
+    }
+  ]
 };
 
 const recommendationPayload: JobRecommendationModelPayload = {

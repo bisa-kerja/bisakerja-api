@@ -104,7 +104,14 @@ describe("model api schemas", () => {
           sizeBytes: 1024,
           storageKey: "cv/user-1/cv-1.pdf"
         },
-        jobRoles: ["Backend Developer"]
+        jobRoles: ["Backend Developer"],
+        rankingPolicy: {
+          backendOwnsHydration: true,
+          requireCandidateJobIds: true,
+          deduplicateByJobId: true,
+          maxRecommendations: 1
+        },
+        jobCandidates: [cvAnalyzerCandidatePayload()]
       }).success
     ).toBe(true);
 
@@ -121,7 +128,14 @@ describe("model api schemas", () => {
           sizeBytes: 1024,
           storageKey: "cv/user-1/cv-1.pdf"
         },
-        jobRoles: ["Backend Developer"]
+        jobRoles: ["Backend Developer"],
+        rankingPolicy: {
+          backendOwnsHydration: true,
+          requireCandidateJobIds: true,
+          deduplicateByJobId: true,
+          maxRecommendations: 1
+        },
+        jobCandidates: [cvAnalyzerCandidatePayload()]
       }).success
     ).toBe(false);
   });
@@ -157,7 +171,10 @@ describe("model api schemas", () => {
     expect(
       cvAnalyzerModelResponseSchema.safeParse({
         ...modelApiFixtures.validCvAnalyzerResponse,
-        topActionables: ["1", "2", "3", "4"]
+        jobFitAlignment: {
+          ...modelApiFixtures.validCvAnalyzerResponse.jobFitAlignment,
+          score: 101
+        }
       }).success
     ).toBe(false);
   });
@@ -234,3 +251,31 @@ describe("model api schemas", () => {
     ).toBe(false);
   });
 });
+
+function cvAnalyzerCandidatePayload() {
+  return {
+    jobId: "11111111-1111-4111-8111-111111111111",
+    scoringInput: {
+      titleText: "Backend Developer",
+      descriptionText: "Build APIs",
+      requirementSummary: "TypeScript",
+      requiredSkills: ["TypeScript"],
+      requirements: [
+        {
+          type: "SKILL" as const,
+          value: "TypeScript",
+          priority: "HIGH" as const
+        }
+      ],
+      roleFamily: "backend developer",
+      experienceLevel: "ENTRY_LEVEL" as const,
+      workType: "REMOTE" as const
+    },
+    backendMetadata: {
+      title: "Backend Developer",
+      companyName: "Nusantara Tech",
+      locationDisplay: "Jakarta Selatan, DKI Jakarta",
+      sourceUpdatedAt: null
+    }
+  };
+}

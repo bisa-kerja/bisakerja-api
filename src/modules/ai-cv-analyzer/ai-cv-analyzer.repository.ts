@@ -5,12 +5,17 @@ import type {
   AiCvAnalyzerRepository,
   CvAnalysisResultListQuery,
   CvAnalysisResultRecord,
+  CvAnalysisCandidateRecord,
   CvAnalysisSnapshotInput,
   CvFileMetadataRecord,
   ExpiredCvFileRecord
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 
 type PrismaClientLike = typeof prisma | PrismaTransaction;
+
+type JobListingWithRelations = Prisma.JobListingGetPayload<{
+  include: typeof jobInclude;
+}>;
 
 export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
   constructor(private readonly client: PrismaClientLike = prisma) {}
@@ -90,12 +95,35 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     });
   }
 
+  async findCandidateJobsForCvAnalysis(input: {
+    userId: string;
+    compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+    jobRoles: string[];
+    directJobId?: string;
+    limit: number;
+    now: Date;
+  }): Promise<CvAnalysisCandidateRecord[]> {
+    const where = buildCandidateWhere(input);
+    const jobs = await this.client.jobListing.findMany({
+      where,
+      orderBy: [
+        { sourcePostedAt: { sort: "desc", nulls: "last" } },
+        { lastSeenAt: "desc" },
+        { createdAt: "desc" }
+      ],
+      take: input.limit,
+      include: jobInclude
+    });
+
+    return jobs.map(mapJob);
+  }
+
   async createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
     const data: Prisma.CvAnalysisResultUncheckedCreateInput & {
       jobRecommendations: unknown;
     } = {
       userId: input.userId,
-      jobListingId: null,
+      jobListingId: input.candidates[0]?.id ?? null,
       cvFileMetadataId: input.cvFileMetadataId,
       language: input.language,
       inputMode: input.inputMode,
@@ -113,7 +141,62 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
       inputSummary: createInputSummary(input)
     };
 
-    await this.client.cvAnalysisResult.create({ data });
+    const createResultAndRun = async (client: PrismaClientLike) => {
+      const result = await client.cvAnalysisResult.create({ data });
+      if (input.response.jobRecommendations.length === 0) {
+        return;
+      }
+
+      const run = await client.jobRecommendationRun.create({
+        data: {
+          userId: input.userId,
+          cvAnalysisResultId: result.id,
+          idempotencyKey: input.requestId,
+          requestedLimit: input.payload.rankingPolicy.maxRecommendations,
+          candidateCount: input.payload.jobCandidates.length,
+          recommendationCount: input.response.jobRecommendations.length,
+          modelName: input.response.model.name,
+          modelVersion: input.response.model.version,
+          status: "SUCCEEDED",
+          filtersSnapshot: {
+            compareSource: input.compareSource,
+            jobRoles: input.jobRoles
+          },
+          inputSummary: createInputSummary(input)
+        }
+      });
+
+      await client.jobRecommendationItem.createMany({
+        data: input.response.jobRecommendations.map((item, index) => ({
+          runId: run.id,
+          jobListingId: item.jobId,
+          rank: index + 1,
+          matchScore: item.matchScore,
+          matchLevel: toPrismaMatchLevel(
+            input.modelCoreResponse.candidateReranking.recommendations.find(
+              (recommendation) => recommendation.jobId === item.jobId
+            )?.matchLevel ?? "stretch"
+          ),
+          reasons: [item.reason],
+          matchedSkills:
+            input.modelCoreResponse.candidateReranking.recommendations.find(
+              (recommendation) => recommendation.jobId === item.jobId
+            )?.matchedSkills ?? [],
+          missingSkills:
+            input.modelCoreResponse.candidateReranking.recommendations.find(
+              (recommendation) => recommendation.jobId === item.jobId
+            )?.missingSkills ?? [],
+          nextSteps: [item.nextStep]
+        }))
+      });
+    };
+
+    if (hasTransaction(this.client)) {
+      await this.client.$transaction(createResultAndRun);
+      return;
+    }
+
+    await createResultAndRun(this.client);
   }
 
   async listAnalysisResults(userId: string, query: CvAnalysisResultListQuery) {
@@ -203,6 +286,110 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
 
     return result.count;
   }
+}
+
+const jobInclude = {
+  company: true,
+  sourcePlatform: true,
+  requirements: {
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }]
+  },
+  jobSkills: {
+    include: { skill: true },
+    orderBy: { createdAt: "asc" }
+  }
+} satisfies Prisma.JobListingInclude;
+
+function buildCandidateWhere(input: {
+  userId: string;
+  compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+  jobRoles: string[];
+  directJobId?: string;
+  limit: number;
+  now: Date;
+}): Prisma.JobListingWhereInput {
+  const visible: Prisma.JobListingWhereInput[] = [
+    { status: "ACTIVE" },
+    { OR: [{ expiredAt: null }, { expiredAt: { gt: input.now } }] }
+  ];
+
+  if (input.compareSource === "BOOKMARK") {
+    visible.push({ bookmarks: { some: { userId: input.userId } } });
+  }
+
+  if (input.compareSource === "DIRECT_JOB_DETAIL") {
+    visible.push({ id: input.directJobId ?? "__missing_direct_job_id__" });
+  }
+
+  if (input.compareSource === "JOB_SEARCH" && input.jobRoles.length > 0) {
+    visible.push({
+      OR: input.jobRoles.flatMap((role) => [
+        { title: { contains: role, mode: "insensitive" as const } },
+        { normalizedTitle: { contains: role, mode: "insensitive" as const } },
+        { category: { contains: role, mode: "insensitive" as const } },
+        { requirementSummary: { contains: role, mode: "insensitive" as const } }
+      ])
+    });
+  }
+
+  return { AND: visible };
+}
+
+function mapJob(job: JobListingWithRelations): CvAnalysisCandidateRecord {
+  return {
+    id: job.id,
+    title: job.title,
+    normalizedTitle: job.normalizedTitle,
+    category: job.category,
+    description: job.description,
+    requirementSummary: job.requirementSummary,
+    workType: job.workType,
+    employmentType: job.employmentType,
+    experienceLevel: job.experienceLevel,
+    location: {
+      display: job.locationDisplay,
+      province: job.province,
+      city: job.city
+    },
+    salary: {
+      min: job.salaryMin,
+      max: job.salaryMax,
+      currency: job.salaryCurrency,
+      period: job.salaryPeriod,
+      display: job.salaryDisplay
+    },
+    sourceUrl: job.sourceUrl,
+    externalApplyUrl: job.externalApplyUrl,
+    postedAt: job.sourcePostedAt,
+    sourceUpdatedAt: job.sourceUpdatedAt,
+    lastSeenAt: job.lastSeenAt,
+    expiredAt: job.expiredAt,
+    status: job.status,
+    createdAt: job.createdAt,
+    updatedAt: job.updatedAt,
+    company: {
+      id: job.company.id,
+      name: job.company.name,
+      logoUrl: job.company.logoUrl,
+      websiteUrl: job.company.websiteUrl
+    },
+    sourcePlatform: {
+      id: job.sourcePlatform.id,
+      name: job.sourcePlatform.name,
+      slug: job.sourcePlatform.slug
+    },
+    requirements: job.requirements.map((requirement) => ({
+      type: requirement.type,
+      value: requirement.value,
+      priority: requirement.priority,
+      sortOrder: requirement.sortOrder
+    })),
+    skills: job.jobSkills.map((jobSkill) => ({ name: jobSkill.skill.name }))
+  };
+}
+
+function toPrismaMatchLevel(matchLevel: "strong" | "good" | "stretch") {
+  return matchLevel.toUpperCase() as "STRONG" | "GOOD" | "STRETCH";
 }
 
 async function createCvFileMetadataRecord(

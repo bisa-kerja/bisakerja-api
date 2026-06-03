@@ -13,10 +13,12 @@ import type {
   AiCvAnalyzerServiceOptions,
   CleanupExpiredCvFilesResult,
   CvAnalysisResource,
+  CvAnalysisCandidateRecord,
   CvAnalysisResult,
   CvFileResource,
   CvFileMetadataRecord,
   CvFileStorage,
+  PublicCvAnalysisResponse,
   UploadedCvFile
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 import type {
@@ -46,12 +48,35 @@ export class AiCvAnalyzerService {
       const cvSource = await this.resolveCvSource(userId, input, uploadedFile);
       cleanupTarget = cvSource.cleanupTarget;
 
+      const candidates = this.repository.findCandidateJobsForCvAnalysis
+        ? await this.repository.findCandidateJobsForCvAnalysis({
+            userId,
+            compareSource: input.compareSource,
+            jobRoles: cvSource.input.jobRoles,
+            directJobId: cvSource.input.directJobId,
+            limit: 50,
+            now: this.now()
+          })
+        : [];
+      const cvBytes = await resolveCvBytes(
+        this.options.storage,
+        cvSource.metadata.storageKey,
+        uploadedFile
+      );
       const payload = buildCvAnalyzerPayload(
         requestId,
         cvSource.input,
-        cvSource.metadata
+        cvSource.metadata,
+        candidates,
+        cvBytes
       );
-      const response = await this.options.modelApiClient.analyzeCv(payload);
+      const modelCoreResponse =
+        await this.options.modelApiClient.analyzeCv(payload);
+      const response = buildPublicCvAnalysisResponse(
+        modelCoreResponse,
+        candidates,
+        cvSource.input.language
+      );
       const persisted = input.persistResult;
 
       if (persisted) {
@@ -63,7 +88,10 @@ export class AiCvAnalyzerService {
           inputMode: cvSource.input.inputMode,
           compareSource: input.compareSource,
           payload,
-          response
+          modelCoreResponse,
+          response,
+          candidates,
+          requestId
         });
       }
 
@@ -366,7 +394,9 @@ export async function cleanupExpiredCvFiles(
 export function buildCvAnalyzerPayload(
   requestId: string,
   input: AnalyzeCvInput,
-  metadata: CvFileMetadataRecord
+  metadata: CvFileMetadataRecord,
+  candidates: CvAnalysisCandidateRecord[] = [],
+  cvBytes?: Buffer
 ): CvAnalyzerModelPayload {
   return {
     requestId,
@@ -378,9 +408,78 @@ export function buildCvAnalyzerPayload(
       fileId: metadata.id,
       mimeType: metadata.mimeType,
       sizeBytes: metadata.sizeBytes,
-      storageKey: metadata.storageKey
+      storageKey: metadata.storageKey,
+      bytes: cvBytes
     },
-    jobRoles: input.jobRoles
+    jobRoles: input.jobRoles,
+    rankingPolicy: {
+      backendOwnsHydration: true,
+      requireCandidateJobIds: true,
+      deduplicateByJobId: true,
+      maxRecommendations: Math.min(5, candidates.length)
+    },
+    jobCandidates: candidates.map(mapJobCandidateForModel)
+  };
+}
+
+export function buildPublicCvAnalysisResponse(
+  response: CvAnalyzerModelResponse,
+  candidates: CvAnalysisCandidateRecord[],
+  language: "id" | "en"
+): PublicCvAnalysisResponse {
+  const candidateById = new Map(candidates.map((job) => [job.id, job]));
+  const seenJobIds = new Set<string>();
+  for (const recommendation of response.candidateReranking.recommendations) {
+    if (!candidateById.has(recommendation.jobId)) {
+      throw new Error(
+        "Model API returned recommendation outside backend candidates"
+      );
+    }
+    if (seenJobIds.has(recommendation.jobId)) {
+      throw new Error("Model API returned duplicate recommendation job id");
+    }
+    seenJobIds.add(recommendation.jobId);
+  }
+
+  const recommendations = response.candidateReranking.recommendations
+    .slice(0, 5)
+    .map((recommendation) => {
+      const job = candidateById.get(recommendation.jobId);
+      if (!job) {
+        throw new Error("Validated recommendation missing candidate job");
+      }
+      return {
+        jobId: job.id,
+        title: job.title,
+        companyName: job.company.name,
+        matchScore: recommendation.matchScore,
+        reason: buildRecommendationReason(
+          recommendation.matchedSkills,
+          language
+        ),
+        nextStep: buildRecommendationNextStep(
+          recommendation.missingSkills,
+          language
+        )
+      };
+    });
+
+  return {
+    schemaVersion: "cv-analysis-v2",
+    jobFitAlignment: {
+      score: response.jobFitAlignment.score,
+      summary: buildJobFitSummary(response, language)
+    },
+    atsFriendliness: {
+      score: response.atsFriendliness.score,
+      summary: buildAtsSummary(response, language)
+    },
+    overallImpression: buildOverallImpression(response, language),
+    topActionables: buildTopActionables(response, language),
+    sectionReviews: buildSectionReviews(response, language),
+    jobRecommendations: recommendations,
+    model: response.model,
+    analyzedAt: response.createdAt
   };
 }
 
@@ -388,7 +487,7 @@ export function mapCvAnalysisResource(
   analysisId: string,
   jobRoles: string[],
   language: "id" | "en",
-  response: CvAnalyzerModelResponse
+  response: PublicCvAnalysisResponse
 ): CvAnalysisResource {
   return {
     jobRoles,
@@ -564,6 +663,184 @@ function sanitizeInputSummary(value: unknown) {
     jobRoles: Array.isArray(summary.jobRoles) ? summary.jobRoles : [],
     file: summary.file ?? null
   };
+}
+
+async function resolveCvBytes(
+  storage: CvFileStorage,
+  storageKey: string,
+  uploadedFile: UploadedCvFile | null
+): Promise<Buffer> {
+  if (uploadedFile) {
+    return uploadedFile.buffer;
+  }
+
+  if (!storage.readFile) {
+    throw createValidationError("File CV referensi tidak bisa dibaca", [
+      {
+        path: "cvFileId",
+        message: "Storage CV tidak mendukung pembacaan file referensi",
+        code: "custom"
+      }
+    ]);
+  }
+
+  return storage.readFile(storageKey);
+}
+
+function mapJobCandidateForModel(job: CvAnalysisCandidateRecord) {
+  return {
+    jobId: job.id,
+    scoringInput: {
+      titleText: job.title,
+      descriptionText: job.description,
+      requirementSummary: job.requirementSummary,
+      requiredSkills: job.skills.map((skill) => skill.name),
+      requirements: job.requirements.map((requirement) => ({
+        type: requirement.type,
+        value: requirement.value,
+        priority: requirement.priority ?? "MEDIUM"
+      })),
+      roleFamily: job.normalizedTitle ?? job.category,
+      experienceLevel: job.experienceLevel,
+      workType: job.workType
+    },
+    backendMetadata: {
+      title: job.title,
+      companyName: job.company.name,
+      locationDisplay: job.location.display,
+      sourceUpdatedAt: job.sourceUpdatedAt?.toISOString() ?? null
+    }
+  };
+}
+
+function buildJobFitSummary(
+  response: CvAnalyzerModelResponse,
+  language: "id" | "en"
+) {
+  const matched = response.jobFitAlignment.matchedSkills.slice(0, 3).join(", ");
+  const missing = response.jobFitAlignment.missingSkills.slice(0, 3).join(", ");
+
+  if (language === "en") {
+    return matched
+      ? `CV shows fit through ${matched}${missing ? `, with gaps in ${missing}` : ""}.`
+      : "CV fit is based on available parsed evidence.";
+  }
+
+  return matched
+    ? `CV menunjukkan kecocokan melalui ${matched}${missing ? `, dengan gap pada ${missing}` : ""}.`
+    : "Kecocokan CV dihitung dari evidence yang berhasil diparse.";
+}
+
+function buildAtsSummary(
+  response: CvAnalyzerModelResponse,
+  language: "id" | "en"
+) {
+  const issues = response.atsFriendliness.detectedIssues.slice(0, 3).join(", ");
+  if (language === "en") {
+    return issues
+      ? `ATS review found ${issues}.`
+      : "CV structure is readable based on parser evidence.";
+  }
+  return issues
+    ? `Review ATS menemukan ${issues}.`
+    : "Struktur CV terbaca berdasarkan evidence parser.";
+}
+
+function buildOverallImpression(
+  response: CvAnalyzerModelResponse,
+  language: "id" | "en"
+) {
+  const evidence = response.overallImpression.evidence.slice(0, 2).join(", ");
+  if (language === "en") {
+    return evidence
+      ? `Overall impression is grounded in ${evidence}.`
+      : "Overall impression is grounded in model evidence.";
+  }
+  return evidence
+    ? `Impresi keseluruhan berdasarkan ${evidence}.`
+    : "Impresi keseluruhan dibuat dari evidence model.";
+}
+
+function buildTopActionables(
+  response: CvAnalyzerModelResponse,
+  language: "id" | "en"
+) {
+  const missing = response.jobFitAlignment.missingSkills.slice(0, 2);
+  const ats = response.atsFriendliness.detectedIssues.slice(0, 1);
+  const fallback =
+    language === "en"
+      ? "Keep CV claims specific and evidence-based."
+      : "Pastikan klaim CV spesifik dan berbasis evidence.";
+
+  return [
+    ...missing.map((skill) =>
+      language === "en"
+        ? `Add stronger evidence for ${skill}.`
+        : `Tambahkan evidence untuk ${skill}.`
+    ),
+    ...ats.map((issue) =>
+      language === "en"
+        ? `Fix ATS issue: ${issue}.`
+        : `Perbaiki isu ATS: ${issue}.`
+    ),
+    fallback
+  ].slice(0, 3);
+}
+
+function buildSectionReviews(
+  response: CvAnalyzerModelResponse,
+  language: "id" | "en"
+): PublicCvAnalysisResponse["sectionReviews"] {
+  return [
+    {
+      sectionName: language === "en" ? "Skills" : "Keahlian",
+      analysis: buildJobFitSummary(response, language),
+      actionPoints: buildTopActionables(response, language).slice(0, 2),
+      whyItsImportantForYou:
+        language === "en"
+          ? "Recruiters compare visible skills with job requirements."
+          : "Recruiter membandingkan skill terlihat dengan kebutuhan lowongan."
+    },
+    {
+      sectionName: "ATS",
+      analysis: buildAtsSummary(response, language),
+      actionPoints: response.atsFriendliness.detectedIssues.length
+        ? response.atsFriendliness.detectedIssues.slice(0, 2)
+        : [
+            language === "en"
+              ? "Keep sections clear and searchable."
+              : "Pertahankan section jelas dan mudah dicari."
+          ],
+      whyItsImportantForYou:
+        language === "en"
+          ? "Readable CV text improves automated screening."
+          : "Teks CV yang terbaca membantu screening otomatis."
+    }
+  ];
+}
+
+function buildRecommendationReason(skills: string[], language: "id" | "en") {
+  const matched = skills.slice(0, 3).join(", ");
+  if (language === "en") {
+    return matched
+      ? `Matched skills: ${matched}.`
+      : "Recommended from model ranking evidence.";
+  }
+  return matched
+    ? `Skill cocok: ${matched}.`
+    : "Direkomendasikan dari evidence ranking model.";
+}
+
+function buildRecommendationNextStep(skills: string[], language: "id" | "en") {
+  const missing = skills.slice(0, 2).join(", ");
+  if (language === "en") {
+    return missing
+      ? `Prepare evidence for ${missing}.`
+      : "Review job details before applying.";
+  }
+  return missing
+    ? `Siapkan evidence untuk ${missing}.`
+    : "Review detail lowongan sebelum melamar.";
 }
 
 function createValidationError(

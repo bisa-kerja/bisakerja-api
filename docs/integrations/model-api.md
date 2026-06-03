@@ -64,16 +64,17 @@ Durable contract fixtures and owner matrix live in:
 
 Backend sends multipart fields:
 
-| Field           | Owner               | Rule                                                                                                                         |
-| --------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `requestId`     | Backend             | Required trace/idempotency correlation id.                                                                                   |
-| `language`      | Backend             | Public/model enum `id` or `en`; Backend maps Prisma `ID`/`EN`.                                                               |
-| `inputMode`     | Backend             | `UPLOAD` or `REFERENCE`; ownership checked before request.                                                                   |
-| `compareSource` | Backend             | `BOOKMARK`, `JOB_SEARCH`, or `DIRECT_JOB_DETAIL`.                                                                            |
-| `jobRoles[]`    | Backend             | Target roles selected from request/backend workflow.                                                                         |
-| `cvFile`        | Backend → Model API | One PDF file part; Model API validates content type, bytes, parseability, and limits.                                        |
-| `jobCandidates` | Backend             | JSON array of backend-selected candidates; max 50, unique `jobId`.                                                           |
-| `rankingPolicy` | Backend             | JSON object; `backendOwnsHydration=true`, `requireCandidateJobIds=true`, `deduplicateByJobId=true`, `maxRecommendations<=5`. |
+| Field           | Owner               | Rule                                                                                                                          |
+| --------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `requestId`     | Backend             | Required trace/idempotency correlation id.                                                                                    |
+| `language`      | Backend             | Public/model enum `id` or `en`; Backend maps Prisma `ID`/`EN`.                                                                |
+| `inputMode`     | Backend             | `UPLOAD` or `REFERENCE`; ownership checked before request.                                                                    |
+| `compareSource` | Backend             | `BOOKMARK`, `JOB_SEARCH`, or `DIRECT_JOB_DETAIL`.                                                                             |
+| `jobRoles[]`    | Backend             | Target roles selected from request/backend workflow.                                                                          |
+| `directJobId`   | Backend             | Required only for `DIRECT_JOB_DETAIL`; Backend validates job visibility before Model API call.                                |
+| `cvFile`        | Backend → Model API | One PDF file part; upload bytes or ownership-checked reference bytes; Model API validates content type, parseability, limits. |
+| `jobCandidates` | Backend             | JSON array of backend-selected candidates; max 50, unique `jobId`.                                                            |
+| `rankingPolicy` | Backend             | JSON object; `backendOwnsHydration=true`, `requireCandidateJobIds=true`, `deduplicateByJobId=true`, `maxRecommendations<=5`.  |
 
 `jobCandidates[].scoringInput` contains model-owned evidence only: `titleText`, `descriptionText`, `requirementSummary`, `requiredSkills`, `requirements`, `roleFamily`, `experienceLevel`, `workType`, and optional numeric signals. `jobCandidates[].backendMetadata` may carry trace/hydration hints but Model API must not trust it for candidate identity beyond `jobId` membership.
 
@@ -106,6 +107,16 @@ Forbidden in model-core output: `title`, `companyName`, `reason`, `nextStep`, `t
 | `JobSkill`                  | Persisted skill relation/confidence                                                                                       | Required/matched/missing skill evidence strings.                                        |
 
 Enum mapping is frozen: public/model language `id/en` maps to Prisma `ID/EN`; model `strong/good/stretch` maps to Prisma `STRONG/GOOD/STRETCH`; input mode and compare source values are identical across public/model/Prisma boundaries.
+
+## Backend Orchestration
+
+`/api/v1/ai/cv-analyzer` resolves CV bytes before calling Model API. Direct uploads use request-scoped buffers; reference mode streams bytes from backend-owned CV storage after ownership, expiry, and path-traversal checks. Candidate retrieval stays in Backend:
+
+- `BOOKMARK` uses active, non-expired jobs bookmarked by authenticated user.
+- `JOB_SEARCH` searches visible, active jobs using requested role text.
+- `DIRECT_JOB_DETAIL` uses one explicit visible, active job id.
+
+Backend sends only model scoring fields to Model API. Public recommendation fields are hydrated from DB after Model API returns candidate ids and scores. GenAI prose is optional; deterministic fallback prose uses model evidence and DB job context without changing numeric scores, recommendation ids, or order.
 
 ## Failure Contract
 

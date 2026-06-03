@@ -54,6 +54,9 @@ export const analyzeCvSchema = z
     ),
     cvFileId: z
       .uuid("ID file CV tidak valid. Gunakan UUID yang benar")
+      .optional(),
+    directJobId: z
+      .uuid("ID lowongan tidak valid. Gunakan UUID yang benar")
       .optional()
   })
   .superRefine((value, ctx) => {
@@ -62,6 +65,14 @@ export const analyzeCvSchema = z
         code: "custom",
         path: ["cvFileId"],
         message: "ID file CV tidak boleh dikirim saat mode UPLOAD"
+      });
+    }
+
+    if (value.compareSource === "DIRECT_JOB_DETAIL" && !value.directJobId) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["directJobId"],
+        message: "ID lowongan wajib dikirim untuk DIRECT_JOB_DETAIL"
       });
     }
   });

@@ -44,36 +44,47 @@ export type JobFitModelResponseFixture = {
 };
 
 export type CvAnalyzerModelResponseFixture = {
-  schemaVersion: "cv-analysis-v2";
+  schemaVersion: "model-core-cv-analysis-v1";
+  parsedCv: {
+    status: "parsed" | "empty_text" | "parse_failed";
+    pageCount: number;
+    textLength: number;
+    detectedSections: string[];
+    extractionEvidence?: string[];
+  };
   jobFitAlignment: {
     score: number;
-    summary: string;
+    matchedSignals: string[];
+    missingSignals: string[];
+    matchedSkills: string[];
+    missingSkills: string[];
+    evidence?: string[];
   };
   atsFriendliness: {
     score: number;
-    summary: string;
+    detectedIssues: string[];
+    parseQuality: "high" | "medium" | "low" | "failed";
+    evidence?: string[];
   };
-  overallImpression: string;
-  topActionables: string[];
-  sectionReviews: {
-    sectionName: string;
-    analysis: string;
-    actionPoints: string[];
-    whyItsImportantForYou: string;
-  }[];
-  jobRecommendations: {
-    jobId: string | null;
-    title: string;
-    companyName: string | null;
-    matchScore: number;
-    reason: string;
-    nextStep: string;
-  }[];
+  overallImpression: {
+    score: number;
+    evidence: string[];
+  };
+  candidateReranking: {
+    recommendations: {
+      jobId: string;
+      matchScore: number;
+      matchLevel: "strong" | "good" | "stretch";
+      matchedSkills: string[];
+      missingSkills: string[];
+      rankingSignals?: string[];
+    }[];
+  };
   model: {
     name: string;
     version: string;
   };
-  analyzedAt: string;
+  createdAt: string;
 };
 
 export type JobRecommendationModelResponseFixture = {
@@ -165,59 +176,49 @@ export const modelApiFixtures = {
     analyzedAt: "2026-04-23T00:00:00.000Z"
   },
   validCvAnalyzerResponse: {
-    schemaVersion: "cv-analysis-v2",
+    schemaVersion: "model-core-cv-analysis-v1",
+    parsedCv: {
+      status: "parsed",
+      pageCount: 2,
+      textLength: 2400,
+      detectedSections: ["Skills", "Work Experience"],
+      extractionEvidence: ["PDF text parsed"]
+    },
     jobFitAlignment: {
       score: 78,
-      summary: "Core skills are visible, but deployment depth is limited."
+      matchedSignals: ["Backend skill evidence"],
+      missingSignals: ["Deployment depth limited"],
+      matchedSkills: ["TypeScript", "PostgreSQL"],
+      missingSkills: ["Docker"],
+      evidence: ["Core skills are visible"]
     },
     atsFriendliness: {
       score: 74,
-      summary: "Structure is readable, but some keywords are still weak."
+      detectedIssues: ["Weak keyword grouping"],
+      parseQuality: "medium",
+      evidence: ["Sections detected"]
     },
-    overallImpression:
-      "The CV is relevant for an entry-level backend role, with the biggest gaps in deployment evidence and measurable impact.",
-    topActionables: [
-      "Add a stronger backend-focused profile summary.",
-      "Add measurable API or project impact.",
-      "Make deployment experience more explicit if available."
-    ],
-    sectionReviews: [
-      {
-        sectionName: "Relevant Skills",
-        analysis: "Core backend skills are present but not grouped clearly.",
-        actionPoints: [
-          "Group skills into Backend, Database, and Deployment.",
-          "Prioritize skills that match the target role."
-        ],
-        whyItsImportantForYou:
-          "Recruiters and ATS often scan technical keywords before reading experience details."
-      },
-      {
-        sectionName: "Work Experience",
-        analysis:
-          "Relevant experience exists, but impact is not quantified well.",
-        actionPoints: [
-          "Add metrics such as endpoint count, latency improvement, or system scale."
-        ],
-        whyItsImportantForYou:
-          "Measured impact helps employers understand contribution, not only responsibilities."
-      }
-    ],
-    jobRecommendations: [
-      {
-        jobId: "11111111-1111-4111-8111-111111111111",
-        title: "Backend Developer",
-        companyName: "Nusantara Tech",
-        matchScore: 82,
-        reason: "Role ini cocok dengan sinyal TypeScript dan REST API pada CV.",
-        nextStep: "Perjelas bukti pengalaman deployment sebelum melamar."
-      }
-    ],
+    overallImpression: {
+      score: 76,
+      evidence: ["entry-level backend alignment", "deployment gap"]
+    },
+    candidateReranking: {
+      recommendations: [
+        {
+          jobId: "11111111-1111-4111-8111-111111111111",
+          matchScore: 82,
+          matchLevel: "strong",
+          matchedSkills: ["TypeScript", "PostgreSQL"],
+          missingSkills: ["Docker"],
+          rankingSignals: ["Skill overlap"]
+        }
+      ]
+    },
     model: {
       name: "fixture-cv-analyzer-model",
       version: "test-2026-01"
     },
-    analyzedAt: "2026-04-23T00:00:00.000Z"
+    createdAt: "2026-04-23T00:00:00.000Z"
   },
   validJobRecommendationsResponse: {
     recommendations: [

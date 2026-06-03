@@ -111,8 +111,52 @@ describe("PrismaAiCvAnalyzerRepository", () => {
             sizeBytes: metadata.sizeBytes,
             storageKey: metadata.storageKey
           },
-          jobRoles: ["Backend Developer"]
+          jobRoles: ["Backend Developer"],
+          rankingPolicy: {
+            backendOwnsHydration: true,
+            requireCandidateJobIds: true,
+            deduplicateByJobId: true,
+            maxRecommendations: 1
+          },
+          jobCandidates: []
         },
+        modelCoreResponse: {
+          schemaVersion: "model-core-cv-analysis-v1",
+          parsedCv: {
+            status: "parsed",
+            pageCount: 1,
+            textLength: 500,
+            detectedSections: ["Work Experience"]
+          },
+          jobFitAlignment: {
+            score: 75,
+            matchedSignals: ["Backend"],
+            missingSignals: [],
+            matchedSkills: ["TypeScript"],
+            missingSkills: [],
+            evidence: []
+          },
+          atsFriendliness: {
+            score: 70,
+            detectedIssues: [],
+            parseQuality: "medium",
+            evidence: []
+          },
+          overallImpression: {
+            score: 73,
+            evidence: ["Relevant for the role"]
+          },
+          candidateReranking: {
+            recommendations: []
+          },
+          model: {
+            name: "fixture-cv-analyzer-model",
+            version: "test-2026-01"
+          },
+          createdAt: "2026-04-23T00:00:00.000Z"
+        },
+        candidates: [],
+        requestId: "req_cv_repo",
         response: {
           schemaVersion: "cv-analysis-v2",
           jobFitAlignment: {

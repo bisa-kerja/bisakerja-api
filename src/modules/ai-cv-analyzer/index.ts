@@ -8,6 +8,7 @@ export {
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";
 export {
   buildCvAnalyzerPayload,
+  buildPublicCvAnalysisResponse,
   mapCvAnalysisResource,
   mapCvFileResource,
   sanitizeOriginalFileName,
@@ -22,6 +23,7 @@ export type {
   CvAnalysisSnapshotInput,
   CvAnalysisResource,
   CvAnalysisResult,
+  PublicCvAnalysisResponse,
   CvFileResource,
   CvFileMetadataRecord,
   CvFileStorage,

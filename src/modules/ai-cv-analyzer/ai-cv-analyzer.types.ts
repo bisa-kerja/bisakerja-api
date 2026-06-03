@@ -6,6 +6,7 @@ import type {
   CvAnalyzerModelResponse
 } from "@/shared/integrations/model-api.schema";
 import type { ModelApiClient } from "@/shared/integrations/model-api.types";
+import type { JobRecord } from "@/modules/jobs";
 
 export type UploadedCvFile = {
   originalName: string;
@@ -27,6 +28,7 @@ export type CvFileStorage = {
     buffer: Buffer;
   }): Promise<StoredCvFile>;
   deleteFile(storageKey: string): Promise<void>;
+  readFile?(storageKey: string): Promise<Buffer>;
 };
 
 export type CvFileMetadataRecord = {
@@ -84,6 +86,32 @@ export type CvAnalysisResultListResult = {
   total: number;
 };
 
+export type PublicCvAnalysisResponse = {
+  schemaVersion: "cv-analysis-v2";
+  jobFitAlignment: { score: number; summary: string };
+  atsFriendliness: { score: number; summary: string };
+  overallImpression: string;
+  topActionables: string[];
+  sectionReviews: {
+    sectionName: string;
+    analysis: string;
+    actionPoints: string[];
+    whyItsImportantForYou: string;
+  }[];
+  jobRecommendations: {
+    jobId: string;
+    title: string;
+    companyName: string | null;
+    matchScore: number;
+    reason: string;
+    nextStep: string;
+  }[];
+  model: CvAnalyzerModelResponse["model"];
+  analyzedAt: string;
+};
+
+export type CvAnalysisCandidateRecord = JobRecord;
+
 export type CvAnalysisSnapshotInput = {
   userId: string;
   jobRoles: string[];
@@ -92,7 +120,10 @@ export type CvAnalysisSnapshotInput = {
   inputMode: "UPLOAD" | "REFERENCE";
   compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
   payload: CvAnalyzerModelPayload;
-  response: CvAnalyzerModelResponse;
+  modelCoreResponse: CvAnalyzerModelResponse;
+  response: PublicCvAnalysisResponse;
+  candidates: CvAnalysisCandidateRecord[];
+  requestId: string;
 };
 
 export type AiCvAnalyzerRepository = {
@@ -116,6 +147,14 @@ export type AiCvAnalyzerRepository = {
     now: Date
   ): Promise<CvFileMetadataRecord | null>;
   markCvFileDeleted(fileId: string, deletedAt: Date): Promise<void>;
+  findCandidateJobsForCvAnalysis?(input: {
+    userId: string;
+    compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
+    jobRoles: string[];
+    directJobId?: string;
+    limit: number;
+    now: Date;
+  }): Promise<CvAnalysisCandidateRecord[]>;
   createSnapshot(input: CvAnalysisSnapshotInput): Promise<void>;
   listAnalysisResults?(
     userId: string,
@@ -147,13 +186,13 @@ export type CvAnalysisResource = {
   language: "id" | "en";
   analysisResult: {
     id: string;
-    schemaVersion: CvAnalyzerModelResponse["schemaVersion"];
-    jobFitAlignment: CvAnalyzerModelResponse["jobFitAlignment"];
-    atsFriendliness: CvAnalyzerModelResponse["atsFriendliness"];
-    overallImpression: CvAnalyzerModelResponse["overallImpression"];
-    topActionables: CvAnalyzerModelResponse["topActionables"];
-    sectionReviews: CvAnalyzerModelResponse["sectionReviews"];
-    jobRecommendations: CvAnalyzerModelResponse["jobRecommendations"];
+    schemaVersion: PublicCvAnalysisResponse["schemaVersion"];
+    jobFitAlignment: PublicCvAnalysisResponse["jobFitAlignment"];
+    atsFriendliness: PublicCvAnalysisResponse["atsFriendliness"];
+    overallImpression: PublicCvAnalysisResponse["overallImpression"];
+    topActionables: PublicCvAnalysisResponse["topActionables"];
+    sectionReviews: PublicCvAnalysisResponse["sectionReviews"];
+    jobRecommendations: PublicCvAnalysisResponse["jobRecommendations"];
     generatedCv: {
       available: false;
       note: string;
