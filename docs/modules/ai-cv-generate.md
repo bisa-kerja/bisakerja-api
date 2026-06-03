@@ -13,7 +13,7 @@ last_reviewed: 2026-05-23
 
 # AI CV Generate Module
 
-AI CV Generate creates improved markdown HTML CV content from a current user's stored CV file reference, a structured CV summary, and an HTML template. It does not analyze a CV from scratch and does not persist generated markdown automatically.
+AI CV Generate creates improved markdown HTML CV content from a current user's stored CV file reference, a structured CV summary, and a required HTML template. Backend API owns CV ownership checks, CV storage reads, evidence building, prompt orchestration, GenAI provider calls, output safety, and the public response envelope. Frontend must call Backend API only; Model API remains model-core only and does not expose `/cv-generate`.
 
 ## Route Prefix
 
@@ -43,9 +43,7 @@ Validation rules:
 | -------------- | -------------------------------------------------------------------------- |
 | `cvFileId`     | Required UUID. Must belong to current user.                                |
 | `summary`      | Required non-empty string, max 8,000 characters.                           |
-| `templateHtml` | Optional non-empty string, max 20,000 characters. HTML is untrusted input. |
-
-`templateHtml` is required.
+| `templateHtml` | Required non-empty string, max 20,000 characters. HTML is untrusted input. |
 
 ## Response
 
@@ -66,25 +64,26 @@ Response data only contains `markdown`.
 
 ## Ownership And Privacy
 
-- Backend validates `cvFileId` before calling Model API.
+- Backend validates `cvFileId` ownership before reading CV storage.
 - CV files owned by another user return `404 CV_FILE_NOT_FOUND`.
-- Raw prompt, service credentials, storage key, and Model API metadata are never exposed to frontend.
+- Backend sends only sanitized evidence, summary, and sanitized template input to the GenAI provider.
+- Raw prompt, raw CV text, service credentials, storage key, provider payloads, and Model API internals are never exposed to frontend.
 - Generated markdown is returned to the caller but is not saved as a user CV document by this endpoint.
 
 ## Output Safety
 
-Generated markdown must be non-empty and must not contain executable HTML patterns such as `<script>`, `<iframe>`, inline event handlers, or `javascript:` URLs. Invalid output is rejected with `502 MODEL_OUTPUT_INVALID`.
+Generated markdown must be non-empty, within 50,000 characters, and must not contain executable HTML patterns such as `<script>`, `<iframe>`, `<object>`, `<embed>`, inline event handlers, or `javascript:` URLs. Invalid output is rejected with `502 MODEL_OUTPUT_INVALID`. Frontend should still sanitize before rendering.
 
 ## Errors
 
-| Status | Code                   | Meaning                                                               |
-| -----: | ---------------------- | --------------------------------------------------------------------- |
-|    401 | `UNAUTHENTICATED`      | Missing or invalid access token.                                      |
-|    404 | `CV_FILE_NOT_FOUND`    | CV file does not exist, expired, deleted, or belongs to another user. |
-|    422 | `VALIDATION_ERROR`     | Request body fails validation.                                        |
-|    413 | `PAYLOAD_TOO_LARGE`    | Request exceeds configured body size limit.                           |
-|    502 | `MODEL_OUTPUT_INVALID` | Model API returned empty or unsafe markdown.                          |
-|    503 | `SERVICE_UNAVAILABLE`  | Model API is unavailable or timed out.                                |
+| Status | Code                   | Meaning                                                                  |
+| -----: | ---------------------- | ------------------------------------------------------------------------ |
+|    401 | `UNAUTHENTICATED`      | Missing or invalid access token.                                         |
+|    404 | `CV_FILE_NOT_FOUND`    | CV file does not exist, expired, deleted, or belongs to another user.    |
+|    422 | `VALIDATION_ERROR`     | Request body fails validation.                                           |
+|    413 | `PAYLOAD_TOO_LARGE`    | Request exceeds configured body size limit.                              |
+|    502 | `MODEL_OUTPUT_INVALID` | Generated markdown is empty, too long, or unsafe.                        |
+|    503 | `SERVICE_UNAVAILABLE`  | CV storage or GenAI provider is unavailable, unconfigured, or timed out. |
 
 ## Related Docs
 

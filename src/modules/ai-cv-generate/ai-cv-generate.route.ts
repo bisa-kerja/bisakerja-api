@@ -6,10 +6,11 @@ import { createAuthMiddleware } from "@/core/middlewares/auth.middleware";
 import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer";
+import { createAiCvGenerateGenAiClient } from "@/modules/ai-cv-generate/ai-cv-generate.genai";
 import { AiCvGenerateController } from "@/modules/ai-cv-generate/ai-cv-generate.controller";
 import { generateCvMarkdownSchema } from "@/modules/ai-cv-generate/ai-cv-generate.schema";
 import type { AiCvGenerateRouterOptions } from "@/modules/ai-cv-generate/ai-cv-generate.types";
-import { createModelApiClient } from "@/shared/integrations/model-api.client";
+import { LocalCvFileStorage } from "@/modules/ai-cv-analyzer";
 
 export function createAiCvGenerateRouter(
   config: AppConfig,
@@ -18,11 +19,18 @@ export function createAiCvGenerateRouter(
   const router = createRouter();
   const repository = options.repository ?? new PrismaAiCvAnalyzerRepository();
   const authMiddleware = options.authMiddleware ?? createAuthMiddleware(config);
-  const modelApiClient = options.modelApiClient ?? createModelApiClient(config);
+  const storage =
+    options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
+  const genAiClient =
+    options.genAiClient ??
+    (config.integrations.aiCvAnalyzerGenAi.enabled
+      ? createAiCvGenerateGenAiClient(config)
+      : undefined);
   const controller = new AiCvGenerateController({
     repository,
     config,
-    modelApiClient,
+    storage,
+    genAiClient,
     now: options.now
   });
   const { aiLimiter } = createRateLimiters(config);

@@ -15,7 +15,9 @@ export class AiCvGenerateController {
     private readonly dependencies: AiCvGenerateControllerDependencies
   ) {
     this.service = new AiCvGenerateService(dependencies.repository, {
-      modelApiClient: dependencies.modelApiClient,
+      storage: dependencies.storage,
+      genAiClient: dependencies.genAiClient,
+      genAiEnabled: dependencies.config.integrations.aiCvAnalyzerGenAi.enabled,
       now: dependencies.now
     });
     this.now = dependencies.now ?? (() => new Date());

@@ -6,10 +6,11 @@ import { AuthenticationError } from "@/core/errors/app.error";
 import type {
   AiCvAnalyzerRepository,
   CvAnalysisSnapshotInput,
-  CvFileMetadataRecord
+  CvFileMetadataRecord,
+  CvFileStorage
 } from "@/modules/ai-cv-analyzer";
+import type { AiCvGenerateGenAiInput } from "@/modules/ai-cv-generate";
 import type { AuthRequestContext } from "@/modules/auth";
-import type { CvGenerateModelPayload } from "@/shared/integrations/model-api.schema";
 import { testConfig } from "../../helpers/config";
 import { injectRoute } from "../../helpers/route";
 
@@ -33,13 +34,11 @@ const ownedCvFile: CvFileMetadataRecord = {
 
 describe("ai cv generate route", () => {
   test("generates markdown HTML response through authenticated route", async () => {
-    let modelPayload: unknown;
+    let providerInput: unknown;
     const { app } = createAiCvGenerateRouteContext({
-      generateCvMarkdown: (payload) => {
-        modelPayload = payload;
-        return Promise.resolve({
-          markdown: "<section><h1>Candidate Name</h1></section>"
-        });
+      generateMarkdown: (input) => {
+        providerInput = input;
+        return Promise.resolve("<section><h1>Candidate Name</h1></section>");
       }
     });
 
@@ -59,19 +58,17 @@ describe("ai cv generate route", () => {
       },
       meta: null
     });
-    expect(modelPayload).toMatchObject({
+    expect(providerInput).toMatchObject({
       requestId: "req_cv_generate_success",
       inputVersion: "cv-generate-v1",
-      cv: {
-        fileId: cvFileId,
-        storageKey: ownedCvFile.storageKey
-      },
       summary: "Backend candidate with REST API experience.",
-      template: {
-        markdown: null,
-        html: "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
+      templateHtml: "<section><h1>{{name}}</h1><p>{{summary}}</p></section>",
+      evidence: {
+        cvFile: { fileId: cvFileId },
+        cvTextPreview: "Route test CV evidence"
       }
     });
+    expect(JSON.stringify(providerInput)).not.toContain(ownedCvFile.storageKey);
   });
 
   test("requires authentication", async () => {
@@ -118,14 +115,12 @@ describe("ai cv generate route", () => {
   });
 
   test("conceals cross-user CV and does not call Model API", async () => {
-    let modelCalled = false;
+    let providerCalled = false;
     const { app } = createAiCvGenerateRouteContext({
       fileMetadata: [{ ...ownedCvFile, userId: "other-user" }],
-      generateCvMarkdown: () => {
-        modelCalled = true;
-        return Promise.resolve({
-          markdown: "<section>Should not happen</section>"
-        });
+      generateMarkdown: () => {
+        providerCalled = true;
+        return Promise.resolve("<section>Should not happen</section>");
       }
     });
 
@@ -144,15 +139,13 @@ describe("ai cv generate route", () => {
         requestId: "req_cv_generate_cross_user"
       }
     });
-    expect(modelCalled).toBe(false);
+    expect(providerCalled).toBe(false);
   });
 
   test("rejects unsafe model output", async () => {
     const { app } = createAiCvGenerateRouteContext({
-      generateCvMarkdown: () =>
-        Promise.resolve({
-          markdown: "<section>CV</section><script>alert(1)</script>"
-        })
+      generateMarkdown: () =>
+        Promise.resolve("<section>CV</section><script>alert(1)</script>")
     });
 
     const response = await injectRoute(app, {
@@ -176,37 +169,49 @@ describe("ai cv generate route", () => {
 function createAiCvGenerateRouteContext(
   overrides: {
     fileMetadata?: CvFileMetadataRecord[];
-    generateCvMarkdown?: (
-      payload: CvGenerateModelPayload
-    ) => Promise<{ markdown: string }>;
+    generateMarkdown?: (input: AiCvGenerateGenAiInput) => Promise<string>;
+    readFile?: CvFileStorage["readFile"];
   } = {}
 ) {
   const repository = new InMemoryAiCvAnalyzerRepository(
     overrides.fileMetadata ?? [ownedCvFile]
   );
 
-  const app = createApp(testConfig({ MODEL_API_ENABLE_MOCK: "false" }), {
-    routes: {
-      aiCvGenerate: {
-        repository,
-        authMiddleware: createTestAuthMiddleware(),
-        modelApiClient: {
-          analyzeJobFit: () => Promise.reject(new Error("Not used")),
-          analyzeCv: () => Promise.reject(new Error("Not used")),
-          generateCvMarkdown: (payload) => {
-            if (overrides.generateCvMarkdown) {
-              return overrides.generateCvMarkdown(payload);
-            }
+  const app = createApp(
+    testConfig({
+      MODEL_API_ENABLE_MOCK: "false",
+      AI_CV_ANALYZER_GENAI_ENABLED: "true"
+    }),
+    {
+      routes: {
+        aiCvGenerate: {
+          repository,
+          authMiddleware: createTestAuthMiddleware(),
+          storage: {
+            saveFile: () =>
+              Promise.resolve({
+                storageDriver: "LOCAL",
+                storageKey: ownedCvFile.storageKey
+              }),
+            deleteFile: () => Promise.resolve(),
+            readFile:
+              overrides.readFile ??
+              (() => Promise.resolve(Buffer.from("Route test CV evidence")))
+          },
+          genAiClient: {
+            generateMarkdown: (input) => {
+              if (overrides.generateMarkdown) {
+                return overrides.generateMarkdown(input);
+              }
 
-            return Promise.resolve({
-              markdown: "<section>Generated CV</section>"
-            });
-          }
-        },
-        now: () => now
+              return Promise.resolve("<section>Generated CV</section>");
+            }
+          },
+          now: () => now
+        }
       }
     }
-  });
+  );
 
   return { app, repository };
 }

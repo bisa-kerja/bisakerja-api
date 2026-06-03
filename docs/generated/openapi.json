@@ -39,6 +39,10 @@
     {
       "name": "AI CV Analyzer",
       "description": "Authenticated CV analysis against target job roles."
+    },
+    {
+      "name": "AI CV Generate",
+      "description": "Backend-owned authenticated markdown HTML CV generation from stored CV evidence."
     }
   ],
   "paths": {
@@ -5065,7 +5069,7 @@
       "post": {
         "tags": ["AI CV Generate"],
         "summary": "Generate markdown HTML CV",
-        "description": "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and HTML template input.",
+        "description": "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, evidence building, prompt orchestration, provider calls, and response safety; Frontend never calls Model API directly.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -5190,13 +5194,13 @@
             }
           },
           "502": {
-            "description": "Model output is invalid.",
+            "description": "Generated markdown is invalid.",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Model API returned invalid markdown",
+                  "message": "AI CV Generate provider returned invalid markdown",
                   "data": null,
                   "error": {
                     "code": "MODEL_OUTPUT_INVALID",
@@ -5208,13 +5212,13 @@
             }
           },
           "503": {
-            "description": "Model API is unavailable.",
+            "description": "AI CV Generate provider or CV storage is unavailable.",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
                 "example": {
                   "success": false,
-                  "message": "Model API is unavailable",
+                  "message": "Service temporarily unavailable",
                   "data": null,
                   "error": {
                     "code": "SERVICE_UNAVAILABLE",

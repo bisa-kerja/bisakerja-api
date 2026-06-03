@@ -570,6 +570,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
       {
         name: "AI CV Analyzer",
         description: "Authenticated CV analysis against target job roles."
+      },
+      {
+        name: "AI CV Generate",
+        description:
+          "Backend-owned authenticated markdown HTML CV generation from stored CV evidence."
       }
     ],
     paths: {
@@ -2559,7 +2564,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["AI CV Generate"],
           summary: "Generate markdown HTML CV",
           description:
-            "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and HTML template input.",
+            "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, evidence building, prompt orchestration, provider calls, and response safety; Frontend never calls Model API directly.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
@@ -2606,14 +2611,14 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "invalid_type"
             ),
             "502": errorResponse(
-              "Model output is invalid.",
+              "Generated markdown is invalid.",
               "MODEL_OUTPUT_INVALID",
-              "Model API returned invalid markdown"
+              "AI CV Generate provider returned invalid markdown"
             ),
             "503": errorResponse(
-              "Model API is unavailable.",
+              "AI CV Generate provider or CV storage is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Model API is unavailable"
+              "Service temporarily unavailable"
             )
           }
         }
