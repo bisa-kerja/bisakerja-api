@@ -14,6 +14,23 @@ export type CvMarkdownResource = {
 
 export type AiCvGenerateStructuredEvidence = SharedCvEvidence;
 
+export type AiCvGeneratePrivateCvData = {
+  rawText: string;
+  fullName: string;
+  headline: string;
+  email: string;
+  phone: string;
+  location: string;
+  links: string[];
+  summary: string;
+  experience: string[];
+  projects: string[];
+  skills: string[];
+  education: string[];
+  certifications: string[];
+  languages: string[];
+};
+
 export type AiCvGenerateEvidence = {
   cvFile: {
     fileId: string;
@@ -21,6 +38,7 @@ export type AiCvGenerateEvidence = {
     sizeBytes: number;
   };
   currentCv: AiCvGenerateStructuredEvidence;
+  privateCvData: AiCvGeneratePrivateCvData;
   latestAnalysis: Pick<
     PublicCvAnalysisResponse,
     | "jobFitAlignment"

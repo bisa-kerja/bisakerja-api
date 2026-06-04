@@ -105,6 +105,12 @@ describe("AiCvGenerateService", () => {
             }
           ],
           contactRedactionPolicy: "contact_data_removed"
+        },
+        privateCvData: {
+          email: "email@example.test",
+          phone: "+62 812 3333 4444",
+          summary:
+            "Backend REST API candidate with PostgreSQL delivery experience."
         }
       },
       templatePolicy: {
@@ -114,8 +120,8 @@ describe("AiCvGenerateService", () => {
     });
     expect(JSON.stringify(providerInput)).not.toContain("cvTextPreview");
     expect(JSON.stringify(providerInput)).not.toContain(cvFile.storageKey);
-    expect(JSON.stringify(providerInput)).not.toContain("email@example.test");
-    expect(JSON.stringify(providerInput)).not.toContain("+62 812 3333 4444");
+    expect(JSON.stringify(providerInput)).toContain("email@example.test");
+    expect(JSON.stringify(providerInput)).toContain("+62 812 3333 4444");
   });
 
   it("uses latest analyzer evidence when stored CV bytes have no usable text", async () => {
@@ -182,7 +188,7 @@ describe("AiCvGenerateService", () => {
     });
 
     expect(result.markdown).toBe(
-      '<section class="cv"><h1></h1><p>Backend REST API candidate with PostgreSQL delivery experience.</p><p>typescript, postgresql, rest api</p></section>'
+      '<section class="cv"><h1></h1><p>Backend REST API candidate with PostgreSQL delivery experience.</p><p>TypeScript, PostgreSQL, REST API</p></section>'
     );
   });
 
@@ -203,6 +209,59 @@ describe("AiCvGenerateService", () => {
     expect(result.markdown).toBe(
       "<section><p>Backend REST API candidate with PostgreSQL delivery experience.</p></section>"
     );
+  });
+
+  it("fills common semantic CV template regions when provider returns an empty placeholder-free template", async () => {
+    const templateHtml = [
+      '<div class="cv-container">',
+      '<header class="cv-header"><h1 class="header-name">ALEX DOE</h1><h2 class="header-title">Senior Full-Stack Developer</h2><div class="contact-info">alex.doe@email.com | +1 (555) 123-4567</div></header>',
+      '<section class="main-section"><div class="section-title">Summary</div><div class="divider-line"></div><p class="summary-text"></p></section>',
+      '<section class="main-section"><div class="section-title">Professional Experience</div><div class="divider-line"></div></section>',
+      '<section class="main-section"><div class="section-title">Education</div><div class="divider-line"></div></section>',
+      '<section class="main-section"><div class="section-title">Projects</div><div class="divider-line"></div></section>',
+      '<section class="main-section"><div class="section-title">Skills</div><div class="divider-line"></div><div class="skills-grid"></div></section>',
+      "</div>"
+    ].join("");
+    const mvpCvText = [
+      "Budi Santoso",
+      "Backend Engineer",
+      "budi@example.com | +62 812 9999 8888 | Jakarta, Indonesia",
+      currentCvText
+    ].join("\n");
+    const service = new AiCvGenerateService(createRepository(cvFile), {
+      now: () => now,
+      storage: createStorage(() => Promise.resolve(Buffer.from(mvpCvText))),
+      genAiEnabled: true,
+      genAiClient: createGenAiClient(() => Promise.resolve(templateHtml))
+    });
+
+    const result = await service.generateMarkdown(userId, "req-1", {
+      cvFileId,
+      summary: "Fallback summary",
+      templateHtml
+    });
+
+    expect(validateTemplateStructure(templateHtml, result.markdown)).toEqual({
+      valid: true,
+      reasons: []
+    });
+    expect(result.markdown).toContain(
+      '<h1 class="header-name">Budi Santoso</h1>'
+    );
+    expect(result.markdown).toContain(
+      '<h2 class="header-title">Backend Engineer</h2>'
+    );
+    expect(result.markdown).toContain("budi@example.com");
+    expect(result.markdown).toContain("+62 812 9999 8888");
+    expect(result.markdown).toContain(
+      '<p class="summary-text">Backend REST API candidate with PostgreSQL delivery experience.</p>'
+    );
+    expect(result.markdown).toContain(
+      "Built Express services for job matching."
+    );
+    expect(result.markdown).toContain("BSc Computer Science");
+    expect(result.markdown).toContain("CV analyzer quality dashboard.");
+    expect(result.markdown).toContain("TypeScript, PostgreSQL, REST API");
   });
 
   it("accepts provider markdown wrapped in a full HTML code fence", async () => {
@@ -228,7 +287,7 @@ describe("AiCvGenerateService", () => {
     );
   });
 
-  it("redacts contact data from summary and template before provider and fallback rendering", async () => {
+  it("keeps current user's contact data in summary and template for MVP generation", async () => {
     let providerInput: unknown;
     const service = new AiCvGenerateService(createRepository(cvFile), {
       now: () => now,
@@ -248,12 +307,12 @@ describe("AiCvGenerateService", () => {
     });
 
     expect(providerInput).toMatchObject({
-      summary: "Hubungi [redacted-email] atau [redacted-phone]",
+      summary: "Hubungi user@example.test atau +62 812 3333 4444",
       templateHtml:
-        "<section><p>Kontak: [redacted-email] [redacted-phone]</p><p>{{summary}}</p></section>"
+        "<section><p>Kontak: user@example.test +62 812 3333 4444</p><p>{{summary}}</p></section>"
     });
     expect(result.markdown).toBe(
-      "<section><p>Kontak: [redacted-email] [redacted-phone]</p><p>Hubungi [redacted-email] atau [redacted-phone]</p></section>"
+      "<section><p>Kontak: user@example.test +62 812 3333 4444</p><p>Hubungi user@example.test atau +62 812 3333 4444</p></section>"
     );
   });
 
