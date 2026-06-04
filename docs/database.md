@@ -621,18 +621,18 @@ Seed data must stay product-shaped but synthetic. It must not include raw extern
 
 Initial retention direction:
 
-| Data                      | Retention direction                                           |
-| ------------------------- | ------------------------------------------------------------- |
-| User account              | Keep until account deletion policy is defined                 |
-| Profile and preferences   | Keep while account is active                                  |
-| Bookmarks                 | Keep while account is active or until user removes them       |
-| Application tracker       | Keep while account is active unless user deletes record       |
-| Password reset tokens     | Delete or expire quickly after use                            |
-| Email verification tokens | Delete or expire quickly after use                            |
-| CV uploaded files         | Follow `CV_RETENTION_DAYS`; default 1 day in environment docs |
-| CV analysis result        | Persist only when `persistResult=true`; redact raw content    |
-| AI request logs           | Keep short-lived and sanitized                                |
-| Job listings              | Keep stale/expired records when linked to user history        |
+| Data                      | Retention direction                                                    |
+| ------------------------- | ---------------------------------------------------------------------- |
+| User account              | Keep until account deletion policy is defined                          |
+| Profile and preferences   | Keep while account is active                                           |
+| Bookmarks                 | Keep while account is active or until user removes them                |
+| Application tracker       | Keep while account is active unless user deletes record                |
+| Password reset tokens     | Delete or expire quickly after use                                     |
+| Email verification tokens | Delete or expire quickly after use                                     |
+| CV uploaded files         | Follow `CV_RETENTION_DAYS`; default 1 day in environment docs          |
+| CV analysis result        | Persist by default; `persistResult=false` opts out; redact raw content |
+| AI request logs           | Keep short-lived and sanitized                                         |
+| Job listings              | Keep stale/expired records when linked to user history                 |
 
 ## Deferred Decisions Before Schema Implementation
 

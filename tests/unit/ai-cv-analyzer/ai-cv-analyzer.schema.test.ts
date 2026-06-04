@@ -11,8 +11,7 @@ describe("ai cv analyzer schema", () => {
     const result = analyzeCvSchema.parse({
       jobRoles: ["Backend Developer"],
       language: "id",
-      inputMode: "UPLOAD",
-      persistResult: "true"
+      inputMode: "UPLOAD"
     });
 
     expect(result).toEqual({

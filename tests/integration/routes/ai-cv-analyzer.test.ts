@@ -172,6 +172,7 @@ describe("ai cv analyzer routes", () => {
         jobRoles: ["Backend Developer"],
         language: "id",
         analysisResult: {
+          id: "11111111-1111-4111-8111-111111111115",
           schemaVersion: "cv-analysis-v2",
           generatedCv: {
             available: false
@@ -975,9 +976,9 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     return Promise.resolve();
   }
 
-  createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
+  createSnapshot(input: CvAnalysisSnapshotInput): Promise<string> {
     this.snapshots.push(structuredClone(input));
-    return Promise.resolve();
+    return Promise.resolve("11111111-1111-4111-8111-111111111115");
   }
 
   listAnalysisResults(

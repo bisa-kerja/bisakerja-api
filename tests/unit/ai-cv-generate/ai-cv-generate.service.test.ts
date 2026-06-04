@@ -153,7 +153,8 @@ function createRepository(
     findActiveCvFileMetadata: () => Promise.resolve(record),
     findCvFileMetadataById: () => Promise.resolve(record),
     markCvFileDeleted: () => Promise.resolve(),
-    createSnapshot: () => Promise.resolve(),
+    createSnapshot: () =>
+      Promise.resolve("11111111-1111-4111-8111-111111111115"),
     findExpiredActiveCvFiles: () => Promise.resolve([]),
     markCvFilesDeleted: () => Promise.resolve(0)
   };

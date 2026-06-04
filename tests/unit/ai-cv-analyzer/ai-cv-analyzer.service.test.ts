@@ -502,6 +502,9 @@ describe("AiCvAnalyzerService", () => {
     );
 
     expect(result.persisted).toBe(true);
+    expect(result.resource.analysisResult.id).toBe(
+      "11111111-1111-4111-8111-111111111115"
+    );
     expect(repository.fileMetadata).toHaveLength(1);
     expect(repository.fileMetadata[0]?.originalFileName).toBe("My_CV_2026.pdf");
     expect(repository.fileMetadata[0]?.isActive).toBe(false);
@@ -849,9 +852,9 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     return Promise.resolve([job]);
   }
 
-  createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
+  createSnapshot(input: CvAnalysisSnapshotInput): Promise<string> {
     this.snapshots.push(structuredClone(input));
-    return Promise.resolve();
+    return Promise.resolve("11111111-1111-4111-8111-111111111115");
   }
 
   findExpiredActiveCvFiles(): Promise<ExpiredCvFileRecord[]> {

@@ -118,7 +118,7 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     return jobs.map(mapJob);
   }
 
-  async createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
+  async createSnapshot(input: CvAnalysisSnapshotInput): Promise<string> {
     const data: Prisma.CvAnalysisResultUncheckedCreateInput & {
       jobRecommendations: unknown;
     } = {
@@ -144,7 +144,7 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     const createResultAndRun = async (client: PrismaClientLike) => {
       const result = await client.cvAnalysisResult.create({ data });
       if (input.response.jobRecommendations.length === 0) {
-        return;
+        return result.id;
       }
 
       const run = await client.jobRecommendationRun.create({
@@ -189,14 +189,15 @@ export class PrismaAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
           nextSteps: [item.nextStep]
         }))
       });
+
+      return result.id;
     };
 
     if (hasTransaction(this.client)) {
-      await this.client.$transaction(createResultAndRun);
-      return;
+      return this.client.$transaction(createResultAndRun);
     }
 
-    await createResultAndRun(this.client);
+    return createResultAndRun(this.client);
   }
 
   async listAnalysisResults(userId: string, query: CvAnalysisResultListQuery) {

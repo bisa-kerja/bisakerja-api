@@ -16,7 +16,7 @@ export const aiCvAnalyzerSuccessMessages = {
   cvFileUploaded: "CV uploaded successfully"
 } as const;
 
-export const defaultPersistCvAnalysisResult = false;
+export const defaultPersistCvAnalysisResult = true;
 export const defaultCvCompareSource = "JOB_SEARCH" as const;
 export const generatedCvUnavailableNote =
   "Generated CV feature is not available yet.";

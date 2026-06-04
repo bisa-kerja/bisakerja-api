@@ -113,9 +113,10 @@ export class AiCvAnalyzerService {
         wrapperResponse
       );
       const persisted = input.persistResult;
+      let analysisResultId: string = crypto.randomUUID();
 
       if (persisted) {
-        await this.repository.createSnapshot({
+        analysisResultId = await this.repository.createSnapshot({
           userId,
           jobRoles: cvSource.input.jobRoles,
           cvFileMetadataId: cvSource.metadata.id,
@@ -132,7 +133,7 @@ export class AiCvAnalyzerService {
 
       return {
         resource: mapCvAnalysisResource(
-          crypto.randomUUID(),
+          analysisResultId,
           cvSource.input.jobRoles,
           cvSource.input.language,
           response

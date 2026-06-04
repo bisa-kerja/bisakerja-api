@@ -143,7 +143,7 @@ Validation:
 | `language`      | Required enum: `id` or `en`                                                        |
 | `inputMode`     | Required enum: `UPLOAD` or `REFERENCE`                                             |
 | `compareSource` | Optional enum: `BOOKMARK`, `JOB_SEARCH`, `DIRECT_JOB_DETAIL`; default `JOB_SEARCH` |
-| `persistResult` | Optional boolean, default `false`                                                  |
+| `persistResult` | Optional boolean, default `true`; send `false` only to opt out of saving           |
 | `cvFile`        | Required for `UPLOAD` mode                                                         |
 | `cvFileId`      | Optional for `REFERENCE`; when omitted the active CV fallback is used              |
 
@@ -358,7 +358,7 @@ Optional write models:
 
 Persistence rules:
 
-- Persist sanitized analysis snapshots only when `persistResult=true`.
+- Persist sanitized analysis snapshots by default; `persistResult=false` opts out.
 - Store CV file metadata separately from raw analysis result.
 - `cv_file_metadata.isActive` marks the user's active CV.
 - At most one non-deleted active CV may exist per user.

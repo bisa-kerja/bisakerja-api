@@ -191,7 +191,7 @@ export type AiCvAnalyzerRepository = {
     limit: number;
     now: Date;
   }): Promise<CvAnalysisCandidateRecord[]>;
-  createSnapshot(input: CvAnalysisSnapshotInput): Promise<void>;
+  createSnapshot(input: CvAnalysisSnapshotInput): Promise<string>;
   listAnalysisResults?(
     userId: string,
     query: CvAnalysisResultListQuery

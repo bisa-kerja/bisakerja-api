@@ -3546,7 +3546,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           required: ["jobId"],
           properties: {
             jobId: uuidSchema,
-            persistResult: { type: "boolean", default: false }
+            persistResult: { type: "boolean", default: true }
           }
         },
         JobFitAnalysis: {

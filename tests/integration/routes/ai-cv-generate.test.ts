@@ -247,9 +247,9 @@ class InMemoryAiCvAnalyzerRepository implements AiCvAnalyzerRepository {
     return Promise.resolve();
   }
 
-  createSnapshot(input: CvAnalysisSnapshotInput): Promise<void> {
+  createSnapshot(input: CvAnalysisSnapshotInput): Promise<string> {
     this.snapshots.push(input);
-    return Promise.resolve();
+    return Promise.resolve("11111111-1111-4111-8111-111111111115");
   }
 
   findExpiredActiveCvFiles(): Promise<[]> {
