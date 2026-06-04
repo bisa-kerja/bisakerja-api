@@ -116,10 +116,7 @@ async function requestCvAnalyzerCopyOnce(
           },
           {
             role: "user",
-            content: JSON.stringify({
-              task: "Return only the public CvAnalysis analysisResult JSON object using the provided evidence.",
-              wrapperInput: providerSafeInput
-            })
+            content: buildCvAnalyzerUserContent(providerSafeInput)
           }
         ],
         response_format: { type: "json_object" },
@@ -178,6 +175,32 @@ async function requestCvAnalyzerCopyOnce(
   }
 }
 
+function buildCvAnalyzerUserContent(input: CvAnalyzerWrapperInput) {
+  const { mvpCvFileAttachment, ...textInput } = input;
+  const textPart = {
+    type: "text",
+    text: JSON.stringify({
+      task: "MVP/demo mode: read the attached CV PDF/file plus raw CV text and return only the public CvAnalysis analysisResult JSON object. Use raw CV data as primary evidence. Do not return JSON envelope.",
+      wrapperInput: textInput
+    })
+  };
+
+  if (!mvpCvFileAttachment) {
+    return textPart.text;
+  }
+
+  return [
+    textPart,
+    {
+      type: "file",
+      file: {
+        filename: mvpCvFileAttachment.filename,
+        file_data: mvpCvFileAttachment.dataUrl
+      }
+    }
+  ];
+}
+
 function buildProviderSafeWrapperInput(input: CvAnalyzerWrapperInput) {
   const cache = {
     key: input.sharedEvidence.cache.key,
@@ -193,9 +216,13 @@ function buildProviderSafeWrapperInput(input: CvAnalyzerWrapperInput) {
       ...input.sharedEvidence,
       cvFile: {
         fileId: input.sharedEvidence.cvFile.fileId,
-        mimeType: input.sharedEvidence.cvFile.mimeType
+        mimeType: input.sharedEvidence.cvFile.mimeType,
+        fileSize: input.sharedEvidence.cvFile.fileSize
       },
-      cache
+      cache: {
+        ...cache,
+        retentionPolicy: input.sharedEvidence.cache.retentionPolicy
+      }
     }
   };
 }

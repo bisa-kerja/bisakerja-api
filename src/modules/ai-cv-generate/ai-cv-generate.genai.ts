@@ -182,7 +182,7 @@ function buildCvGenerateUserContent(input: AiCvGenerateGenAiInput) {
     {
       type: "text",
       text: JSON.stringify({
-        task: "Read the attached original CV PDF. Return only complete, safe, ready-to-render markdown HTML using the provided template. Replace demo content with the user's real CV data. Do not return JSON.",
+        task: "Read the attached original CV PDF. Return only complete, safe, ready-to-render markdown HTML using the provided template. Treat templateHtml as the strict visual and structural reference: keep all original tags, classes, styles, section order, and section labels. Fill only existing placeholders, empty text nodes, and existing section/list containers with matching CV data. Map data to the closest existing template section. If a CV fact has no matching section or obvious empty region, omit it and keep following the template. Never append loose text outside existing containers, never create new sections, and never reorder sections. Replace demo content with the user's real CV data. Do not return JSON.",
         cvGenerateInput: textInput
       })
     },

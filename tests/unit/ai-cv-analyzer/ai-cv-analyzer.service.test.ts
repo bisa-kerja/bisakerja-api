@@ -334,6 +334,38 @@ describe("AiCvAnalyzerService", () => {
     );
   });
 
+  test("includes MVP raw CV text and file attachment for analyzer wrapper when provided", () => {
+    const wrapperInput = buildCvAnalyzerWrapperInput(
+      "req_wrapper_raw",
+      {
+        jobRoles: ["Backend Developer"],
+        language: "id",
+        inputMode: "UPLOAD",
+        compareSource: "JOB_SEARCH",
+        persistResult: false
+      },
+      modelApiFixtures.validCvAnalyzerResponse,
+      [jobRecord()],
+      undefined,
+      {
+        filename: "cv.pdf",
+        mimeType: "application/pdf",
+        bytes: Buffer.from("Salman Backend Developer salman@example.com")
+      }
+    );
+
+    expect(wrapperInput.mvpRawCvText).toContain("Salman Backend Developer");
+    expect(wrapperInput.mvpRawCvText).toContain("salman@example.com");
+    expect(wrapperInput.mvpCvFileAttachment).toMatchObject({
+      filename: "cv.pdf",
+      mimeType: "application/pdf"
+    });
+    expect(wrapperInput.mvpCvFileAttachment?.dataUrl).toStartWith(
+      "data:application/pdf;base64,"
+    );
+    expect(JSON.stringify(wrapperInput)).not.toContain("storageKey");
+  });
+
   test("parses OpenAI-compatible provider JSON and sends only wrapper input", async () => {
     const providerPayload = buildPublicCvAnalysisResponse(
       modelApiFixtures.validCvAnalyzerResponse,

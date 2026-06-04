@@ -264,6 +264,59 @@ describe("AiCvGenerateService", () => {
     expect(result.markdown).toContain("TypeScript, PostgreSQL, REST API");
   });
 
+  it("keeps optimized CV template clean, structured, and free from binary/contact spam", async () => {
+    const templateHtml = [
+      '<div class="cv-container">',
+      '<header class="cv-header"><h1 class="header-name"></h1><p class="header-title"></p><p class="header-contact">alex.doe@email.com | React.js | gmail.com</p></header>',
+      '<section class="section-container"><h2 class="section-label">SUMMARY</h2><div class="section-content"><p class="summary-text">%PDF-1.4 %���� 1 0 obj</p></div></section>',
+      '<section class="section-container"><h2 class="section-label">WORK EXPERIENCE</h2><div class="section-content"><ul><li></li><li></li></ul></div>´ÑÇ÷É¡ÉD¯Ð³xì</section>',
+      '<section class="section-container"><h2 class="section-label">KEY SKILLS</h2><div class="section-content"><ul><li></li><li></li><li></li></ul></div></section>',
+      "</div>"
+    ].join("");
+    const cvText = [
+      "Salman Abdurrahman",
+      "Frontend Developer",
+      "salman@example.com | +6281282159360 | www.linkedin.com/in/salmanabdurrahmann | https://github.com/salmanabdurrahman",
+      "Summary",
+      "Frontend developer building React and Next.js products.",
+      "Experience",
+      "Built Socialvit frontend features with React and Next.js.",
+      "Optimized Docker-based development workflows.",
+      "Skills",
+      "React.js, Next.js, TypeScript, Docker"
+    ].join("\n");
+    const service = new AiCvGenerateService(createRepository(cvFile), {
+      now: () => now,
+      storage: createStorage(() => Promise.resolve(Buffer.from(cvText))),
+      genAiEnabled: true,
+      genAiClient: createGenAiClient(() => Promise.reject(new Error("timeout")))
+    });
+
+    const result = await service.generateMarkdown(userId, "req-1", {
+      cvFileId,
+      summary: "Frontend developer summary",
+      templateHtml
+    });
+
+    expect(validateTemplateStructure(templateHtml, result.markdown)).toEqual({
+      valid: true,
+      reasons: []
+    });
+    expect(result.markdown).toContain(
+      '<h1 class="header-name">Salman Abdurrahman</h1>'
+    );
+    expect(result.markdown).toContain(
+      '<p class="header-title">Frontend Developer</p>'
+    );
+    expect(result.markdown).toContain(
+      "Built Socialvit frontend features with React and Next.js."
+    );
+    expect(result.markdown).toContain("React.js");
+    expect(result.markdown).not.toMatch(
+      /%PDF|����|´ÑÇ|alex\.doe|gmail\.com \| React/i
+    );
+  });
+
   it("removes PDF byte garbage and demo identity from sparse template fallback", async () => {
     const templateHtml = [
       '<div class="cv-container">',

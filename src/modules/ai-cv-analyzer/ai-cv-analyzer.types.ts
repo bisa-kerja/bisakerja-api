@@ -94,6 +94,12 @@ export type CvAnalyzerWrapperInput = {
   jobRoles: string[];
   compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
   inputMode: "UPLOAD" | "REFERENCE";
+  mvpRawCvText?: string;
+  mvpCvFileAttachment?: {
+    filename: string;
+    mimeType: string;
+    dataUrl: string;
+  };
   sharedEvidence: SharedCvEvidence;
   modelEvidence: {
     parsedCv: {
