@@ -264,6 +264,63 @@ describe("AiCvGenerateService", () => {
     expect(result.markdown).toContain("TypeScript, PostgreSQL, REST API");
   });
 
+  it("removes PDF byte garbage and demo identity from sparse template fallback", async () => {
+    const templateHtml = [
+      '<div class="cv-container">',
+      '<header class="cv-header">',
+      '<h1 class="header-name"></h1>',
+      '<h2 class="header-title"></h2>',
+      '<div class="contact-info">San Francisco, CA <span class="contact-separator">|</span> alex.doe@email.com <span class="contact-separator">|</span> linkedin.com/in/alexdoe-dev</div>',
+      "</header>",
+      '<section class="main-section"><div class="section-title">Summary</div><p class="summary-text">%PDF-1.4 %���� 1 0 obj</p>%PDF-1.4 %���� 1 0 obj</section>',
+      "</div>"
+    ].join("");
+    const service = new AiCvGenerateService(createRepository(cvFile), {
+      now: () => now,
+      storage: createStorage(() => Promise.resolve(Buffer.from(currentCvText))),
+      genAiEnabled: true,
+      genAiClient: createGenAiClient(() => Promise.reject(new Error("timeout")))
+    });
+
+    const result = await service.generateMarkdown(userId, "req-1", {
+      cvFileId,
+      summary: "Fallback summary",
+      templateHtml
+    });
+
+    expect(validateTemplateStructure(templateHtml, result.markdown)).toEqual({
+      valid: true,
+      reasons: []
+    });
+    expect(result.markdown).not.toMatch(/%PDF|����|alex\.doe|San Francisco/i);
+    expect(result.markdown).toContain(
+      "Backend REST API candidate with PostgreSQL delivery experience."
+    );
+  });
+
+  it("does not treat raw PDF bytes as usable CV text in fallback", async () => {
+    const service = new AiCvGenerateService(createRepository(cvFile), {
+      now: () => now,
+      storage: createStorage(() =>
+        Promise.resolve(
+          Buffer.from("%PDF-1.4\n1 0 obj\nstream\n����\nendstream\nendobj")
+        )
+      ),
+      genAiEnabled: true,
+      genAiClient: createGenAiClient(() => Promise.reject(new Error("timeout")))
+    });
+
+    const result = await service.generateMarkdown(userId, "req-1", {
+      cvFileId,
+      summary: "Grounded fallback summary from user input",
+      templateHtml: "<section><p>{{summary}}</p></section>"
+    });
+
+    expect(result.markdown).toBe(
+      "<section><p>Grounded fallback summary from user input</p></section>"
+    );
+  });
+
   it("accepts provider markdown wrapped in a full HTML code fence", async () => {
     const service = new AiCvGenerateService(createRepository(cvFile), {
       now: () => now,
