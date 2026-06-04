@@ -284,6 +284,7 @@ async function requestMultipartModelApi<TResponse>(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs);
   const url = new URL(options.endpointPath, options.baseUrl).toString();
+  const startedAt = performance.now();
   const form = new FormData();
   const { bytes: cvBytes, ...cvMetadata } = options.payload.cv;
 
@@ -307,6 +308,17 @@ async function requestMultipartModelApi<TResponse>(
   );
 
   try {
+    logger.info(
+      {
+        requestId: options.payload.requestId,
+        dependency: "model-api",
+        operation: options.operation,
+        url,
+        timeoutMs: options.timeoutMs
+      },
+      "Model API multipart request started"
+    );
+
     const response = await options.fetchImpl(url, {
       method: "POST",
       headers: {
@@ -318,6 +330,16 @@ async function requestMultipartModelApi<TResponse>(
     });
 
     const rawBody = await readResponseBody(response);
+    logger.info(
+      {
+        requestId: options.payload.requestId,
+        dependency: "model-api",
+        operation: options.operation,
+        statusCode: response.status,
+        durationMs: Math.round(performance.now() - startedAt)
+      },
+      "Model API multipart request completed"
+    );
 
     if (!response.ok) {
       throw mapModelApiHttpError(
@@ -355,6 +377,18 @@ async function requestMultipartModelApi<TResponse>(
     }
 
     if (isAbortError(error)) {
+      logger.warn(
+        {
+          requestId: options.payload.requestId,
+          dependency: "model-api",
+          operation: options.operation,
+          url,
+          timeoutMs: options.timeoutMs,
+          durationMs: Math.round(performance.now() - startedAt)
+        },
+        "Model API multipart request timed out"
+      );
+
       throw new ServiceUnavailableError(
         "Model API request timed out",
         "SERVICE_UNAVAILABLE",
