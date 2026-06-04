@@ -109,6 +109,16 @@ export class AiCvGenerateService {
     }
 
     if (!this.options.genAiEnabled || !this.options.genAiClient) {
+      logger.warn(
+        {
+          requestId,
+          dependency: "ai-cv-generate-genai",
+          operation: "generate-cv-markdown",
+          genAiEnabled: Boolean(this.options.genAiEnabled),
+          genAiClientConfigured: Boolean(this.options.genAiClient)
+        },
+        "AI CV Generate provider is not configured"
+      );
       throw new ServiceUnavailableError(
         "AI CV Generate provider is not configured",
         "SERVICE_UNAVAILABLE",
@@ -135,10 +145,43 @@ export class AiCvGenerateService {
     let markdown: string;
 
     try {
+      logger.info(
+        {
+          requestId,
+          dependency: "ai-cv-generate-genai",
+          operation: "generate-cv-markdown",
+          evidenceSource: evidence.currentCv.source,
+          parserConfidence: evidence.currentCv.parserConfidence,
+          templateLength: providerInput.templateHtml.length,
+          attachedCvBytes: Buffer.from(
+            providerInput.cvFileAttachment.dataUrl.split(",", 2)[1] ?? "",
+            "base64"
+          ).length
+        },
+        "Calling AI CV Generate GenAI provider"
+      );
       markdown = normalizeMarkdown(
         await this.options.genAiClient.generateMarkdown(providerInput)
       );
-    } catch {
+      logger.info(
+        {
+          requestId,
+          dependency: "ai-cv-generate-genai",
+          operation: "generate-cv-markdown",
+          markdownLength: markdown.length
+        },
+        "AI CV Generate GenAI provider completed"
+      );
+    } catch (error) {
+      logger.warn(
+        {
+          requestId,
+          dependency: "ai-cv-generate-genai",
+          operation: "generate-cv-markdown",
+          errorName: error instanceof Error ? error.name : "UnknownError"
+        },
+        "AI CV Generate GenAI provider failed; using fallback renderer"
+      );
       markdown = renderDeterministicCvMarkdown(input, evidence);
     }
 
