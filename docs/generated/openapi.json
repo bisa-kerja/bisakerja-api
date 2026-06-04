@@ -5069,7 +5069,7 @@
       "post": {
         "tags": ["AI CV Generate"],
         "summary": "Generate markdown HTML CV",
-        "description": "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, evidence building, prompt orchestration, provider calls, and response safety; Frontend never calls Model API directly.",
+        "description": "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, structured evidence building, prompt orchestration, provider calls, template structural validation, deterministic fallback rendering, and response safety; Frontend never calls Model API directly.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -5194,7 +5194,7 @@
             }
           },
           "502": {
-            "description": "Generated markdown is invalid.",
+            "description": "Generated markdown is unsafe or does not preserve the requested template structure.",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
@@ -5212,7 +5212,7 @@
             }
           },
           "503": {
-            "description": "AI CV Generate provider or CV storage is unavailable.",
+            "description": "AI CV Generate provider is unconfigured or CV storage is unavailable.",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorEnvelope" },
@@ -5313,7 +5313,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 50000,
-            "description": "Markdown HTML string safe to render after frontend sanitization."
+            "description": "Markdown HTML string that preserved the requested template structure and still requires frontend sanitization before rendering."
           }
         }
       },

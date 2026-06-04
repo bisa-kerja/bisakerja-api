@@ -38,7 +38,9 @@ describe("ai cv generate route", () => {
     const { app } = createAiCvGenerateRouteContext({
       generateMarkdown: (input) => {
         providerInput = input;
-        return Promise.resolve("<section><h1>Candidate Name</h1></section>");
+        return Promise.resolve(
+          "<section><h1>Candidate Name</h1><p>Backend candidate with REST API experience.</p></section>"
+        );
       }
     });
 
@@ -54,18 +56,22 @@ describe("ai cv generate route", () => {
       success: true,
       message: "Markdown CV created successfully",
       data: {
-        markdown: "<section><h1>Candidate Name</h1></section>"
+        markdown:
+          "<section><h1>Candidate Name</h1><p>Backend candidate with REST API experience.</p></section>"
       },
       meta: null
     });
     expect(providerInput).toMatchObject({
       requestId: "req_cv_generate_success",
-      inputVersion: "cv-generate-v1",
+      inputVersion: "cv-generate-v2",
       summary: "Backend candidate with REST API experience.",
       templateHtml: "<section><h1>{{name}}</h1><p>{{summary}}</p></section>",
       evidence: {
         cvFile: { fileId: cvFileId },
-        cvTextPreview: "Route test CV evidence"
+        currentCv: {
+          candidateSummary: "Route test CV evidence",
+          contactRedactionPolicy: "contact_data_removed"
+        }
       }
     });
     expect(JSON.stringify(providerInput)).not.toContain(ownedCvFile.storageKey);
@@ -196,7 +202,8 @@ function createAiCvGenerateRouteContext(
             deleteFile: () => Promise.resolve(),
             readFile:
               overrides.readFile ??
-              (() => Promise.resolve(Buffer.from("Route test CV evidence")))
+              (() =>
+                Promise.resolve(Buffer.from("Summary\nRoute test CV evidence")))
           },
           genAiClient: {
             generateMarkdown: (input) => {

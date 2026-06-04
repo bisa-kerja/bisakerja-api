@@ -11,13 +11,35 @@ export type CvMarkdownResource = {
   markdown: string;
 };
 
+export type AiCvGenerateStructuredEvidence = {
+  source: "backend_parser" | "latest_analysis_cache" | "metadata_only";
+  candidateSummary: string | null;
+  sectionSummaries: {
+    sectionName: string;
+    summary: string;
+    confidence: "high" | "medium" | "low";
+  }[];
+  experienceBullets: string[];
+  projectBullets: string[];
+  skillsByCategory: {
+    category: string;
+    skills: string[];
+  }[];
+  education: string[];
+  certifications: string[];
+  languages: string[];
+  atsAndActionableGaps: string[];
+  confidenceFlags: string[];
+  contactRedactionPolicy: "contact_data_removed";
+};
+
 export type AiCvGenerateEvidence = {
   cvFile: {
     fileId: string;
     mimeType: string;
     sizeBytes: number;
   };
-  cvTextPreview: string;
+  currentCv: AiCvGenerateStructuredEvidence;
   latestAnalysis: Pick<
     PublicCvAnalysisResponse,
     | "jobFitAlignment"
@@ -30,10 +52,16 @@ export type AiCvGenerateEvidence = {
 
 export type AiCvGenerateGenAiInput = {
   requestId: string;
-  inputVersion: "cv-generate-v1";
+  inputVersion: "cv-generate-v2";
   summary: string;
   templateHtml: string;
   evidence: AiCvGenerateEvidence;
+  templatePolicy: {
+    generationStrategy: "direct_markdown_html_with_backend_template_validation";
+    allowedRewriteRegions: string[];
+    immutableStructure: string[];
+    missingEvidenceBehavior: "leave_empty_or_use_minimal_grounded_copy";
+  };
 };
 
 export type AiCvGenerateGenAiClient = {

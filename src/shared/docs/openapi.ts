@@ -2564,7 +2564,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["AI CV Generate"],
           summary: "Generate markdown HTML CV",
           description:
-            "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, evidence building, prompt orchestration, provider calls, and response safety; Frontend never calls Model API directly.",
+            "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, structured evidence building, prompt orchestration, provider calls, template structural validation, deterministic fallback rendering, and response safety; Frontend never calls Model API directly.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
@@ -2611,12 +2611,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               "invalid_type"
             ),
             "502": errorResponse(
-              "Generated markdown is invalid.",
+              "Generated markdown is unsafe or does not preserve the requested template structure.",
               "MODEL_OUTPUT_INVALID",
               "AI CV Generate provider returned invalid markdown"
             ),
             "503": errorResponse(
-              "AI CV Generate provider or CV storage is unavailable.",
+              "AI CV Generate provider is unconfigured or CV storage is unavailable.",
               "SERVICE_UNAVAILABLE",
               "Service temporarily unavailable"
             )
@@ -2704,7 +2704,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               minLength: 1,
               maxLength: 50000,
               description:
-                "Markdown HTML string safe to render after frontend sanitization."
+                "Markdown HTML string that preserved the requested template structure and still requires frontend sanitization before rendering."
             }
           }
         },

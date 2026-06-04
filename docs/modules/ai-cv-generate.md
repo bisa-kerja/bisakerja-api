@@ -13,7 +13,7 @@ last_reviewed: 2026-05-23
 
 # AI CV Generate Module
 
-AI CV Generate creates improved markdown HTML CV content from a current user's stored CV file reference, a structured CV summary, and a required HTML template. Backend API owns CV ownership checks, CV storage reads, evidence building, prompt orchestration, GenAI provider calls, output safety, and the public response envelope. Frontend must call Backend API only; Model API remains model-core only and does not expose `/cv-generate`.
+AI CV Generate creates improved markdown HTML CV content from a current user's stored CV file reference, a structured CV summary, and a required HTML template. Backend API owns CV ownership checks, CV storage reads, structured current-CV evidence building, prompt orchestration, GenAI provider calls, template structural validation, deterministic fallback rendering, output safety, and the public response envelope. Frontend must call Backend API only; Model API remains model-core only and does not expose `/cv-generate`.
 
 ## Route Prefix
 
@@ -66,24 +66,31 @@ Response data only contains `markdown`.
 
 - Backend validates `cvFileId` ownership before reading CV storage.
 - CV files owned by another user return `404 CV_FILE_NOT_FOUND`.
-- Backend sends only sanitized evidence, summary, and sanitized template input to the GenAI provider.
-- Raw prompt, raw CV text, service credentials, storage key, provider payloads, and Model API internals are never exposed to frontend.
+- Backend sends only sanitized structured current-CV evidence, latest analyzer context when it belongs to the same CV file, summary, template policy, and sanitized template input to the GenAI provider.
+- Backend does not send raw CV text previews, raw prompt text, service credentials, storage key, provider payloads, or Model API internals to frontend.
+- Contact data is redacted from generation evidence in MVP; unsupported names, companies, roles, dates, skills, metrics, education, certifications, and hiring outcomes must not be invented.
 - Generated markdown is returned to the caller but is not saved as a user CV document by this endpoint.
+
+## Evidence And Template Policy
+
+Backend builds a bounded structured evidence object before generation. Evidence can include a candidate summary, section summaries, experience bullets, project bullets, skills grouped by category, education, certifications, languages, ATS/actionable gaps, confidence flags, and a contact redaction policy. If stored CV bytes do not expose reliable plain text, Backend uses the latest analyzer result for the same CV file when available; otherwise generation must rely only on the request summary and metadata-level confidence flags.
+
+`templateHtml` is required. Generated output must preserve the sanitized template's original tag sequence, section order, class, style, id, data attributes, other attributes, and static copy. Only `{{placeholder}}` regions or obvious placeholder text may be rewritten. Missing evidence must result in empty or minimal grounded content, not fabricated facts. If provider output changes structure, Backend renders a deterministic fallback from structured evidence; if output is unsafe or the fallback cannot preserve the template, Backend rejects the response.
 
 ## Output Safety
 
-Generated markdown must be non-empty, within 50,000 characters, and must not contain executable HTML patterns such as `<script>`, `<iframe>`, `<object>`, `<embed>`, inline event handlers, or `javascript:` URLs. Invalid output is rejected with `502 MODEL_OUTPUT_INVALID`. Frontend should still sanitize before rendering.
+Generated markdown must be non-empty, within 50,000 characters, and must not contain executable HTML patterns such as `<script>`, `<iframe>`, `<object>`, `<embed>`, inline event handlers, `javascript:` URLs, prompt text, storage keys, service tokens, DB URLs, raw email, or raw phone numbers. Invalid output is rejected with `502 MODEL_OUTPUT_INVALID`. Frontend should still sanitize before rendering.
 
 ## Errors
 
-| Status | Code                   | Meaning                                                                  |
-| -----: | ---------------------- | ------------------------------------------------------------------------ |
-|    401 | `UNAUTHENTICATED`      | Missing or invalid access token.                                         |
-|    404 | `CV_FILE_NOT_FOUND`    | CV file does not exist, expired, deleted, or belongs to another user.    |
-|    422 | `VALIDATION_ERROR`     | Request body fails validation.                                           |
-|    413 | `PAYLOAD_TOO_LARGE`    | Request exceeds configured body size limit.                              |
-|    502 | `MODEL_OUTPUT_INVALID` | Generated markdown is empty, too long, or unsafe.                        |
-|    503 | `SERVICE_UNAVAILABLE`  | CV storage or GenAI provider is unavailable, unconfigured, or timed out. |
+| Status | Code                   | Meaning                                                                                                                                           |
+| -----: | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+|    401 | `UNAUTHENTICATED`      | Missing or invalid access token.                                                                                                                  |
+|    404 | `CV_FILE_NOT_FOUND`    | CV file does not exist, expired, deleted, or belongs to another user.                                                                             |
+|    422 | `VALIDATION_ERROR`     | Request body fails validation.                                                                                                                    |
+|    413 | `PAYLOAD_TOO_LARGE`    | Request exceeds configured body size limit.                                                                                                       |
+|    502 | `MODEL_OUTPUT_INVALID` | Generated markdown is empty, too long, or unsafe.                                                                                                 |
+|    503 | `SERVICE_UNAVAILABLE`  | CV storage is unavailable, or the GenAI provider is unconfigured. Provider runtime failures may return deterministic fallback markdown when safe. |
 
 ## Related Docs
 
