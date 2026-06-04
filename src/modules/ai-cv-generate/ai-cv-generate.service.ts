@@ -1,3 +1,4 @@
+import { logger } from "@/config/logger";
 import {
   DownstreamError,
   NotFoundError,
@@ -20,6 +21,11 @@ import type {
   CvFileMetadataRecord
 } from "@/modules/ai-cv-analyzer";
 import type { CvAnalysisResultRecord } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
+import {
+  buildBackendParsedSharedCvEvidence,
+  buildSharedCvEvidenceObservability,
+  cvGenerateTemplatePolicyVersion
+} from "@/shared/cv-evidence";
 
 type LatestAnalysisEvidence = NonNullable<
   AiCvGenerateEvidence["latestAnalysis"]
@@ -28,30 +34,6 @@ type LatestAnalysisEvidence = NonNullable<
 type HtmlTagSignature = {
   tagName: string;
   attributes: Record<string, string>;
-};
-
-const sectionHeadingAliases: Record<string, string> = {
-  profile: "summary",
-  summary: "summary",
-  ringkasan: "summary",
-  pengalaman: "experience",
-  "work experience": "experience",
-  experience: "experience",
-  employment: "experience",
-  projects: "projects",
-  project: "projects",
-  proyek: "projects",
-  skills: "skills",
-  skill: "skills",
-  keahlian: "skills",
-  education: "education",
-  pendidikan: "education",
-  certifications: "certifications",
-  certification: "certifications",
-  sertifikasi: "certifications",
-  languages: "languages",
-  language: "languages",
-  bahasa: "languages"
 };
 
 const placeholderNames = [
@@ -114,6 +96,13 @@ export class AiCvGenerateService {
     }
 
     const evidence = await this.buildEvidence(userId, metadata);
+    logger.info(
+      {
+        requestId,
+        ...buildSharedCvEvidenceObservability(evidence.currentCv)
+      },
+      "AI CV Generate shared evidence prepared"
+    );
     const providerInput = buildCvGenerateProviderInput(
       requestId,
       input,
@@ -137,6 +126,15 @@ export class AiCvGenerateService {
     );
 
     if (!templateValidation.valid) {
+      logger.info(
+        {
+          requestId,
+          validationReasons: templateValidation.reasons,
+          evidenceSource: evidence.currentCv.source,
+          parserConfidence: evidence.currentCv.parserConfidence
+        },
+        "AI CV Generate template validation failed; using fallback renderer"
+      );
       markdown = renderDeterministicCvMarkdown(input, evidence);
       assertSafeGeneratedMarkdown(markdown, input.templateHtml);
       assertTemplateStructure(markdown, input.templateHtml);
@@ -165,7 +163,14 @@ export class AiCvGenerateService {
         mimeType: metadata.mimeType,
         sizeBytes: metadata.sizeBytes
       },
-      currentCv: buildStructuredCvEvidence(cvBytes, latestAnalysis),
+      currentCv: buildBackendParsedSharedCvEvidence({
+        metadata,
+        cvBytes,
+        latestAnalysis,
+        now: this.now(),
+        retentionDays: 1,
+        templatePolicyVersion: cvGenerateTemplatePolicyVersion
+      }),
       latestAnalysis
     };
   }
@@ -269,82 +274,6 @@ function mapLatestAnalysisEvidence(
             )
           }))
       : []
-  };
-}
-
-export function buildStructuredCvEvidence(
-  buffer: Buffer,
-  latestAnalysis: AiCvGenerateEvidence["latestAnalysis"]
-): AiCvGenerateStructuredEvidence {
-  const parsedText = extractUsableCvText(buffer);
-  const sections = parsedText
-    ? splitCvSections(parsedText)
-    : new Map<string, string[]>();
-  const sectionSummaries = buildSectionSummaries(sections, latestAnalysis);
-  const candidateSummary =
-    firstNonEmpty([
-      summarizeSection(sections.get("summary") ?? [], 360),
-      boundedText(latestAnalysis?.overallImpression ?? "", 360)
-    ]) ?? null;
-  const experienceBullets = boundedList(
-    sectionLines(sections, "experience"),
-    8,
-    220
-  );
-  const projectBullets = boundedList(
-    sectionLines(sections, "projects"),
-    6,
-    220
-  );
-  const skills = parseSkillList(sectionLines(sections, "skills"));
-  const education = boundedList(sectionLines(sections, "education"), 5, 180);
-  const certifications = boundedList(
-    sectionLines(sections, "certifications"),
-    5,
-    180
-  );
-  const languages = boundedList(sectionLines(sections, "languages"), 5, 80);
-  const atsAndActionableGaps = boundedList(
-    [
-      ...(latestAnalysis?.topActionables ?? []),
-      latestAnalysis?.atsFriendliness.summary ?? ""
-    ],
-    8,
-    220
-  );
-  const hasParsedEvidence =
-    parsedText.length > 0 &&
-    (experienceBullets.length > 0 ||
-      projectBullets.length > 0 ||
-      skills.length > 0 ||
-      education.length > 0 ||
-      certifications.length > 0 ||
-      languages.length > 0 ||
-      (sections.get("summary") ?? []).length > 0);
-  const hasLatestEvidence = Boolean(latestAnalysis);
-
-  return {
-    source: hasParsedEvidence
-      ? "backend_parser"
-      : hasLatestEvidence
-        ? "latest_analysis_cache"
-        : "metadata_only",
-    candidateSummary,
-    sectionSummaries,
-    experienceBullets,
-    projectBullets,
-    skillsByCategory:
-      skills.length > 0 ? [{ category: "parsed_skills", skills }] : [],
-    education,
-    certifications,
-    languages,
-    atsAndActionableGaps,
-    confidenceFlags: buildConfidenceFlags(
-      parsedText,
-      hasParsedEvidence,
-      hasLatestEvidence
-    ),
-    contactRedactionPolicy: "contact_data_removed"
   };
 }
 
@@ -502,159 +431,6 @@ function leaksTemplateOnlySecret(markdown: string, templateHtml: string) {
   return templateMatches.some((secret) => markdown.includes(secret));
 }
 
-function extractUsableCvText(buffer: Buffer) {
-  const decoded = redactContactData(
-    replaceControlCharacters(buffer.toString("utf8"))
-  );
-  const normalized = decoded
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/\r/g, "\n")
-    .replace(/[\t ]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-
-  if (!normalized) {
-    return "";
-  }
-
-  const printableCount = Array.from(normalized).filter((char) => {
-    const code = char.charCodeAt(0);
-    return char === "\n" || (code >= 32 && code !== 127);
-  }).length;
-  const printableRatio = printableCount / normalized.length;
-  const usefulLineCount = normalized
-    .split("\n")
-    .map((line) => normalizeWhitespace(line))
-    .filter((line) => /[A-Za-z]{3,}/.test(line)).length;
-
-  if (printableRatio < 0.85 || usefulLineCount < 2) {
-    return "";
-  }
-
-  return normalized.slice(0, 12000);
-}
-
-function splitCvSections(value: string) {
-  const sections = new Map<string, string[]>();
-  let currentSection = "summary";
-
-  for (const rawLine of value.split("\n")) {
-    const line = safeEvidenceText(rawLine);
-    if (!line || /\[redacted-(email|phone)\]/i.test(line)) {
-      continue;
-    }
-
-    const heading = normalizeHeading(line);
-    const aliasedHeading = sectionHeadingAliases[heading];
-
-    if (aliasedHeading) {
-      currentSection = aliasedHeading;
-      if (!sections.has(currentSection)) {
-        sections.set(currentSection, []);
-      }
-      continue;
-    }
-
-    const existing = sections.get(currentSection) ?? [];
-    if (existing.length < 16) {
-      sections.set(currentSection, [...existing, line]);
-    }
-  }
-
-  return sections;
-}
-
-function buildSectionSummaries(
-  sections: Map<string, string[]>,
-  latestAnalysis: AiCvGenerateEvidence["latestAnalysis"]
-): AiCvGenerateStructuredEvidence["sectionSummaries"] {
-  const fromParsed = Array.from(sections.entries())
-    .map(([sectionName, lines]) => ({
-      sectionName,
-      summary: summarizeSection(lines, 280),
-      confidence: "medium" as const
-    }))
-    .filter((section) => section.summary.length > 0)
-    .slice(0, 8);
-  const fromLatest = (latestAnalysis?.sectionReviews ?? [])
-    .map((section) => ({
-      sectionName: safeEvidenceText(section.sectionName),
-      summary: boundedText(section.analysis, 280),
-      confidence: "high" as const
-    }))
-    .filter((section) => section.sectionName && section.summary)
-    .slice(0, 6);
-
-  return dedupeSectionSummaries([...fromParsed, ...fromLatest]).slice(0, 10);
-}
-
-function dedupeSectionSummaries(
-  sections: AiCvGenerateStructuredEvidence["sectionSummaries"]
-) {
-  const seen = new Set<string>();
-  const result: AiCvGenerateStructuredEvidence["sectionSummaries"] = [];
-
-  for (const section of sections) {
-    const key = section.sectionName.toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push(section);
-    }
-  }
-
-  return result;
-}
-
-function buildConfidenceFlags(
-  parsedText: string,
-  hasParsedEvidence: boolean,
-  hasLatestEvidence: boolean
-) {
-  const flags: string[] = [];
-
-  if (hasParsedEvidence) {
-    flags.push("backend parser extracted bounded structured CV evidence");
-  }
-
-  if (hasLatestEvidence) {
-    flags.push("latest analyzer evidence available for grounding");
-  }
-
-  if (!parsedText) {
-    flags.push(
-      "stored CV bytes did not expose reliable plain text; generation must avoid unsupported details"
-    );
-  }
-
-  if (!hasParsedEvidence && !hasLatestEvidence) {
-    flags.push("only request summary and CV metadata are available");
-  }
-
-  return flags;
-}
-
-function sectionLines(sections: Map<string, string[]>, sectionName: string) {
-  return sections.get(sectionName) ?? [];
-}
-
-function summarizeSection(lines: string[], maxLength: number) {
-  return boundedText(lines.slice(0, 3).join(" "), maxLength);
-}
-
-function parseSkillList(lines: string[]) {
-  const skills = lines.flatMap((line) =>
-    line
-      .split(/[,|•;]+|\s+-\s+/g)
-      .map((item) => safeEvidenceText(item))
-      .filter((item) => item.length >= 2 && item.length <= 60)
-  );
-
-  return Array.from(new Set(skills.map((skill) => skill.toLowerCase()))).slice(
-    0,
-    30
-  );
-}
-
 function buildPlaceholderValues(
   input: GenerateCvMarkdownInput,
   evidence: AiCvGenerateStructuredEvidence
@@ -746,14 +522,6 @@ function stripHtmlTags(value: string) {
   return value.replace(/<[^>]*>/g, " ");
 }
 
-function boundedList(values: string[], maxItems: number, maxLength: number) {
-  return Array.from(
-    new Set(
-      values.map((value) => boundedText(value, maxLength)).filter(Boolean)
-    )
-  ).slice(0, maxItems);
-}
-
 function boundedText(value: string, maxLength: number) {
   const normalized = safeEvidenceText(value);
   return normalized.length > maxLength
@@ -797,13 +565,6 @@ function isControlCharacterCode(code: number) {
     (code >= 14 && code <= 31) ||
     code === 127
   );
-}
-
-function normalizeHeading(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[:：]+$/g, "")
-    .trim();
 }
 
 function normalizeWhitespace(value: string): string {

@@ -97,6 +97,7 @@ async function requestCvAnalyzerCopyOnce(
   ).toString();
 
   try {
+    const providerSafeInput = buildProviderSafeWrapperInput(options.input);
     const response = await options.fetchImpl(url, {
       method: "POST",
       headers: {
@@ -117,7 +118,7 @@ async function requestCvAnalyzerCopyOnce(
             role: "user",
             content: JSON.stringify({
               task: "Return only the public CvAnalysis analysisResult JSON object using the provided evidence.",
-              wrapperInput: options.input
+              wrapperInput: providerSafeInput
             })
           }
         ],
@@ -175,6 +176,28 @@ async function requestCvAnalyzerCopyOnce(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function buildProviderSafeWrapperInput(input: CvAnalyzerWrapperInput) {
+  const cache = {
+    key: input.sharedEvidence.cache.key,
+    status: input.sharedEvidence.cache.status,
+    createdAt: input.sharedEvidence.cache.createdAt,
+    expiresAt: input.sharedEvidence.cache.expiresAt,
+    invalidationPolicy: input.sharedEvidence.cache.invalidationPolicy
+  };
+
+  return {
+    ...input,
+    sharedEvidence: {
+      ...input.sharedEvidence,
+      cvFile: {
+        fileId: input.sharedEvidence.cvFile.fileId,
+        mimeType: input.sharedEvidence.cvFile.mimeType
+      },
+      cache
+    }
+  };
 }
 
 function parseProviderJsonResponse(

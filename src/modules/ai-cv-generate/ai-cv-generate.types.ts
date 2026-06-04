@@ -6,32 +6,13 @@ import type {
   CvFileStorage,
   PublicCvAnalysisResponse
 } from "@/modules/ai-cv-analyzer";
+import type { SharedCvEvidence } from "@/shared/cv-evidence";
 
 export type CvMarkdownResource = {
   markdown: string;
 };
 
-export type AiCvGenerateStructuredEvidence = {
-  source: "backend_parser" | "latest_analysis_cache" | "metadata_only";
-  candidateSummary: string | null;
-  sectionSummaries: {
-    sectionName: string;
-    summary: string;
-    confidence: "high" | "medium" | "low";
-  }[];
-  experienceBullets: string[];
-  projectBullets: string[];
-  skillsByCategory: {
-    category: string;
-    skills: string[];
-  }[];
-  education: string[];
-  certifications: string[];
-  languages: string[];
-  atsAndActionableGaps: string[];
-  confidenceFlags: string[];
-  contactRedactionPolicy: "contact_data_removed";
-};
+export type AiCvGenerateStructuredEvidence = SharedCvEvidence;
 
 export type AiCvGenerateEvidence = {
   cvFile: {

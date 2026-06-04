@@ -286,7 +286,9 @@ Response rules:
 
 ## Wrapper Prompt And Fallback Safety
 
-The public prose wrapper uses an allowlisted input only. Allowed fields are request id, requested language, job roles, compare source, input mode, model-core evidence, detected sections, and compact hydrated candidate metadata. Raw CV text, file bytes, storage keys, tokens, DB URLs, emails, phones, addresses, auth headers, and full Model API payloads are excluded from wrapper input.
+The public prose wrapper uses an allowlisted input only. Allowed fields are request id, requested language, job roles, compare source, input mode, model-core evidence, shared sanitized CV evidence, detected sections, and compact hydrated candidate metadata. Raw CV text, file bytes, storage identifiers, tokens, DB URLs, emails, phones, addresses, auth headers, and full Model API payloads are excluded from wrapper input.
+
+Analyzer wrapper uses the shared CV evidence schema `shared-cv-evidence-v1`. After Model API inference, Backend converts parser, ATS, skill, requirement, model version, and candidate evidence into a `model_api` shared evidence object. The object includes parser confidence, source hash, cache key, invalidation policy, retention policy, bounded section evidence, skill/requirement coverage, ATS evidence, confidence flags, and no-retention privacy booleans. The wrapper provider receives only this sanitized schema plus model-owned evidence and candidate metadata.
 
 Deterministic Backend fallback remains the default. Optional provider-generated copy is controlled by `AI_CV_ANALYZER_GENAI_ENABLED` and uses an OpenAI-compatible chat-completions provider such as OpenRouter. The provider request uses the backend-owned injection-resistant system prompt, JSON-only response mode, configured timeout, sanitized request-id logging, and no retry by default.
 
@@ -334,11 +336,12 @@ Privacy rules:
 6. Build backend-prepared Model API payload.
 7. Call Model API with timeout and request id.
 8. Validate Model API response with Zod.
-9. Build allowlisted wrapper input.
-10. If `AI_CV_ANALYZER_GENAI_ENABLED=true`, call the configured GenAI provider for JSON-only public copy.
-11. Validate generated copy against schema, safety filters, and model-owned invariants; fall back deterministically on failure.
-12. Optionally persist `CvAnalysisResult` snapshot and sanitized file metadata.
-13. Return standard success envelope.
+9. Build `model_api` shared CV evidence and safe observability metadata.
+10. Build allowlisted wrapper input.
+11. If `AI_CV_ANALYZER_GENAI_ENABLED=true`, call the configured GenAI provider for JSON-only public copy.
+12. Validate generated copy against schema, safety filters, and model-owned invariants; fall back deterministically on failure.
+13. Optionally persist `CvAnalysisResult` snapshot and sanitized file metadata.
+14. Return standard success envelope.
 
 ## Repository And Database Usage
 
@@ -364,6 +367,7 @@ Persistence rules:
 - At most one non-deleted active CV may exist per user.
 - Store `expiresAt` for uploaded CV files.
 - Store `deletedAt` after deletion.
+- Store shared CV evidence only as bounded sanitized structured evidence when caching is enabled.
 - Do not store raw extracted CV text unless explicit retention policy is approved.
 - Do not let Model API write directly to database.
 
@@ -444,6 +448,7 @@ Log safe structured events:
 - `ai_cv_analyzer.completed`
 - `ai_cv_analyzer.failed`
 - `ai_cv_analyzer.persisted`
+- shared evidence source, parser confidence, cache status, wrapper fallback reason, and no-leak check booleans
 
 Include:
 
@@ -458,7 +463,7 @@ Include:
 - dependency latency
 - result
 
-Do not log original CV content, extracted full text, tokens, or storage credentials.
+Do not log original CV content, extracted full text, tokens, storage identifiers, provider payloads, or prompt content.
 
 ## Test Scenarios
 
@@ -506,3 +511,5 @@ Route tests:
 - `docs/modules/jobs.md`
 - `docs/modules/bookmarks.md`
 - `docs/modules/ai-job-fit.md`
+- `docs/modules/ai-cv-generate.md`
+- `docs/modules/shared-cv-evidence.md`

@@ -25,10 +25,15 @@ import type {
   PublicCvAnalysisResponse,
   UploadedCvFile
 } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
+import {
+  buildModelApiSharedCvEvidence,
+  buildSharedCvEvidenceObservability
+} from "@/shared/cv-evidence";
 import type {
   CvAnalyzerModelPayload,
   CvAnalyzerModelResponse
 } from "@/shared/integrations/model-api.schema";
+import type { SharedCvEvidence } from "@/shared/cv-evidence";
 
 const cvAnalyzerCandidateLimit = 5;
 
@@ -100,11 +105,26 @@ export class AiCvAnalyzerService {
         },
         "Model API cv-analyzer completed"
       );
+      const sharedEvidence = buildModelApiSharedCvEvidence({
+        metadata: cvSource.metadata,
+        cvBytes,
+        modelCoreResponse,
+        now: this.now(),
+        retentionDays: this.options.cvRetentionDays
+      });
+      logger.info(
+        {
+          requestId,
+          ...buildSharedCvEvidenceObservability(sharedEvidence)
+        },
+        "AI CV Analyzer shared evidence prepared"
+      );
       const wrapperResponse = await this.generateWrapperResponse(
         requestId,
         cvSource.input,
         modelCoreResponse,
-        candidates
+        candidates,
+        sharedEvidence
       );
       const response = buildPublicCvAnalysisResponse(
         modelCoreResponse,
@@ -295,7 +315,8 @@ export class AiCvAnalyzerService {
     requestId: string,
     input: AnalyzeCvInput,
     modelCoreResponse: CvAnalyzerModelResponse,
-    candidates: CvAnalysisCandidateRecord[]
+    candidates: CvAnalysisCandidateRecord[],
+    sharedEvidence: SharedCvEvidence
   ): Promise<unknown> {
     if (!this.options.genAiEnabled || !this.options.genAiClient) {
       return undefined;
@@ -307,7 +328,8 @@ export class AiCvAnalyzerService {
           requestId,
           input,
           modelCoreResponse,
-          candidates
+          candidates,
+          sharedEvidence
         )
       );
     } catch {
@@ -541,7 +563,17 @@ export function buildCvAnalyzerWrapperInput(
   requestId: string,
   input: AnalyzeCvInput,
   modelCoreResponse: CvAnalyzerModelResponse,
-  candidates: CvAnalysisCandidateRecord[]
+  candidates: CvAnalysisCandidateRecord[],
+  sharedEvidence: SharedCvEvidence = buildModelApiSharedCvEvidence({
+    metadata: {
+      id: "unknown-cv-file",
+      mimeType: "application/pdf",
+      sizeBytes: 0
+    },
+    modelCoreResponse,
+    now: new Date(modelCoreResponse.createdAt),
+    retentionDays: 1
+  })
 ): CvAnalyzerWrapperInput {
   return {
     requestId,
@@ -550,6 +582,7 @@ export function buildCvAnalyzerWrapperInput(
     jobRoles: input.jobRoles,
     compareSource: input.compareSource,
     inputMode: input.inputMode,
+    sharedEvidence,
     modelEvidence: {
       parsedCv: {
         status: modelCoreResponse.parsedCv.status,

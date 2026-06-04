@@ -6,6 +6,7 @@ import type {
   CvAnalyzerModelResponse
 } from "@/shared/integrations/model-api.schema";
 import type { ModelApiClient } from "@/shared/integrations/model-api.types";
+import type { SharedCvEvidence } from "@/shared/cv-evidence";
 import type { JobRecord } from "@/modules/jobs";
 
 export type UploadedCvFile = {
@@ -93,6 +94,7 @@ export type CvAnalyzerWrapperInput = {
   jobRoles: string[];
   compareSource: "BOOKMARK" | "JOB_SEARCH" | "DIRECT_JOB_DETAIL";
   inputMode: "UPLOAD" | "REFERENCE";
+  sharedEvidence: SharedCvEvidence;
   modelEvidence: {
     parsedCv: {
       status: CvAnalyzerModelResponse["parsedCv"]["status"];

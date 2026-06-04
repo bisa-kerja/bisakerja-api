@@ -73,13 +73,15 @@ Response data only contains `markdown`.
 
 ## Evidence And Template Policy
 
-Backend builds a bounded structured evidence object before generation. Evidence can include a candidate summary, section summaries, experience bullets, project bullets, skills grouped by category, education, certifications, languages, ATS/actionable gaps, confidence flags, and a contact redaction policy. If stored CV bytes do not expose reliable plain text, Backend uses the latest analyzer result for the same CV file when available; otherwise generation must rely only on the request summary and metadata-level confidence flags.
+Backend builds the shared CV evidence schema `shared-cv-evidence-v1` before generation. Evidence can include a candidate summary, section evidence, section summaries, experience bullets, project bullets, skills grouped by category, skill/requirement coverage, education, certifications, languages, ATS/actionable gaps, parser confidence, source hash, cache policy, invalidation policy, confidence flags, and a contact redaction policy. MVP parsing for Generate is Backend-owned. If stored CV bytes do not expose reliable plain text, Backend uses the latest analyzer result for the same CV file when available; otherwise generation must rely only on the request summary and metadata-level confidence flags.
+
+Shared evidence cache entries are invalidated when the CV source hash changes, parser version changes, analyzer model version changes, template policy version changes, or retention expires. Raw CV text, contact data, prompts, provider payloads, and storage identifiers must not be cached, logged, or sent to the provider.
 
 `templateHtml` is required. Generated output must preserve the sanitized template's original tag sequence, section order, class, style, id, data attributes, other attributes, and static copy. Only `{{placeholder}}` regions or obvious placeholder text may be rewritten. Missing evidence must result in empty or minimal grounded content, not fabricated facts. If provider output changes structure, Backend renders a deterministic fallback from structured evidence; if output is unsafe or the fallback cannot preserve the template, Backend rejects the response.
 
 ## Output Safety
 
-Generated markdown must be non-empty, within 50,000 characters, and must not contain executable HTML patterns such as `<script>`, `<iframe>`, `<object>`, `<embed>`, inline event handlers, `javascript:` URLs, prompt text, storage keys, service tokens, DB URLs, raw email, or raw phone numbers. Invalid output is rejected with `502 MODEL_OUTPUT_INVALID`. Frontend should still sanitize before rendering.
+Generated markdown must be non-empty, within 50,000 characters, and must not contain executable HTML patterns such as `<script>`, `<iframe>`, `<object>`, `<embed>`, inline event handlers, `javascript:` URLs, prompt text, storage identifiers, service tokens, DB URLs, raw email, or raw phone numbers. Invalid output is rejected with `502 MODEL_OUTPUT_INVALID`. Frontend should still sanitize before rendering.
 
 ## Errors
 
@@ -95,5 +97,6 @@ Generated markdown must be non-empty, within 50,000 characters, and must not con
 ## Related Docs
 
 - `docs/modules/ai-cv-analyzer.md`
+- `docs/modules/shared-cv-evidence.md`
 - `docs/integrations/model-api.md`
 - `docs/api-reference.md`
