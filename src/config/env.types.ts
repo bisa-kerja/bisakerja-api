@@ -70,6 +70,9 @@ export type AppConfig = {
       timeoutMs: number;
       maxRetries: number;
     };
+    aiCvGenerateGenAi: {
+      enabled: boolean;
+    };
     scraperApi: {
       serviceToken: string;
     };

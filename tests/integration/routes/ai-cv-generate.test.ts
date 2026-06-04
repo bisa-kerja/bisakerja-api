@@ -148,6 +148,37 @@ describe("ai cv generate route", () => {
     expect(providerCalled).toBe(false);
   });
 
+  test("keeps Generate provider disabled when only Analyzer wrapper flag is enabled", async () => {
+    let providerCalled = false;
+    const { app } = createAiCvGenerateRouteContext({
+      configOverrides: {
+        AI_CV_ANALYZER_GENAI_ENABLED: "true",
+        AI_CV_GENERATE_GENAI_ENABLED: "false"
+      },
+      generateMarkdown: () => {
+        providerCalled = true;
+        return Promise.resolve("<section>Should not happen</section>");
+      }
+    });
+
+    const response = await injectRoute(app, {
+      method: "POST",
+      url: "/api/v1/ai/cv-generate",
+      headers: authHeaders(userId, "req_cv_generate_disabled"),
+      body: validBody()
+    });
+
+    expect(response.status).toBe(503);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: {
+        code: "SERVICE_UNAVAILABLE",
+        requestId: "req_cv_generate_disabled"
+      }
+    });
+    expect(providerCalled).toBe(false);
+  });
+
   test("rejects unsafe model output", async () => {
     const { app } = createAiCvGenerateRouteContext({
       generateMarkdown: () =>
@@ -174,6 +205,7 @@ describe("ai cv generate route", () => {
 
 function createAiCvGenerateRouteContext(
   overrides: {
+    configOverrides?: Parameters<typeof testConfig>[0];
     fileMetadata?: CvFileMetadataRecord[];
     generateMarkdown?: (input: AiCvGenerateGenAiInput) => Promise<string>;
     readFile?: CvFileStorage["readFile"];
@@ -186,7 +218,8 @@ function createAiCvGenerateRouteContext(
   const app = createApp(
     testConfig({
       MODEL_API_ENABLE_MOCK: "false",
-      AI_CV_ANALYZER_GENAI_ENABLED: "true"
+      AI_CV_GENERATE_GENAI_ENABLED: "true",
+      ...overrides.configOverrides
     }),
     {
       routes: {

@@ -135,19 +135,22 @@ Rules:
 
 ## AI CV Analyzer GenAI Wrapper Variables
 
-| Variable                           | Required | Example value                   | Notes                                                        |
-| ---------------------------------- | -------- | ------------------------------- | ------------------------------------------------------------ |
-| `AI_CV_ANALYZER_GENAI_ENABLED`     | Yes      | `false`                         | Enables optional provider-generated analyzer prose           |
-| `AI_CV_ANALYZER_GENAI_BASE_URL`    | Yes      | `https://openrouter.ai/api/v1`  | OpenAI-compatible provider base URL                          |
-| `AI_CV_ANALYZER_GENAI_MODEL`       | Yes      | `openai/gpt-5.2`                | Provider model identifier                                    |
-| `AI_CV_ANALYZER_GENAI_API_KEY`     | Yes      | `your-local-ai-cv-analyzer-key` | Provider credential; use non-empty placeholder when disabled |
-| `AI_CV_ANALYZER_GENAI_TIMEOUT_MS`  | Yes      | `6000`                          | Request timeout for generated prose                          |
-| `AI_CV_ANALYZER_GENAI_MAX_RETRIES` | Yes      | `0`                             | Retry count for transient provider failures, maximum `2`     |
+| Variable                           | Required | Example value                   | Notes                                                                                       |
+| ---------------------------------- | -------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
+| `AI_CV_ANALYZER_GENAI_ENABLED`     | Yes      | `false`                         | Enables optional provider-generated analyzer prose                                          |
+| `AI_CV_ANALYZER_GENAI_BASE_URL`    | Yes      | `https://openrouter.ai/api/v1`  | OpenAI-compatible provider base URL                                                         |
+| `AI_CV_ANALYZER_GENAI_MODEL`       | Yes      | `openai/gpt-5.2`                | Provider model identifier                                                                   |
+| `AI_CV_ANALYZER_GENAI_API_KEY`     | Yes      | `your-local-ai-cv-analyzer-key` | Provider credential; use non-empty placeholder when disabled                                |
+| `AI_CV_ANALYZER_GENAI_TIMEOUT_MS`  | Yes      | `6000`                          | Request timeout for generated prose                                                         |
+| `AI_CV_ANALYZER_GENAI_MAX_RETRIES` | Yes      | `0`                             | Retry count for transient provider failures, maximum `2`                                    |
+| `AI_CV_GENERATE_GENAI_ENABLED`     | Yes      | `false`                         | Enables AI CV Generate provider calls; provider URL/model/key reuse analyzer GenAI settings |
 
 Rules:
 
-- Keep `AI_CV_ANALYZER_GENAI_ENABLED=false` for local/test/staging unless product explicitly enables provider copy.
-- Provider input is allowlisted analyzer evidence only; raw CV text, file bytes, storage keys, DB URLs, auth headers, prompts, and tokens must not be sent.
+- Keep `AI_CV_ANALYZER_GENAI_ENABLED=false` for local/test/staging unless product explicitly enables analyzer provider copy.
+- Keep `AI_CV_GENERATE_GENAI_ENABLED=false` for local/test/staging unless product explicitly enables generated CV provider output.
+- Analyzer and Generate can be enabled independently. They share provider connection settings but use separate prompts, schemas, safety validation, and route flags.
+- Provider input is allowlisted analyzer/generate evidence only; raw CV text, file bytes, storage identifiers, DB URLs, auth headers, prompts, and tokens must not be sent.
 - Provider output must be JSON-only and must pass the public `CvAnalysis` schema plus safety invariants before persistence or response.
 - Provider timeout, invalid JSON, schema drift, safety rejection, or transient provider failure falls back to deterministic Backend copy.
 - Generated copy must not change model scores, model metadata, candidate ids, recommendation order, recommendation scores, timestamps, or recommendation count.

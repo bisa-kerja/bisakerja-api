@@ -13,7 +13,7 @@ last_reviewed: 2026-05-23
 
 # AI CV Generate Module
 
-AI CV Generate creates improved markdown HTML CV content from a current user's stored CV file reference, a structured CV summary, and a required HTML template. Backend API owns CV ownership checks, CV storage reads, structured current-CV evidence building, prompt orchestration, GenAI provider calls, template structural validation, deterministic fallback rendering, output safety, and the public response envelope. Frontend must call Backend API only; Model API remains model-core only and does not expose `/cv-generate`.
+AI CV Generate creates improved markdown HTML CV content from a current user's stored CV file reference, a structured CV summary, and a required HTML template. Backend API owns CV ownership checks, CV storage reads, structured current-CV evidence building, prompt orchestration, GenAI provider calls, template structural validation, deterministic fallback rendering, output safety, and the public response envelope. `AI_CV_GENERATE_GENAI_ENABLED` controls Generate provider calls independently from Analyzer wrapper provider calls. Frontend must call Backend API only; Model API remains model-core only and does not expose `/cv-generate`.
 
 ## Route Prefix
 
@@ -66,7 +66,7 @@ Response data only contains `markdown`.
 
 - Backend validates `cvFileId` ownership before reading CV storage.
 - CV files owned by another user return `404 CV_FILE_NOT_FOUND`.
-- Backend sends only sanitized structured current-CV evidence, latest analyzer context when it belongs to the same CV file, summary, template policy, and sanitized template input to the GenAI provider.
+- Backend sends only sanitized structured current-CV evidence, latest analyzer context when it belongs to the same CV file, summary, template policy, and sanitized template input to the GenAI provider when `AI_CV_GENERATE_GENAI_ENABLED=true`.
 - Backend does not send raw CV text previews, raw prompt text, service credentials, storage key, provider payloads, or Model API internals to frontend.
 - Contact data is redacted from generation evidence in MVP; unsupported names, companies, roles, dates, skills, metrics, education, certifications, and hiring outcomes must not be invented.
 - Generated markdown is returned to the caller but is not saved as a user CV document by this endpoint.

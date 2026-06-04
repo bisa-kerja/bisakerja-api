@@ -153,6 +153,7 @@ export const envSchema = z
     AI_CV_ANALYZER_GENAI_MAX_RETRIES: numberFromString(
       "AI_CV_ANALYZER_GENAI_MAX_RETRIES"
     ).pipe(z.number().int().min(0).max(2)),
+    AI_CV_GENERATE_GENAI_ENABLED: booleanSchema,
     SCRAPER_API_SERVICE_TOKEN: requiredString("SCRAPER_API_SERVICE_TOKEN"),
     GOOGLE_OAUTH_ENABLED: booleanSchema,
     GOOGLE_OAUTH_CLIENT_ID: requiredString("GOOGLE_OAUTH_CLIENT_ID"),

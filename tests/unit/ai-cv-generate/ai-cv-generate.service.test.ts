@@ -205,6 +205,58 @@ describe("AiCvGenerateService", () => {
     );
   });
 
+  it("accepts provider markdown wrapped in a full HTML code fence", async () => {
+    const service = new AiCvGenerateService(createRepository(cvFile), {
+      now: () => now,
+      storage: createStorage(() => Promise.resolve(Buffer.from(currentCvText))),
+      genAiEnabled: true,
+      genAiClient: createGenAiClient(() =>
+        Promise.resolve(
+          "```html\n<section><p>Backend REST API candidate with PostgreSQL delivery experience.</p></section>\n```"
+        )
+      )
+    });
+
+    const result = await service.generateMarkdown(userId, "req-1", {
+      cvFileId,
+      summary: "Summary aman",
+      templateHtml: "<section><p>{{summary}}</p></section>"
+    });
+
+    expect(result.markdown).toBe(
+      "<section><p>Backend REST API candidate with PostgreSQL delivery experience.</p></section>"
+    );
+  });
+
+  it("redacts contact data from summary and template before provider and fallback rendering", async () => {
+    let providerInput: unknown;
+    const service = new AiCvGenerateService(createRepository(cvFile), {
+      now: () => now,
+      storage: createStorage(() => Promise.resolve(Buffer.from([0, 1, 2, 3]))),
+      genAiEnabled: true,
+      genAiClient: createGenAiClient((input) => {
+        providerInput = input;
+        return Promise.reject(new Error("timeout"));
+      })
+    });
+
+    const result = await service.generateMarkdown(userId, "req-1", {
+      cvFileId,
+      summary: "Hubungi user@example.test atau +62 812 3333 4444",
+      templateHtml:
+        "<section><p>Kontak: user@example.test +62 812 3333 4444</p><p>{{summary}}</p></section>"
+    });
+
+    expect(providerInput).toMatchObject({
+      summary: "Hubungi [redacted-email] atau [redacted-phone]",
+      templateHtml:
+        "<section><p>Kontak: [redacted-email] [redacted-phone]</p><p>{{summary}}</p></section>"
+    });
+    expect(result.markdown).toBe(
+      "<section><p>Kontak: [redacted-email] [redacted-phone]</p><p>Hubungi [redacted-email] atau [redacted-phone]</p></section>"
+    );
+  });
+
   it("rejects executable provider output instead of falling back", async () => {
     const service = new AiCvGenerateService(createRepository(cvFile), {
       now: () => now,

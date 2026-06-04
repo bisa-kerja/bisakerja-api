@@ -184,7 +184,7 @@ export function buildCvGenerateProviderInput(
   return {
     requestId,
     inputVersion: "cv-generate-v2",
-    summary: input.summary.trim(),
+    summary: safeEvidenceText(input.summary),
     templateHtml: normalizeHtmlTemplate(input.templateHtml),
     evidence,
     templatePolicy: buildTemplatePolicy()
@@ -278,13 +278,14 @@ function mapLatestAnalysisEvidence(
 }
 
 export function normalizeHtmlTemplate(value: string): string {
-  return value
+  return redactContactData(replaceControlCharacters(value))
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
     .replace(/<object[\s\S]*?<\/object>/gi, "")
     .replace(/<embed[\s\S]*?>/gi, "")
     .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
     .replace(/javascript:/gi, "")
+    .replace(/(?:api[_-]?key|token|secret)\s*[:=]\s*["']?[^\s"'<>]+/gi, "")
     .trim();
 }
 
@@ -406,7 +407,12 @@ function assertTemplateStructure(markdown: string, templateHtml: string) {
 }
 
 function normalizeMarkdown(value: string): string {
-  return value.trim();
+  const trimmed = value.trim();
+  const fenced = /^```(?:html|markdown|md)?\s*\r?\n([\s\S]*?)\r?\n```$/i.exec(
+    trimmed
+  );
+
+  return (fenced?.[1] ?? trimmed).trim();
 }
 
 function isSafeMarkdown(value: string): boolean {
@@ -436,7 +442,10 @@ function buildPlaceholderValues(
   evidence: AiCvGenerateStructuredEvidence
 ): Record<string, string> {
   const summary =
-    firstNonEmpty([evidence.candidateSummary, input.summary]) ?? "";
+    firstNonEmpty([
+      evidence.candidateSummary,
+      safeEvidenceText(input.summary)
+    ]) ?? "";
   const skills = evidence.skillsByCategory
     .flatMap((group) => group.skills)
     .join(", ");

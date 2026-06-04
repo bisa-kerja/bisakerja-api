@@ -84,6 +84,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppConfig {
         timeoutMs: parsed.AI_CV_ANALYZER_GENAI_TIMEOUT_MS,
         maxRetries: parsed.AI_CV_ANALYZER_GENAI_MAX_RETRIES
       },
+      aiCvGenerateGenAi: {
+        enabled: parsed.AI_CV_GENERATE_GENAI_ENABLED
+      },
       scraperApi: {
         serviceToken: parsed.SCRAPER_API_SERVICE_TOKEN
       },

@@ -66,6 +66,7 @@ export const testEnv = {
   AI_CV_ANALYZER_GENAI_API_KEY: "test-ai-cv-analyzer-genai-key",
   AI_CV_ANALYZER_GENAI_TIMEOUT_MS: "6000",
   AI_CV_ANALYZER_GENAI_MAX_RETRIES: "0",
+  AI_CV_GENERATE_GENAI_ENABLED: "false",
   SCRAPER_API_SERVICE_TOKEN: "test-scraper-service-token",
   GOOGLE_OAUTH_ENABLED: "false",
   GOOGLE_OAUTH_CLIENT_ID: "test-google-oauth-client-id",

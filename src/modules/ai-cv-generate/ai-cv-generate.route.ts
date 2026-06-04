@@ -23,7 +23,7 @@ export function createAiCvGenerateRouter(
     options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
   const genAiClient =
     options.genAiClient ??
-    (config.integrations.aiCvAnalyzerGenAi.enabled
+    (config.integrations.aiCvGenerateGenAi.enabled
       ? createAiCvGenerateGenAiClient(config)
       : undefined);
   const controller = new AiCvGenerateController({
