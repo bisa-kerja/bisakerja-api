@@ -30,6 +30,10 @@ describe("auth email provider", () => {
     expect(email?.subject).toBe("Verify your Bisakerja email");
     expect(email?.html).toContain("123456");
     expect(email?.text).toContain("123456");
+    expect(email?.html).toContain("May 13, 2026 at 10:00 AM UTC");
+    expect(email?.text).toContain("May 13, 2026 at 10:00 AM UTC");
+    expect(email?.html).not.toContain("2026-05-13T10:00:00.000Z");
+    expect(email?.text).not.toContain("2026-05-13T10:00:00.000Z");
     expect(email?.tags).toEqual([
       { name: "category", value: "auth-email-verification" }
     ]);
@@ -59,6 +63,10 @@ describe("auth email provider", () => {
       "https://app.bisakerja.example/reset-password?token=reset-token-123"
     );
     expect(email?.text).toContain("reset-token-123");
+    expect(email?.html).toContain("May 13, 2026 at 10:00 AM UTC");
+    expect(email?.text).toContain("May 13, 2026 at 10:00 AM UTC");
+    expect(email?.html).not.toContain("2026-05-13T10:00:00.000Z");
+    expect(email?.text).not.toContain("2026-05-13T10:00:00.000Z");
     expect(email?.tags).toEqual([
       { name: "category", value: "auth-password-reset" }
     ]);
