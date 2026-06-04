@@ -115,10 +115,7 @@ async function requestGeneratedCvMarkdownOnce(
           },
           {
             role: "user",
-            content: JSON.stringify({
-              task: "Return only safe markdown HTML for the generated CV using backend evidence. Do not return JSON.",
-              cvGenerateInput: options.input
-            })
+            content: buildCvGenerateUserContent(options.input)
           }
         ],
         temperature: 0.2,
@@ -174,6 +171,29 @@ async function requestGeneratedCvMarkdownOnce(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function buildCvGenerateUserContent(input: AiCvGenerateGenAiInput) {
+  const { cvFileAttachment, evidence, ...restInput } = input;
+  const { cvFileAttachment: _attachment, ...textEvidence } = evidence;
+  const textInput = { ...restInput, evidence: textEvidence };
+
+  return [
+    {
+      type: "text",
+      text: JSON.stringify({
+        task: "Read the attached original CV PDF. Return only complete, safe, ready-to-render markdown HTML using the provided template. Replace demo content with the user's real CV data. Do not return JSON.",
+        cvGenerateInput: textInput
+      })
+    },
+    {
+      type: "file",
+      file: {
+        filename: cvFileAttachment.filename,
+        file_data: cvFileAttachment.dataUrl
+      }
+    }
+  ];
 }
 
 function parseProviderMarkdownResponse(rawBody: string, requestId: string) {

@@ -34,8 +34,14 @@ export type AiCvGeneratePrivateCvData = {
 export type AiCvGenerateEvidence = {
   cvFile: {
     fileId: string;
+    fileName: string;
     mimeType: string;
     sizeBytes: number;
+  };
+  cvFileAttachment: {
+    filename: string;
+    mimeType: string;
+    dataUrl: string;
   };
   currentCv: AiCvGenerateStructuredEvidence;
   privateCvData: AiCvGeneratePrivateCvData;
@@ -54,6 +60,7 @@ export type AiCvGenerateGenAiInput = {
   inputVersion: "cv-generate-v2";
   summary: string;
   templateHtml: string;
+  cvFileAttachment: AiCvGenerateEvidence["cvFileAttachment"];
   evidence: AiCvGenerateEvidence;
   templatePolicy: {
     generationStrategy: "direct_markdown_html_with_backend_template_validation";
