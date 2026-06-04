@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { logger } from "@/config/logger";
 import { NotFoundError, ValidationError } from "@/core/errors/app.error";
 import {
   aiCvAnalyzerErrorCodes,
@@ -29,6 +30,8 @@ import type {
   CvAnalyzerModelResponse
 } from "@/shared/integrations/model-api.schema";
 
+const cvAnalyzerCandidateLimit = 5;
+
 export class AiCvAnalyzerService {
   private readonly now: () => Date;
 
@@ -57,7 +60,7 @@ export class AiCvAnalyzerService {
             compareSource: input.compareSource,
             jobRoles: cvSource.input.jobRoles,
             directJobId: cvSource.input.directJobId,
-            limit: 50,
+            limit: cvAnalyzerCandidateLimit,
             now: this.now()
           })
         : [];
@@ -75,8 +78,28 @@ export class AiCvAnalyzerService {
         candidates,
         cvBytes
       );
+      const modelApiStartedAt = performance.now();
+      logger.info(
+        {
+          requestId,
+          candidateCount: candidates.length,
+          candidateLimit: cvAnalyzerCandidateLimit,
+          cvBytes: cvBytes.length,
+          compareSource: cvSource.input.compareSource,
+          inputMode: cvSource.input.inputMode
+        },
+        "Calling Model API cv-analyzer"
+      );
       const modelCoreResponse =
         await this.options.modelApiClient.analyzeCv(payload);
+      logger.info(
+        {
+          requestId,
+          candidateCount: candidates.length,
+          durationMs: Math.round(performance.now() - modelApiStartedAt)
+        },
+        "Model API cv-analyzer completed"
+      );
       const wrapperResponse = await this.generateWrapperResponse(
         requestId,
         cvSource.input,
