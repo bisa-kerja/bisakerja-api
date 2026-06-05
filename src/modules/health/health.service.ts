@@ -19,23 +19,6 @@ export function createDefaultHealthDependencyChecks(
     },
     redis: async () => {
       await createRedisHealthClient(config).ping();
-    },
-    modelApi: async () => {
-      if (config.integrations.modelApi.enableMock) {
-        return;
-      }
-      const url = new URL(
-        "/health",
-        config.integrations.modelApi.baseUrl
-      ).toString();
-      const response = await fetch(url, {
-        headers: {
-          authorization: `Bearer ${config.integrations.modelApi.serviceToken}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error("model-api health returned " + String(response.status));
-      }
     }
   };
 }
@@ -59,27 +42,14 @@ export async function getReadinessPayload(
     config.observability.healthCheckTimeoutMs,
     requestId
   );
-  const modelApi = await checkDependency(
-    "modelApi",
-    "readiness",
-    checks.modelApi,
-    config.observability.healthCheckTimeoutMs,
-    requestId
-  );
-
-  if (
-    postgresql.status !== "healthy" ||
-    redis.status !== "healthy" ||
-    modelApi.status !== "healthy"
-  ) {
+  if (postgresql.status !== "healthy" || redis.status !== "healthy") {
     throw new ServiceUnavailableError(
       "Service is not ready",
       "SERVICE_UNAVAILABLE",
       {
         dependencies: {
           postgresql: postgresql.status,
-          redis: redis.status,
-          modelApi: modelApi.status
+          redis: redis.status
         }
       }
     );
@@ -91,8 +61,7 @@ export async function getReadinessPayload(
     env: config.app.env,
     dependencies: {
       postgresql: "healthy",
-      redis: "healthy",
-      modelApi: "healthy"
+      redis: "healthy"
     }
   };
 }
