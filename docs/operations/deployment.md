@@ -118,6 +118,8 @@ For managed providers such as Neon or Supabase, prefer this split:
 - `DATABASE_URL` uses the provider pooler or standard runtime URL.
 - `DIRECT_DATABASE_URL` uses the direct host when Prisma migrations should bypass the pooler.
 
+For Neon, the direct URL host should not include `-pooler`. A Prisma `P1002` timeout while acquiring `pg_advisory_lock(72707369)` during `migrate deploy` usually means `DIRECT_DATABASE_URL` points at the pooled host or another migration process is still holding the lock.
+
 If the provider does not require a separate direct connection, still write an explicit `DIRECT_DATABASE_URL` value so Prisma CLI, migrations, and seed flows use the same validated contract as runtime environments.
 
 ## Prisma Migration Execution

@@ -35,6 +35,24 @@ require_file() {
   fi
 }
 
+read_env_value() {
+  local name="$1"
+  local line=""
+  line="$(grep -E "^[[:space:]]*${name}=" "$RUNTIME_ENV_FILE" | tail -n 1 || true)"
+
+  if [ -z "$line" ]; then
+    return 0
+  fi
+
+  line="${line#*=}"
+  line="${line%$'\r'}"
+  line="${line%\"}"
+  line="${line#\"}"
+  line="${line%\'}"
+  line="${line#\'}"
+  printf '%s' "$line"
+}
+
 require_command git
 require_command docker
 require_command curl
@@ -86,6 +104,31 @@ if [ -n "$EXPECTED_APP_ENV" ] && [ "$declared_app_env" != "$EXPECTED_APP_ENV" ];
     "$RUNTIME_ENV_FILE" >&2
   exit 1
 fi
+
+runtime_database_url="$(read_env_value DATABASE_URL)"
+direct_database_url="$(read_env_value DIRECT_DATABASE_URL)"
+
+if [ -z "$runtime_database_url" ]; then
+  printf 'DATABASE_URL is missing in %s\n' "$RUNTIME_ENV_FILE" >&2
+  exit 1
+fi
+
+if [ -z "$direct_database_url" ]; then
+  printf 'DIRECT_DATABASE_URL is missing in %s\n' "$RUNTIME_ENV_FILE" >&2
+  exit 1
+fi
+
+if [ "$direct_database_url" = "$runtime_database_url" ]; then
+  printf 'DIRECT_DATABASE_URL must be a direct database URL, not the same value as DATABASE_URL.\n' >&2
+  exit 1
+fi
+
+case "$direct_database_url" in
+  *pooler*)
+    printf 'DIRECT_DATABASE_URL appears to use a pooled host. Use the provider direct/non-pooled host for Prisma migrations.\n' >&2
+    exit 1
+    ;;
+esac
 
 log "Syncing repository branch $DEPLOY_BRANCH"
 git fetch origin "$DEPLOY_BRANCH" --prune
