@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-reference.md
-last_reviewed: 2026-05-22
+last_reviewed: 2026-06-05
 ---
 
 # Backend API Reference
@@ -218,10 +218,9 @@ Authenticated workflows:
 - Career preferences read and update.
 - Bookmark create, delete, and list.
 - Application tracker create, update, status change, and list.
-- Job fit analysis.
-- Skill gap analysis.
-- AI CV Analyzer.
-- Viewing user-specific AI history if persisted.
+- AI CV Analyzer, including job fit alignment, skill gaps, ATS feedback, and job recommendations.
+- AI CV Generate for owned stored CV files.
+- Viewing user-specific AI analysis history.
 
 Authenticated routes must not rely on frontend-only ownership checks.
 
@@ -405,13 +404,19 @@ Application tracker endpoints use the standard response envelope. List responses
 
 ### AI
 
-| Method | Path                     | Auth          | Purpose                                                    |
-| ------ | ------------------------ | ------------- | ---------------------------------------------------------- |
-| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded or stored PDF CV against target job roles |
+| Method | Path                                               | Auth                                  | Purpose                                                           |
+| ------ | -------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `POST` | `/api/v1/ai/cv-analyzer`                           | Authenticated                         | Analyze uploaded or stored PDF CV against target job roles        |
+| `GET`  | `/api/v1/ai/cv-analyzer/results`                   | Authenticated and ownership-protected | List current-user CV analysis results                             |
+| `GET`  | `/api/v1/ai/cv-analyzer/results/:analysisResultId` | Authenticated and ownership-protected | Read one current-user CV analysis result                          |
+| `GET`  | `/api/v1/ai/cv-analyzer/results/latest`            | Authenticated and ownership-protected | Read latest current-user CV analysis result                       |
+| `POST` | `/api/v1/ai/cv-generate`                           | Authenticated and ownership-protected | Generate markdown HTML CV from an owned CV, summary, and template |
 
 AI analysis endpoints use the standard response envelope. Fit scoring and job recommendation output are embedded in the CV analyzer result so the active AI surface stays compact.
 
 `POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` metadata and `jobRoles` target role list. The endpoint accepts one PDF `cvFile` for `UPLOAD` mode, or uses `REFERENCE` mode with `cvFileId` or active CV fallback. Successful responses return `data.analysisResult` with `schemaVersion: "cv-analysis-v2"`, bounded `jobFitAlignment` and `atsFriendliness` scores, dynamic `sectionReviews`, at most 3 `topActionables`, and at most 5 simple `jobRecommendations`. Not-found ownership checks use `404 CV_FILE_NOT_FOUND` for CV references, and oversized uploads return `413 PAYLOAD_TOO_LARGE`.
+
+`POST /api/v1/ai/cv-generate` requires JSON with `cvFileId`, `summary`, and `templateHtml`. Backend validates CV ownership, builds shared sanitized CV evidence, preserves safe template structure, rejects unsafe generated markup with `502 MODEL_OUTPUT_INVALID`, and returns only `data.markdown`.
 
 ## Contract Stability Rules
 

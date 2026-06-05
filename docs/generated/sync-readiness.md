@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/sync-readiness.md
-last_reviewed: 2026-06-03
+last_reviewed: 2026-06-05
 generated_by: sync-readiness-script
-generated_at: 2026-06-03T13:55:33.422Z
-source_commit: b9ee6aa45091d09a81674555f2b523a7df7de76a
+generated_at: 2026-06-05T00:28:41.815Z
+source_commit: 7a032bc5a10e916af3913cd80ce7b7e85d456740
 ---
 
 # Backend API Sync Readiness
@@ -22,10 +22,10 @@ This page is generated from the current service-owned docs tree and the document
 
 | Metric         | Value                                      |
 | -------------- | ------------------------------------------ |
-| Total docs     | 34                                         |
+| Total docs     | 35                                         |
 | Generated docs | 3                                          |
-| Generated at   | `2026-06-03T13:55:33.422Z`                 |
-| Source commit  | `b9ee6aa45091d09a81674555f2b523a7df7de76a` |
+| Generated at   | `2026-06-05T00:28:41.815Z`                 |
+| Source commit  | `7a032bc5a10e916af3913cd80ce7b7e85d456740` |
 
 ## OpenAPI Status
 
@@ -61,6 +61,7 @@ Scalar repo config remains in `scalar.config.json` for docs preview and sync rev
 | `docs/modules/health.md`                 | `docs/services/backend-api/synced/modules/health.md`                 |
 | `docs/modules/jobs.md`                   | `docs/services/backend-api/synced/modules/jobs.md`                   |
 | `docs/modules/preferences.md`            | `docs/services/backend-api/synced/modules/preferences.md`            |
+| `docs/modules/shared-cv-evidence.md`     | `docs/services/backend-api/synced/modules/shared-cv-evidence.md`     |
 | `docs/modules/users.md`                  | `docs/services/backend-api/synced/modules/users.md`                  |
 | `docs/operations/deployment.md`          | `docs/services/backend-api/synced/operations/deployment.md`          |
 | `docs/operations/documentation-sync.md`  | `docs/services/backend-api/synced/operations/documentation-sync.md`  |

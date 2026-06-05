@@ -87,6 +87,8 @@ The Backend API does not own:
 | Applications           | Track user-specific applications, status changes, and status history                                                                                            |
 | CV Files               | Upload reusable user CV PDFs and expose safe active-file metadata                                                                                               |
 | AI CV Analyzer         | Analyze uploaded or stored CV PDFs against target job roles; return fit alignment, ATS feedback, section reviews, top actions, and embedded job recommendations |
+| AI CV Generate         | Generate safe markdown HTML CV content from an owned stored CV, structured summary, and sanitized template input                                                |
+| Shared CV Evidence     | Keep Analyzer wrapper and Generate flows on one sanitized evidence schema without retaining raw CV text, prompts, provider payloads, or secrets                 |
 | AI Job Fit             | Retired standalone route; fit-style output now lives in CV Analyzer `analysisResult.jobFitAlignment`                                                            |
 | AI Job Recommendations | Retired standalone route; compact recommendations now live in CV Analyzer `analysisResult.jobRecommendations`                                                   |
 | Internal               | Accept scraper job sync payloads and notification handoff events through service-token auth                                                                     |
@@ -115,6 +117,7 @@ Key route groups:
 | Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected    |
 | CV Files       | `/api/v1/me/cv-files`           | Authenticated or onboarding access token |
 | AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                            |
+| AI CV Generate | `/api/v1/ai/cv-generate`        | Authenticated and ownership-protected    |
 | Internal       | `/api/v1/internal`              | Service-token protected                  |
 
 JSON responses use a consistent envelope with `success`, `message`, `data`, `meta`, and `error` fields. See `docs/api-response-standard.md` for the full response contract.
@@ -130,7 +133,7 @@ Use this reading order when onboarding or reviewing changes:
 5. `docs/database.md` for Prisma, PostgreSQL, entity ownership, and migration policy.
 6. `docs/operations/testing.md` for test strategy and verification commands.
 7. `docs/operations/deployment.md` for runtime deployment assumptions.
-8. `docs/modules/*.md` for module-specific behavior and endpoint details.
+8. `docs/modules/*.md` for module-specific behavior and endpoint details, including `docs/modules/shared-cv-evidence.md` for AI evidence safety rules.
 9. `docs/generated/openapi.json` and `docs/generated/routes.md` for generated API artifacts.
 
 ## Tech Stack

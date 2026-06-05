@@ -91,10 +91,25 @@
             "type": "page",
             "filepath": "docs/modules/ai-job-fit.md"
           },
+          "/modules/ai-job-recommendations": {
+            "title": "AI Job Recommendations",
+            "type": "page",
+            "filepath": "docs/modules/ai-job-recommendations.md"
+          },
           "/modules/ai-cv-analyzer": {
             "title": "AI CV Analyzer",
             "type": "page",
             "filepath": "docs/modules/ai-cv-analyzer.md"
+          },
+          "/modules/ai-cv-generate": {
+            "title": "AI CV Generate",
+            "type": "page",
+            "filepath": "docs/modules/ai-cv-generate.md"
+          },
+          "/modules/shared-cv-evidence": {
+            "title": "Shared CV Evidence",
+            "type": "page",
+            "filepath": "docs/modules/shared-cv-evidence.md"
           }
         }
       },

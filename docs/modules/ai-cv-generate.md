@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/ai-cv-generate.md
-last_reviewed: 2026-05-23
+last_reviewed: 2026-06-05
 ---
 
 # AI CV Generate Module
