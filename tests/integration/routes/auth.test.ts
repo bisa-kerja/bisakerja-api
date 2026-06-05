@@ -47,7 +47,7 @@ describe("auth routes", () => {
     expect(typeof body.data.session.accessToken).toBe("string");
     expect(response.body).toEqual({
       success: true,
-      message: "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
+      message: "Account registered successfully. Please verify your email",
       data: {
         user: {
           id: body.data.user.id,
@@ -113,6 +113,21 @@ describe("auth routes", () => {
       success: false,
       error: { code: "VALIDATION_ERROR", requestId: "req_weak" }
     });
+    const weakDetails = (weak.body as { error?: { details?: unknown } }).error
+      ?.details;
+    expect(Array.isArray(weakDetails)).toBe(true);
+    if (!Array.isArray(weakDetails)) {
+      throw new Error("Expected validation details array");
+    }
+    const hasPasswordIssue = weakDetails.some((detail) => {
+      if (typeof detail !== "object" || detail === null) {
+        return false;
+      }
+
+      const candidate = detail as { path?: unknown; code?: unknown };
+      return candidate.path === "password" && candidate.code === "custom";
+    });
+    expect(hasPasswordIssue).toBe(true);
   });
 
   test("verifies email, logs in, refreshes, and invalidates rotated refresh tokens", async () => {
@@ -534,7 +549,7 @@ describe("auth routes", () => {
     ).toBe(true);
     expect(exchange.body).toMatchObject({
       success: true,
-      message: "Login Google berhasil",
+      message: "Google login successful",
       data: {
         user: {
           email: "google.user@example.com",

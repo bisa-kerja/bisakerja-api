@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import {
   cvAnalyzerModelPayloadSchema,
   cvAnalyzerModelResponseSchema,
+  jobRecommendationModelPayloadSchema,
+  jobRecommendationModelResponseSchema,
   jobFitModelPayloadSchema,
   jobFitModelResponseSchema
 } from "@/shared/integrations/model-api.schema";
@@ -102,14 +104,14 @@ describe("model api schemas", () => {
           sizeBytes: 1024,
           storageKey: "cv/user-1/cv-1.pdf"
         },
-        job: {
-          id: "job-1",
-          title: "Backend Developer",
-          description: "Build backend APIs",
-          requirements: [],
-          skills: ["TypeScript"],
-          experienceLevel: "ENTRY_LEVEL"
-        }
+        jobRoles: ["Backend Developer"],
+        rankingPolicy: {
+          backendOwnsHydration: true,
+          requireCandidateJobIds: true,
+          deduplicateByJobId: true,
+          maxRecommendations: 1
+        },
+        jobCandidates: [cvAnalyzerCandidatePayload()]
       }).success
     ).toBe(true);
 
@@ -126,14 +128,14 @@ describe("model api schemas", () => {
           sizeBytes: 1024,
           storageKey: "cv/user-1/cv-1.pdf"
         },
-        job: {
-          id: "job-1",
-          title: "Backend Developer",
-          description: "Build backend APIs",
-          requirements: [],
-          skills: ["TypeScript"],
-          experienceLevel: "ENTRY_LEVEL"
-        }
+        jobRoles: ["Backend Developer"],
+        rankingPolicy: {
+          backendOwnsHydration: true,
+          requireCandidateJobIds: true,
+          deduplicateByJobId: true,
+          maxRecommendations: 1
+        },
+        jobCandidates: [cvAnalyzerCandidatePayload()]
       }).success
     ).toBe(false);
   });
@@ -159,11 +161,121 @@ describe("model api schemas", () => {
     expect(
       cvAnalyzerModelResponseSchema.safeParse({
         ...modelApiFixtures.validCvAnalyzerResponse,
-        overallImpression: {
-          ...modelApiFixtures.validCvAnalyzerResponse.overallImpression,
+        jobFitAlignment: {
+          ...modelApiFixtures.validCvAnalyzerResponse.jobFitAlignment,
           score: -1
         }
       }).success
     ).toBe(false);
+
+    expect(
+      cvAnalyzerModelResponseSchema.safeParse({
+        ...modelApiFixtures.validCvAnalyzerResponse,
+        jobFitAlignment: {
+          ...modelApiFixtures.validCvAnalyzerResponse.jobFitAlignment,
+          score: 101
+        }
+      }).success
+    ).toBe(false);
+  });
+
+  test("accepts valid job recommendation payload and response", () => {
+    const payload = {
+      requestId: "req_job_recommend_payload",
+      inputVersion: "job-recommendations-v1",
+      talentProfile: {
+        targetRole: "Backend Developer",
+        seniorityLevel: "ENTRY_LEVEL",
+        hardSkills: ["TypeScript"],
+        softSkills: [],
+        domainSignals: ["Engineering"],
+        toolsAndTechnologies: ["REST API"],
+        educationSignals: [],
+        experienceYearsEstimate: null,
+        locationPreferences: [
+          { province: "DKI Jakarta", city: "Jakarta Selatan" }
+        ],
+        workTypePreferences: ["REMOTE"],
+        salaryExpectation: {
+          min: 5000000,
+          max: 10000000,
+          currency: "IDR",
+          period: "MONTHLY"
+        },
+        redFlags: ["Docker"]
+      },
+      rankingPolicy: {
+        maxRecommendations: 10,
+        requireCandidateJobIds: true,
+        deduplicateByJobId: true
+      },
+      jobCandidates: [
+        {
+          jobId: "job-1",
+          title: "Backend Developer",
+          companyName: "Nusantara Tech",
+          location: {
+            display: "Jakarta Selatan, DKI Jakarta",
+            province: "DKI Jakarta",
+            city: "Jakarta Selatan"
+          },
+          workType: "REMOTE",
+          experienceLevel: "ENTRY_LEVEL",
+          descriptionSummary: "Build APIs",
+          requiredSkills: ["TypeScript"],
+          postedAt: "2026-05-18T00:00:00.000Z",
+          sourceUpdatedAt: null
+        }
+      ]
+    };
+
+    expect(jobRecommendationModelPayloadSchema.safeParse(payload).success).toBe(
+      true
+    );
+    expect(
+      jobRecommendationModelResponseSchema.safeParse(
+        modelApiFixtures.validJobRecommendationsResponse
+      ).success
+    ).toBe(true);
+    expect(
+      jobRecommendationModelResponseSchema.safeParse({
+        ...modelApiFixtures.validJobRecommendationsResponse,
+        recommendations: [
+          {
+            ...modelApiFixtures.validJobRecommendationsResponse
+              .recommendations[0],
+            matchScore: 101
+          }
+        ]
+      }).success
+    ).toBe(false);
   });
 });
+
+function cvAnalyzerCandidatePayload() {
+  return {
+    jobId: "11111111-1111-4111-8111-111111111111",
+    scoringInput: {
+      titleText: "Backend Developer",
+      descriptionText: "Build APIs",
+      requirementSummary: "TypeScript",
+      requiredSkills: ["TypeScript"],
+      requirements: [
+        {
+          type: "SKILL" as const,
+          value: "TypeScript",
+          priority: "HIGH" as const
+        }
+      ],
+      roleFamily: "backend developer",
+      experienceLevel: "ENTRY_LEVEL" as const,
+      workType: "REMOTE" as const
+    },
+    backendMetadata: {
+      title: "Backend Developer",
+      companyName: "Nusantara Tech",
+      locationDisplay: "Jakarta Selatan, DKI Jakarta",
+      sourceUpdatedAt: null
+    }
+  };
+}

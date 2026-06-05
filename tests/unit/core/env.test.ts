@@ -30,6 +30,8 @@ describe("environment validation", () => {
     expect(config.integrations.modelApi.timeoutMs).toBe(10000);
     expect(config.integrations.modelApi.serviceToken).toBe("live-model-token");
     expect(config.integrations.modelApi.enableMock).toBe(false);
+    expect(config.integrations.aiCvAnalyzerGenAi.enabled).toBe(false);
+    expect(config.integrations.aiCvGenerateGenAi.enabled).toBe(false);
     expect(config.integrations.scraperApi.serviceToken).toBe(
       "test-scraper-service-token"
     );

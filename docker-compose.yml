@@ -56,6 +56,16 @@ services:
         required: false
     depends_on:
       - redis
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "ps aux | grep '[b]un run worker:async' >/dev/null || ps aux | grep '[b]un run src/scripts/worker-async.ts' >/dev/null || exit 1"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     volumes:
       - app-storage:/app/storage/uploads
     security_opt:

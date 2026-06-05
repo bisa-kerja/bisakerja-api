@@ -12,7 +12,7 @@ describe("response formatter", () => {
   test("formats a success response", () => {
     expect(successResponse({ id: "job_123" })).toEqual({
       success: true,
-      message: "Permintaan berhasil diproses",
+      message: "Request completed successfully",
       data: { id: "job_123" },
       meta: null
     });
@@ -20,10 +20,10 @@ describe("response formatter", () => {
 
   test("formats a created response", () => {
     expect(
-      createdResponse({ id: "app_123" }, "Lamaran berhasil dibuat")
+      createdResponse({ id: "app_123" }, "Application created successfully")
     ).toEqual({
       success: true,
-      message: "Lamaran berhasil dibuat",
+      message: "Application created successfully",
       data: { id: "app_123" },
       meta: null
     });
@@ -44,11 +44,11 @@ describe("response formatter", () => {
           },
           sort: "newest"
         },
-        "Daftar lowongan berhasil diambil"
+        "Jobs retrieved successfully"
       )
     ).toEqual({
       success: true,
-      message: "Daftar lowongan berhasil diambil",
+      message: "Jobs retrieved successfully",
       data: [{ id: "job_123" }],
       meta: {
         pagination: {
@@ -65,18 +65,18 @@ describe("response formatter", () => {
   });
 
   test("formats empty and error responses", () => {
-    expect(emptyResponse("Berhasil dihapus")).toEqual({
+    expect(emptyResponse("Delete completed successfully")).toEqual({
       success: true,
-      message: "Berhasil dihapus",
+      message: "Delete completed successfully",
       data: null,
       meta: null
     });
 
     expect(
-      errorResponse("Validasi gagal", "VALIDATION_ERROR", "req_123", [])
+      errorResponse("Validation failed", "VALIDATION_ERROR", "req_123", [])
     ).toEqual({
       success: false,
-      message: "Validasi gagal",
+      message: "Validation failed",
       data: null,
       error: {
         code: "VALIDATION_ERROR",

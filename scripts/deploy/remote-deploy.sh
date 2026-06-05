@@ -17,6 +17,10 @@ log() {
   printf '[deploy] %s\n' "$1"
 }
 
+compose() {
+  docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" "$@"
+}
+
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
     printf 'Missing required command: %s\n' "$1" >&2
@@ -31,9 +35,28 @@ require_file() {
   fi
 }
 
+read_env_value() {
+  local name="$1"
+  local line=""
+  line="$(grep -E "^[[:space:]]*${name}=" "$RUNTIME_ENV_FILE" | tail -n 1 || true)"
+
+  if [ -z "$line" ]; then
+    return 0
+  fi
+
+  line="${line#*=}"
+  line="${line%$'\r'}"
+  line="${line%\"}"
+  line="${line#\"}"
+  line="${line%\'}"
+  line="${line#\'}"
+  printf '%s' "$line"
+}
+
 require_command git
 require_command docker
 require_command curl
+require_command grep
 
 cd "$APP_DIR"
 
@@ -82,6 +105,31 @@ if [ -n "$EXPECTED_APP_ENV" ] && [ "$declared_app_env" != "$EXPECTED_APP_ENV" ];
   exit 1
 fi
 
+runtime_database_url="$(read_env_value DATABASE_URL)"
+direct_database_url="$(read_env_value DIRECT_DATABASE_URL)"
+
+if [ -z "$runtime_database_url" ]; then
+  printf 'DATABASE_URL is missing in %s\n' "$RUNTIME_ENV_FILE" >&2
+  exit 1
+fi
+
+if [ -z "$direct_database_url" ]; then
+  printf 'DIRECT_DATABASE_URL is missing in %s\n' "$RUNTIME_ENV_FILE" >&2
+  exit 1
+fi
+
+if [ "$direct_database_url" = "$runtime_database_url" ]; then
+  printf 'DIRECT_DATABASE_URL must be a direct database URL, not the same value as DATABASE_URL.\n' >&2
+  exit 1
+fi
+
+case "$direct_database_url" in
+  *pooler*)
+    printf 'DIRECT_DATABASE_URL appears to use a pooled host. Use the provider direct/non-pooled host for Prisma migrations.\n' >&2
+    exit 1
+    ;;
+esac
+
 log "Syncing repository branch $DEPLOY_BRANCH"
 git fetch origin "$DEPLOY_BRANCH" --prune
 
@@ -102,20 +150,46 @@ export APP_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 export APP_PORT="${declared_app_port:-$DEFAULT_APP_PORT}"
 export COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME_VALUE"
 
-log "Pulling latest application image $APP_IMAGE"
-docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" pull app
+log "Pulling runtime services for $APP_IMAGE"
+compose pull app worker redis
 
 log "Applying Prisma migrations"
-docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" run --rm --no-deps app bun run prisma:migrate:deploy
+compose run --rm --no-deps app bun run prisma:migrate:deploy
 
-log "Starting application service"
-docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" up -d --wait app
+log "Starting runtime services"
+compose up -d --wait --wait-timeout 120 redis app worker
 
-log "Running health checks"
+log "Running HTTP health checks"
 curl --fail --silent --show-error "http://127.0.0.1:${APP_PORT}/health/live" >/dev/null
 curl --fail --silent --show-error "http://127.0.0.1:${APP_PORT}/health/ready" >/dev/null
 
+log "Checking worker runtime status"
+worker_container_id="$(compose ps --quiet --status running worker)"
+if [ -z "$worker_container_id" ]; then
+  printf 'Worker service is not running after deploy.\n' >&2
+  compose ps >&2
+  exit 1
+fi
+
+log "Waiting for worker startup log"
+worker_started=0
+for _ in $(seq 1 12); do
+  if compose logs --tail=100 worker | grep -Fq "Async worker started"; then
+    worker_started=1
+    break
+  fi
+
+  sleep 5
+
+done
+
+if [ "$worker_started" -ne 1 ]; then
+  printf 'Worker startup log not found after deploy.\n' >&2
+  compose logs --tail=100 worker >&2
+  exit 1
+fi
+
 log "Container status"
-docker compose -f "$COMPOSE_FILE" --env-file "$RUNTIME_ENV_FILE" ps
+compose ps
 
 log "Deployment completed successfully for $DEPLOY_TARGET"

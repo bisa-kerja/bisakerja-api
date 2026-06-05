@@ -97,6 +97,14 @@ export async function createRepositoryTestContext() {
       await prisma.skillGapResult.deleteMany({
         where: { user: { email: { endsWith: `-${runId}@example.test` } } }
       });
+      await prisma.jobRecommendationItem.deleteMany({
+        where: {
+          run: { user: { email: { endsWith: `-${runId}@example.test` } } }
+        }
+      });
+      await prisma.jobRecommendationRun.deleteMany({
+        where: { user: { email: { endsWith: `-${runId}@example.test` } } }
+      });
       await prisma.cvAnalysisResult.deleteMany({
         where: { user: { email: { endsWith: `-${runId}@example.test` } } }
       });

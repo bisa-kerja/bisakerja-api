@@ -48,7 +48,7 @@ describe("users routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Profil berhasil diambil",
+      message: "Profile retrieved successfully",
       data: {
         id: "user-1",
         username: "salman",
@@ -121,6 +121,18 @@ describe("users routes", () => {
     });
 
     expect(emptyBody.status).toBe(422);
+    expect(emptyBody.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "",
+            message: "At least one profile field must be provided",
+            code: "custom"
+          })
+        ]
+      }
+    });
   });
 
   test("upserts profile photo metadata and rejects invalid payload", async () => {
@@ -164,6 +176,17 @@ describe("users routes", () => {
       }
     });
     expect(invalidUrl.status).toBe(422);
+    expect(invalidUrl.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "url",
+            message: "Profile photo URL is invalid"
+          })
+        ]
+      }
+    });
 
     const success = await injectRoute(context.app, {
       method: "PUT",
@@ -206,6 +229,16 @@ describe("users routes", () => {
     });
 
     expect(duplicate.status).toBe(422);
+    expect(duplicate.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "skills.1.name",
+            message: "Skill names must not be duplicated in the same list"
+          })
+        ]
+      }
+    });
 
     const firstReplace = await injectRoute(context.app, {
       method: "PUT",
@@ -272,6 +305,16 @@ describe("users routes", () => {
       }
     });
     expect(invalidExperience.status).toBe(422);
+    expect(invalidExperience.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "experience.0.endDate",
+            message: "End date must be greater than or equal to start date"
+          })
+        ]
+      }
+    });
 
     const validExperience = await injectRoute(context.app, {
       method: "PUT",
@@ -311,6 +354,16 @@ describe("users routes", () => {
       }
     });
     expect(invalidEducation.status).toBe(422);
+    expect(invalidEducation.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "education.0.degree",
+            message: "Degree is required"
+          })
+        ]
+      }
+    });
 
     const validEducation = await injectRoute(context.app, {
       method: "PUT",

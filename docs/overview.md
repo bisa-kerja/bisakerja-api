@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/overview.md
-last_reviewed: 2026-04-22
+last_reviewed: 2026-06-05
 ---
 
 # Backend API Overview
@@ -23,7 +23,7 @@ This service must provide a stable backend boundary for:
 
 - Anonymous job discovery.
 - Authenticated profile, preference, bookmark, and application tracker workflows.
-- AI-assisted job fit, skill gap, and CV analysis workflows.
+- AI-assisted CV analysis, job fit alignment, job recommendations, and CV generation workflows.
 - Normalized job catalog access backed by PostgreSQL.
 - Internal orchestration with Scraper API and Model API without exposing those services directly to the frontend.
 
@@ -46,16 +46,18 @@ Technical consumers:
 
 ## MVP Scope
 
-| Module         | MVP responsibility                                                                                                                                              |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth           | Register, login, logout, short-lived access JWT, hashed refresh token cookie with rotation, password reset, OTP email verification, and Google SSO placeholder  |
-| Users          | Account profile, onboarding state, profile photo metadata, career background, skills, experience, and education                                                 |
-| Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                             |
-| Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                             |
-| Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate conflict handling                                                                                    |
-| Applications   | Track user-specific job application state and MVP status history                                                                                                |
-| AI Job Fit     | Prepare backend-owned inference payloads and return fit score, explanation, skill gap, and recommended next steps                                               |
-| AI CV Analyzer | Accept temporary PDF upload input, compare against a selected job, and return CV quality, job alignment, ATS, keyword, quantification, and improvement feedback |
+| Module         | MVP responsibility                                                                                                                                                                       |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | Register, login, logout, short-lived access JWT, hashed refresh token cookie with rotation, password reset, OTP email verification, and Google OAuth login                               |
+| Users          | Account profile, onboarding state, profile photo metadata, career background, skills, experience, and education                                                                          |
+| Preferences    | Career status, job seeking timeline, target roles, preferred locations, work types, salary range, and email notification preference                                                      |
+| Jobs           | Search, filter, sort, list, detail, normalized company data, job requirements, salary data, and external apply link                                                                      |
+| Bookmarks      | Save job, remove saved job, list saved jobs, and duplicate conflict handling                                                                                                             |
+| Applications   | Track user-specific job application state and MVP status history                                                                                                                         |
+| CV Files       | Accept reusable current-user PDF CV uploads, safe active-file lookup, retention metadata, and onboarding-compatible ownership checks                                                     |
+| AI CV Analyzer | Accept temporary or stored PDF CV input, compare against a selected job, and return CV quality, job alignment, ATS friendliness, dynamic section reviews, and simple job recommendations |
+| AI CV Generate | Generate improved markdown HTML CV content from an owned stored CV file, structured summary, and safe template input                                                                     |
+| Internal       | Accept scraper job sync batches and notification handoff events through service-token protected routes                                                                                   |
 
 ## Future Scope
 

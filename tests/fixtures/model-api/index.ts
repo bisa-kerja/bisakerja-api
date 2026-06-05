@@ -44,29 +44,59 @@ export type JobFitModelResponseFixture = {
 };
 
 export type CvAnalyzerModelResponseFixture = {
-  overallImpression: {
-    score: number;
-    summary: string;
+  schemaVersion: "model-core-cv-analysis-v1";
+  parsedCv: {
+    status: "parsed" | "empty_text" | "parse_failed";
+    pageCount: number;
+    textLength: number;
+    detectedSections: string[];
+    extractionEvidence?: string[];
   };
   jobFitAlignment: {
     score: number;
-    summary: string;
     matchedSignals: string[];
     missingSignals: string[];
+    matchedSkills: string[];
+    missingSkills: string[];
+    evidence?: string[];
   };
   atsFriendliness: {
     score: number;
-    issues: string[];
+    detectedIssues: string[];
+    parseQuality: "high" | "medium" | "low" | "failed";
+    evidence?: string[];
   };
-  keywordOptimization: {
-    recommendedKeywords: string[];
-    reason: string;
-  };
-  experienceQuantification: {
+  overallImpression: {
     score: number;
-    suggestions: string[];
+    evidence: string[];
   };
-  actionableImprovements: string[];
+  candidateReranking: {
+    recommendations: {
+      jobId: string;
+      matchScore: number;
+      matchLevel: "strong" | "good" | "stretch";
+      matchedSkills: string[];
+      missingSkills: string[];
+      rankingSignals?: string[];
+    }[];
+  };
+  model: {
+    name: string;
+    version: string;
+  };
+  createdAt: string;
+};
+
+export type JobRecommendationModelResponseFixture = {
+  recommendations: {
+    jobId: string;
+    matchScore: number;
+    matchLevel: "strong" | "good" | "stretch";
+    reasons: string[];
+    matchedSkills: string[];
+    missingSkills: string[];
+    nextSteps: string[];
+  }[];
   model: {
     name: string;
     version: string;
@@ -146,31 +176,73 @@ export const modelApiFixtures = {
     analyzedAt: "2026-04-23T00:00:00.000Z"
   },
   validCvAnalyzerResponse: {
-    overallImpression: {
-      score: 85,
-      summary: "The CV is relevant for an entry-level backend role."
+    schemaVersion: "model-core-cv-analysis-v1",
+    parsedCv: {
+      status: "parsed",
+      pageCount: 2,
+      textLength: 2400,
+      detectedSections: ["Skills", "Work Experience"],
+      extractionEvidence: ["PDF text parsed"]
     },
     jobFitAlignment: {
       score: 78,
-      summary: "Core skills are visible, but deployment depth is limited.",
-      matchedSignals: ["TypeScript", "REST API"],
-      missingSignals: ["Docker", "CI/CD"]
+      matchedSignals: ["Backend skill evidence"],
+      missingSignals: ["Deployment depth limited"],
+      matchedSkills: ["TypeScript", "PostgreSQL"],
+      missingSkills: ["Docker"],
+      evidence: ["Core skills are visible"]
     },
     atsFriendliness: {
       score: 74,
-      issues: ["Section headings are inconsistent."]
+      detectedIssues: ["Weak keyword grouping"],
+      parseQuality: "medium",
+      evidence: ["Sections detected"]
     },
-    keywordOptimization: {
-      recommendedKeywords: ["Docker", "CI/CD"],
-      reason: "These keywords appear in the job requirements."
+    overallImpression: {
+      score: 76,
+      evidence: ["entry-level backend alignment", "deployment gap"]
     },
-    experienceQuantification: {
-      score: 70,
-      suggestions: ["Add endpoint counts or measurable project impact."]
+    candidateReranking: {
+      recommendations: [
+        {
+          jobId: "11111111-1111-4111-8111-111111111111",
+          matchScore: 82,
+          matchLevel: "strong",
+          matchedSkills: ["TypeScript", "PostgreSQL"],
+          missingSkills: ["Docker"],
+          rankingSignals: ["Skill overlap"]
+        }
+      ]
     },
-    actionableImprovements: ["Add a stronger backend-focused profile summary."],
     model: {
       name: "fixture-cv-analyzer-model",
+      version: "test-2026-01"
+    },
+    createdAt: "2026-04-23T00:00:00.000Z"
+  },
+  validJobRecommendationsResponse: {
+    recommendations: [
+      {
+        jobId: "11111111-1111-4111-8111-111111111111",
+        matchScore: 86,
+        matchLevel: "strong",
+        reasons: ["Kecocokan skill backend utama sudah kuat."],
+        matchedSkills: ["TypeScript", "PostgreSQL"],
+        missingSkills: ["Docker"],
+        nextSteps: ["Add deployment experience to the CV."]
+      },
+      {
+        jobId: "22222222-2222-4222-8222-222222222222",
+        matchScore: 74,
+        matchLevel: "good",
+        reasons: ["Role sejalan dengan target karier."],
+        matchedSkills: ["TypeScript"],
+        missingSkills: ["System Design"],
+        nextSteps: ["Perkuat contoh arsitektur layanan."]
+      }
+    ],
+    model: {
+      name: "fixture-job-recommendations-model",
       version: "test-2026-01"
     },
     analyzedAt: "2026-04-23T00:00:00.000Z"
@@ -179,4 +251,5 @@ export const modelApiFixtures = {
   validJobFitResponse: JobFitModelResponseFixture;
   degradedJobFitResponse: JobFitModelResponseFixture;
   validCvAnalyzerResponse: CvAnalyzerModelResponseFixture;
+  validJobRecommendationsResponse: JobRecommendationModelResponseFixture;
 };

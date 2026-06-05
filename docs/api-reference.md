@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-reference.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-06-05
 ---
 
 # Backend API Reference
@@ -123,14 +123,16 @@ Rules:
 | Route group    | Prefix                          | Auth class                                                           | MVP scope                                                                                            | Future module doc                  |
 | -------------- | ------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | Health         | `/health/live`, `/health/ready` | Public or infrastructure-restricted                                  | Liveness and readiness                                                                               | `docs/modules/health.md` if needed |
-| Auth           | `/api/v1/auth`                  | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, Google SSO placeholder | `docs/modules/auth.md`             |
+| Auth           | `/api/v1/auth`                  | Public plus authenticated logout/session routes                      | Register, login, logout, refresh/session, password reset, email verification, and Google OAuth login | `docs/modules/auth.md`             |
 | Users          | `/api/v1/me`                    | Authenticated                                                        | Current user profile and account settings                                                            | `docs/modules/users.md`            |
 | Preferences    | `/api/v1/me/preferences`        | Authenticated or onboarding access token                             | Career preferences and notification toggle                                                           | `docs/modules/preferences.md`      |
 | Jobs           | `/api/v1/jobs`                  | Public for search/detail; authenticated for personalized views later | Search, filter, sort, list, detail                                                                   | `docs/modules/jobs.md`             |
 | Bookmarks      | `/api/v1/me/bookmarks`          | Authenticated and ownership-protected                                | Save, unsave, list saved jobs                                                                        | `docs/modules/bookmarks.md`        |
 | Applications   | `/api/v1/me/applications`       | Authenticated and ownership-protected                                | Application tracker records and status updates                                                       | `docs/modules/applications.md`     |
-| AI Job Fit     | `/api/v1/ai/job-fit`            | Authenticated                                                        | Fit score, explanation, skill gap, and recommendation                                                | `docs/modules/ai-job-fit.md`       |
-| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against selected job                                                                     | `docs/modules/ai-cv-analyzer.md`   |
+| CV Files       | `/api/v1/me/cv-files`           | Authenticated or onboarding access token                             | Upload and read safe current-user CV metadata                                                        | `docs/modules/ai-cv-analyzer.md`   |
+| AI CV Analyzer | `/api/v1/ai/cv-analyzer`        | Authenticated                                                        | CV analysis against target job roles using uploaded or stored CV input                               | `docs/modules/ai-cv-analyzer.md`   |
+| AI CV Generate | `/api/v1/ai/cv-generate`        | Authenticated and ownership-protected                                | Generate improved markdown HTML CV content from a stored CV reference, summary, and template         | `docs/modules/ai-cv-generate.md`   |
+| Internal       | `/api/v1/internal`              | Internal                                                             | Scraper job sync upsert and notification handoff routes                                              | `docs/integrations/scraper-api.md` |
 
 Route naming defaults:
 
@@ -146,8 +148,8 @@ Public workflows:
 - Register.
 - Login.
 - Forgot password request.
-- Reset password submission when token or OTP is valid.
-- Email verification submission when token or OTP is valid.
+- Reset password submission when reset token is valid.
+- Email verification submission when OTP is valid.
 - Job search.
 - Job detail.
 - Health liveness check.
@@ -166,20 +168,21 @@ Health endpoints are mounted outside `API_PREFIX` so infrastructure tooling can 
 
 `GET /health/live` does not check PostgreSQL or downstream services.
 
-`GET /health/ready` checks PostgreSQL and returns `503 SERVICE_UNAVAILABLE` when the database is unavailable or the check times out. Dependency details in public responses are limited to sanitized health state.
+`GET /health/ready` checks PostgreSQL and Redis, then returns `503 SERVICE_UNAVAILABLE` when either dependency is unavailable or a health check times out. Dependency details in public responses are limited to sanitized health state.
 
 Successful readiness response:
 
 ```json
 {
   "success": true,
-  "message": "Layanan siap",
+  "message": "Service is ready",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",
     "env": "staging",
     "dependencies": {
-      "postgresql": "healthy"
+      "postgresql": "healthy",
+      "redis": "healthy"
     }
   },
   "meta": null
@@ -191,13 +194,14 @@ Readiness failure response:
 ```json
 {
   "success": false,
-  "message": "Layanan belum siap",
+  "message": "Service is not ready",
   "data": null,
   "error": {
     "code": "SERVICE_UNAVAILABLE",
     "details": {
       "dependencies": {
-        "postgresql": "unhealthy"
+        "postgresql": "unhealthy",
+        "redis": "healthy"
       }
     },
     "requestId": "req_123"
@@ -214,25 +218,25 @@ Authenticated workflows:
 - Career preferences read and update.
 - Bookmark create, delete, and list.
 - Application tracker create, update, status change, and list.
-- Job fit analysis.
-- Skill gap analysis.
-- AI CV Analyzer.
-- Viewing user-specific AI history if persisted.
+- AI CV Analyzer, including job fit alignment, skill gaps, ATS feedback, and job recommendations.
+- AI CV Generate for owned stored CV files.
+- Viewing user-specific AI analysis history.
 
 Authenticated routes must not rely on frontend-only ownership checks.
 
 ## Internal Workflows
 
-Internal workflows are not part of the public MVP API unless explicitly documented later.
+Current internal workflows:
 
-Potential future internal workflows:
+- `POST /api/v1/internal/scraper/jobs` for scraper-owned normalized job sync.
+- `POST /api/v1/internal/notification-events` for notification handoff after sync.
 
-- Scraper freshness status.
-- Ingestion sync callbacks.
-- Admin-only data correction.
-- Model health or model version reconciliation.
+Rules:
 
-Internal routes must define service credential requirements before implementation.
+- Internal routes use service-token authentication, never frontend user auth.
+- Internal routes stay out of public frontend flows.
+- Request payload contracts must be documented before schema changes ship.
+- Additional internal workflows such as scraper freshness status, admin corrections, or model reconciliation need separate docs before implementation.
 
 ## Common Query Parameters
 
@@ -307,7 +311,7 @@ Job search falls back to newest-first ordering when `sort=relevance` is requeste
 | `Cookie`        | Request               | Refresh/logout flows | Refresh credential is sent as an `HttpOnly` cookie     |
 | `Set-Cookie`    | Response              | Login/refresh/logout | Backend sets or clears the refresh cookie              |
 
-Upload routes for AI CV Analyzer will require multipart handling details in the module doc.
+CV upload routes use `multipart/form-data`; field names, file constraints, and safe metadata responses are documented in `docs/modules/ai-cv-analyzer.md`.
 
 ## Standard Response Usage
 
@@ -348,15 +352,15 @@ The endpoint list below is a planning index, not final endpoint documentation.
 
 ### Auth
 
-| Method | Path                           | Auth                     | Purpose                                           |
-| ------ | ------------------------------ | ------------------------ | ------------------------------------------------- |
-| `POST` | `/api/v1/auth/register`        | Public                   | Create account and return onboarding access token |
-| `POST` | `/api/v1/auth/login`           | Public                   | Issue access token and refresh cookie             |
-| `POST` | `/api/v1/auth/logout`          | Authenticated            | Invalidate refresh token and clear cookie         |
-| `POST` | `/api/v1/auth/refresh`         | Refresh cookie           | Rotate refresh token and issue new access token   |
-| `POST` | `/api/v1/auth/forgot-password` | Public                   | Request password reset                            |
-| `POST` | `/api/v1/auth/reset-password`  | Public with token or OTP | Complete password reset                           |
-| `POST` | `/api/v1/auth/verify-email`    | Public with token or OTP | Verify email and auto-login                       |
+| Method | Path                           | Auth              | Purpose                                           |
+| ------ | ------------------------------ | ----------------- | ------------------------------------------------- |
+| `POST` | `/api/v1/auth/register`        | Public            | Create account and return onboarding access token |
+| `POST` | `/api/v1/auth/login`           | Public            | Issue access token and refresh cookie             |
+| `POST` | `/api/v1/auth/logout`          | Authenticated     | Invalidate refresh token and clear cookie         |
+| `POST` | `/api/v1/auth/refresh`         | Refresh cookie    | Rotate refresh token and issue new access token   |
+| `POST` | `/api/v1/auth/forgot-password` | Public            | Request password reset                            |
+| `POST` | `/api/v1/auth/reset-password`  | Public with token | Complete password reset                           |
+| `POST` | `/api/v1/auth/verify-email`    | Public with OTP   | Verify email and auto-login                       |
 
 ### Users And Preferences
 
@@ -400,14 +404,19 @@ Application tracker endpoints use the standard response envelope. List responses
 
 ### AI
 
-| Method | Path                     | Auth          | Purpose                                        |
-| ------ | ------------------------ | ------------- | ---------------------------------------------- |
-| `POST` | `/api/v1/ai/job-fit`     | Authenticated | Analyze user fit for a selected job            |
-| `POST` | `/api/v1/ai/cv-analyzer` | Authenticated | Analyze uploaded PDF CV against a selected job |
+| Method | Path                                               | Auth                                  | Purpose                                                           |
+| ------ | -------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `POST` | `/api/v1/ai/cv-analyzer`                           | Authenticated                         | Analyze uploaded or stored PDF CV against target job roles        |
+| `GET`  | `/api/v1/ai/cv-analyzer/results`                   | Authenticated and ownership-protected | List current-user CV analysis results                             |
+| `GET`  | `/api/v1/ai/cv-analyzer/results/:analysisResultId` | Authenticated and ownership-protected | Read one current-user CV analysis result                          |
+| `GET`  | `/api/v1/ai/cv-analyzer/results/latest`            | Authenticated and ownership-protected | Read latest current-user CV analysis result                       |
+| `POST` | `/api/v1/ai/cv-generate`                           | Authenticated and ownership-protected | Generate markdown HTML CV from an owned CV, summary, and template |
 
-AI analysis endpoints use the standard response envelope. `POST /api/v1/ai/job-fit` accepts only `jobId` plus optional `persistResult`, returns `409 PROFILE_INCOMPLETE` or `409 PREFERENCES_INCOMPLETE` when required persisted context is missing, and stores sanitized snapshots only when `persistResult=true`.
+AI analysis endpoints use the standard response envelope. Fit scoring and job recommendation output are embedded in the CV analyzer result so the active AI surface stays compact.
 
-`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` with metadata fields plus a single `cvFile` upload for `UPLOAD` mode. The endpoint accepts only PDF uploads, rejects oversized files with `413 PAYLOAD_TOO_LARGE`, returns `404 BOOKMARK_NOT_FOUND` when `compareSource=BOOKMARK` points to another user's bookmark, and returns `422 VALIDATION_ERROR` for unsupported `REFERENCE` mode until reusable CV references are enabled.
+`POST /api/v1/ai/cv-analyzer` requires `multipart/form-data` metadata and `jobRoles` target role list. The endpoint accepts one PDF `cvFile` for `UPLOAD` mode, or uses `REFERENCE` mode with `cvFileId` or active CV fallback. Successful responses return `data.analysisResult` with `schemaVersion: "cv-analysis-v2"`, bounded `jobFitAlignment` and `atsFriendliness` scores, dynamic `sectionReviews`, at most 3 `topActionables`, and at most 5 simple `jobRecommendations`. Not-found ownership checks use `404 CV_FILE_NOT_FOUND` for CV references, and oversized uploads return `413 PAYLOAD_TOO_LARGE`.
+
+`POST /api/v1/ai/cv-generate` requires JSON with `cvFileId`, `summary`, and `templateHtml`. Backend validates CV ownership, builds shared sanitized CV evidence, preserves safe template structure, rejects unsafe generated markup with `502 MODEL_OUTPUT_INVALID`, and returns only `data.markdown`.
 
 ## Contract Stability Rules
 

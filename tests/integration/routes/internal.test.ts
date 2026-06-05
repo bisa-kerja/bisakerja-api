@@ -30,7 +30,7 @@ describe("internal routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Lowongan dari scraper berhasil disinkronkan",
+      message: "Scraper jobs synced successfully",
       data: {
         accepted: 1,
         upserted: 1,
@@ -86,6 +86,11 @@ describe("internal routes", () => {
       error: {
         code: "VALIDATION_ERROR",
         requestId: "req_internal_bad_payload"
+      }
+    });
+    expect(response.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "jobs" })]
       }
     });
     expect(context.repository.syncInput).toBeNull();

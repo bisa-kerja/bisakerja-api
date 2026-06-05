@@ -7,7 +7,7 @@ export type {
 
 export function successResponse<T>(
   data: T,
-  message = "Permintaan berhasil diproses",
+  message = "Request completed successfully",
   meta: unknown = null
 ) {
   return {
@@ -20,7 +20,7 @@ export function successResponse<T>(
 
 export function createdResponse<T>(
   data: T,
-  message = "Sumber daya berhasil dibuat",
+  message = "Resource created successfully",
   meta: unknown = null
 ) {
   return successResponse(data, message, meta);
@@ -29,12 +29,12 @@ export function createdResponse<T>(
 export function listResponse<T>(
   data: T[],
   meta: ListMeta,
-  message = "Data berhasil diambil"
+  message = "Data retrieved successfully"
 ) {
   return successResponse(data, message, meta);
 }
 
-export function emptyResponse(message = "Permintaan berhasil diproses") {
+export function emptyResponse(message = "Request completed successfully") {
   return successResponse(null, message, null);
 }
 

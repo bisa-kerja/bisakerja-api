@@ -1,5 +1,5 @@
 const sensitiveKeyPattern =
-  /password|token|otp|secret|authorization|cookie|credential|apiKey|cvContent|rawCv|rawPayload|rawModel|rawScraper|databaseUrl|DATABASE_URL|RESEND_API_KEY/i;
+  /password|token|otp|secret|authorization|cookie|credential|apiKey|cvContent|rawCv|rawPayload|rawModel|rawScraper|databaseUrl|DATABASE_URL|RESEND_API_KEY|AI_CV_ANALYZER_GENAI_API_KEY/i;
 
 export function sanitizeSensitiveValue(value: unknown): unknown {
   if (Array.isArray(value)) {

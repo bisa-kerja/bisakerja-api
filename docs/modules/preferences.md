@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/preferences.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Preferences Module
@@ -37,6 +37,7 @@ The Preferences module does not own:
 - Job listing filters persisted outside the user's active preference set.
 - Notification delivery infrastructure.
 - Mentoring preferences.
+- Uploaded CV files, CV metadata, or active CV selection.
 
 ## Route Prefix
 
@@ -141,10 +142,14 @@ Validation:
 
 ## Response Schema
 
+`GET /api/v1/me/preferences` returns message `Preferences retrieved successfully`.
+`PUT /api/v1/me/preferences` returns message `Preferences saved successfully`.
+`PATCH /api/v1/me/preferences` returns message `Preferences updated successfully`.
+
 ```json
 {
   "success": true,
-  "message": "Preferensi berhasil diambil",
+  "message": "Preferences retrieved successfully",
   "data": {
     "id": "pref_123",
     "careerStatus": "FRESH_GRADUATE",
@@ -243,8 +248,12 @@ Consumers must read persisted preferences from Backend API persistence, not trus
 | Preferences not found                               | 404    | `PREFERENCES_NOT_FOUND` |
 | Invalid enum value                                  | 422    | `VALIDATION_ERROR`      |
 | Empty target role list during onboarding completion | 422    | `VALIDATION_ERROR`      |
-| Invalid salary range                                | 422    | `INVALID_SALARY_RANGE`  |
+| Invalid salary range                                | 422    | `VALIDATION_ERROR`      |
 | Empty patch body                                    | 400    | `BAD_REQUEST`           |
+
+Validation detail example for salary range:
+
+- `salaryExpectation.max`: `Maximum salary expectation must be greater than or equal to minimum`
 
 ## Observability
 

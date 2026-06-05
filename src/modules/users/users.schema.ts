@@ -11,22 +11,29 @@ import { normalizeWhitespace } from "@/shared/utils/text";
 const usernameSchema = z
   .string()
   .trim()
-  .min(3)
-  .max(30)
+  .min(3, "Username must be at least 3 characters")
+  .max(30, "Username must be at most 30 characters")
   .regex(
     /^[a-z0-9_]+$/,
-    "Username hanya boleh berisi huruf kecil, angka, dan underscore"
+    "Username may only contain lowercase letters, numbers, and underscores, for example salman_123"
   )
   .transform((value) => value.toLowerCase());
 
 const phoneNumberSchema = z
   .string()
   .trim()
-  .min(8)
-  .max(20)
-  .regex(/^\+?62[0-9]{7,16}$/, "Nomor telepon harus nomor Indonesia");
+  .min(8, "Phone number must be at least 8 digits")
+  .max(20, "Phone number must be at most 20 digits")
+  .regex(
+    /^\+?62[0-9]{7,16}$/,
+    "Phone number is invalid. Use an Indonesian phone number, for example +628123456789"
+  );
 
-const displayNameSchema = z.string().trim().min(1).max(80);
+const displayNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Display name is required")
+  .max(80, "Display name must be at most 80 characters");
 
 export const updateCurrentUserSchema = z
   .strictObject({
@@ -35,29 +42,43 @@ export const updateCurrentUserSchema = z
     displayName: displayNameSchema.optional()
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: "Minimal satu field harus diisi"
+    message: "At least one profile field must be provided"
   });
 
 export const upsertProfilePhotoSchema = z.strictObject({
   storageKey: z
     .string()
     .trim()
-    .min(1)
-    .max(512)
+    .min(1, "Storage key is required")
+    .max(512, "Storage key must be at most 512 characters")
     .regex(
       /^[A-Za-z0-9/_\-.]+$/,
-      "Storage key hanya boleh berisi huruf, angka, garis miring, underscore, dash, dan titik"
+      "Storage key may only contain letters, numbers, slashes, underscores, dashes, and dots"
     ),
-  url: z.url().max(1024).nullable().optional(),
+  url: z
+    .preprocess(
+      (value) => (typeof value === "string" ? value.trim() : value),
+      z
+        .url("Profile photo URL is invalid")
+        .max(1024, "Profile photo URL must be at most 1024 characters")
+    )
+    .nullable()
+    .optional(),
   mimeType: z.enum(allowedProfilePhotoMimeTypes),
-  sizeBytes: z.int().positive().max(maxProfilePhotoBytes)
+  sizeBytes: z
+    .int("File size must be an integer")
+    .positive("File size must be greater than 0")
+    .max(
+      maxProfilePhotoBytes,
+      `File size exceeds limit ${String(maxProfilePhotoBytes)} bytes`
+    )
 });
 
 const skillItemSchema = z.strictObject({
   name: z
     .string()
-    .min(1)
-    .max(80)
+    .min(1, "Skill name is required")
+    .max(80, "Skill name must be at most 80 characters")
     .transform((value) => normalizeWhitespace(value)),
   level: z.enum(["BASIC", "INTERMEDIATE", "ADVANCED"]).optional()
 });
@@ -75,7 +96,7 @@ export const replaceSkillsSchema = z
         context.addIssue({
           code: "custom",
           path: ["skills", index, "name"],
-          message: "Nama keahlian tidak boleh duplikat"
+          message: "Skill names must not be duplicated in the same list"
         });
       }
       seen.add(slug);
@@ -86,14 +107,14 @@ const experienceItemSchema = z
   .strictObject({
     title: z
       .string()
-      .min(1)
-      .max(120)
+      .min(1, "Experience title is required")
+      .max(120, "Experience title must be at most 120 characters")
       .transform((value) => normalizeWhitespace(value)),
     company: z
       .string()
       .trim()
-      .min(1)
-      .max(120)
+      .min(1, "Company name is required when this field is provided")
+      .max(120, "Company name must be at most 120 characters")
       .optional()
       .nullable()
       .transform((value) => (value ? normalizeWhitespace(value) : null)),
@@ -107,7 +128,10 @@ const experienceItemSchema = z
     description: z
       .string()
       .trim()
-      .max(maxExperienceDescriptionLength)
+      .max(
+        maxExperienceDescriptionLength,
+        `Experience description must be at most ${String(maxExperienceDescriptionLength)} characters`
+      )
       .optional()
       .transform((value) => value ?? null)
   })
@@ -119,7 +143,7 @@ const experienceItemSchema = z
         context.addIssue({
           code: "custom",
           path: ["endDate"],
-          message: "endDate harus lebih besar atau sama dengan startDate"
+          message: "End date must be greater than or equal to start date"
         });
       }
     }
@@ -128,7 +152,7 @@ const experienceItemSchema = z
       context.addIssue({
         code: "custom",
         path: ["endDate"],
-        message: "endDate harus kosong saat isCurrent bernilai true"
+        message: "End date must be empty when the experience is still active"
       });
     }
   });
@@ -141,21 +165,31 @@ const educationItemSchema = z
   .strictObject({
     institution: z
       .string()
-      .min(1)
-      .max(160)
+      .min(1, "Institution name is required")
+      .max(160, "Institution name must be at most 160 characters")
       .transform((value) => normalizeWhitespace(value)),
     degree: z
       .string()
-      .min(1)
-      .max(120)
+      .min(1, "Degree is required")
+      .max(120, "Degree must be at most 120 characters")
       .transform((value) => normalizeWhitespace(value)),
     fieldOfStudy: z
       .string()
-      .min(1)
-      .max(160)
+      .min(1, "Field of study is required")
+      .max(160, "Field of study must be at most 160 characters")
       .transform((value) => normalizeWhitespace(value)),
-    startYear: z.int().min(1900).max(2100).optional().nullable(),
-    endYear: z.int().min(1900).max(2100).optional().nullable()
+    startYear: z
+      .int("Start year must be an integer")
+      .min(1900, "Start year must be at least 1900")
+      .max(2100, "Start year must be at most 2100")
+      .optional()
+      .nullable(),
+    endYear: z
+      .int("End year must be an integer")
+      .min(1900, "End year must be at least 1900")
+      .max(2100, "End year must be at most 2100")
+      .optional()
+      .nullable()
   })
   .superRefine((value, context) => {
     if (
@@ -166,7 +200,7 @@ const educationItemSchema = z
       context.addIssue({
         code: "custom",
         path: ["endYear"],
-        message: "endYear harus lebih besar atau sama dengan startYear"
+        message: "End year must be greater than or equal to start year"
       });
     }
   });

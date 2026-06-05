@@ -42,10 +42,9 @@ export async function getReadinessPayload(
     config.observability.healthCheckTimeoutMs,
     requestId
   );
-
   if (postgresql.status !== "healthy" || redis.status !== "healthy") {
     throw new ServiceUnavailableError(
-      "Layanan belum siap",
+      "Service is not ready",
       "SERVICE_UNAVAILABLE",
       {
         dependencies: {

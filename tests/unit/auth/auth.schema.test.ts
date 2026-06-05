@@ -23,17 +23,33 @@ describe("auth schemas", () => {
 
   test("rejects weak password and password mismatch", () => {
     const result = registerSchema.safeParse({
-      username: "salman",
-      email: "salman@example.com",
-      phoneNumber: "+6281234567890",
+      username: "A",
+      email: "invalid-email",
+      phoneNumber: "08123",
       password: "weak",
       confirmPassword: "different"
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues.map((issue) => issue.path.join("."))).toContain(
+    const issues = result.error?.issues ?? [];
+    expect(issues.map((issue) => issue.path.join("."))).toContain("username");
+    expect(issues.map((issue) => issue.path.join("."))).toContain("email");
+    expect(issues.map((issue) => issue.path.join("."))).toContain(
+      "phoneNumber"
+    );
+    expect(issues.map((issue) => issue.path.join("."))).toContain("password");
+    expect(issues.map((issue) => issue.path.join("."))).toContain(
       "confirmPassword"
     );
+    expect(
+      issues.find((issue) => issue.path.join(".") === "email")?.message
+    ).toBe(
+      "Email is invalid. Use a complete email format, for example name@domain.com"
+    );
+    expect(
+      issues.find((issue) => issue.path.join(".") === "confirmPassword")
+        ?.message
+    ).toBe("Password confirmation must match the password");
   });
 
   test("accepts email or username login identifiers", () => {

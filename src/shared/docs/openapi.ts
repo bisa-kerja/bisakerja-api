@@ -101,10 +101,14 @@ function errorResponse(
   });
 }
 
-function validationErrorResponse(examplePath: string, exampleMessage: string) {
-  return jsonResponse("Validasi gagal", ref("ErrorEnvelope"), {
+function validationErrorResponse(
+  examplePath: string,
+  exampleMessage: string,
+  exampleCode = "invalid_format"
+) {
+  return jsonResponse("Validation failed", ref("ErrorEnvelope"), {
     success: false,
-    message: "Validasi gagal",
+    message: "Validation failed",
     data: null,
     error: {
       code: "VALIDATION_ERROR",
@@ -112,7 +116,7 @@ function validationErrorResponse(examplePath: string, exampleMessage: string) {
         {
           path: examplePath,
           message: exampleMessage,
-          code: "invalid_type"
+          code: exampleCode
         }
       ],
       requestId: "req_1234567890"
@@ -122,11 +126,14 @@ function validationErrorResponse(examplePath: string, exampleMessage: string) {
 
 function authValidationAndRateLimitResponses() {
   return {
-    "422": validationErrorResponse("body", "Payload request tidak valid"),
+    "422": validationErrorResponse(
+      "email",
+      "Email is invalid. Use a complete email format, for example name@domain.com"
+    ),
     "429": errorResponse(
       "Rate limit exceeded.",
       "RATE_LIMITED",
-      "Terlalu banyak permintaan",
+      "Too many requests",
       {
         limit: "auth"
       }
@@ -350,99 +357,170 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
     updatedAt: "2026-04-24T08:00:00.000Z",
     job: jobCardExample
   };
-  const jobFitExample = {
-    jobId: "550e8400-e29b-41d4-a716-446655440010",
-    fitScore: 82,
-    readinessLevel: "READY_WITH_MINOR_GAPS",
-    recommendation: {
-      decision: "APPLY_NOW",
-      summary:
-        "You match the core backend requirements, with minor gaps in deployment experience.",
-      nextSteps: [
-        "Highlight TypeScript API experience in your CV.",
-        "Review PostgreSQL query optimization basics.",
-        "Prepare examples of backend project impact."
-      ],
-      successProbability: 0.68
-    },
-    breakdown: {
-      skillMatch: {
-        score: 85,
-        matchedSkills: ["TypeScript", "PostgreSQL"],
-        missingSkills: ["Docker"]
-      },
-      experienceMatch: {
-        score: 75,
-        reason:
-          "Internship experience is aligned with entry-level backend responsibilities."
-      },
-      preferenceMatch: {
-        score: 90,
-        matchedPreferences: ["REMOTE", "DKI Jakarta"],
-        unmatchedPreferences: []
-      }
-    },
-    skillGaps: [
-      {
-        skill: "Docker",
-        priority: "MEDIUM",
-        reason: "The job mentions containerized deployment experience."
-      }
-    ],
-    model: {
-      name: "job-fit-model",
-      version: "v1"
-    },
-    analyzedAt: "2026-04-24T08:00:00.000Z"
-  };
   const cvAnalysisExample = {
-    jobId: "550e8400-e29b-41d4-a716-446655440010",
+    jobRoles: ["Backend Developer"],
     language: "id",
-    overallImpression: {
-      score: 85,
-      summary:
-        "CV sudah relevan untuk role backend entry-level, terutama pada pengalaman TypeScript API."
-    },
-    jobFitAlignment: {
-      score: 78,
-      summary:
-        "Skill utama sesuai, tetapi pengalaman deployment masih perlu diperkuat.",
-      matchedSignals: ["TypeScript", "REST API", "PostgreSQL"],
-      missingSignals: ["Docker", "CI/CD"]
-    },
-    atsFriendliness: {
-      score: 74,
-      issues: [
-        "Beberapa section belum memakai heading standar.",
-        "Keyword deployment belum cukup terlihat."
-      ]
-    },
-    keywordOptimization: {
-      recommendedKeywords: ["Docker", "CI/CD", "API Documentation"],
-      reason:
-        "Keyword ini muncul pada requirement dan relevan dengan backend role."
-    },
-    experienceQuantification: {
-      score: 70,
-      suggestions: [
-        "Tambahkan metrik jumlah endpoint yang dibuat.",
-        "Tambahkan dampak performa atau reliability jika tersedia."
-      ]
-    },
-    actionableImprovements: [
-      "Tambahkan ringkasan 2-3 kalimat yang menonjolkan backend API experience.",
-      "Tambahkan keyword Docker jika memang pernah digunakan.",
-      "Ubah bullet experience agar menyertakan angka atau dampak."
+    analysisResult: {
+      id: "550e8400-e29b-41d4-a716-446655440099",
+      schemaVersion: "cv-analysis-v2",
+      jobFitAlignment: {
+        score: 78,
+        summary:
+          "The CV is reasonably aligned with the Backend Developer role because it highlights REST API, PostgreSQL, and backend project experience. Fit can improve if deployment experience is made more explicit."
+      },
+      atsFriendliness: {
+        score: 84,
+        summary:
+          "The CV structure is easy enough for ATS to read, but several important keywords are not summarized clearly in the skills section."
+      },
+      overallImpression:
+        "The CV shows a strong backend foundation for a junior-mid candidate, with the biggest improvement areas in measurable impact and role-specific keywords.",
+      topActionables: [
+        "Add 2-3 measurable bullets to backend experience, such as performance improvement, user count, or data scale.",
+        "Create a technical skills section that groups programming languages, databases, frameworks, and deployment tools.",
+        "Align the profile summary with the Backend Developer role so key keywords appear near the top of the CV."
+      ],
+      sectionReviews: [
+        {
+          sectionName: "Relevant Skills",
+          analysis:
+            "Relevant backend skills are present, but not all are grouped clearly.",
+          actionPoints: [
+            "Group skills into Backend, Database, Testing, and Deployment.",
+            "Prioritize skills most often requested for the target role."
+          ],
+          whyItsImportantForYou:
+            "ATS and recruiters usually look for specific skill keywords before reading experience details."
+        }
+      ],
+      jobRecommendations: [
+        {
+          jobId: "550e8400-e29b-41d4-a716-446655440010",
+          title: "Backend Developer",
+          companyName: "Example Tech",
+          matchScore: 82,
+          reason:
+            "This job matches TypeScript, REST API, and PostgreSQL signals in the CV.",
+          nextStep: "Clarify deployment experience before applying."
+        }
+      ],
+      generatedCv: {
+        available: false,
+        note: "Generated CV feature is not available yet."
+      },
+      model: {
+        name: "cv-analyzer-model",
+        version: "v1"
+      },
+      analyzedAt: "2026-04-24T08:00:00.000Z"
+    }
+  };
+  const cvFileExample = {
+    id: "550e8400-e29b-41d4-a716-446655440030",
+    originalFileName: "resume.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 284321,
+    uploadedAt: "2026-05-18T10:00:00.000Z",
+    expiresAt: "2026-05-19T10:00:00.000Z",
+    isActive: true
+  };
+  const cvAnalysisResultSummaryExample = {
+    id: "550e8400-e29b-41d4-a716-446655440099",
+    schemaVersion: "cv-analysis-v2",
+    analyzedAt: "2026-04-24T08:00:00.000Z",
+    inputMode: "UPLOAD",
+    compareSource: "JOB_SEARCH",
+    jobFitAlignment: { score: 78 },
+    atsFriendliness: { score: 84 },
+    overallImpressionPreview:
+      "The CV shows a strong backend foundation and needs stronger evidence of work impact.",
+    topActionablesPreview: [
+      "Add measurable bullets to backend experience.",
+      "Group technical skills by category.",
+      "Strengthen the profile summary for the target role."
     ],
-    generatedCv: {
-      available: false,
-      note: "Generated CV is future scope."
-    },
     model: {
       name: "cv-analyzer-model",
       version: "v1"
     },
-    analyzedAt: "2026-04-24T08:00:00.000Z"
+    cvFile: {
+      id: "550e8400-e29b-41d4-a716-446655440030",
+      originalFileName: "resume.pdf",
+      uploadedAt: "2026-05-18T10:00:00.000Z"
+    }
+  };
+  const cvAnalysisResultDetailExample = {
+    analysisResult: {
+      id: "550e8400-e29b-41d4-a716-446655440099",
+      schemaVersion: "cv-analysis-v2",
+      jobFitAlignment: {
+        score: 78,
+        summary:
+          "The CV is reasonably aligned with the Backend Developer role and should clarify deployment experience."
+      },
+      atsFriendliness: {
+        score: 84,
+        summary:
+          "The structure is ATS-friendly enough, but key keywords should be clearer in the skills section."
+      },
+      overallImpression:
+        "Strong backend foundation for junior-mid level, with room to improve measurable impact.",
+      topActionables: [
+        "Add 2-3 measurable bullets to backend experience.",
+        "Group skills into Backend, Database, Testing, and Deployment.",
+        "Align the profile summary with Backend Developer role keywords."
+      ],
+      sectionReviews: [
+        {
+          sectionName: "Relevant Skills",
+          analysis:
+            "Relevant skills are present, but not structured for quick recruiter screening.",
+          actionPoints: [
+            "Order skills by target-role relevance.",
+            "Separate core backend skills from supporting tools."
+          ],
+          whyItsImportantForYou:
+            "Recruiters and ATS usually evaluate skill keywords before experience details."
+        }
+      ],
+      jobRecommendations: [
+        {
+          jobId: "550e8400-e29b-41d4-a716-446655440010",
+          title: "Backend Developer",
+          companyName: "Example Tech",
+          matchScore: 82,
+          reason:
+            "Good fit because the CV shows TypeScript, REST API, and PostgreSQL signals.",
+          nextStep: "Clarify deployment and testing experience before applying."
+        }
+      ],
+      generatedCv: {
+        available: false,
+        note: "Generated CV feature is not available yet."
+      },
+      model: {
+        name: "cv-analyzer-model",
+        version: "v1"
+      },
+      analyzedAt: "2026-04-24T08:00:00.000Z"
+    },
+    context: {
+      language: "id",
+      inputMode: "UPLOAD",
+      compareSource: "JOB_SEARCH",
+      cvFile: {
+        id: "550e8400-e29b-41d4-a716-446655440030",
+        originalFileName: "resume.pdf",
+        uploadedAt: "2026-05-18T10:00:00.000Z"
+      },
+      inputSummary: {
+        jobRoles: ["Backend Developer", "Software Engineer"],
+        file: {
+          mimeType: "application/pdf",
+          sizeBytes: 284321
+        }
+      }
+    }
   };
 
   return {
@@ -490,12 +568,13 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
         description: "Current-user application tracker records."
       },
       {
-        name: "AI Job Fit",
-        description: "Authenticated AI-based job fit analysis."
+        name: "AI CV Analyzer",
+        description: "Authenticated CV analysis against target job roles."
       },
       {
-        name: "AI CV Analyzer",
-        description: "Authenticated CV analysis against a selected job."
+        name: "AI CV Generate",
+        description:
+          "Backend-owned authenticated markdown HTML CV generation from stored CV evidence."
       }
     ],
     paths: {
@@ -511,7 +590,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("HealthLiveData"), nullSchema),
               {
                 success: true,
-                message: "Layanan aktif",
+                message: "Service is live",
                 data: {
                   service: "bisakerja-api",
                   status: "live",
@@ -528,20 +607,21 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["Health"],
           summary: "Readiness check",
           description:
-            "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL.",
+            "Confirms the runtime is ready to serve traffic and verifies critical dependencies such as PostgreSQL and Redis.",
           responses: {
             "200": jsonResponse(
               "Service is ready.",
               successEnvelopeSchema(ref("HealthReadyData"), nullSchema),
               {
                 success: true,
-                message: "Layanan siap",
+                message: "Service is ready",
                 data: {
                   service: "bisakerja-api",
                   status: "ready",
                   env: config.app.env,
                   dependencies: {
-                    postgresql: "healthy"
+                    postgresql: "healthy",
+                    redis: "healthy"
                   }
                 },
                 meta: null
@@ -550,10 +630,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "503": errorResponse(
               "A required dependency is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Layanan belum siap",
+              "Service is not ready",
               {
                 dependencies: {
-                  postgresql: "unhealthy"
+                  postgresql: "unhealthy",
+                  redis: "healthy"
                 }
               }
             )
@@ -588,7 +669,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 success: true,
                 message:
-                  "Akun berhasil didaftarkan. Silakan verifikasi email Anda.",
+                  "Account registered successfully. Please verify your email",
                 data: {
                   user: {
                     ...authUserExample,
@@ -603,7 +684,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "409": errorResponse(
               "Email or username already exists.",
               "EMAIL_ALREADY_REGISTERED",
-              "Email sudah terdaftar"
+              "Email is already registered"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -645,7 +726,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Login berhasil",
+                  message: "Login successful",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -657,7 +738,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Credentials are invalid.",
               "INVALID_CREDENTIALS",
-              "Email, username, atau kata sandi tidak valid"
+              "Email, username, or password is invalid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -706,7 +787,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Sesi berhasil diperbarui",
+                  message: "Session refreshed",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -718,7 +799,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Refresh cookie is missing or invalid.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -756,7 +837,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 successEnvelopeSchema(nullSchema, nullSchema),
                 {
                   success: true,
-                  message: "Logout berhasil",
+                  message: "Logout successful",
                   data: null,
                   meta: null
                 }
@@ -785,7 +866,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               {
                 success: true,
                 message:
-                  "Jika email terdaftar, instruksi reset kata sandi akan dikirim.",
+                  "If the email is registered, password reset instructions will be sent",
                 data: null,
                 meta: null
               }
@@ -813,7 +894,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(nullSchema, nullSchema),
               {
                 success: true,
-                message: "Reset kata sandi berhasil",
+                message: "Password reset successful",
                 data: null,
                 meta: null
               }
@@ -821,7 +902,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Reset token is expired or invalid.",
               "PASSWORD_RESET_TOKEN_INVALID",
-              "Token reset kata sandi tidak valid"
+              "Password reset token is invalid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -866,7 +947,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 ),
                 {
                   success: true,
-                  message: "Email berhasil diverifikasi",
+                  message: "Email verified successfully",
                   data: {
                     user: authUserExample,
                     session: authSessionExample
@@ -878,7 +959,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Email verification OTP is expired or invalid.",
               "EMAIL_VERIFICATION_INVALID",
-              "OTP verifikasi email tidak valid"
+              "Email verification OTP is invalid"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -910,7 +991,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "URL login Google berhasil dibuat",
+                message: "Google login URL created successfully",
                 data: {
                   authorizeUrl:
                     "https://accounts.google.com/o/oauth2/v2/auth?..."
@@ -921,12 +1002,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "501": errorResponse(
               "Google SSO is not configured.",
               "GOOGLE_SSO_NOT_CONFIGURED",
-              "Google SSO belum dikonfigurasi"
+              "Google SSO is not configured"
             ),
             "429": errorResponse(
               "Rate limit exceeded.",
               "RATE_LIMITED",
-              "Terlalu banyak permintaan",
+              "Too many requests",
               {
                 limit: "auth"
               }
@@ -967,7 +1048,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Login Google berhasil",
+                message: "Google login successful",
                 data: {
                   user: authUserExample,
                   session: authSessionExample
@@ -978,17 +1059,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "400": errorResponse(
               "OAuth state mismatch.",
               "GOOGLE_OAUTH_STATE_INVALID",
-              "State Google tidak valid"
+              "Google OAuth state is invalid"
             ),
             "409": errorResponse(
               "Google account already linked.",
               "GOOGLE_OAUTH_ACCOUNT_ALREADY_LINKED",
-              "Akun sudah terhubung dengan akun Google lain"
+              "Account is already linked to another Google account"
             ),
             "501": errorResponse(
               "Google SSO is not configured.",
               "GOOGLE_SSO_NOT_CONFIGURED",
-              "Google SSO belum dikonfigurasi"
+              "Google SSO is not configured"
             ),
             ...authValidationAndRateLimitResponses()
           }
@@ -1061,11 +1142,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Service token is missing or invalid.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "body.jobs",
-              "Payload request tidak valid"
+              "Jobs list must contain at least 1 item"
             )
           }
         }
@@ -1115,11 +1196,11 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Service token is missing or invalid.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "body.candidates",
-              "Payload request tidak valid"
+              "Notification candidates are required"
             )
           }
         }
@@ -1250,7 +1331,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar lowongan berhasil diambil",
+                message: "Jobs retrieved successfully",
                 data: [jobCardExample],
                 meta: {
                   pagination: {
@@ -1271,7 +1352,8 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "salaryMax",
-              "salaryMax harus lebih besar atau sama dengan salaryMin"
+              "salaryMax must be greater than or equal to salaryMin",
+              "custom"
             )
           }
         }
@@ -1296,7 +1378,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("JobDetail"), nullSchema),
               {
                 success: true,
-                message: "Lowongan berhasil diambil",
+                message: "Job retrieved successfully",
                 data: {
                   ...jobCardExample,
                   company: {
@@ -1320,9 +1402,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
+              "Job not found"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "Job ID is invalid. Use a valid UUID"
+            )
           }
         }
       },
@@ -1339,7 +1424,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profil berhasil diambil",
+                message: "Profile retrieved successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1347,7 +1432,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             )
           }
         },
@@ -1371,7 +1456,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Profil berhasil diperbarui",
+                message: "Profile updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1379,16 +1464,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "409": errorResponse(
               "Username is already used.",
               "USERNAME_ALREADY_REGISTERED",
-              "Username sudah terdaftar"
+              "Username is already registered"
             ),
             "422": validationErrorResponse(
-              "displayName",
-              "Minimal satu field harus diisi"
+              "",
+              "At least one profile field must be provided",
+              "custom"
             )
           }
         }
@@ -1415,7 +1501,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Foto profil berhasil diperbarui",
+                message: "Profile photo updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1423,9 +1509,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
-            "422": validationErrorResponse("mimeType", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "mimeType",
+              "File type is not supported. Use image/jpeg, image/png, or image/webp"
+            )
           }
         }
       },
@@ -1456,7 +1545,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Keahlian berhasil diperbarui",
+                message: "Skills updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1464,11 +1553,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "skills.0.name",
-              "Nama keahlian tidak boleh duplikat"
+              "Skill names must not be duplicated in the same list",
+              "custom"
             )
           }
         }
@@ -1501,7 +1591,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Pengalaman berhasil diperbarui",
+                message: "Experience updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1509,11 +1599,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "experience.0.endDate",
-              "endDate harus lebih besar atau sama dengan startDate"
+              "End date must be greater than or equal to start date",
+              "custom"
             )
           }
         }
@@ -1544,7 +1635,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CurrentUser"), nullSchema),
               {
                 success: true,
-                message: "Pendidikan berhasil diperbarui",
+                message: "Education updated successfully",
                 data: currentUserExample,
                 meta: null
               }
@@ -1552,11 +1643,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "education.0.endYear",
-              "endYear harus lebih besar atau sama dengan startYear"
+              "End year must be greater than or equal to start year",
+              "custom"
             )
           }
         }
@@ -1574,7 +1666,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferensi berhasil diambil",
+                message: "Preferences retrieved successfully",
                 data: preferencesExample,
                 meta: null
               }
@@ -1582,12 +1674,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Preferences do not exist yet.",
               "PREFERENCES_NOT_FOUND",
-              "Preferensi tidak ditemukan"
+              "Preferences not found"
             )
           }
         },
@@ -1625,7 +1717,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferensi berhasil disimpan",
+                message: "Preferences saved successfully",
                 data: preferencesExample,
                 meta: null
               }
@@ -1633,11 +1725,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "salaryExpectation.max",
-              "salaryExpectation.max harus lebih besar atau sama dengan min"
+              "salaryExpectation.max must be greater than or equal to min",
+              "custom"
             )
           }
         },
@@ -1660,7 +1753,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("Preferences"), nullSchema),
               {
                 success: true,
-                message: "Preferensi berhasil diperbarui",
+                message: "Preferences updated successfully",
                 data: {
                   ...preferencesExample,
                   workTypes: ["REMOTE"],
@@ -1672,11 +1765,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "422": validationErrorResponse(
               "workTypes",
-              "Payload request tidak valid"
+              "At least one work type is required",
+              "too_small"
             )
           }
         }
@@ -1731,7 +1825,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar bookmark berhasil diambil",
+                message: "Bookmarks retrieved successfully",
                 data: [bookmarkExample],
                 meta: {
                   pagination: {
@@ -1752,9 +1846,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
-            "422": validationErrorResponse("sort", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "sort",
+              "Sort is not supported. Use one of the supported sort values"
+            )
           }
         },
         post: {
@@ -1774,7 +1871,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("BookmarkSummary"), nullSchema),
               {
                 success: true,
-                message: "Lowongan berhasil disimpan",
+                message: "Job saved successfully",
                 data: {
                   id: "550e8400-e29b-41d4-a716-446655440040",
                   jobId: "550e8400-e29b-41d4-a716-446655440010",
@@ -1786,19 +1883,22 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
+              "Job not found"
             ),
             "409": errorResponse(
               "Bookmark already exists.",
               "BOOKMARK_ALREADY_EXISTS",
-              "Bookmark sudah ada"
+              "Bookmark already exists"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "Job ID is invalid. Use a valid UUID"
+            )
           }
         }
       },
@@ -1824,14 +1924,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Bookmark is not found.",
               "BOOKMARK_NOT_FOUND",
-              "Bookmark tidak ditemukan"
+              "Bookmark not found"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "Job ID is invalid. Use a valid UUID"
+            )
           }
         }
       },
@@ -1888,7 +1991,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               ),
               {
                 success: true,
-                message: "Daftar lamaran berhasil diambil",
+                message: "Applications retrieved successfully",
                 data: [applicationExample],
                 meta: {
                   pagination: {
@@ -1909,9 +2012,12 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
-            "422": validationErrorResponse("status", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "status",
+              "Application status is not supported. Use one of the supported statuses"
+            )
           }
         },
         post: {
@@ -1935,7 +2041,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Lamaran berhasil dibuat",
+                message: "Application created successfully",
                 data: applicationExample,
                 meta: null
               }
@@ -1943,19 +2049,22 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Job is not found.",
               "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
+              "Job not found"
             ),
             "409": errorResponse(
               "Application is already tracked.",
               "APPLICATION_ALREADY_TRACKED",
-              "Lamaran sudah dilacak"
+              "Application is already tracked"
             ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid")
+            "422": validationErrorResponse(
+              "jobId",
+              "Job ID is invalid. Use a valid UUID"
+            )
           }
         }
       },
@@ -1987,7 +2096,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Lamaran berhasil diperbarui",
+                message: "Application updated successfully",
                 data: {
                   ...applicationExample,
                   notes: "Recruiter replied and asked for availability.",
@@ -1999,16 +2108,17 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Application is not found.",
               "APPLICATION_NOT_FOUND",
-              "Lamaran tidak ditemukan"
+              "Application not found"
             ),
             "422": validationErrorResponse(
-              "body",
-              "Minimal satu field harus diisi"
+              "",
+              "At least one update field must be provided",
+              "custom"
             )
           }
         }
@@ -2041,7 +2151,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("ApplicationResource"), nullSchema),
               {
                 success: true,
-                message: "Status lamaran berhasil diperbarui",
+                message: "Application status updated successfully",
                 data: {
                   ...applicationExample,
                   status: "INTERVIEW",
@@ -2053,72 +2163,126 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
             "404": errorResponse(
               "Application is not found.",
               "APPLICATION_NOT_FOUND",
-              "Lamaran tidak ditemukan"
+              "Application not found"
             ),
             "409": errorResponse(
               "Requested status transition is not allowed.",
               "APPLICATION_STATUS_CONFLICT",
-              "Perubahan status lamaran tidak valid"
+              "Application status transition is invalid"
             ),
-            "422": validationErrorResponse("status", "Nilai tidak didukung")
+            "422": validationErrorResponse(
+              "status",
+              "Application status is not supported. Use one of the supported statuses"
+            )
           }
         }
       },
-      "/api/v1/ai/job-fit": {
+      "/api/v1/me/cv-files": {
         post: {
-          tags: ["AI Job Fit"],
-          summary: "Analyze job fit",
+          tags: ["AI CV Analyzer"],
+          summary: "Upload current user's CV",
           description:
-            "Builds backend-owned user and preference context, calls Model API, and returns a job fit analysis for the selected job.",
+            "Stores a PDF CV file for the authenticated current user. This endpoint can be used during onboarding before email verification and can mark the uploaded CV as the user's active CV.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
-            content: jsonContent(ref("AnalyzeJobFitRequest"), {
-              jobId: "550e8400-e29b-41d4-a716-446655440010",
-              persistResult: true
-            })
+            content: {
+              "multipart/form-data": {
+                schema: ref("UploadCvFileMultipartRequest"),
+                encoding: {
+                  cvFile: {
+                    contentType: "application/pdf"
+                  }
+                }
+              }
+            }
           },
           responses: {
-            "200": jsonResponse(
-              "Job fit analysis completed successfully.",
-              successEnvelopeSchema(ref("JobFitAnalysis"), nullSchema),
+            "201": jsonResponse(
+              "CV file uploaded successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["cvFile"],
+                  properties: {
+                    cvFile: ref("CvFile")
+                  }
+                },
+                nullSchema
+              ),
               {
                 success: true,
-                message: "Analisis kecocokan pekerjaan berhasil diselesaikan",
-                data: jobFitExample,
+                message: "CV uploaded successfully",
+                data: { cvFile: cvFileExample },
                 meta: null
               }
             ),
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
+            ),
+            "413": errorResponse(
+              "Uploaded CV exceeds the configured limit.",
+              "PAYLOAD_TOO_LARGE",
+              "CV file size exceeds the maximum limit",
+              {
+                path: "cvFile",
+                maxBytes: config.uploads.cvUploadMaxBytes
+              }
+            ),
+            "422": validationErrorResponse("cvFile", "CV file is required"),
+            "503": errorResponse(
+              "CV storage is unavailable.",
+              "SERVICE_UNAVAILABLE",
+              "Service temporarily unavailable"
+            )
+          }
+        }
+      },
+      "/api/v1/me/cv-files/active": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "Get active CV file",
+          description:
+            "Returns the authenticated current user's active non-expired CV metadata without exposing the internal storage key.",
+          security: bearerSecurity(),
+          responses: {
+            "200": jsonResponse(
+              "Active CV file retrieved successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["cvFile"],
+                  properties: {
+                    cvFile: ref("CvFile")
+                  }
+                },
+                nullSchema
+              ),
+              {
+                success: true,
+                message: "Active CV retrieved successfully",
+                data: { cvFile: cvFileExample },
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Authentication required"
             ),
             "404": errorResponse(
-              "Job is not found.",
-              "JOB_NOT_FOUND",
-              "Lowongan tidak ditemukan"
-            ),
-            "409": errorResponse(
-              "User profile is incomplete.",
-              "PROFILE_INCOMPLETE",
-              "Data profil belum lengkap untuk analisis kecocokan pekerjaan"
-            ),
-            "422": validationErrorResponse("jobId", "Format UUID tidak valid"),
-            "502": errorResponse(
-              "Downstream response is invalid.",
-              "DOWNSTREAM_ERROR",
-              "Model API mengembalikan data response yang tidak valid"
-            ),
-            "503": errorResponse(
-              "Model API is unavailable.",
-              "SERVICE_UNAVAILABLE",
-              "Model API tidak tersedia"
+              "Active CV file is not found.",
+              "CV_FILE_NOT_FOUND",
+              "Active CV not found"
             )
           }
         }
@@ -2128,7 +2292,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           tags: ["AI CV Analyzer"],
           summary: "Analyze CV",
           description:
-            "Accepts a multipart PDF upload and compares the CV against a selected job using Model API.",
+            "Analyzes a CV against target job roles using Model API. The CV source priority is direct PDF upload, explicit cvFileId, then the user's active CV.",
           security: bearerSecurity(),
           requestBody: {
             required: true,
@@ -2149,7 +2313,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
               successEnvelopeSchema(ref("CvAnalysis"), nullSchema),
               {
                 success: true,
-                message: "Analisis CV berhasil diselesaikan",
+                message: "CV analysis completed successfully",
                 data: cvAnalysisExample,
                 meta: null
               }
@@ -2157,17 +2321,59 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             "401": errorResponse(
               "Authentication is required.",
               "UNAUTHENTICATED",
-              "Autentikasi diperlukan"
+              "Authentication required"
             ),
-            "404": errorResponse(
-              "Job or bookmark is not found.",
-              "BOOKMARK_NOT_FOUND",
-              "Bookmark tidak ditemukan"
-            ),
+            "404": {
+              description:
+                "Job, bookmark, or CV file is not found for the current user.",
+              content: {
+                "application/json": {
+                  schema: ref("ErrorEnvelope"),
+                  examples: {
+                    jobNotFound: {
+                      value: {
+                        success: false,
+                        message: "Job not found",
+                        data: null,
+                        error: {
+                          code: "JOB_NOT_FOUND",
+                          details: null,
+                          requestId: "req_1234567890"
+                        }
+                      }
+                    },
+                    bookmarkNotFound: {
+                      value: {
+                        success: false,
+                        message: "Bookmark not found",
+                        data: null,
+                        error: {
+                          code: "BOOKMARK_NOT_FOUND",
+                          details: null,
+                          requestId: "req_1234567890"
+                        }
+                      }
+                    },
+                    cvFileNotFound: {
+                      value: {
+                        success: false,
+                        message: "CV not found",
+                        data: null,
+                        error: {
+                          code: "CV_FILE_NOT_FOUND",
+                          details: null,
+                          requestId: "req_1234567890"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "413": errorResponse(
               "Uploaded CV exceeds the configured limit.",
               "PAYLOAD_TOO_LARGE",
-              "Ukuran file CV melebihi batas maksimum",
+              "CV file size exceeds the maximum limit",
               {
                 path: "cvFile",
                 maxBytes: config.uploads.cvUploadMaxBytes
@@ -2175,17 +2381,244 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             ),
             "422": validationErrorResponse(
               "cvFile",
-              "File CV PDF diperlukan untuk analisis"
+              "PDF CV file is required for analysis"
             ),
             "502": errorResponse(
               "Downstream response is invalid.",
               "DOWNSTREAM_ERROR",
-              "Model API mengembalikan data response yang tidak valid"
+              "Model API returned an invalid response"
             ),
             "503": errorResponse(
               "Model API is unavailable.",
               "SERVICE_UNAVAILABLE",
-              "Model API tidak tersedia"
+              "Model API is unavailable"
+            )
+          }
+        }
+      },
+      "/api/v1/ai/cv-analyzer/results": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "List CV analysis results",
+          description:
+            "Lists sanitized stored CV analysis results owned by the current user. This endpoint reads snapshots only and does not call Model API.",
+          security: bearerSecurity(),
+          parameters: [
+            {
+              in: "query",
+              name: "page",
+              schema: { type: "integer", minimum: 1, default: 1 }
+            },
+            {
+              in: "query",
+              name: "limit",
+              schema: { type: "integer", minimum: 1, maximum: 50, default: 10 }
+            },
+            {
+              in: "query",
+              name: "sortBy",
+              schema: {
+                type: "string",
+                enum: ["analyzedAt"],
+                default: "analyzedAt"
+              }
+            },
+            {
+              in: "query",
+              name: "sortOrder",
+              schema: { type: "string", enum: ["asc", "desc"], default: "desc" }
+            },
+            { in: "query", name: "cvFileId", schema: uuidSchema },
+            {
+              in: "query",
+              name: "schemaVersion",
+              schema: { type: "string", maxLength: 80 }
+            },
+            {
+              in: "query",
+              name: "inputMode",
+              schema: { type: "string", enum: ["UPLOAD", "REFERENCE"] }
+            },
+            {
+              in: "query",
+              name: "compareSource",
+              schema: {
+                type: "string",
+                enum: ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"]
+              }
+            }
+          ],
+          responses: {
+            "200": jsonResponse(
+              "CV analysis results retrieved successfully.",
+              successEnvelopeSchema(
+                {
+                  type: "array",
+                  items: ref("CvAnalysisResultSummary")
+                },
+                listMetaSchema({}, "analyzedAt:desc")
+              ),
+              {
+                success: true,
+                message: "CV analysis results retrieved successfully",
+                data: [cvAnalysisResultSummaryExample],
+                meta: {
+                  pagination: {
+                    page: 1,
+                    limit: 10,
+                    total: 1,
+                    totalPages: 1,
+                    hasNextPage: false,
+                    hasPrevPage: false
+                  },
+                  filters: {},
+                  sort: "analyzedAt:desc"
+                }
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Authentication required"
+            ),
+            "422": validationErrorResponse("page", "Page must be at least 1")
+          }
+        }
+      },
+      "/api/v1/ai/cv-analyzer/results/latest": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "Get latest CV analysis result",
+          description:
+            "Returns the latest sanitized stored CV analysis result owned by the current user.",
+          security: bearerSecurity(),
+          responses: {
+            "200": jsonResponse(
+              "Latest CV analysis result retrieved successfully.",
+              successEnvelopeSchema(ref("CvAnalysisResultDetail"), nullSchema),
+              {
+                success: true,
+                message: "Latest CV analysis result retrieved successfully",
+                data: cvAnalysisResultDetailExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Authentication required"
+            ),
+            "404": errorResponse(
+              "CV analysis result is not found.",
+              "CV_ANALYSIS_RESULT_NOT_FOUND",
+              "Hasil analisis CV not found"
+            )
+          }
+        }
+      },
+      "/api/v1/ai/cv-analyzer/results/{analysisResultId}": {
+        get: {
+          tags: ["AI CV Analyzer"],
+          summary: "Get CV analysis result detail",
+          description:
+            "Returns one sanitized stored CV analysis result owned by the current user. Cross-user ids are concealed as not found.",
+          security: bearerSecurity(),
+          parameters: [
+            {
+              in: "path",
+              name: "analysisResultId",
+              required: true,
+              schema: uuidSchema
+            }
+          ],
+          responses: {
+            "200": jsonResponse(
+              "CV analysis result detail retrieved successfully.",
+              successEnvelopeSchema(ref("CvAnalysisResultDetail"), nullSchema),
+              {
+                success: true,
+                message: "CV analysis result retrieved successfully",
+                data: cvAnalysisResultDetailExample,
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Authentication required"
+            ),
+            "404": errorResponse(
+              "CV analysis result is not found.",
+              "CV_ANALYSIS_RESULT_NOT_FOUND",
+              "Hasil analisis CV not found"
+            ),
+            "422": validationErrorResponse(
+              "analysisResultId",
+              "CV analysis result ID is invalid. Use a valid UUID"
+            )
+          }
+        }
+      },
+      "/api/v1/ai/cv-generate": {
+        post: {
+          tags: ["AI CV Generate"],
+          summary: "Generate markdown HTML CV",
+          description:
+            "Generates improved markdown HTML CV content from a current user's stored CV reference, structured summary, and required HTML template input. Backend owns CV storage reads, structured evidence building, prompt orchestration, provider calls, template structural validation, deterministic fallback rendering, and response safety; Frontend never calls Model API directly.",
+          security: bearerSecurity(),
+          requestBody: {
+            required: true,
+            content: jsonContent(ref("GenerateCvMarkdownRequest"), {
+              cvFileId: "11111111-1111-4111-8111-111111111111",
+              summary:
+                "Backend candidate with REST API, PostgreSQL, and basic deployment experience.",
+              templateHtml:
+                "<section><h1>{{name}}</h1><p>{{summary}}</p></section>"
+            })
+          },
+          responses: {
+            "201": jsonResponse(
+              "Markdown HTML CV generated successfully.",
+              successEnvelopeSchema(ref("GeneratedCvMarkdown"), nullSchema),
+              {
+                success: true,
+                message: "Markdown CV created successfully",
+                data: {
+                  markdown:
+                    "<section><h1>Candidate Name</h1><h2>Summary</h2><p>Backend candidate with REST API, PostgreSQL, and basic deployment experience.</p></section>"
+                },
+                meta: null
+              }
+            ),
+            "401": errorResponse(
+              "Authentication is required.",
+              "UNAUTHENTICATED",
+              "Authentication required"
+            ),
+            "404": errorResponse(
+              "CV file is not found for the current user.",
+              "CV_FILE_NOT_FOUND",
+              "CV not found"
+            ),
+            "413": errorResponse(
+              "Payload exceeds configured limit.",
+              "PAYLOAD_TOO_LARGE",
+              "Payload is too large"
+            ),
+            "422": validationErrorResponse(
+              "templateHtml",
+              "Template HTML is required",
+              "invalid_type"
+            ),
+            "502": errorResponse(
+              "Generated markdown is unsafe or does not preserve the requested template structure.",
+              "MODEL_OUTPUT_INVALID",
+              "AI CV Generate provider returned invalid markdown"
+            ),
+            "503": errorResponse(
+              "AI CV Generate provider is unconfigured or CV storage is unavailable.",
+              "SERVICE_UNAVAILABLE",
+              "Service temporarily unavailable"
             )
           }
         }
@@ -2244,6 +2677,34 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 },
                 requestId: requestIdSchema
               }
+            }
+          }
+        },
+        GenerateCvMarkdownRequest: {
+          type: "object",
+          additionalProperties: false,
+          required: ["cvFileId", "summary", "templateHtml"],
+          properties: {
+            cvFileId: uuidSchema,
+            summary: { type: "string", minLength: 1, maxLength: 8000 },
+            templateHtml: {
+              type: "string",
+              minLength: 1,
+              maxLength: 20000
+            }
+          }
+        },
+        GeneratedCvMarkdown: {
+          type: "object",
+          additionalProperties: false,
+          required: ["markdown"],
+          properties: {
+            markdown: {
+              type: "string",
+              minLength: 1,
+              maxLength: 50000,
+              description:
+                "Markdown HTML string that preserved the requested template structure and still requires frontend sanitization before rendering."
             }
           }
         },
@@ -3085,7 +3546,7 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
           required: ["jobId"],
           properties: {
             jobId: uuidSchema,
-            persistResult: { type: "boolean", default: false }
+            persistResult: { type: "boolean", default: true }
           }
         },
         JobFitAnalysis: {
@@ -3203,12 +3664,144 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             analyzedAt: isoDateTimeSchema
           }
         },
+        GenerateJobRecommendationsRequest: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            cvAnalysisResultId: uuidSchema,
+            limit: { type: "integer", minimum: 1, maximum: 20, default: 10 },
+            filters: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                location: { type: "string", minLength: 1, maxLength: 120 },
+                workType: {
+                  type: "string",
+                  enum: ["REMOTE", "HYBRID", "ONSITE"]
+                },
+                experienceLevel: {
+                  type: "string",
+                  enum: ["ENTRY_LEVEL", "JUNIOR", "MID_LEVEL", "SENIOR", "LEAD"]
+                },
+                excludeAppliedJobs: { type: "boolean", default: true },
+                includeBookmarkedStatus: { type: "boolean", default: true }
+              }
+            },
+            idempotencyKey: { type: "string", minLength: 1, maxLength: 120 }
+          }
+        },
+        JobRecommendationRun: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "cvAnalysisResultId",
+            "generatedAt",
+            "modelName",
+            "modelVersion",
+            "candidateCount",
+            "recommendationCount"
+          ],
+          properties: {
+            id: uuidSchema,
+            cvAnalysisResultId: uuidSchema,
+            generatedAt: isoDateTimeSchema,
+            modelName: { type: "string" },
+            modelVersion: { type: "string" },
+            candidateCount: { type: "integer", minimum: 0 },
+            recommendationCount: { type: "integer", minimum: 0 }
+          }
+        },
+        JobRecommendationItem: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "job",
+            "matchScore",
+            "matchLevel",
+            "reasons",
+            "matchedSkills",
+            "missingSkills",
+            "nextSteps",
+            "isBookmarked",
+            "hasApplied"
+          ],
+          properties: {
+            job: {
+              type: "object",
+              additionalProperties: false,
+              required: [
+                "id",
+                "title",
+                "companyName",
+                "location",
+                "workType",
+                "experienceLevel"
+              ],
+              properties: {
+                id: uuidSchema,
+                title: { type: "string" },
+                companyName: { type: "string" },
+                location: { anyOf: [{ type: "string" }, nullSchema] },
+                workType: {
+                  anyOf: [
+                    {
+                      type: "string",
+                      enum: ["REMOTE", "HYBRID", "ONSITE"]
+                    },
+                    nullSchema
+                  ]
+                },
+                experienceLevel: {
+                  anyOf: [
+                    {
+                      type: "string",
+                      enum: [
+                        "ENTRY_LEVEL",
+                        "JUNIOR",
+                        "MID_LEVEL",
+                        "SENIOR",
+                        "LEAD"
+                      ]
+                    },
+                    nullSchema
+                  ]
+                }
+              }
+            },
+            matchScore: { type: "integer", minimum: 0, maximum: 100 },
+            matchLevel: { type: "string", enum: ["strong", "good", "stretch"] },
+            reasons: { type: "array", items: { type: "string" } },
+            matchedSkills: { type: "array", items: { type: "string" } },
+            missingSkills: { type: "array", items: { type: "string" } },
+            nextSteps: { type: "array", items: { type: "string" } },
+            isBookmarked: { type: "boolean" },
+            hasApplied: { type: "boolean" }
+          }
+        },
+        JobRecommendationsData: {
+          type: "object",
+          additionalProperties: false,
+          required: ["recommendationRun", "recommendations"],
+          properties: {
+            recommendationRun: ref("JobRecommendationRun"),
+            recommendations: {
+              type: "array",
+              items: ref("JobRecommendationItem")
+            }
+          }
+        },
         AnalyzeCvMultipartRequest: {
           type: "object",
           additionalProperties: false,
-          required: ["jobId", "language", "inputMode", "cvFile"],
+          required: ["jobRoles", "language", "inputMode"],
           properties: {
-            jobId: uuidSchema,
+            jobRoles: {
+              type: "array",
+              minItems: 1,
+              maxItems: 10,
+              items: { type: "string" }
+            },
             language: { type: "string", enum: ["id", "en"] },
             inputMode: { type: "string", enum: ["UPLOAD", "REFERENCE"] },
             compareSource: {
@@ -3230,83 +3823,272 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             }
           }
         },
-        CvAnalysis: {
+        UploadCvFileMultipartRequest: {
+          type: "object",
+          additionalProperties: false,
+          required: ["cvFile"],
+          properties: {
+            setAsActive: {
+              oneOf: [
+                { type: "boolean" },
+                { type: "string", enum: ["true", "false"] }
+              ],
+              default: true
+            },
+            cvFile: {
+              type: "string",
+              format: "binary"
+            }
+          }
+        },
+        CvFile: {
           type: "object",
           additionalProperties: false,
           required: [
-            "jobId",
-            "language",
-            "overallImpression",
+            "id",
+            "originalFileName",
+            "mimeType",
+            "sizeBytes",
+            "uploadedAt",
+            "expiresAt",
+            "isActive"
+          ],
+          properties: {
+            id: uuidSchema,
+            originalFileName: { type: "string", example: "resume.pdf" },
+            mimeType: { type: "string", const: "application/pdf" },
+            sizeBytes: { type: "integer", minimum: 1, example: 284321 },
+            uploadedAt: isoDateTimeSchema,
+            expiresAt: isoDateTimeSchema,
+            isActive: { type: "boolean" }
+          }
+        },
+        CvAnalysis: {
+          type: "object",
+          additionalProperties: false,
+          required: ["jobRoles", "language", "analysisResult"],
+          properties: {
+            jobRoles: {
+              type: "array",
+              items: { type: "string" }
+            },
+            language: { type: "string", enum: ["id", "en"] },
+            analysisResult: {
+              type: "object",
+              additionalProperties: false,
+              required: [
+                "id",
+                "schemaVersion",
+                "jobFitAlignment",
+                "atsFriendliness",
+                "overallImpression",
+                "topActionables",
+                "sectionReviews",
+                "jobRecommendations",
+                "generatedCv",
+                "model",
+                "analyzedAt"
+              ],
+              properties: {
+                id: uuidSchema,
+                schemaVersion: {
+                  type: "string",
+                  const: "cv-analysis-v2"
+                },
+                jobFitAlignment: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["score", "summary"],
+                  properties: {
+                    score: { type: "integer", minimum: 0, maximum: 100 },
+                    summary: { type: "string" }
+                  }
+                },
+                atsFriendliness: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["score", "summary"],
+                  properties: {
+                    score: { type: "integer", minimum: 0, maximum: 100 },
+                    summary: { type: "string" }
+                  }
+                },
+                overallImpression: { type: "string" },
+                topActionables: {
+                  type: "array",
+                  minItems: 1,
+                  maxItems: 3,
+                  items: { type: "string" }
+                },
+                sectionReviews: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: [
+                      "sectionName",
+                      "analysis",
+                      "actionPoints",
+                      "whyItsImportantForYou"
+                    ],
+                    properties: {
+                      sectionName: { type: "string" },
+                      analysis: { type: "string" },
+                      actionPoints: {
+                        type: "array",
+                        minItems: 1,
+                        items: { type: "string" }
+                      },
+                      whyItsImportantForYou: { type: "string" }
+                    }
+                  }
+                },
+                jobRecommendations: {
+                  type: "array",
+                  maxItems: 5,
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: [
+                      "jobId",
+                      "title",
+                      "companyName",
+                      "matchScore",
+                      "reason",
+                      "nextStep"
+                    ],
+                    properties: {
+                      jobId: { oneOf: [uuidSchema, nullSchema] },
+                      title: { type: "string" },
+                      companyName: { oneOf: [{ type: "string" }, nullSchema] },
+                      matchScore: {
+                        type: "integer",
+                        minimum: 0,
+                        maximum: 100
+                      },
+                      reason: { type: "string" },
+                      nextStep: { type: "string" }
+                    }
+                  }
+                },
+                generatedCv: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["available", "note"],
+                  properties: {
+                    available: { type: "boolean" },
+                    note: { type: "string" }
+                  }
+                },
+                model: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["name", "version"],
+                  properties: {
+                    name: { type: "string" },
+                    version: { type: "string" }
+                  }
+                },
+                analyzedAt: isoDateTimeSchema
+              }
+            }
+          }
+        },
+        CvAnalysisResultSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "schemaVersion",
+            "analyzedAt",
+            "inputMode",
+            "compareSource",
             "jobFitAlignment",
             "atsFriendliness",
-            "keywordOptimization",
-            "experienceQuantification",
-            "actionableImprovements",
+            "overallImpressionPreview",
+            "topActionablesPreview",
+            "model",
+            "cvFile"
+          ],
+          properties: {
+            id: uuidSchema,
+            schemaVersion: { type: "string" },
+            analyzedAt: isoDateTimeSchema,
+            inputMode: { type: "string", enum: ["UPLOAD", "REFERENCE"] },
+            compareSource: {
+              type: "string",
+              enum: ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"]
+            },
+            jobFitAlignment: ref("CvAnalysisScoreSummary"),
+            atsFriendliness: ref("CvAnalysisScoreSummary"),
+            overallImpressionPreview: { type: "string" },
+            topActionablesPreview: {
+              type: "array",
+              maxItems: 3,
+              items: { type: "string" }
+            },
+            model: ref("CvAnalysisModelMetadata"),
+            cvFile: { oneOf: [ref("CvAnalysisSafeCvFile"), nullSchema] }
+          }
+        },
+        CvAnalysisResultDetail: {
+          type: "object",
+          additionalProperties: false,
+          required: ["analysisResult", "context"],
+          properties: {
+            analysisResult: ref("CvAnalysisStoredResult"),
+            context: ref("CvAnalysisResultContext")
+          }
+        },
+        CvAnalysisScoreSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: ["score"],
+          properties: {
+            score: {
+              oneOf: [{ type: "integer", minimum: 0, maximum: 100 }, nullSchema]
+            }
+          }
+        },
+        CvAnalysisModelMetadata: {
+          type: "object",
+          additionalProperties: false,
+          required: ["name", "version"],
+          properties: {
+            name: { oneOf: [{ type: "string" }, nullSchema] },
+            version: { oneOf: [{ type: "string" }, nullSchema] }
+          }
+        },
+        CvAnalysisStoredResult: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "id",
+            "schemaVersion",
+            "jobFitAlignment",
+            "atsFriendliness",
+            "overallImpression",
+            "topActionables",
+            "sectionReviews",
+            "jobRecommendations",
             "generatedCv",
             "model",
             "analyzedAt"
           ],
           properties: {
-            jobId: uuidSchema,
-            language: { type: "string", enum: ["id", "en"] },
-            overallImpression: {
-              type: "object",
-              additionalProperties: false,
-              required: ["score", "summary"],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                summary: { type: "string" }
-              }
-            },
-            jobFitAlignment: {
-              type: "object",
-              additionalProperties: false,
-              required: [
-                "score",
-                "summary",
-                "matchedSignals",
-                "missingSignals"
-              ],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                summary: { type: "string" },
-                matchedSignals: { type: "array", items: { type: "string" } },
-                missingSignals: { type: "array", items: { type: "string" } }
-              }
-            },
-            atsFriendliness: {
-              type: "object",
-              additionalProperties: false,
-              required: ["score", "issues"],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                issues: { type: "array", items: { type: "string" } }
-              }
-            },
-            keywordOptimization: {
-              type: "object",
-              additionalProperties: false,
-              required: ["recommendedKeywords", "reason"],
-              properties: {
-                recommendedKeywords: {
-                  type: "array",
-                  items: { type: "string" }
-                },
-                reason: { type: "string" }
-              }
-            },
-            experienceQuantification: {
-              type: "object",
-              additionalProperties: false,
-              required: ["score", "suggestions"],
-              properties: {
-                score: { type: "integer", minimum: 0, maximum: 100 },
-                suggestions: { type: "array", items: { type: "string" } }
-              }
-            },
-            actionableImprovements: {
+            id: uuidSchema,
+            schemaVersion: { type: "string" },
+            jobFitAlignment: ref("CvAnalysisScoreWithSummary"),
+            atsFriendliness: ref("CvAnalysisScoreWithSummary"),
+            overallImpression: { type: "string" },
+            topActionables: { type: "array", items: { type: "string" } },
+            sectionReviews: {
               type: "array",
-              items: { type: "string" }
+              items: ref("CvAnalysisSectionReview")
+            },
+            jobRecommendations: {
+              type: "array",
+              items: ref("CvAnalysisJobRecommendation")
             },
             generatedCv: {
               type: "object",
@@ -3317,16 +4099,108 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
                 note: { type: "string" }
               }
             },
-            model: {
-              type: "object",
-              additionalProperties: false,
-              required: ["name", "version"],
-              properties: {
-                name: { type: "string" },
-                version: { type: "string" }
-              }
-            },
+            model: ref("CvAnalysisModelMetadata"),
             analyzedAt: isoDateTimeSchema
+          }
+        },
+        CvAnalysisResultContext: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "language",
+            "inputMode",
+            "compareSource",
+            "cvFile",
+            "inputSummary"
+          ],
+          properties: {
+            language: { type: "string", enum: ["id", "en"] },
+            inputMode: { type: "string", enum: ["UPLOAD", "REFERENCE"] },
+            compareSource: {
+              type: "string",
+              enum: ["BOOKMARK", "JOB_SEARCH", "DIRECT_JOB_DETAIL"]
+            },
+            cvFile: { oneOf: [ref("CvAnalysisSafeCvFile"), nullSchema] },
+            inputSummary: {
+              oneOf: [ref("CvAnalysisSafeInputSummary"), nullSchema]
+            }
+          }
+        },
+        CvAnalysisSafeInputSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: ["jobRoles", "file"],
+          properties: {
+            jobRoles: { type: "array", items: { type: "string" } },
+            file: { oneOf: [ref("CvAnalysisSafeInputFile"), nullSchema] }
+          }
+        },
+        CvAnalysisSafeInputFile: {
+          type: "object",
+          additionalProperties: false,
+          required: ["mimeType", "sizeBytes"],
+          properties: {
+            mimeType: { type: "string" },
+            sizeBytes: { type: "integer", minimum: 1 }
+          }
+        },
+        CvAnalysisScoreWithSummary: {
+          type: "object",
+          additionalProperties: false,
+          required: ["score", "summary"],
+          properties: {
+            score: { type: "integer", minimum: 0, maximum: 100 },
+            summary: { type: "string" }
+          }
+        },
+        CvAnalysisSectionReview: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "sectionName",
+            "analysis",
+            "actionPoints",
+            "whyItsImportantForYou"
+          ],
+          properties: {
+            sectionName: { type: "string" },
+            analysis: { type: "string" },
+            actionPoints: {
+              type: "array",
+              minItems: 1,
+              items: { type: "string" }
+            },
+            whyItsImportantForYou: { type: "string" }
+          }
+        },
+        CvAnalysisJobRecommendation: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "jobId",
+            "title",
+            "companyName",
+            "matchScore",
+            "reason",
+            "nextStep"
+          ],
+          properties: {
+            jobId: { oneOf: [uuidSchema, nullSchema] },
+            title: { type: "string" },
+            companyName: { oneOf: [{ type: "string" }, nullSchema] },
+            matchScore: { type: "integer", minimum: 0, maximum: 100 },
+            reason: { type: "string" },
+            nextStep: { type: "string" }
+          }
+        },
+        CvAnalysisSafeCvFile: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "originalFileName", "uploadedAt"],
+          properties: {
+            id: uuidSchema,
+            originalFileName: { type: "string" },
+            uploadedAt: isoDateTimeSchema
           }
         },
         HealthLiveData: {
@@ -3350,9 +4224,13 @@ export function buildOpenApiDocument(config: AppConfig): OpenApiDocument {
             dependencies: {
               type: "object",
               additionalProperties: false,
-              required: ["postgresql"],
+              required: ["postgresql", "redis"],
               properties: {
                 postgresql: {
+                  type: "string",
+                  enum: ["healthy", "unhealthy"]
+                },
+                redis: {
                   type: "string",
                   enum: ["healthy", "unhealthy"]
                 }

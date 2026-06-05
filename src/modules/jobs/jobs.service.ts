@@ -63,10 +63,7 @@ export class JobsService {
     const job = await this.repository.findVisibleById(jobId);
 
     if (!job) {
-      throw new NotFoundError(
-        "Lowongan tidak ditemukan",
-        jobsErrorCodes.jobNotFound
-      );
+      throw new NotFoundError("Job not found", jobsErrorCodes.jobNotFound);
     }
 
     return serializeJobDetail(job, this.options.staleAfterHours, this.now());

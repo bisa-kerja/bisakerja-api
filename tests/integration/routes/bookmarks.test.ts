@@ -50,7 +50,7 @@ describe("bookmarks routes", () => {
     expect(saved.status).toBe(201);
     expect(saved.body).toMatchObject({
       success: true,
-      message: "Lowongan berhasil disimpan",
+      message: "Job saved successfully",
       data: {
         jobId,
         createdAt: "2026-04-22T00:00:00.000Z"
@@ -93,6 +93,11 @@ describe("bookmarks routes", () => {
     });
 
     expect(userIdInjection.status).toBe(422);
+    expect(userIdInjection.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "userId" })]
+      }
+    });
   });
 
   test("lists only current user's bookmarks with pagination metadata and safe job card fields", async () => {
@@ -116,7 +121,7 @@ describe("bookmarks routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Daftar bookmark berhasil diambil",
+      message: "Bookmarks retrieved successfully",
       data: [
         {
           id: "bookmark-user-1-11111111",
@@ -186,6 +191,16 @@ describe("bookmarks routes", () => {
     });
 
     expect(invalidParam.status).toBe(422);
+    expect(invalidParam.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "jobId",
+            message: "Job ID is invalid. Use a valid UUID"
+          })
+        ]
+      }
+    });
   });
 });
 

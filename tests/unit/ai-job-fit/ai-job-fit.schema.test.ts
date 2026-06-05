@@ -23,4 +23,15 @@ describe("ai job fit schema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  test("returns friendly message for invalid job id", () => {
+    const invalid = analyzeJobFitSchema.safeParse({
+      jobId: "job_123"
+    });
+
+    expect(invalid.success).toBe(false);
+    expect(invalid.error?.issues[0]?.message).toBe(
+      "Job ID is invalid. Use a valid UUID"
+    );
+  });
 });

@@ -7,6 +7,7 @@ import {
 import { createModelApiClient } from "@/shared/integrations/model-api.client";
 import type {
   CvAnalyzerModelPayload,
+  JobRecommendationModelPayload,
   JobFitModelPayload
 } from "@/shared/integrations/model-api.schema";
 import { testConfig } from "../../helpers/config";
@@ -61,14 +62,77 @@ const cvPayload: CvAnalyzerModelPayload = {
     sizeBytes: 1024,
     storageKey: "cv/user-1/cv-1.pdf"
   },
-  job: {
-    id: "job-1",
-    title: "Backend Developer",
-    description: "Build backend APIs",
-    requirements: [{ type: "SKILL", value: "TypeScript", priority: "HIGH" }],
-    skills: ["TypeScript"],
-    experienceLevel: "ENTRY_LEVEL"
-  }
+  jobRoles: ["Backend Developer"],
+  rankingPolicy: {
+    backendOwnsHydration: true,
+    requireCandidateJobIds: true,
+    deduplicateByJobId: true,
+    maxRecommendations: 1
+  },
+  jobCandidates: [
+    {
+      jobId: "11111111-1111-4111-8111-111111111111",
+      scoringInput: {
+        titleText: "Backend Developer",
+        descriptionText: "Build APIs",
+        requirementSummary: "TypeScript",
+        requiredSkills: ["TypeScript"],
+        requirements: [
+          { type: "SKILL", value: "TypeScript", priority: "HIGH" }
+        ],
+        roleFamily: "backend developer",
+        experienceLevel: "ENTRY_LEVEL",
+        workType: "REMOTE"
+      }
+    }
+  ]
+};
+
+const recommendationPayload: JobRecommendationModelPayload = {
+  requestId: "req_recommend_client",
+  inputVersion: "job-recommendations-v1",
+  talentProfile: {
+    targetRole: "Backend Developer",
+    seniorityLevel: "ENTRY_LEVEL",
+    hardSkills: ["TypeScript"],
+    softSkills: [],
+    domainSignals: ["Engineering"],
+    toolsAndTechnologies: ["REST API"],
+    educationSignals: [],
+    experienceYearsEstimate: null,
+    locationPreferences: [{ province: "DKI Jakarta", city: "Jakarta Selatan" }],
+    workTypePreferences: ["REMOTE"],
+    salaryExpectation: {
+      min: 5000000,
+      max: 9000000,
+      currency: "IDR",
+      period: "MONTHLY"
+    },
+    redFlags: ["Docker"]
+  },
+  rankingPolicy: {
+    maxRecommendations: 10,
+    requireCandidateJobIds: true,
+    deduplicateByJobId: true
+  },
+  jobCandidates: [
+    {
+      jobId: "job-1",
+      title: "Backend Developer",
+      companyName: "Nusantara Tech",
+      location: {
+        display: "Jakarta Selatan, DKI Jakarta",
+        province: "DKI Jakarta",
+        city: "Jakarta Selatan"
+      },
+      workType: "REMOTE",
+      experienceLevel: "ENTRY_LEVEL",
+      descriptionSummary: "Build APIs",
+      requiredSkills: ["TypeScript"],
+      postedAt: "2026-05-18T00:00:00.000Z",
+      sourceUpdatedAt: null
+    }
+  ]
 };
 
 describe("model api client", () => {
@@ -76,15 +140,23 @@ describe("model api client", () => {
     const client = createModelApiClient(testConfig(), {
       mockResponses: {
         jobFit: modelApiFixtures.validJobFitResponse,
-        cvAnalyzer: modelApiFixtures.validCvAnalyzerResponse
+        cvAnalyzer: modelApiFixtures.validCvAnalyzerResponse,
+        jobRecommendations: modelApiFixtures.validJobRecommendationsResponse
       }
     });
 
     const jobFitResponse = await client.analyzeJobFit(jobFitPayload);
     const cvResponse = await client.analyzeCv(cvPayload);
+    if (!client.recommendJobs) {
+      throw new Error("Expected recommendJobs method to be available");
+    }
+    const recommendResponse = await client.recommendJobs(recommendationPayload);
 
     expect(jobFitResponse).toEqual(modelApiFixtures.validJobFitResponse);
     expect(cvResponse).toEqual(modelApiFixtures.validCvAnalyzerResponse);
+    expect(recommendResponse).toEqual(
+      modelApiFixtures.validJobRecommendationsResponse
+    );
   });
 
   test("sends request id and service token to model api", async () => {
@@ -228,6 +300,104 @@ describe("model api client", () => {
     );
 
     await expectRejects(client.analyzeJobFit(jobFitPayload), DownstreamError);
+  });
+
+  test("sends cv analyzer multipart without storage metadata", async () => {
+    const fetchMock = mock(
+      (_url: string | URL | Request, _init?: RequestInit) =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify(modelApiFixtures.validCvAnalyzerResponse),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" }
+            }
+          )
+        )
+    );
+    const client = createModelApiClient(
+      testConfig({
+        MODEL_API_ENABLE_MOCK: "false",
+        MODEL_API_SERVICE_TOKEN: "live-model-token"
+      }),
+      { fetch: asFetch(fetchMock) }
+    );
+
+    await client.analyzeCv({
+      ...cvPayload,
+      cv: {
+        ...cvPayload.cv,
+        bytes: Buffer.from("%PDF-1.4\nphase 41 sanitized cv\n%%EOF")
+      }
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const call = fetchMock.mock.calls.at(0);
+    expect(call).toBeDefined();
+
+    if (!call) {
+      throw new Error("Expected fetch to be called");
+    }
+
+    const [url, init] = call;
+    expect(toRequestUrl(url)).toBe(
+      "http://localhost:8000/internal/model/cv-analysis"
+    );
+    expect(init?.headers).toMatchObject({
+      authorization: "Bearer live-model-token",
+      "x-request-id": "req_cv_client"
+    });
+    expect(init?.body).toBeInstanceOf(FormData);
+
+    const form = init?.body as FormData;
+    expect(form.has("cv")).toBe(false);
+    expect(JSON.stringify([...form.entries()])).not.toContain("storageKey");
+    expect(form.getAll("jobRoles")).toEqual(["Backend Developer"]);
+    expect(form.get("inputMode")).toBe("UPLOAD");
+    expect(form.get("compareSource")).toBe("JOB_SEARCH");
+    expect(form.get("cvFile")).toBeInstanceOf(Blob);
+  });
+
+  test("calls recommendation endpoint with request id and token", async () => {
+    const fetchMock = mock(
+      (_url: string | URL | Request, _init?: RequestInit) =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify(modelApiFixtures.validJobRecommendationsResponse),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" }
+            }
+          )
+        )
+    );
+    const client = createModelApiClient(
+      testConfig({
+        MODEL_API_ENABLE_MOCK: "false",
+        MODEL_API_SERVICE_TOKEN: "live-model-token"
+      }),
+      { fetch: asFetch(fetchMock) }
+    );
+
+    if (!client.recommendJobs) {
+      throw new Error("Expected recommendJobs method to be available");
+    }
+    await client.recommendJobs(recommendationPayload);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const call = fetchMock.mock.calls.at(0);
+    expect(call).toBeDefined();
+
+    if (!call) {
+      throw new Error("Expected fetch to be called");
+    }
+
+    const [url, init] = call;
+    expect(toRequestUrl(url)).toBe("http://localhost:8000/job-recommendations");
+    expect(init?.headers).toMatchObject({
+      authorization: "Bearer live-model-token",
+      "x-request-id": "req_recommend_client"
+    });
   });
 });
 

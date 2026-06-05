@@ -8,8 +8,14 @@ import { createAuthMiddleware } from "@/core/middlewares/auth.middleware";
 import { createRateLimiters } from "@/core/middlewares/rate-limit.middleware";
 import { validate } from "@/core/middlewares/validate.middleware";
 import { AiCvAnalyzerController } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.controller";
+import { createCvAnalyzerGenAiClient } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.genai";
 import { PrismaAiCvAnalyzerRepository } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.repository";
-import { analyzeCvSchema } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import {
+  analyzeCvSchema,
+  cvAnalysisResultParamsSchema,
+  listCvAnalysisResultsQuerySchema,
+  uploadCvFileSchema
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import { LocalCvFileStorage } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.storage";
 import type { AiCvAnalyzerRouterOptions } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 import { createModelApiClient } from "@/shared/integrations/model-api.client";
@@ -22,18 +28,35 @@ export function createAiCvAnalyzerRouter(
   const repository = options.repository ?? new PrismaAiCvAnalyzerRepository();
   const authMiddleware = options.authMiddleware ?? createAuthMiddleware(config);
   const modelApiClient = options.modelApiClient ?? createModelApiClient(config);
+  const genAiClient =
+    options.genAiClient ??
+    (config.integrations.aiCvAnalyzerGenAi.enabled
+      ? createCvAnalyzerGenAiClient(config)
+      : undefined);
   const storage =
     options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
   const controller = new AiCvAnalyzerController({
     repository,
     config,
     modelApiClient,
+    genAiClient,
     storage,
     now: options.now
   });
   const { aiLimiter, uploadLimiter } = createRateLimiters(config);
 
   router.use(authMiddleware);
+  router.get(
+    "/results",
+    validate({ query: listCvAnalysisResultsQuerySchema }),
+    controller.listAnalysisResults
+  );
+  router.get("/results/latest", controller.getLatestAnalysisResult);
+  router.get(
+    "/results/:analysisResultId",
+    validate({ params: cvAnalysisResultParamsSchema }),
+    controller.getAnalysisResultDetail
+  );
   router.post(
     "/",
     uploadLimiter,
@@ -48,14 +71,56 @@ export function createAiCvAnalyzerRouter(
   return router;
 }
 
+export function createCurrentUserCvFilesRouter(
+  config: AppConfig,
+  options: AiCvAnalyzerRouterOptions = {}
+): Router {
+  const router = createRouter();
+  const repository = options.repository ?? new PrismaAiCvAnalyzerRepository();
+  const authMiddleware =
+    options.authMiddleware ??
+    createAuthMiddleware(config, undefined, { allowUnverifiedEmail: true });
+  const modelApiClient = options.modelApiClient ?? createModelApiClient(config);
+  const genAiClient =
+    options.genAiClient ??
+    (config.integrations.aiCvAnalyzerGenAi.enabled
+      ? createCvAnalyzerGenAiClient(config)
+      : undefined);
+  const storage =
+    options.storage ?? new LocalCvFileStorage(config.uploads.storagePath);
+  const controller = new AiCvAnalyzerController({
+    repository,
+    config,
+    modelApiClient,
+    genAiClient,
+    storage,
+    now: options.now
+  });
+  const { uploadLimiter } = createRateLimiters(config);
+
+  router.use(authMiddleware);
+  router.post(
+    "/",
+    uploadLimiter,
+    requireMultipartFormData(),
+    createCvUploadMiddleware(config),
+    validate({ body: uploadCvFileSchema }),
+    validateCvFilePresence(),
+    controller.uploadCvFile
+  );
+  router.get("/active", controller.getActiveCvFile);
+
+  return router;
+}
+
 export function requireMultipartFormData(): RequestHandler {
   return (req, _res, next) => {
     if (!req.is("multipart/form-data")) {
       next(
-        new ValidationError("Multipart form data diperlukan", [
+        new ValidationError("Multipart form data is required", [
           {
             path: "body",
-            message: "Request harus multipart/form-data",
+            message: "Request must use multipart/form-data",
             code: "custom"
           }
         ])
@@ -74,16 +139,16 @@ export function createCvUploadMiddleware(config: AppConfig): RequestHandler {
     limits: {
       files: 1,
       fileSize: config.uploads.cvUploadMaxBytes,
-      fields: 8,
-      parts: 9
+      fields: 16,
+      parts: 17
     },
     fileFilter: (_req, file, callback) => {
       if (!allowedMimeTypes.has(file.mimetype.toLowerCase())) {
         callback(
-          new ValidationError("Tipe file CV tidak didukung", [
+          new ValidationError("CV file type is not supported", [
             {
               path: "cvFile",
-              message: `MIME type yang didukung: ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
+              message: `CV file type is not supported. Use ${config.uploads.cvAllowedMimeTypes.join(", ")}`,
               code: "custom"
             }
           ])
@@ -120,10 +185,29 @@ export function validateUploadPresence(): RequestHandler {
 
     if (input.inputMode === "UPLOAD" && !req.file) {
       next(
-        new ValidationError("File CV wajib diunggah", [
+        new ValidationError("CV file is required", [
           {
             path: "cvFile",
-            message: "File CV PDF diperlukan untuk analisis",
+            message: "PDF CV file is required for analysis",
+            code: "custom"
+          }
+        ])
+      );
+      return;
+    }
+
+    next();
+  };
+}
+
+export function validateCvFilePresence(): RequestHandler {
+  return (req, _res, next) => {
+    if (!req.file) {
+      next(
+        new ValidationError("CV file is required", [
+          {
+            path: "cvFile",
+            message: "CV file is required",
             code: "custom"
           }
         ])
@@ -138,7 +222,7 @@ export function validateUploadPresence(): RequestHandler {
 function mapMulterError(error: multer.MulterError, config: AppConfig) {
   if (error.code === "LIMIT_FILE_SIZE") {
     return new PayloadTooLargeError(
-      "Ukuran file CV melebihi batas maksimum",
+      "CV file size exceeds the maximum limit",
       "PAYLOAD_TOO_LARGE",
       {
         path: "cvFile",
@@ -148,19 +232,20 @@ function mapMulterError(error: multer.MulterError, config: AppConfig) {
   }
 
   if (error.code === "LIMIT_UNEXPECTED_FILE") {
-    return new ValidationError("Hanya satu file CV yang boleh diunggah", [
+    return new ValidationError("Only one CV file can be uploaded", [
       {
         path: "cvFile",
-        message: "Unggah tepat satu file pada field cvFile",
+        message: "Upload exactly one file in the cvFile field",
         code: error.code
       }
     ]);
   }
 
-  return new ValidationError("Payload upload multipart tidak valid", [
+  return new ValidationError("Multipart upload payload is invalid", [
     {
       path: "cvFile",
-      message: error.message,
+      message:
+        "CV upload payload is invalid. Check the multipart fields and upload the CV file again.",
       code: error.code
     }
   ]);

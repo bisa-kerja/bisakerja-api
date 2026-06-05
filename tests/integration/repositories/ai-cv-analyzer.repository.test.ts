@@ -77,12 +77,24 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         sizeBytes: 1024,
         storageDriver: "LOCAL",
         storageKey: `cv/${user.id}/cv-file-${context.runId}.pdf`,
-        expiresAt: new Date("2026-04-24T00:00:00.000Z")
+        expiresAt: new Date("2026-04-24T00:00:00.000Z"),
+        isActive: true
+      });
+      const replacementMetadata = await repository.createCvFileMetadata({
+        id: `cv-file-active-${context.runId}`,
+        userId: user.id,
+        originalFileName: "cv-active.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 2048,
+        storageDriver: "LOCAL",
+        storageKey: `cv/${user.id}/cv-file-active-${context.runId}.pdf`,
+        expiresAt: new Date("2026-04-24T00:00:00.000Z"),
+        isActive: true
       });
 
       await repository.createSnapshot({
         userId: user.id,
-        jobId: job.id,
+        jobRoles: ["Backend Developer"],
         cvFileMetadataId: metadata.id,
         language: "ID",
         inputMode: "UPLOAD",
@@ -99,39 +111,84 @@ describe("PrismaAiCvAnalyzerRepository", () => {
             sizeBytes: metadata.sizeBytes,
             storageKey: metadata.storageKey
           },
-          job: {
-            id: job.id,
-            title: job.title,
-            description: job.description,
-            requirements: [],
-            skills: [],
-            experienceLevel: job.experienceLevel
-          }
+          jobRoles: ["Backend Developer"],
+          rankingPolicy: {
+            backendOwnsHydration: true,
+            requireCandidateJobIds: true,
+            deduplicateByJobId: true,
+            maxRecommendations: 1
+          },
+          jobCandidates: []
         },
-        response: {
-          overallImpression: {
-            score: 80,
-            summary: "Relevant for the role."
+        modelCoreResponse: {
+          schemaVersion: "model-core-cv-analysis-v1",
+          parsedCv: {
+            status: "parsed",
+            pageCount: 1,
+            textLength: 500,
+            detectedSections: ["Work Experience"]
           },
           jobFitAlignment: {
             score: 75,
-            summary: "Core backend skills are visible.",
-            matchedSignals: ["TypeScript"],
-            missingSignals: ["Docker"]
+            matchedSignals: ["Backend"],
+            missingSignals: [],
+            matchedSkills: ["TypeScript"],
+            missingSkills: [],
+            evidence: []
           },
           atsFriendliness: {
             score: 70,
-            issues: ["Section headings are inconsistent."]
+            detectedIssues: [],
+            parseQuality: "medium",
+            evidence: []
           },
-          keywordOptimization: {
-            recommendedKeywords: ["Docker"],
-            reason: "Appears in the job requirements."
+          overallImpression: {
+            score: 73,
+            evidence: ["Relevant for the role"]
           },
-          experienceQuantification: {
-            score: 60,
-            suggestions: ["Add measurable API impact."]
+          candidateReranking: {
+            recommendations: []
           },
-          actionableImprovements: ["Add a stronger backend summary."],
+          model: {
+            name: "fixture-cv-analyzer-model",
+            version: "test-2026-01"
+          },
+          createdAt: "2026-04-23T00:00:00.000Z"
+        },
+        candidates: [],
+        requestId: "req_cv_repo",
+        response: {
+          schemaVersion: "cv-analysis-v2",
+          jobFitAlignment: {
+            score: 75,
+            summary: "Core backend skills are visible."
+          },
+          atsFriendliness: {
+            score: 70,
+            summary:
+              "Readable structure, but some ATS keyword coverage is still weak."
+          },
+          overallImpression: "Relevant for the role.",
+          topActionables: ["Add a stronger backend summary."],
+          sectionReviews: [
+            {
+              sectionName: "Work Experience",
+              analysis: "Experience is relevant but impact is not measured.",
+              actionPoints: ["Add measurable API impact."],
+              whyItsImportantForYou:
+                "Measured impact makes contribution easier to evaluate."
+            }
+          ],
+          jobRecommendations: [
+            {
+              jobId: job.id,
+              title: job.title,
+              companyName: "CV Analyzer Company",
+              matchScore: 80,
+              reason: "Role matches backend signals.",
+              nextStep: "Improve deployment evidence."
+            }
+          ],
           model: {
             name: "fixture-cv-analyzer-model",
             version: "test-2026-01"
@@ -140,27 +197,19 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         }
       });
 
-      const visibleJob = await repository.findVisibleJob(job.id);
-      const hasBookmark = await repository.hasOwnedBookmarkForJob(
+      const activeMetadata = await repository.findActiveCvFileMetadata(
         user.id,
-        job.id
+        new Date("2026-04-23T00:00:00.000Z")
       );
-      const otherUser = await context.prisma.user.create({
-        data: {
-          email: `cv-other-${context.runId}@example.test`,
-          username: `cv-other-${context.runId}`,
-          emailVerifiedAt: new Date("2026-04-22T00:00:00.000Z")
-        }
-      });
-      const otherUserHasBookmark = await repository.hasOwnedBookmarkForJob(
-        otherUser.id,
-        job.id
+      const explicitMetadata = await repository.findCvFileMetadataById(
+        replacementMetadata.id,
+        new Date("2026-04-23T00:00:00.000Z")
       );
       const expiredBeforeDelete = await repository.findExpiredActiveCvFiles(
         new Date("2026-04-25T00:00:00.000Z")
       );
       const markedDeleted = await repository.markCvFilesDeleted(
-        [metadata.id],
+        [metadata.id, replacementMetadata.id],
         new Date("2026-04-25T00:00:00.000Z")
       );
       const expiredAfterDelete = await repository.findExpiredActiveCvFiles(
@@ -172,16 +221,25 @@ describe("PrismaAiCvAnalyzerRepository", () => {
         }
       });
 
-      expect(visibleJob).toMatchObject({ id: job.id, title: job.title });
-      expect(hasBookmark).toBe(true);
-      expect(otherUserHasBookmark).toBe(false);
+      expect(activeMetadata).toMatchObject({
+        id: replacementMetadata.id,
+        isActive: true
+      });
+      expect(explicitMetadata).toMatchObject({
+        id: replacementMetadata.id,
+        userId: user.id
+      });
       expect(expiredBeforeDelete).toEqual([
         {
           id: metadata.id,
           storageKey: metadata.storageKey
+        },
+        {
+          id: replacementMetadata.id,
+          storageKey: replacementMetadata.storageKey
         }
       ]);
-      expect(markedDeleted).toBe(1);
+      expect(markedDeleted).toBe(2);
       expect(expiredAfterDelete).toEqual([]);
       expect(snapshots).toHaveLength(1);
       expect(snapshots[0]).toMatchObject({

@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/applications.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Applications Module
@@ -147,6 +147,11 @@ Validation:
 
 ## Response Schema
 
+`GET /api/v1/me/applications` returns message `Applications retrieved successfully`.
+`POST /api/v1/me/applications` returns message `Application created successfully`.
+`PATCH /api/v1/me/applications/:applicationId` returns message `Application updated successfully`.
+`PATCH /api/v1/me/applications/:applicationId/status` returns message `Application status updated successfully`.
+
 ### Application Resource
 
 ```json
@@ -197,7 +202,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Daftar lamaran berhasil diambil",
+  "message": "Applications retrieved successfully",
   "data": [
     {
       "id": "55555555-5555-4555-8555-555555555555",
@@ -351,6 +356,12 @@ Database rules:
 | Duplicate tracker record  | 409    | `APPLICATION_ALREADY_TRACKED` |
 | Invalid status transition | 409    | `APPLICATION_STATUS_CONFLICT` |
 | Database unavailable      | 503    | `SERVICE_UNAVAILABLE`         |
+
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `jobId`: `Job ID is invalid. Use a valid UUID`
+- `status`: `Application status must use one of the supported values`
+- `""`: `At least one update field must be provided`
 
 ## Observability
 

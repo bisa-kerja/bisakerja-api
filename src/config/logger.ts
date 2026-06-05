@@ -43,7 +43,9 @@ const redactPaths = [
   "DATABASE_URL",
   "*.DATABASE_URL",
   "RESEND_API_KEY",
-  "*.RESEND_API_KEY"
+  "*.RESEND_API_KEY",
+  "AI_CV_ANALYZER_GENAI_API_KEY",
+  "*.AI_CV_ANALYZER_GENAI_API_KEY"
 ];
 
 export function createLogger(config: AppConfig) {

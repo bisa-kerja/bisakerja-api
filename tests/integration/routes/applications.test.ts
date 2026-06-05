@@ -60,7 +60,7 @@ describe("applications routes", () => {
     expect(created.status).toBe(201);
     expect(created.body).toMatchObject({
       success: true,
-      message: "Lamaran berhasil dibuat",
+      message: "Application created successfully",
       data: {
         status: "APPLIED",
         source: "EXTERNAL_APPLY_CLICK",
@@ -118,6 +118,11 @@ describe("applications routes", () => {
     });
 
     expect(userIdInjection.status).toBe(422);
+    expect(userIdInjection.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "userId" })]
+      }
+    });
   });
 
   test("lists only current user's applications with status filter and safe job fields", async () => {
@@ -148,7 +153,7 @@ describe("applications routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Daftar lamaran berhasil diambil",
+      message: "Applications retrieved successfully",
       data: [
         {
           status: "APPLIED",
@@ -196,7 +201,7 @@ describe("applications routes", () => {
     expect(updated.status).toBe(200);
     expect(updated.body).toMatchObject({
       success: true,
-      message: "Lamaran berhasil diperbarui",
+      message: "Application updated successfully",
       data: {
         id: application.id,
         notes: null,
@@ -227,6 +232,17 @@ describe("applications routes", () => {
     });
 
     expect(emptyPatch.status).toBe(422);
+    expect(emptyPatch.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "",
+            message: "At least one update field must be provided",
+            code: "custom"
+          })
+        ]
+      }
+    });
   });
 
   test("updates status, appends history, and rejects invalid transition", async () => {
@@ -246,7 +262,7 @@ describe("applications routes", () => {
     expect(updated.status).toBe(200);
     expect(updated.body).toMatchObject({
       success: true,
-      message: "Status lamaran berhasil diperbarui",
+      message: "Application status updated successfully",
       data: {
         id: application.id,
         status: "INTERVIEW",

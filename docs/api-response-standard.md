@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/api-response-standard.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-18
 ---
 
 # Backend API Response Standard
@@ -44,7 +44,7 @@ Use this shape for single resource reads, mutations, and action responses that r
 ```json
 {
   "success": true,
-  "message": "Permintaan berhasil diproses",
+  "message": "Request completed successfully",
   "data": {
     "id": "11111111-1111-4111-8111-111111111111"
   },
@@ -59,7 +59,7 @@ Use HTTP `201` when a resource is created.
 ```json
 {
   "success": true,
-  "message": "Lamaran berhasil dibuat",
+  "message": "Application created successfully",
   "data": {
     "id": "app_123",
     "status": "APPLIED"
@@ -81,7 +81,7 @@ Use this shape for paginated collection endpoints.
 ```json
 {
   "success": true,
-  "message": "Daftar lowongan berhasil diambil",
+  "message": "Jobs retrieved successfully",
   "data": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -184,14 +184,14 @@ All error responses must use this shape.
 ```json
 {
   "success": false,
-  "message": "Validasi gagal",
+  "message": "Validation failed",
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
       {
         "path": "email",
-        "message": "Format email tidak valid",
+        "message": "Email is invalid. Use a complete email format, for example name@domain.com",
         "code": "invalid_string"
       }
     ],
@@ -222,14 +222,14 @@ Zod validation errors should use this detail shape:
 ```json
 {
   "success": false,
-  "message": "Validasi gagal",
+  "message": "Validation failed",
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
       {
         "path": "preferences.salaryMin",
-        "message": "Tipe tidak sesuai: diharapkan angka, diterima teks",
+        "message": "Minimum salary must be a number",
         "code": "invalid_type"
       }
     ],
@@ -245,6 +245,71 @@ Validation detail fields:
 | `path`    | string | Yes      | Dot-notated path to invalid field |
 | `message` | string | Yes      | Safe validation message           |
 | `code`    | string | Yes      | Zod or app-level validation code  |
+
+## Validation Message Quality Contract
+
+Validation message quality must improve without changing the public detail shape.
+
+Required compatibility rules:
+
+- Keep HTTP status `422`.
+- Keep envelope `error.code` as `VALIDATION_ERROR`.
+- Keep each detail item with `path`, `message`, and `code`.
+- Keep `path` machine-friendly (dot-notated technical field path).
+
+Required message quality rules:
+
+- `message` should mention a user-facing field label.
+- `message` should explain why validation failed in specific terms.
+- `message` should include a short correction hint when safe.
+- `message` must not expose raw sensitive inputs such as passwords, OTP values, access tokens, refresh tokens, CV content, or service credentials.
+- Field labels should be resolved from a maintained dictionary first, then fall back to a path-derived label when no dictionary entry exists.
+- Nested paths should remain machine-readable in `path` while `message` uses the best available user-facing label.
+
+When multiple issues exist for the same field:
+
+- Prioritize the most actionable message.
+- Avoid repetitive low-value duplicates.
+- Keep distinct issues only when each item adds useful information.
+- For password validation with multiple failed rules, prefer one concise combined message over many repetitive details.
+
+Example target detail quality for auth registration:
+
+```json
+{
+  "path": "phoneNumber",
+  "message": "Phone number is invalid. Use an Indonesian phone number, for example +628123456789",
+  "code": "invalid_format"
+}
+```
+
+Example for password rules in one field:
+
+```json
+{
+  "path": "password",
+  "message": "Password does not meet requirements: at least 12 characters; must contain an uppercase letter; must contain a number; must contain a symbol",
+  "code": "custom"
+}
+```
+
+Before and after example for register validation quality:
+
+- Before (not acceptable): `Invalid input`, `Too small`.
+- After (required): `Email is invalid. Use a complete email format, for example name@domain.com`.
+- After (required): `Phone number is invalid. Use an Indonesian phone number, for example +628123456789`.
+- After (required): `Password does not meet requirements: ...`.
+
+### Optional Metadata For Future Extension
+
+Future versions may add optional metadata keys inside each detail item, for example:
+
+- `fieldLabel`
+- `reason`
+- `hint`
+- `rule`
+
+If introduced, these keys must be added as non-breaking optional fields and documented in module contracts plus OpenAPI examples before rollout.
 
 ## Error Code Catalog
 
@@ -301,7 +366,7 @@ Authentication errors:
 ```json
 {
   "success": false,
-  "message": "Autentikasi diperlukan",
+  "message": "Authentication required",
   "data": null,
   "error": {
     "code": "UNAUTHENTICATED",
@@ -316,7 +381,7 @@ Authorization errors:
 ```json
 {
   "success": false,
-  "message": "Anda tidak memiliki akses ke resource ini",
+  "message": "You are not allowed to access this resource",
   "data": null,
   "error": {
     "code": "FORBIDDEN",
@@ -335,7 +400,7 @@ Model API unavailable:
 ```json
 {
   "success": false,
-  "message": "Layanan analisis AI sementara tidak tersedia",
+  "message": "AI analysis service is temporarily unavailable",
   "data": null,
   "error": {
     "code": "SERVICE_UNAVAILABLE",
@@ -352,7 +417,7 @@ Model API invalid response:
 ```json
 {
   "success": false,
-  "message": "Hasil analisis AI tidak dapat diproses",
+  "message": "AI analysis result cannot be processed",
   "data": null,
   "error": {
     "code": "DOWNSTREAM_ERROR",

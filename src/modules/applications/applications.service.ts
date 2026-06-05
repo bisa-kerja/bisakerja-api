@@ -65,14 +65,14 @@ export class ApplicationsService {
 
     if (!job) {
       throw new NotFoundError(
-        "Lowongan tidak ditemukan",
+        "Job not found",
         applicationsErrorCodes.jobNotFound
       );
     }
 
     if (input.status !== "APPLIED") {
       throw new ConflictError(
-        "Status awal lamaran tidak valid",
+        "Initial application status is invalid",
         applicationsErrorCodes.applicationStatusConflict
       );
     }
@@ -84,7 +84,7 @@ export class ApplicationsService {
 
     if (existing) {
       throw new ConflictError(
-        "Lamaran sudah dilacak",
+        "Application is already tracked",
         applicationsErrorCodes.applicationAlreadyTracked
       );
     }
@@ -109,7 +109,7 @@ export class ApplicationsService {
 
     if (!application) {
       throw new NotFoundError(
-        "Lamaran tidak ditemukan",
+        "Application not found",
         applicationsErrorCodes.applicationNotFound
       );
     }
@@ -133,14 +133,14 @@ export class ApplicationsService {
 
     if (!application) {
       throw new NotFoundError(
-        "Lamaran tidak ditemukan",
+        "Application not found",
         applicationsErrorCodes.applicationNotFound
       );
     }
 
     if (!canTransition(application.status, input.status)) {
       throw new ConflictError(
-        "Perubahan status lamaran tidak valid",
+        "Application status change is invalid",
         applicationsErrorCodes.applicationStatusConflict,
         {
           fromStatus: application.status,
@@ -158,7 +158,7 @@ export class ApplicationsService {
 
     if (!updated) {
       throw new NotFoundError(
-        "Lamaran tidak ditemukan",
+        "Application not found",
         applicationsErrorCodes.applicationNotFound
       );
     }

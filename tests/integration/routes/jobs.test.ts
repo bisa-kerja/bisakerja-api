@@ -26,7 +26,7 @@ describe("jobs routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Daftar lowongan berhasil diambil",
+      message: "Jobs retrieved successfully",
       meta: {
         pagination: {
           page: 1,
@@ -113,6 +113,11 @@ describe("jobs routes", () => {
         requestId: "req_jobs_bad_query"
       }
     });
+    expect(invalidQuery.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "workType" })]
+      }
+    });
 
     const invalidParam = await injectRoute(context.app, {
       method: "GET",
@@ -121,6 +126,16 @@ describe("jobs routes", () => {
     });
 
     expect(invalidParam.status).toBe(422);
+    expect(invalidParam.body).toMatchObject({
+      error: {
+        details: [
+          expect.objectContaining({
+            path: "jobId",
+            message: "Job ID is invalid. Use a valid UUID"
+          })
+        ]
+      }
+    });
   });
 
   test("returns job detail and maps missing jobs to JOB_NOT_FOUND", async () => {
@@ -135,7 +150,7 @@ describe("jobs routes", () => {
     expect(detail.status).toBe(200);
     expect(detail.body).toMatchObject({
       success: true,
-      message: "Lowongan berhasil diambil",
+      message: "Job retrieved successfully",
       data: {
         title: "Backend Developer",
         company: {

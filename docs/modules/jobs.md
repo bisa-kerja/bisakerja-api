@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/jobs.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Jobs Module
@@ -104,7 +104,7 @@ If `relevance` is requested without a keyword, the API falls back to newest-firs
 ```json
 {
   "success": true,
-  "message": "Daftar lowongan berhasil diambil",
+  "message": "Jobs retrieved successfully",
   "data": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -169,7 +169,7 @@ List response rules:
 ```json
 {
   "success": true,
-  "message": "Lowongan berhasil diambil",
+  "message": "Job retrieved successfully",
   "data": {
     "id": "11111111-1111-4111-8111-111111111111",
     "title": "Backend Developer",
@@ -214,6 +214,9 @@ List response rules:
       "display": "Rp5.000.000 - Rp10.000.000 / bulan"
     },
     "externalApplyUrl": "https://glints.com/example-job",
+    "sourceUrl": "https://glints.com/example-job",
+    "sourceUpdatedAt": null,
+    "expiredAt": null,
     "postedAt": "2026-04-20T00:00:00.000Z",
     "lastSeenAt": "2026-04-22T00:00:00.000Z",
     "isStale": false
@@ -227,6 +230,8 @@ Detail response rules:
 - Include enough normalized fields for AI job fit and CV comparison workflows.
 - Preserve external apply URL as a redirect target only, not as proof that the job is still open.
 - Include stale/freshness metadata when available.
+- Detail response also includes `sourceUrl`, nullable `sourceUpdatedAt`, and nullable `expiredAt`.
+- Requirement priority falls back to `UNKNOWN` when normalized priority is missing.
 - Do not expose `externalJobId` unless product needs it for debugging; prefer internal `id`.
 
 ## Service Logic
@@ -351,6 +356,10 @@ Rules:
 | Job not found         | 404    | `JOB_NOT_FOUND`       |
 | Hidden job detail     | 404    | `JOB_NOT_FOUND`       |
 | Database unavailable  | 503    | `SERVICE_UNAVAILABLE` |
+
+Validation detail example for invalid route param:
+
+- `jobId`: `Job ID is invalid. Use a valid UUID`
 
 ## Observability
 

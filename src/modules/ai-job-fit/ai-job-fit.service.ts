@@ -11,7 +11,6 @@ import type {
   JobFitResource
 } from "@/modules/ai-job-fit/ai-job-fit.types";
 import type { JobRecord } from "@/modules/jobs";
-import { jobsErrorCodes } from "@/modules/jobs/jobs.constants";
 import type {
   JobFitModelPayload,
   JobFitModelResponse
@@ -32,22 +31,19 @@ export class AiJobFitService {
     const job = await this.repository.findVisibleJob(input.jobId);
 
     if (!job) {
-      throw new NotFoundError(
-        "Lowongan tidak ditemukan",
-        jobsErrorCodes.jobNotFound
-      );
+      throw new NotFoundError("Job not found", aiJobFitErrorCodes.jobNotFound);
     }
 
     if (!context || !hasRequiredProfileContext(context)) {
       throw new ConflictError(
-        "Data profil belum lengkap untuk analisis kecocokan pekerjaan",
+        "Profile data is incomplete for job fit analysis",
         aiJobFitErrorCodes.profileIncomplete
       );
     }
 
     if (!context.preference || !hasRequiredPreferenceContext(context)) {
       throw new ConflictError(
-        "Data preferensi belum lengkap untuk analisis kecocokan pekerjaan",
+        "Preferences data is incomplete for job fit analysis",
         aiJobFitErrorCodes.preferencesIncomplete
       );
     }

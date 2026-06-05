@@ -57,7 +57,7 @@ export class GoogleOauthClient implements GoogleOauthAdapter {
       const idToken = tokens.id_token;
       if (!idToken) {
         throw new BadRequestError(
-          "Token Google tidak tersedia",
+          "Google token is unavailable",
           authErrorCodes.googleOauthTokenInvalid
         );
       }
@@ -69,7 +69,7 @@ export class GoogleOauthClient implements GoogleOauthAdapter {
       const payload = ticket.getPayload();
       if (!payload) {
         throw new BadRequestError(
-          "Payload token Google tidak tersedia",
+          "Google token payload is unavailable",
           authErrorCodes.googleOauthTokenInvalid
         );
       }
@@ -80,7 +80,7 @@ export class GoogleOauthClient implements GoogleOauthAdapter {
         issuer !== "https://accounts.google.com"
       ) {
         throw new BadRequestError(
-          "Issuer token Google tidak valid",
+          "Google token issuer is invalid",
           authErrorCodes.googleOauthTokenInvalid
         );
       }
@@ -96,14 +96,14 @@ export class GoogleOauthClient implements GoogleOauthAdapter {
         typeof emailVerified !== "boolean"
       ) {
         throw new BadRequestError(
-          "Payload token Google tidak lengkap",
+          "Google token payload is incomplete",
           authErrorCodes.googleOauthTokenInvalid
         );
       }
 
       if (!nonce || nonce !== input.expectedNonce) {
         throw new BadRequestError(
-          "Nonce Google tidak valid",
+          "Google nonce is invalid",
           authErrorCodes.googleOauthNonceInvalid
         );
       }
@@ -120,7 +120,7 @@ export class GoogleOauthClient implements GoogleOauthAdapter {
       }
 
       throw new DownstreamError(
-        "Verifikasi Google gagal",
+        "Google verification failed",
         authErrorCodes.googleOauthCodeInvalid
       );
     }

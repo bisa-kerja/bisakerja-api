@@ -82,7 +82,7 @@ Backend API repositories must not write scraper-owned normalized job records unl
 | `User`                   | Account identity and basic state                           | Backend API |
 | `AuthCredential`         | Local auth credential and password hash metadata           | Backend API |
 | `RefreshToken`           | Hashed opaque refresh credential and token-family metadata | Backend API |
-| `EmailVerificationToken` | Email verification OTP or token state                      | Backend API |
+| `EmailVerificationToken` | Email verification OTP state                               | Backend API |
 | `PasswordResetToken`     | Password reset token state                                 | Backend API |
 
 ### Profile And Preferences
@@ -119,12 +119,14 @@ Backend API repositories must not write scraper-owned normalized job records unl
 
 ### AI Outputs
 
-| Entity             | Purpose                                                    | Owner                                   |
-| ------------------ | ---------------------------------------------------------- | --------------------------------------- |
-| `FitScoreResult`   | Persisted fit score and explanation snapshot               | Backend API stores, Model API generates |
-| `SkillGapResult`   | Persisted skill gap snapshot                               | Backend API stores, Model API generates |
-| `CvAnalysisResult` | Persisted CV analysis snapshot                             | Backend API stores, Model API generates |
-| `AiRequestLog`     | Optional sanitized request/response metadata for debugging | Backend API                             |
+| Entity                  | Purpose                                                    | Owner                                   |
+| ----------------------- | ---------------------------------------------------------- | --------------------------------------- |
+| `FitScoreResult`        | Persisted fit score and explanation snapshot               | Backend API stores, Model API generates |
+| `SkillGapResult`        | Persisted skill gap snapshot                               | Backend API stores, Model API generates |
+| `CvAnalysisResult`      | Persisted CV analysis snapshot                             | Backend API stores, Model API generates |
+| `JobRecommendationRun`  | Persisted recommendation run metadata and request summary  | Backend API stores, Model API generates |
+| `JobRecommendationItem` | Persisted ranked recommendation items per run              | Backend API stores, Model API generates |
+| `AiRequestLog`          | Optional sanitized request/response metadata for debugging | Backend API                             |
 
 ## ERD-Level Relationships
 
@@ -140,6 +142,8 @@ User
   -> FitScoreResult -> JobListing
   -> SkillGapResult -> JobListing
   -> CvAnalysisResult -> JobListing
+  -> JobRecommendationRun -> CvAnalysisResult
+  -> JobRecommendationRun -> JobRecommendationItem -> JobListing
 
 SourcePlatform
   -> JobListing
@@ -155,6 +159,7 @@ JobListing
   -> FitScoreResult
   -> SkillGapResult
   -> CvAnalysisResult
+  -> JobRecommendationItem
 
 IngestionRun
   -> JobListing
@@ -199,21 +204,22 @@ Relationship rules:
 | `FitScoreResult`           | `fit_score_results`            | Backend API stores derived output | Job fit history if persisted        |
 | `SkillGapResult`           | `skill_gap_results`            | Backend API stores derived output | Skill gap history if persisted      |
 | `CvAnalysisResult`         | `cv_analysis_results`          | Backend API stores derived output | AI CV Analyzer history if persisted |
+| `JobRecommendationRun`     | `job_recommendation_runs`      | Backend API stores derived output | Recommendation run history          |
+| `JobRecommendationItem`    | `job_recommendation_items`     | Backend API stores derived output | Ranked recommendation snapshots     |
 | `AiRequestLog`             | `ai_request_logs`              | Backend API                       | Sanitized debugging if needed       |
 
 ## MVP Module Persistence Map
 
-| Module         | Persistence model                                                                                                          |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Auth           | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                               |
-| Users          | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                             |
-| Preferences    | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                          |
-| Jobs           | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows |
-| Bookmarks      | `Bookmark`, with read joins to `JobListing` and `Company`                                                                  |
-| Applications   | `ApplicationRecord` and `ApplicationStatusHistory`                                                                         |
-| AI Job Fit     | Read user/profile/preference/job context; optionally store `FitScoreResult` and `SkillGapResult` snapshots                 |
-| AI CV Analyzer | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot                           |
-| Health         | No business persistence; may check PostgreSQL connectivity                                                                 |
+| Module         | Persistence model                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth           | `User`, `AuthCredential`, `RefreshToken`, `EmailVerificationToken`, and `PasswordResetToken`                                              |
+| Users          | `User`, `UserProfile`, `UserExperience`, `UserEducation`, `UserSkill`, `Skill`                                                            |
+| Preferences    | `UserPreference`, optionally `TargetRole` and `Location` if normalized separately                                                         |
+| Jobs           | Read `SourcePlatform`, `Company`, `JobListing`, `JobRequirement`, `JobSkill`, `Skill`; do not write scraper-owned job rows                |
+| Bookmarks      | `Bookmark`, with read joins to `JobListing` and `Company`                                                                                 |
+| Applications   | `ApplicationRecord` and `ApplicationStatusHistory`                                                                                        |
+| AI CV Analyzer | Read selected job context; store uploaded CV metadata and optionally `CvAnalysisResult` snapshot with embedded simple job recommendations |
+| Health         | No business persistence; may check PostgreSQL connectivity                                                                                |
 
 ## ID Strategy
 
@@ -301,6 +307,9 @@ Soft delete policy:
 - Index `(userId, jobListingId)` on `fit_score_results`.
 - Index `(userId, jobListingId)` on `skill_gap_results`.
 - Index `(userId, jobListingId)` on `cv_analysis_results` when tied to a job.
+- Index `(userId, createdAt)` on `job_recommendation_runs`.
+- Unique `(userId, idempotencyKey)` on `job_recommendation_runs` when key is present.
+- Unique `(runId, rank)` and `(runId, jobListingId)` on `job_recommendation_items`.
 - Index `analyzedAt` for cleanup and history sorting.
 - Avoid indexing large JSON payload fields unless a specific query requires it.
 
@@ -447,9 +456,18 @@ Suggested CV metadata fields:
 - `sizeBytes`
 - `storageDriver`
 - `storageKey`
+- `isActive`
 - `uploadedAt`
 - `expiresAt`
 - `deletedAt`
+
+CV metadata rules:
+
+- `cv_file_metadata` is the source of truth for reusable user CV metadata.
+- `user_preference` does not store CV file fields or pointers.
+- `is_active` marks the current default CV for analyzer fallback and onboarding prefill.
+- A partial unique index enforces at most one non-deleted active CV per user.
+- `deleted_at` disables active status during retention cleanup.
 
 ## Prisma Schema Conventions
 
@@ -603,18 +621,18 @@ Seed data must stay product-shaped but synthetic. It must not include raw extern
 
 Initial retention direction:
 
-| Data                      | Retention direction                                           |
-| ------------------------- | ------------------------------------------------------------- |
-| User account              | Keep until account deletion policy is defined                 |
-| Profile and preferences   | Keep while account is active                                  |
-| Bookmarks                 | Keep while account is active or until user removes them       |
-| Application tracker       | Keep while account is active unless user deletes record       |
-| Password reset tokens     | Delete or expire quickly after use                            |
-| Email verification tokens | Delete or expire quickly after use                            |
-| CV uploaded files         | Follow `CV_RETENTION_DAYS`; default 1 day in environment docs |
-| CV analysis result        | Persist only when `persistResult=true`; redact raw content    |
-| AI request logs           | Keep short-lived and sanitized                                |
-| Job listings              | Keep stale/expired records when linked to user history        |
+| Data                      | Retention direction                                                    |
+| ------------------------- | ---------------------------------------------------------------------- |
+| User account              | Keep until account deletion policy is defined                          |
+| Profile and preferences   | Keep while account is active                                           |
+| Bookmarks                 | Keep while account is active or until user removes them                |
+| Application tracker       | Keep while account is active unless user deletes record                |
+| Password reset tokens     | Delete or expire quickly after use                                     |
+| Email verification tokens | Delete or expire quickly after use                                     |
+| CV uploaded files         | Follow `CV_RETENTION_DAYS`; default 1 day in environment docs          |
+| CV analysis result        | Persist by default; `persistResult=false` opts out; redact raw content |
+| AI request logs           | Keep short-lived and sanitized                                         |
+| Job listings              | Keep stale/expired records when linked to user history                 |
 
 ## Deferred Decisions Before Schema Implementation
 

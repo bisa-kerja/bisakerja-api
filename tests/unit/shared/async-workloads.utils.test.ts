@@ -36,7 +36,7 @@ describe("async workloads utils", () => {
 
     expect(summary).toEqual({
       code: "ASYNC_JOB_RUNTIME_ERROR",
-      message: "Error runtime async job tidak diketahui"
+      message: "Unknown async job runtime error"
     });
   });
 
@@ -63,7 +63,7 @@ describe("async workloads utils", () => {
 
     expect(failure).toBeInstanceOf(ServiceUnavailableError);
     expect(failure.details).toEqual({
-      cause: "Error queue Redis tidak diketahui"
+      cause: "Unknown Redis queue error"
     });
   });
 });

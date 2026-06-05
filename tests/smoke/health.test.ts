@@ -29,13 +29,13 @@ describe("health smoke checks", () => {
     expect(live.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: "Layanan aktif"
+        message: "Service is live"
       })
     );
     expect(ready.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: "Layanan siap"
+        message: "Service is ready"
       })
     );
   });

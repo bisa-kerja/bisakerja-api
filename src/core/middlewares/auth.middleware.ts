@@ -2,8 +2,7 @@ import type { RequestHandler } from "express";
 
 import type { AppConfig } from "@/config/env";
 import { AuthenticationError } from "@/core/errors/app.error";
-import { PrismaAuthRepository } from "@/modules/auth/auth.repository";
-import type { AuthRepository } from "@/modules/auth/auth.types";
+import { PrismaAuthRepository, type AuthRepository } from "@/modules/auth";
 import { verifyAccessToken } from "@/shared/utils/jwt";
 
 export type AuthMiddlewareOptions = {

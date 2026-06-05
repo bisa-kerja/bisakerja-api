@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/users.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Users Module
@@ -201,12 +201,19 @@ Validation:
 
 ## Response Schema
 
+`GET /api/v1/me` returns message `Profile retrieved successfully`.
+`PATCH /api/v1/me` returns message `Profile updated successfully`.
+`PUT /api/v1/me/profile-photo` returns message `Profile photo updated successfully`.
+`PUT /api/v1/me/skills` returns message `Skills updated successfully`.
+`PUT /api/v1/me/experience` returns message `Experience updated successfully`.
+`PUT /api/v1/me/education` returns message `Education updated successfully`.
+
 ### Current User Profile
 
 ```json
 {
   "success": true,
-  "message": "Profil berhasil diambil",
+  "message": "Profile retrieved successfully",
   "data": {
     "id": "user_123",
     "username": "salman",
@@ -355,6 +362,14 @@ The final status computation should be centralized so Auth, Users, and Preferenc
 | Invalid profile photo metadata | 422    | `VALIDATION_ERROR`            |
 | Invalid skill level            | 422    | `VALIDATION_ERROR`            |
 | Invalid experience date range  | 422    | `VALIDATION_ERROR`            |
+
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `""`: `At least one profile field must be provided`
+- `url`: `Profile photo URL is invalid`
+- `skills.1.name`: `Skill names must not be duplicated in the same list`
+- `experience.0.endDate`: `End date must be greater than or equal to start date`
+- `education.0.degree`: `Degree is required`
 
 ## Observability
 

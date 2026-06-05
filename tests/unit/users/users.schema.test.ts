@@ -21,7 +21,11 @@ describe("users schemas", () => {
       phoneNumber: "+6281234567890",
       displayName: "Salman Abdurrahman"
     });
-    expect(updateCurrentUserSchema.safeParse({}).success).toBe(false);
+    const empty = updateCurrentUserSchema.safeParse({});
+    expect(empty.success).toBe(false);
+    expect(empty.error?.issues[0]?.message).toBe(
+      "At least one profile field must be provided"
+    );
     expect(
       updateCurrentUserSchema.safeParse({
         email: "salman@example.com"
@@ -38,13 +42,12 @@ describe("users schemas", () => {
         sizeBytes: 4096
       }).success
     ).toBe(true);
-    expect(
-      upsertProfilePhotoSchema.safeParse({
-        storageKey: "profile-photos/user-1/avatar.gif",
-        mimeType: "image/gif",
-        sizeBytes: 4096
-      }).success
-    ).toBe(false);
+    const invalidMime = upsertProfilePhotoSchema.safeParse({
+      storageKey: "profile-photos/user-1/avatar.gif",
+      mimeType: "image/gif",
+      sizeBytes: 4096
+    });
+    expect(invalidMime.success).toBe(false);
     expect(
       upsertProfilePhotoSchema.safeParse({
         storageKey: "profile photos/avatar.jpg",
@@ -52,6 +55,16 @@ describe("users schemas", () => {
         sizeBytes: 4096
       }).success
     ).toBe(false);
+    const invalidUrl = upsertProfilePhotoSchema.safeParse({
+      storageKey: "profile-photos/user-1/avatar.jpg",
+      url: "not-a-url",
+      mimeType: "image/jpeg",
+      sizeBytes: 4096
+    });
+    expect(invalidUrl.success).toBe(false);
+    expect(invalidUrl.error?.issues[0]?.message).toBe(
+      "Profile photo URL is invalid"
+    );
   });
 
   test("rejects duplicate skill names after normalization", () => {

@@ -11,6 +11,7 @@ import {
   allowedAnalysisLanguages,
   allowedCvCompareSources,
   allowedCvInputModes,
+  allowedJobRecommendationMatchLevels,
   allowedJobFitReadinessLevels,
   allowedJobFitRecommendationDecisions,
   allowedRequirementPriorities,
@@ -52,6 +53,25 @@ const jobFitUserExperienceSchema = z.strictObject({
   endDate: z.iso.date().nullable().optional(),
   isCurrent: z.boolean().optional(),
   description: z.string().min(1).max(2000).nullable().optional()
+});
+
+const safeStringListSchema = z.array(z.string().min(1).max(200)).max(200);
+
+const recommendationCandidateSchema = z.strictObject({
+  jobId: z.string().min(1).max(200),
+  title: z.string().min(1).max(200),
+  companyName: z.string().min(1).max(200),
+  location: z.strictObject({
+    display: z.string().min(1).max(200).nullable(),
+    province: z.string().min(1).max(120).nullable(),
+    city: z.string().min(1).max(120).nullable()
+  }),
+  workType: z.enum(allowedWorkTypes).nullable(),
+  experienceLevel: z.enum(allowedExperienceLevels).nullable(),
+  descriptionSummary: z.string().min(1).max(5000).nullable(),
+  requiredSkills: z.array(z.string().min(1).max(120)).max(200),
+  postedAt: isoDatetimeSchema.nullable(),
+  sourceUpdatedAt: isoDatetimeSchema.nullable()
 });
 
 export const jobFitModelPayloadSchema = z.strictObject({
@@ -120,6 +140,31 @@ export const jobFitModelResponseSchema = z.strictObject({
   analyzedAt: isoDatetimeSchema
 });
 
+const cvAnalyzerCandidateScoringInputSchema = z.strictObject({
+  titleText: z.string().min(1).max(300),
+  descriptionText: z.string().min(1).max(20000).nullable(),
+  requirementSummary: z.string().min(1).max(5000).nullable(),
+  requiredSkills: z.array(z.string().min(1).max(120)).max(200),
+  requirements: z.array(jobRequirementSchema).max(200),
+  roleFamily: z.string().min(1).max(160).nullable(),
+  experienceLevel: z.enum(allowedExperienceLevels).nullable(),
+  workType: z.enum(allowedWorkTypes).nullable(),
+  numericSignals: z.record(z.string().min(1).max(80), z.number()).optional()
+});
+
+const cvAnalyzerCandidateSchema = z.strictObject({
+  jobId: z.string().min(1).max(200),
+  scoringInput: cvAnalyzerCandidateScoringInputSchema,
+  backendMetadata: z
+    .strictObject({
+      title: z.string().min(1).max(200),
+      companyName: z.string().min(1).max(200).nullable(),
+      locationDisplay: z.string().min(1).max(200).nullable(),
+      sourceUpdatedAt: isoDatetimeSchema.nullable()
+    })
+    .optional()
+});
+
 export const cvAnalyzerModelPayloadSchema = z.strictObject({
   requestId: z.string().min(1).max(200),
   inputVersion: z.literal(modelApiInputVersions.cvAnalyzer),
@@ -130,42 +175,124 @@ export const cvAnalyzerModelPayloadSchema = z.strictObject({
     fileId: z.string().min(1).max(200),
     mimeType: z.string().min(1).max(100),
     sizeBytes: z.int().positive(),
-    storageKey: z.string().min(1).max(512)
+    storageKey: z.string().min(1).max(512),
+    bytes: z.instanceof(Buffer).optional()
   }),
-  job: z.strictObject({
-    id: z.string().min(1).max(200),
-    title: z.string().min(1).max(200),
-    description: z.string().min(1).max(20000).nullable(),
-    requirements: z.array(jobRequirementSchema).max(200),
-    skills: z.array(z.string().min(1).max(80)).max(200),
-    experienceLevel: z.enum(allowedExperienceLevels).nullable()
-  })
+  jobRoles: z.array(z.string().min(1).max(120)).min(1).max(10),
+  rankingPolicy: z.strictObject({
+    backendOwnsHydration: z.literal(true),
+    requireCandidateJobIds: z.literal(true),
+    deduplicateByJobId: z.literal(true),
+    maxRecommendations: z.int().min(0).max(5)
+  }),
+  jobCandidates: z.array(cvAnalyzerCandidateSchema).max(50)
+});
+
+const modelSignalSchema = z.array(z.string().min(1).max(200)).max(100);
+
+const modelCoreRecommendationSchema = z.strictObject({
+  jobId: z.string().min(1).max(200),
+  matchScore: scoreSchema,
+  matchLevel: z.enum(allowedJobRecommendationMatchLevels),
+  matchedSkills: z.array(z.string().min(1).max(120)).max(100),
+  missingSkills: z.array(z.string().min(1).max(120)).max(100),
+  rankingSignals: modelSignalSchema.optional()
 });
 
 export const cvAnalyzerModelResponseSchema = z.strictObject({
-  overallImpression: z.strictObject({
-    score: scoreSchema,
-    summary: z.string().min(1).max(2000)
+  schemaVersion: z.literal("model-core-cv-analysis-v1"),
+  parsedCv: z.strictObject({
+    status: z.enum(["parsed", "empty_text", "parse_failed"]),
+    pageCount: z.int().nonnegative(),
+    textLength: z.int().nonnegative(),
+    detectedSections: z.array(z.string().min(1).max(120)).max(50),
+    extractionEvidence: modelSignalSchema.optional()
   }),
   jobFitAlignment: z.strictObject({
     score: scoreSchema,
-    summary: z.string().min(1).max(2000),
-    matchedSignals: z.array(z.string().min(1).max(200)).max(100),
-    missingSignals: z.array(z.string().min(1).max(200)).max(100)
+    matchedSignals: modelSignalSchema,
+    missingSignals: modelSignalSchema,
+    matchedSkills: z.array(z.string().min(1).max(120)).max(100),
+    missingSkills: z.array(z.string().min(1).max(120)).max(100),
+    evidence: modelSignalSchema.optional()
   }),
   atsFriendliness: z.strictObject({
     score: scoreSchema,
-    issues: z.array(z.string().min(1).max(500)).max(50)
+    detectedIssues: modelSignalSchema,
+    parseQuality: z.enum(["high", "medium", "low", "failed"]),
+    evidence: modelSignalSchema.optional()
   }),
-  keywordOptimization: z.strictObject({
-    recommendedKeywords: z.array(z.string().min(1).max(120)).max(100),
-    reason: z.string().min(1).max(2000)
-  }),
-  experienceQuantification: z.strictObject({
+  overallImpression: z.strictObject({
     score: scoreSchema,
-    suggestions: z.array(z.string().min(1).max(500)).max(50)
+    evidence: modelSignalSchema
   }),
-  actionableImprovements: z.array(z.string().min(1).max(500)).max(50),
+  candidateReranking: z.strictObject({
+    recommendations: z.array(modelCoreRecommendationSchema).max(5)
+  }),
+  model: z.strictObject({
+    name: z.string().min(1).max(120),
+    version: z.string().min(1).max(120)
+  }),
+  createdAt: isoDatetimeSchema
+});
+
+export const cvGenerateModelPayloadSchema = z.strictObject({
+  requestId: z.string().min(1).max(200),
+  inputVersion: z.literal(modelApiInputVersions.cvGenerate),
+  cv: z.strictObject({
+    fileId: z.string().min(1).max(200),
+    mimeType: z.string().min(1).max(100),
+    sizeBytes: z.int().positive(),
+    storageKey: z.string().min(1).max(512)
+  }),
+  summary: z.string().min(1).max(8000),
+  template: z.strictObject({
+    markdown: z.string().min(1).max(20000).nullable(),
+    html: z.string().min(1).max(20000).nullable()
+  })
+});
+
+export const cvGenerateModelResponseSchema = z.strictObject({
+  markdown: z.string().trim().min(1).max(50000)
+});
+
+export const jobRecommendationModelPayloadSchema = z.strictObject({
+  requestId: z.string().min(1).max(200),
+  inputVersion: z.literal(modelApiInputVersions.jobRecommendations),
+  talentProfile: z.strictObject({
+    targetRole: z.string().min(1).max(160).nullable(),
+    seniorityLevel: z.enum(allowedExperienceLevels).nullable(),
+    hardSkills: safeStringListSchema,
+    softSkills: safeStringListSchema,
+    domainSignals: safeStringListSchema,
+    toolsAndTechnologies: safeStringListSchema,
+    educationSignals: safeStringListSchema,
+    experienceYearsEstimate: z.number().min(0).max(60).nullable(),
+    locationPreferences: z.array(locationSchema).max(20),
+    workTypePreferences: z.array(z.enum(allowedWorkTypes)).max(3),
+    salaryExpectation: salaryExpectationSchema.nullable(),
+    redFlags: z.array(z.string().min(1).max(300)).max(30)
+  }),
+  rankingPolicy: z.strictObject({
+    maxRecommendations: z.int().min(1).max(20),
+    requireCandidateJobIds: z.boolean().default(true),
+    deduplicateByJobId: z.boolean().default(true)
+  }),
+  jobCandidates: z.array(recommendationCandidateSchema).min(1).max(50)
+});
+
+export const jobRecommendationModelResponseSchema = z.strictObject({
+  recommendations: z.array(
+    z.strictObject({
+      jobId: z.string().min(1).max(200),
+      matchScore: scoreSchema,
+      matchLevel: z.enum(allowedJobRecommendationMatchLevels),
+      reasons: z.array(z.string().min(1).max(500)).max(20),
+      matchedSkills: z.array(z.string().min(1).max(120)).max(100),
+      missingSkills: z.array(z.string().min(1).max(120)).max(100),
+      nextSteps: z.array(z.string().min(1).max(500)).max(20)
+    })
+  ),
   model: z.strictObject({
     name: z.string().min(1).max(120),
     version: z.string().min(1).max(120)
@@ -180,4 +307,16 @@ export type CvAnalyzerModelPayload = z.infer<
 >;
 export type CvAnalyzerModelResponse = z.infer<
   typeof cvAnalyzerModelResponseSchema
+>;
+export type CvGenerateModelPayload = z.infer<
+  typeof cvGenerateModelPayloadSchema
+>;
+export type CvGenerateModelResponse = z.infer<
+  typeof cvGenerateModelResponseSchema
+>;
+export type JobRecommendationModelPayload = z.infer<
+  typeof jobRecommendationModelPayloadSchema
+>;
+export type JobRecommendationModelResponse = z.infer<
+  typeof jobRecommendationModelResponseSchema
 >;

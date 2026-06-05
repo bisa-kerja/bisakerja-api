@@ -2,8 +2,11 @@ import type { Express } from "express";
 import type { Router } from "express";
 
 import type { AppConfig } from "@/config/env";
-import { createAiCvAnalyzerRouter } from "@/modules/ai-cv-analyzer";
-import { createAiJobFitRouter } from "@/modules/ai-job-fit";
+import {
+  createAiCvAnalyzerRouter,
+  createCurrentUserCvFilesRouter
+} from "@/modules/ai-cv-analyzer";
+import { createAiCvGenerateRouter } from "@/modules/ai-cv-generate";
 import { createAuthRouter } from "@/modules/auth";
 import { createApplicationsRouter } from "@/modules/applications";
 import { createBookmarksRouter } from "@/modules/bookmarks";
@@ -62,14 +65,19 @@ export function getMountedRouters(
       router: createApplicationsRouter(config, options.applications)
     },
     {
-      id: "ai-job-fit",
-      mountPath: `${config.app.apiPrefix}/ai/job-fit`,
-      router: createAiJobFitRouter(config, options.aiJobFit)
+      id: "cv-files",
+      mountPath: `${config.app.apiPrefix}/me/cv-files`,
+      router: createCurrentUserCvFilesRouter(config, options.aiCvAnalyzer)
     },
     {
       id: "ai-cv-analyzer",
       mountPath: `${config.app.apiPrefix}/ai/cv-analyzer`,
       router: createAiCvAnalyzerRouter(config, options.aiCvAnalyzer)
+    },
+    {
+      id: "ai-cv-generate",
+      mountPath: `${config.app.apiPrefix}/ai/cv-generate`,
+      router: createAiCvGenerateRouter(config, options.aiCvGenerate)
     },
     {
       id: "users",

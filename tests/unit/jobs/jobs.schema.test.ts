@@ -47,9 +47,20 @@ describe("jobs schemas", () => {
   test("rejects unsupported params, enum values, salary ranges, and ids", () => {
     expect(() => listJobsQuerySchema.parse({ unknown: "value" })).toThrow();
     expect(() => listJobsQuerySchema.parse({ workType: "WFH" })).toThrow();
-    expect(() =>
-      listJobsQuerySchema.parse({ salaryMin: "100", salaryMax: "50" })
-    ).toThrow();
-    expect(() => jobParamsSchema.parse({ jobId: "job_123" })).toThrow();
+    const invalidRange = listJobsQuerySchema.safeParse({
+      salaryMin: "100",
+      salaryMax: "50"
+    });
+    expect(invalidRange.success).toBe(false);
+    expect(invalidRange.error?.issues[0]?.path.join(".")).toBe("salaryMax");
+    expect(invalidRange.error?.issues[0]?.message).toBe(
+      "Maximum salary must be greater than or equal to minimum salary"
+    );
+
+    const invalidJobId = jobParamsSchema.safeParse({ jobId: "job_123" });
+    expect(invalidJobId.success).toBe(false);
+    expect(invalidJobId.error?.issues[0]?.message).toBe(
+      "Job ID is invalid. Use a valid UUID"
+    );
   });
 });

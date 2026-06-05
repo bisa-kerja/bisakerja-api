@@ -34,7 +34,7 @@ export function corsMiddleware(config: AppConfig): RequestHandler {
 
       callback(
         new AuthorizationError(
-          "Origin CORS tidak diizinkan",
+          "CORS origin is not allowed",
           "CORS_ORIGIN_NOT_ALLOWED"
         )
       );

@@ -131,7 +131,7 @@ Example readiness response:
 ```json
 {
   "success": true,
-  "message": "Layanan siap",
+  "message": "Service is ready",
   "data": {
     "service": "bisakerja-api",
     "status": "ready",
@@ -224,6 +224,18 @@ Incident checks for missing auth emails:
 3. Query `async_job_outbox` by `job_type`, `status`, `attempts`, `last_error_code`, and `updated_at`.
 4. Check worker logs for recovery count, provider rate limits, stalled jobs, or dead-letter transitions.
 5. Confirm the Resend sender domain and API key are valid for the current environment.
+
+Recovery runbook after worker outage:
+
+1. Start with read-only checks:
+   - `docker compose -f docker-compose.yml --env-file .env.production ps`
+   - `docker compose -f docker-compose.yml --env-file .env.production logs --tail=100 worker`
+   - inspect recent `async_job_outbox` rows for `AUTH_EMAIL_VERIFICATION` and `AUTH_PASSWORD_RESET`
+2. Restore runtime topology first: `redis`, `app`, and `worker` must use the same Compose project, env file, image tag, `REDIS_URL`, `ASYNC_QUEUE_NAME`, and `ASYNC_QUEUE_PREFIX`.
+3. After worker is healthy, monitor worker logs for recovery publish summaries and terminal outcomes.
+4. Re-check `async_job_outbox` until non-terminal auth email rows drain to `SUCCEEDED` or fail into `DEAD_LETTER` with explicit provider errors.
+5. Review `DEAD_LETTER` rows manually before any resend decision.
+6. Any mass resend or user-facing replay beyond automatic worker recovery requires explicit operator or product approval.
 
 ## Business Events
 

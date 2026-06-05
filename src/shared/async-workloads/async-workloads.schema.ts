@@ -6,17 +6,17 @@ import type {
   AsyncJobType
 } from "@/shared/async-workloads/async-workloads.types";
 
-const isoDateStringSchema = z.iso.datetime();
+const isoDateStringSchema = z.iso.datetime("Time must use ISO 8601 format");
 
 const authEmailVerificationJobPayloadSchema = z.object({
-  email: z.email(),
-  otp: z.string().regex(/^\d{6}$/),
+  email: z.email("Email is invalid"),
+  otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
   expiresAt: isoDateStringSchema
 });
 
 const authPasswordResetJobPayloadSchema = z.object({
-  email: z.email(),
-  token: z.string().min(1),
+  email: z.email("Email is invalid"),
+  token: z.string().min(1, "Password reset token is required"),
   expiresAt: isoDateStringSchema
 });
 

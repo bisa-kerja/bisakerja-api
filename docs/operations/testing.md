@@ -223,8 +223,8 @@ Current deployment workflow expectations:
 - SSH into the target VPS with the configured VPS private key through one deploy action step
 - write the runtime `.env.production` file from GitHub environment secrets
 - reject rollout when the runtime env file does not declare `APP_ENV=staging` for the current staging target
-- authenticate the VPS to GHCR, pull the latest image, run `prisma migrate deploy`, and start the app through app-only `docker compose`
-- verify `GET /health/live` and `GET /health/ready` from the VPS after deployment
+- authenticate the VPS to GHCR, pull the runtime service images, run `prisma migrate deploy`, and start `redis`, `app`, and `worker` through `docker compose`
+- verify `GET /health/live` and `GET /health/ready` from the VPS after deployment, then confirm `worker` is running, healthy, and logs `Async worker started`
 
 When the staging rollout is considered stable, the deploy trigger can be moved from `develop` to `main` without introducing a second deployment topology.
 
@@ -307,7 +307,7 @@ describe("health routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       success: true,
-      message: "Layanan aktif",
+      message: "Service is live",
       data: {
         service: "bisakerja-api",
         status: "live",
@@ -418,7 +418,7 @@ Every route group must verify:
 - Error responses include `error.requestId`.
 - Sensitive fields are not returned.
 
-Authentication route tests must verify registration, duplicate handling, weak password validation, email verification, login failures, access-token auth middleware behavior, refresh-token rotation, logout invalidation, password reset, Google SSO placeholder behavior, sensitive response safety, and strict auth route rate limits.
+Authentication route tests must verify registration, duplicate handling, weak password validation, email verification, login failures, access-token auth middleware behavior, refresh-token rotation, logout invalidation, password reset, Google OAuth success and not-configured behavior, sensitive response safety, and strict auth route rate limits.
 
 Bound-port smoke tests should be added for startup and health behavior when the pinned Bun runtime is available in CI.
 
@@ -434,7 +434,7 @@ Contract tests must verify:
 - Request id is forwarded to the Model API client.
 - Fit score responses are normalized to score range `0` to `100`.
 - Skill gap responses include matched skills, missing skills, and recommendations when available.
-- CV Analyzer responses include overall impression, job fit alignment, ATS score, keyword feedback, quantification feedback, and actionable improvements.
+- CV Analyzer responses include schema version, job fit alignment, ATS friendliness, overall impression, bounded top actionables, and dynamic section reviews.
 - Invalid model output maps to `502 DOWNSTREAM_ERROR`.
 - Timeout or unavailable model service maps to `503 SERVICE_UNAVAILABLE` when the dependency is unavailable.
 

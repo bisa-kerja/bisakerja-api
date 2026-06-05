@@ -8,7 +8,7 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/modules/bookmarks.md
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-22
 ---
 
 # Bookmarks Module
@@ -142,7 +142,7 @@ Validation:
 ```json
 {
   "success": true,
-  "message": "Daftar bookmark berhasil diambil",
+  "message": "Bookmarks retrieved successfully",
   "data": [
     {
       "id": "44444444-4444-4444-8444-444444444444",
@@ -205,7 +205,7 @@ Successful creation returns HTTP `201`.
 ```json
 {
   "success": true,
-  "message": "Lowongan berhasil disimpan",
+  "message": "Job saved successfully",
   "data": {
     "id": "44444444-4444-4444-8444-444444444444",
     "jobId": "11111111-1111-4111-8111-111111111111",
@@ -216,6 +216,7 @@ Successful creation returns HTTP `201`.
 ```
 
 Delete returns `204` with no response body for MVP.
+List response message is `Bookmarks retrieved successfully`.
 
 ## Service Logic
 
@@ -287,6 +288,11 @@ Database rules:
 | Bookmark not found    | 404    | `BOOKMARK_NOT_FOUND`      |
 | Duplicate bookmark    | 409    | `BOOKMARK_ALREADY_EXISTS` |
 | Database unavailable  | 503    | `SERVICE_UNAVAILABLE`     |
+
+Validation detail examples for `422 VALIDATION_ERROR`:
+
+- `jobId`: `Job ID is invalid. Use a valid UUID`
+- `sort`: `Sort is not supported. Use one of the supported sort values`
 
 ## Observability
 

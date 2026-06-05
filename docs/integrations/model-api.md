@@ -46,20 +46,98 @@ Expected environment variables:
 - `MODEL_API_SERVICE_TOKEN`
 - `MODEL_API_ENABLE_MOCK` for local-only development before the real service is available
 
-Current backend default endpoint assumptions:
+Final CV Analyzer endpoint:
 
-- `POST /job-fit`
-- `POST /cv-analyzer`
+```text
+POST /internal/model/cv-analysis
+content-type: multipart/form-data
+```
 
-These paths are treated as the current internal contract until the Model API publishes a final route inventory.
+Legacy JSON-only inference paths remain local/test compatibility only. Production CV analysis uses Backend-as-orchestrator: Backend resolves auth, file ownership, candidate retrieval, DB hydration, persistence, and public `cv-analysis-v2` formatting; Model API parses PDF bytes and returns model-core evidence and rankings.
+
+Durable contract fixtures and owner matrix live in:
+
+- `artifacts/backend_model_api_contract/internal_contract_fixtures.json`
+- `artifacts/backend_model_api_contract/openapi_prisma_owner_matrix.json`
+
+## Internal CV Analysis Request Contract
+
+Backend sends multipart fields:
+
+| Field           | Owner               | Rule                                                                                                                          |
+| --------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `requestId`     | Backend             | Required trace/idempotency correlation id.                                                                                    |
+| `language`      | Backend             | Public/model enum `id` or `en`; Backend maps Prisma `ID`/`EN`.                                                                |
+| `inputMode`     | Backend             | `UPLOAD` or `REFERENCE`; ownership checked before request.                                                                    |
+| `compareSource` | Backend             | `BOOKMARK`, `JOB_SEARCH`, or `DIRECT_JOB_DETAIL`.                                                                             |
+| `jobRoles[]`    | Backend             | Target roles selected from request/backend workflow.                                                                          |
+| `directJobId`   | Backend             | Required only for `DIRECT_JOB_DETAIL`; Backend validates job visibility before Model API call.                                |
+| `cvFile`        | Backend → Model API | One PDF file part; upload bytes or ownership-checked reference bytes; Model API validates content type, parseability, limits. |
+| `jobCandidates` | Backend             | JSON array of backend-selected candidates; max 50, unique `jobId`.                                                            |
+| `rankingPolicy` | Backend             | JSON object; `backendOwnsHydration=true`, `requireCandidateJobIds=true`, `deduplicateByJobId=true`, `maxRecommendations<=5`.  |
+
+`jobCandidates[].scoringInput` contains model-owned evidence only: `titleText`, `descriptionText`, `requirementSummary`, `requiredSkills`, `requirements`, `roleFamily`, `experienceLevel`, `workType`, and optional numeric signals. `jobCandidates[].backendMetadata` may carry trace/hydration hints but Model API must not trust it for candidate identity beyond `jobId` membership.
+
+## Internal CV Analysis Response Contract
+
+Model API returns `model-core-cv-analysis-v1`:
+
+| Field                                  | Owner     | Rule                                                                                                              |
+| -------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `parsedCv`                             | Model API | Parse status, page count, text length, detected sections, extraction evidence.                                    |
+| `jobFitAlignment`                      | Model API | Integer score `0-100`, matched/missing signals, matched/missing skills, evidence.                                 |
+| `atsFriendliness`                      | Model API | Integer score `0-100`, detected issues, parse quality, evidence.                                                  |
+| `overallImpression`                    | Model API | Score/evidence only; Backend wrapper creates final prose.                                                         |
+| `candidateReranking.recommendations[]` | Model API | Supplied `jobId` only, `matchScore` `0-100`, `matchLevel` `strong/good/stretch`, evidence arrays, max five items. |
+| `model`                                | Model API | Model name, version, and artifact identity.                                                                       |
+| `createdAt`                            | Model API | ISO timestamp.                                                                                                    |
+
+Forbidden in model-core output: `title`, `companyName`, `reason`, `nextStep`, `topActionables`, `sectionReviews`, `generatedCv`, auth fields, persistence fields, DB credentials, raw hydrated DB objects, and final public `jobRecommendations`.
+
+## OpenAPI/Prisma Ownership Mapping
+
+| Entity                      | Backend-owned                                                                                                             | Model-owned                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `CvAnalysis.analysisResult` | `id`, `schemaVersion`, prose summaries, `topActionables`, `sectionReviews`, hydrated recommendation fields, `generatedCv` | Scores, evidence, candidate IDs, model recommendation order.                            |
+| `CvAnalysisResult`          | User/file/job ids, language/input/compare enums, public snapshot, persistence timestamps                                  | Model score/evidence JSON and model identity.                                           |
+| `JobRecommendationRun`      | User, result link, idempotency, candidate counts, status, filters, timestamps                                             | Model name/version and validated candidate-reranking schema.                            |
+| `JobRecommendationItem`     | Job listing id, rank, DB relation, grounded prose reasons/next steps                                                      | `matchScore`, `matchLevel`, matched/missing skills.                                     |
+| `JobListing`                | Source, company, title, description, location, visibility/status, expiry, DB hydration                                    | Scoring text/features derived by Backend; response may reference only supplied `jobId`. |
+| `JobRequirement`            | Persisted requirement type/value/priority/order                                                                           | Requirement text/features and coverage evidence.                                        |
+| `JobSkill`                  | Persisted skill relation/confidence                                                                                       | Required/matched/missing skill evidence strings.                                        |
+
+Enum mapping is frozen: public/model language `id/en` maps to Prisma `ID/EN`; model `strong/good/stretch` maps to Prisma `STRONG/GOOD/STRETCH`; input mode and compare source values are identical across public/model/Prisma boundaries.
+
+## Backend Orchestration
+
+`/api/v1/ai/cv-analyzer` resolves CV bytes before calling Model API. Direct uploads use request-scoped buffers; reference mode streams bytes from backend-owned CV storage after ownership, expiry, and path-traversal checks. Candidate retrieval stays in Backend:
+
+- `BOOKMARK` uses active, non-expired jobs bookmarked by authenticated user.
+- `JOB_SEARCH` searches visible, active jobs using requested role text.
+- `DIRECT_JOB_DETAIL` uses one explicit visible, active job id.
+
+Backend sends only model scoring fields to Model API. Public recommendation fields are hydrated from DB after Model API returns candidate ids and scores. GenAI prose is optional; deterministic fallback prose uses model evidence and DB job context without changing numeric scores, recommendation ids, or order.
+
+## Failure Contract
+
+| Model API outcome                                        | Backend behavior                                                                                                                                                                                                                     |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `422 contract_validation_error`                          | Return frontend validation/dependency error without persistence; log request id and validation path only.                                                                                                                            |
+| `422 cv_parse_empty_text` or parse failure               | Return deterministic CV parse failure or low-confidence fallback policy; never fabricate CV text.                                                                                                                                    |
+| `503 model_not_ready`, stale artifact, or loader failure | Return AI unavailable; do not retry validation failures.                                                                                                                                                                             |
+| `504 inference_timeout`                                  | Return timeout/unavailable response; keep non-AI routes healthy.                                                                                                                                                                     |
+| Empty candidate set                                      | Backend resolves before call. `DIRECT_JOB_DETAIL` returns `404 JOB_NOT_FOUND`, `BOOKMARK` returns ownership-safe `404 BOOKMARK_NOT_FOUND`, and `JOB_SEARCH` returns `422 VALIDATION_ERROR` instead of sending empty `jobCandidates`. |
+| GenAI wrapper failure                                    | Backend keeps model scores/order and creates deterministic fallback prose from model-core evidence.                                                                                                                                  |
 
 ## Supported Workflows
 
-| Workflow           | Backend module   | Model output                                                                                                               |
-| ------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Job fit analysis   | `ai-job-fit`     | Fit score, explanation breakdown, skill match, experience match, preference match, skill gaps, recommendation              |
-| Skill gap analysis | `ai-job-fit`     | Missing skills, priority, reason, and improvement direction                                                                |
-| AI CV Analyzer     | `ai-cv-analyzer` | Overall impression, job fit alignment, ATS score, keyword optimization, experience quantification, actionable improvements |
+| Workflow            | Backend module           | Model output                                                                                                                 |
+| ------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Job fit analysis    | `ai-job-fit`             | Fit score, explanation breakdown, skill match, experience match, preference match, skill gaps, recommendation                |
+| Skill gap analysis  | `ai-job-fit`             | Missing skills, priority, reason, and improvement direction                                                                  |
+| AI CV Analyzer      | `ai-cv-analyzer`         | Overall impression, job fit alignment, ATS score, keyword optimization, experience quantification, actionable improvements   |
+| AI CV Generate      | `ai-cv-generate`         | Final markdown HTML CV content generated from backend-owned CV reference, summary, and safe template input                   |
+| Job recommendations | `ai-job-recommendations` | Ranked job recommendations selected from backend-provided candidate job IDs with match score, level, reasons, and next steps |
 
 ## Request Ownership
 
@@ -202,6 +280,81 @@ Model API should return enough structured output for Backend API to produce:
 - Experience quantification score and suggestions.
 - Actionable improvements.
 - Model name and version.
+
+## Job Recommendation Payload Contract
+
+Backend-prepared payload shape:
+
+```json
+{
+  "requestId": "req_789",
+  "inputVersion": "job-recommendations-v1",
+  "talentProfile": {
+    "targetRole": "Backend Developer",
+    "seniorityLevel": "ENTRY_LEVEL",
+    "hardSkills": ["TypeScript"],
+    "softSkills": [],
+    "domainSignals": ["Engineering"],
+    "toolsAndTechnologies": ["REST API"],
+    "educationSignals": [],
+    "experienceYearsEstimate": null,
+    "locationPreferences": [
+      { "province": "DKI Jakarta", "city": "Jakarta Selatan" }
+    ],
+    "workTypePreferences": ["REMOTE"],
+    "salaryExpectation": {
+      "min": 5000000,
+      "max": 9000000,
+      "currency": "IDR",
+      "period": "MONTHLY"
+    },
+    "redFlags": ["Docker"]
+  },
+  "rankingPolicy": {
+    "maxRecommendations": 10,
+    "requireCandidateJobIds": true,
+    "deduplicateByJobId": true
+  },
+  "jobCandidates": [
+    {
+      "jobId": "11111111-1111-4111-8111-111111111111",
+      "title": "Backend Developer",
+      "companyName": "Nusantara Tech",
+      "location": {
+        "display": "Jakarta Selatan, DKI Jakarta",
+        "province": "DKI Jakarta",
+        "city": "Jakarta Selatan"
+      },
+      "workType": "REMOTE",
+      "experienceLevel": "ENTRY_LEVEL",
+      "descriptionSummary": "Build backend APIs",
+      "requiredSkills": ["TypeScript"],
+      "postedAt": "2026-05-18T00:00:00.000Z",
+      "sourceUpdatedAt": null
+    }
+  ]
+}
+```
+
+Rules:
+
+- Backend owns candidate retrieval and candidate list boundaries.
+- Model must only rank candidate `jobId` values supplied by backend.
+- Backend validates output and rejects unknown or duplicate `jobId`.
+
+## Job Recommendation Response Expectations
+
+Model API should return enough structured output for Backend API to produce:
+
+- `recommendations[].jobId` from backend candidate set.
+- `recommendations[].matchScore` in score range.
+- `recommendations[].matchLevel` enum.
+- `recommendations[].reasons`.
+- `recommendations[].matchedSkills`.
+- `recommendations[].missingSkills`.
+- `recommendations[].nextSteps`.
+- `model.name`.
+- `model.version`.
 
 Generated CV output is future scope unless explicitly approved.
 

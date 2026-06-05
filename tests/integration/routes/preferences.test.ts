@@ -67,7 +67,7 @@ describe("preferences routes", () => {
     expect(created.status).toBe(200);
     expect(created.body).toMatchObject({
       success: true,
-      message: "Preferensi berhasil disimpan",
+      message: "Preferences saved successfully",
       data: {
         careerStatus: "FRESH_GRADUATE",
         targetRoles: ["Backend Developer"],
@@ -93,7 +93,7 @@ describe("preferences routes", () => {
     expect(read.status).toBe(200);
     expect(read.body).toMatchObject({
       success: true,
-      message: "Preferensi berhasil diambil",
+      message: "Preferences retrieved successfully",
       data: {
         id: "pref-user-1",
         targetRoles: ["Backend Developer"]
@@ -156,7 +156,7 @@ describe("preferences routes", () => {
     expect(patched.status).toBe(200);
     expect(patched.body).toMatchObject({
       success: true,
-      message: "Preferensi berhasil diperbarui",
+      message: "Preferences updated successfully",
       data: {
         targetRoles: ["Backend Developer"],
         salaryExpectation: {
@@ -183,6 +183,16 @@ describe("preferences routes", () => {
       }
     });
     expect(invalidEnum.status).toBe(422);
+    expect(invalidEnum.body).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "careerStatus"
+          })
+        ]
+      }
+    });
 
     const invalidSalary = await injectRoute(context.app, {
       method: "PUT",
@@ -195,7 +205,16 @@ describe("preferences routes", () => {
     });
     expect(invalidSalary.status).toBe(422);
     expect(invalidSalary.body).toMatchObject({
-      error: { code: "INVALID_SALARY_RANGE" }
+      error: {
+        code: "VALIDATION_ERROR",
+        details: [
+          expect.objectContaining({
+            path: "salaryExpectation.max",
+            message:
+              "Maximum salary expectation must be greater than or equal to minimum"
+          })
+        ]
+      }
     });
 
     const userIdInjection = await injectRoute(context.app, {
@@ -208,6 +227,11 @@ describe("preferences routes", () => {
       }
     });
     expect(userIdInjection.status).toBe(422);
+    expect(userIdInjection.body).toMatchObject({
+      error: {
+        details: [expect.objectContaining({ path: "userId" })]
+      }
+    });
 
     const emptyPatch = await injectRoute(context.app, {
       method: "PATCH",

@@ -8,10 +8,10 @@ reviewers:
 doc_status: draft
 source_repo: backend-api
 source_path: docs/generated/routes.md
-last_reviewed: 2026-05-13
+last_reviewed: 2026-06-05
 generated_by: route-inventory-script
-generated_at: 2026-05-13T01:59:32.563Z
-source_commit: 71aae12af89654086f0edb25d37612895a95abe7
+generated_at: 2026-06-05T00:42:24.856Z
+source_commit: acb519c8c08a52252d16d6fd245955b5ce1cc9cc
 ---
 
 # Backend API Route Inventory
@@ -22,44 +22,49 @@ This page is generated from the route registry used by the application runtime. 
 
 | Metric        | Value                                      |
 | ------------- | ------------------------------------------ |
-| Total routes  | 33                                         |
-| Generated at  | `2026-05-13T01:59:32.563Z`                 |
-| Source commit | `71aae12af89654086f0edb25d37612895a95abe7` |
+| Total routes  | 38                                         |
+| Generated at  | `2026-06-05T00:42:24.856Z`                 |
+| Source commit | `acb519c8c08a52252d16d6fd245955b5ce1cc9cc` |
 
 ## Registered Routes
 
-| Method   | Path                                            | Module           |
-| -------- | ----------------------------------------------- | ---------------- |
-| `POST`   | `/api/v1/ai/cv-analyzer`                        | `ai-cv-analyzer` |
-| `POST`   | `/api/v1/ai/job-fit`                            | `ai-job-fit`     |
-| `POST`   | `/api/v1/auth/forgot-password`                  | `auth`           |
-| `GET`    | `/api/v1/auth/google`                           | `auth`           |
-| `POST`   | `/api/v1/auth/google`                           | `auth`           |
-| `POST`   | `/api/v1/auth/login`                            | `auth`           |
-| `POST`   | `/api/v1/auth/logout`                           | `auth`           |
-| `POST`   | `/api/v1/auth/refresh`                          | `auth`           |
-| `POST`   | `/api/v1/auth/register`                         | `auth`           |
-| `POST`   | `/api/v1/auth/reset-password`                   | `auth`           |
-| `POST`   | `/api/v1/auth/verify-email`                     | `auth`           |
-| `POST`   | `/api/v1/internal/notification-events`          | `internal`       |
-| `POST`   | `/api/v1/internal/scraper/jobs`                 | `internal`       |
-| `GET`    | `/api/v1/jobs`                                  | `jobs`           |
-| `GET`    | `/api/v1/jobs/:jobId`                           | `jobs`           |
-| `GET`    | `/api/v1/me`                                    | `users`          |
-| `PATCH`  | `/api/v1/me`                                    | `users`          |
-| `GET`    | `/api/v1/me/applications`                       | `applications`   |
-| `POST`   | `/api/v1/me/applications`                       | `applications`   |
-| `PATCH`  | `/api/v1/me/applications/:applicationId`        | `applications`   |
-| `PATCH`  | `/api/v1/me/applications/:applicationId/status` | `applications`   |
-| `GET`    | `/api/v1/me/bookmarks`                          | `bookmarks`      |
-| `POST`   | `/api/v1/me/bookmarks`                          | `bookmarks`      |
-| `DELETE` | `/api/v1/me/bookmarks/:jobId`                   | `bookmarks`      |
-| `PUT`    | `/api/v1/me/education`                          | `users`          |
-| `PUT`    | `/api/v1/me/experience`                         | `users`          |
-| `GET`    | `/api/v1/me/preferences`                        | `preferences`    |
-| `PATCH`  | `/api/v1/me/preferences`                        | `preferences`    |
-| `PUT`    | `/api/v1/me/preferences`                        | `preferences`    |
-| `PUT`    | `/api/v1/me/profile-photo`                      | `users`          |
-| `PUT`    | `/api/v1/me/skills`                             | `users`          |
-| `GET`    | `/health/live`                                  | `health`         |
-| `GET`    | `/health/ready`                                 | `health`         |
+| Method   | Path                                               | Module           |
+| -------- | -------------------------------------------------- | ---------------- |
+| `POST`   | `/api/v1/ai/cv-analyzer`                           | `ai-cv-analyzer` |
+| `GET`    | `/api/v1/ai/cv-analyzer/results`                   | `ai-cv-analyzer` |
+| `GET`    | `/api/v1/ai/cv-analyzer/results/:analysisResultId` | `ai-cv-analyzer` |
+| `GET`    | `/api/v1/ai/cv-analyzer/results/latest`            | `ai-cv-analyzer` |
+| `POST`   | `/api/v1/ai/cv-generate`                           | `ai-cv-generate` |
+| `POST`   | `/api/v1/auth/forgot-password`                     | `auth`           |
+| `GET`    | `/api/v1/auth/google`                              | `auth`           |
+| `POST`   | `/api/v1/auth/google`                              | `auth`           |
+| `POST`   | `/api/v1/auth/login`                               | `auth`           |
+| `POST`   | `/api/v1/auth/logout`                              | `auth`           |
+| `POST`   | `/api/v1/auth/refresh`                             | `auth`           |
+| `POST`   | `/api/v1/auth/register`                            | `auth`           |
+| `POST`   | `/api/v1/auth/reset-password`                      | `auth`           |
+| `POST`   | `/api/v1/auth/verify-email`                        | `auth`           |
+| `POST`   | `/api/v1/internal/notification-events`             | `internal`       |
+| `POST`   | `/api/v1/internal/scraper/jobs`                    | `internal`       |
+| `GET`    | `/api/v1/jobs`                                     | `jobs`           |
+| `GET`    | `/api/v1/jobs/:jobId`                              | `jobs`           |
+| `GET`    | `/api/v1/me`                                       | `users`          |
+| `PATCH`  | `/api/v1/me`                                       | `users`          |
+| `GET`    | `/api/v1/me/applications`                          | `applications`   |
+| `POST`   | `/api/v1/me/applications`                          | `applications`   |
+| `PATCH`  | `/api/v1/me/applications/:applicationId`           | `applications`   |
+| `PATCH`  | `/api/v1/me/applications/:applicationId/status`    | `applications`   |
+| `GET`    | `/api/v1/me/bookmarks`                             | `bookmarks`      |
+| `POST`   | `/api/v1/me/bookmarks`                             | `bookmarks`      |
+| `DELETE` | `/api/v1/me/bookmarks/:jobId`                      | `bookmarks`      |
+| `POST`   | `/api/v1/me/cv-files`                              | `cv-files`       |
+| `GET`    | `/api/v1/me/cv-files/active`                       | `cv-files`       |
+| `PUT`    | `/api/v1/me/education`                             | `users`          |
+| `PUT`    | `/api/v1/me/experience`                            | `users`          |
+| `GET`    | `/api/v1/me/preferences`                           | `preferences`    |
+| `PATCH`  | `/api/v1/me/preferences`                           | `preferences`    |
+| `PUT`    | `/api/v1/me/preferences`                           | `preferences`    |
+| `PUT`    | `/api/v1/me/profile-photo`                         | `users`          |
+| `PUT`    | `/api/v1/me/skills`                                | `users`          |
+| `GET`    | `/health/live`                                     | `health`         |
+| `GET`    | `/health/ready`                                    | `health`         |

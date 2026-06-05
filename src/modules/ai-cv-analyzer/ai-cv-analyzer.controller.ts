@@ -2,7 +2,12 @@ import type { Request, Response } from "express";
 
 import { successResponse } from "@/core/responses/response.formatter";
 import { aiCvAnalyzerSuccessMessages } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.constants";
-import type { AnalyzeCvInput } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
+import type {
+  AnalyzeCvInput,
+  CvAnalysisResultParamsInput,
+  ListCvAnalysisResultsQueryInput,
+  UploadCvFileInput
+} from "@/modules/ai-cv-analyzer/ai-cv-analyzer.schema";
 import { AiCvAnalyzerService } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.service";
 import type { AiCvAnalyzerControllerDependencies } from "@/modules/ai-cv-analyzer/ai-cv-analyzer.types";
 import { emitAuditEvent } from "@/shared/observability/audit-event";
@@ -18,7 +23,9 @@ export class AiCvAnalyzerController {
       modelApiClient: dependencies.modelApiClient,
       storage: dependencies.storage,
       cvRetentionDays: dependencies.config.uploads.cvRetentionDays,
-      now: dependencies.now
+      now: dependencies.now,
+      genAiEnabled: dependencies.config.integrations.aiCvAnalyzerGenAi.enabled,
+      genAiClient: dependencies.genAiClient
     });
     this.now = dependencies.now ?? (() => new Date());
   }
@@ -27,13 +34,14 @@ export class AiCvAnalyzerController {
     const startedAt = this.now();
     const input = req.body as AnalyzeCvInput;
     const userId = req.auth?.userId ?? "";
+    const resourceId = input.jobRoles.join(",");
 
     emitAuditEvent({
       action: "ai_cv_analyzer.requested",
       requestId: req.requestId,
       actorId: userId,
       resourceType: "cv-analysis",
-      resourceId: input.jobId,
+      resourceId,
       result: "success",
       metadata: {
         inputMode: input.inputMode,
@@ -63,11 +71,11 @@ export class AiCvAnalyzerController {
         requestId: req.requestId,
         actorId: userId,
         resourceType: "cv-analysis",
-        resourceId: input.jobId,
+        resourceId,
         result: "success",
         metadata: {
           cvFileMetadataId: result.cvFileMetadataId,
-          modelVersion: result.resource.model.version,
+          modelVersion: result.resource.analysisResult.model.version,
           durationMs
         }
       });
@@ -78,11 +86,11 @@ export class AiCvAnalyzerController {
           requestId: req.requestId,
           actorId: userId,
           resourceType: "cv-analysis",
-          resourceId: input.jobId,
+          resourceId,
           result: "success",
           metadata: {
             cvFileMetadataId: result.cvFileMetadataId,
-            modelVersion: result.resource.model.version
+            modelVersion: result.resource.analysisResult.model.version
           }
         });
       }
@@ -100,7 +108,7 @@ export class AiCvAnalyzerController {
         requestId: req.requestId,
         actorId: userId,
         resourceType: "cv-analysis",
-        resourceId: input.jobId,
+        resourceId,
         result: "failure",
         metadata: {
           errorCode:
@@ -111,5 +119,104 @@ export class AiCvAnalyzerController {
 
       throw error;
     }
+  };
+
+  listAnalysisResults = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const query = req.query as unknown as ListCvAnalysisResultsQueryInput;
+    const result = await this.service.listAnalysisResults(userId, query);
+
+    res.json(
+      successResponse(
+        result.data,
+        aiCvAnalyzerSuccessMessages.cvAnalysisResultsRetrieved,
+        result.meta
+      )
+    );
+  };
+
+  getAnalysisResultDetail = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const params = req.params as CvAnalysisResultParamsInput;
+    const result = await this.service.getAnalysisResultDetail(
+      userId,
+      params.analysisResultId
+    );
+
+    res.json(
+      successResponse(
+        result,
+        aiCvAnalyzerSuccessMessages.cvAnalysisResultDetailRetrieved,
+        null
+      )
+    );
+  };
+
+  getLatestAnalysisResult = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const result = await this.service.getLatestAnalysisResult(userId);
+
+    res.json(
+      successResponse(
+        result,
+        aiCvAnalyzerSuccessMessages.cvAnalysisResultLatestRetrieved,
+        null
+      )
+    );
+  };
+
+  uploadCvFile = async (req: Request, res: Response) => {
+    const input = req.body as UploadCvFileInput;
+    const userId = req.auth?.userId ?? "";
+
+    const cvFile = await this.service.uploadCvFile(
+      userId,
+      input,
+      req.file
+        ? {
+            originalName: req.file.originalname,
+            mimeType: req.file.mimetype,
+            sizeBytes: req.file.size,
+            buffer: req.file.buffer
+          }
+        : null
+    );
+
+    emitAuditEvent({
+      action: "ai_cv_analyzer.cv_file_uploaded",
+      requestId: req.requestId,
+      actorId: userId,
+      resourceType: "cv-file",
+      resourceId: cvFile.id,
+      result: "success",
+      metadata: {
+        isActive: cvFile.isActive,
+        sizeBytes: cvFile.sizeBytes,
+        mimeType: cvFile.mimeType
+      }
+    });
+
+    res
+      .status(201)
+      .json(
+        successResponse(
+          { cvFile },
+          aiCvAnalyzerSuccessMessages.cvFileUploaded,
+          null
+        )
+      );
+  };
+
+  getActiveCvFile = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId ?? "";
+    const cvFile = await this.service.getActiveCvFile(userId);
+
+    res.json(
+      successResponse(
+        { cvFile },
+        aiCvAnalyzerSuccessMessages.activeCvFileRetrieved,
+        null
+      )
+    );
   };
 }
